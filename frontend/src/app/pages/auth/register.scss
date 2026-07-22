@@ -1,0 +1,40 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+// positioning context for the scattered photos; the form sits centered on top
+.vreg {
+  position: relative;
+  overflow: hidden; // clip photos that spill past the edges (part of the "thrown" look)
+}
+
+.vreg__form {
+  position: relative;
+  z-index: 1; // keep the form above the collage
+}
+
+// decorative collage — shown only on wide screens (xl+), where the big photos fit in the
+// side gutters without colliding with the centered form; hidden below that (clean form)
+.vreg__scatter {
+  display: none;
+
+  @include bp.respond-to(xl) {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none; // never intercept clicks meant for the form
+  }
+}
+
+// each snapshot: a small, white-framed print tossed onto the page
+.vreg__photo {
+  position: absolute;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 5px solid #fff;
+  box-shadow: 0 10px 30px -12px rgba(20, 12, 14, 0.45);
+}

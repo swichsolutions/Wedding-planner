@@ -1,0 +1,25 @@
+<section class="fv-hero">
+  <div class="container fv-hero__inner">
+    <p class="overline fv-hero__overline">{{ 'forVendors.overline' | translate }}</p>
+    <h1 class="fv-hero__title">{{ 'forVendors.title' | translate }}</h1>
+    <p class="fv-hero__sub">{{ 'forVendors.subtitle' | translate }}</p>
+    <div class="fv-hero__cta">
+      <a class="btn btn--primary" routerLink="/register">{{ 'forVendors.ctaPrimary' | translate }}</a>
+      <a class="btn btn--pink-outline" routerLink="/vendors">{{ 'forVendors.ctaSecondary' | translate }}</a>
+    </div>
+    <p class="fv-hero__free">{{ 'forVendors.freeNote' | translate }}</p>
+  </div>
+</section>
+
+<section class="section container">
+  <h2 class="fv-how__title">{{ 'forVendors.howTitle' | translate }}</h2>
+  <ol class="fv-steps">
+    @for (s of steps; track s.n) {
+      <li class="fv-step">
+        <span class="fv-step__num" aria-hidden="true">{{ s.n }}</span>
+        <h3 class="fv-step__title">{{ s.title | translate }}</h3>
+        <p class="fv-step__body">{{ s.body | translate }}</p>
+      </li>
+    }
+  </ol>
+</section>

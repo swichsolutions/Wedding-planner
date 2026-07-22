@@ -1,0 +1,198 @@
+<div #wsRoot [class]="'ws ws--' + template() + ' ws--layout-' + layout()" [class.ws--thumb]="thumb()">
+  <div class="ws__ornament" aria-hidden="true"></div>
+
+  @switch (layout()) {
+    <!-- ============ BANNER: photo is the hero, names overlaid ============ -->
+    @case ('banner') {
+      <header class="ws-banner" [class.has-photo]="!!data().photoUrl">
+        @if (data().photoUrl; as photo) {
+          <img class="ws-banner__bg" [src]="photo" alt="" width="1600" height="900" />
+        }
+        <div class="ws-banner__scrim" aria-hidden="true"></div>
+        <div class="ws-banner__content">
+          <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          <ng-container *ngTemplateOutlet="metaTpl" />
+          @if (!thumb()) {
+            <ng-container *ngTemplateOutlet="countTpl" />
+          }
+        </div>
+      </header>
+      @if (!thumb()) {
+        <div class="ws__body">
+          <ng-container *ngTemplateOutlet="messageTpl" />
+          <ng-container *ngTemplateOutlet="detailsTpl" />
+          <ng-container *ngTemplateOutlet="brandTpl" />
+        </div>
+      }
+    }
+
+    <!-- ============ SPLIT: asymmetric editorial two-column ============ -->
+    @case ('split') {
+      <div class="ws-split">
+        <div class="ws-split__text">
+          <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+          @if (nameA() && nameB()) {
+            <h1 class="ws__names ws__names--stacked">
+              <span>{{ nameA() }}</span>
+              <span class="ws__amp" aria-hidden="true">&</span>
+              <span>{{ nameB() }}</span>
+            </h1>
+          } @else {
+            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          }
+          <ng-container *ngTemplateOutlet="metaTpl" />
+          @if (!thumb()) {
+            <ng-container *ngTemplateOutlet="countTpl" />
+            <div class="ws__rule" aria-hidden="true"></div>
+            <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
+            <ng-container *ngTemplateOutlet="detailsTpl" />
+            <ng-container *ngTemplateOutlet="brandTpl" />
+          }
+        </div>
+        <div class="ws-split__media">
+          @if (data().photoUrl; as photo) {
+            <img [src]="photo" alt="" width="900" height="1200" />
+          } @else {
+            <span class="ws-split__amp" aria-hidden="true">&</span>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ============ ARCH: wedding-arch photo under the names ============ -->
+    @case ('arch') {
+      <div class="ws__inner">
+        <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+        <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        <ng-container *ngTemplateOutlet="metaTpl" />
+
+        <div class="ws-arch" [class.has-photo]="!!data().photoUrl">
+          @if (data().photoUrl; as photo) {
+            <img [src]="photo" alt="" width="800" height="1100" />
+          } @else {
+            <span class="ws-arch__amp" aria-hidden="true">&</span>
+          }
+        </div>
+
+        @if (!thumb()) {
+          <ng-container *ngTemplateOutlet="countTpl" />
+          <div class="ws__rule" aria-hidden="true"></div>
+          <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
+          <ng-container *ngTemplateOutlet="detailsTpl" />
+          <ng-container *ngTemplateOutlet="brandTpl" />
+        }
+      </div>
+    }
+
+    <!-- ============ MONOGRAM: initials seal + tilted polaroid ============ -->
+    @case ('monogram') {
+      <div class="ws__inner">
+        <span class="ws-mono" aria-hidden="true">{{ initials() }}</span>
+        <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+        @if (nameA() && nameB()) {
+          <h1 class="ws__names ws__names--stacked">
+            <span>{{ nameA() }}</span>
+            <span class="ws__amp" aria-hidden="true">&</span>
+            <span>{{ nameB() }}</span>
+          </h1>
+        } @else {
+          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        }
+        <ng-container *ngTemplateOutlet="metaTpl" />
+
+        @if (!thumb()) {
+          <ng-container *ngTemplateOutlet="countTpl" />
+          @if (data().photoUrl; as photo) {
+            <figure class="ws-polaroid">
+              <img [src]="photo" alt="" width="900" height="640" />
+            </figure>
+          }
+          <div class="ws__rule" aria-hidden="true"></div>
+          <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
+          <ng-container *ngTemplateOutlet="detailsTpl" />
+          <ng-container *ngTemplateOutlet="brandTpl" />
+        }
+      </div>
+    }
+
+    <!-- ============ CLASSIC: centered stack ============ -->
+    @default {
+      <div class="ws__inner">
+        <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+        <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        <ng-container *ngTemplateOutlet="metaTpl" />
+
+        @if (!thumb()) {
+          <ng-container *ngTemplateOutlet="countTpl" />
+          @if (data().photoUrl; as photo) {
+            <figure class="ws__photo">
+              <img [src]="photo" alt="" width="960" height="640" />
+            </figure>
+          }
+          <div class="ws__rule" aria-hidden="true"></div>
+          <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
+          <ng-container *ngTemplateOutlet="detailsTpl" />
+          <ng-container *ngTemplateOutlet="brandTpl" />
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- ---- shared fragments ---- -->
+<ng-template #metaTpl>
+  @if (dateLine() || data().place) {
+    <p class="ws__meta">
+      @if (dateLine()) {
+        <span>{{ dateLine() }}</span>
+      }
+      @if (dateLine() && data().place) {
+        <span class="ws__dot" aria-hidden="true">•</span>
+      }
+      @if (data().place) {
+        <span>{{ data().place }}</span>
+      }
+    </p>
+  }
+</ng-template>
+
+<ng-template #countTpl>
+  @if (daysToGo() !== null && daysToGo()! > 0) {
+    <p class="ws__count">
+      <span class="num">{{ daysToGo() }}</span> {{ 'wsite.daysToGo' | translate }}
+    </p>
+  } @else if (daysToGo() === 0) {
+    <p class="ws__count">{{ 'wsite.today' | translate }}</p>
+  }
+</ng-template>
+
+<ng-template #messageTpl>
+  <div class="ws__rule" aria-hidden="true"></div>
+  <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
+</ng-template>
+
+<ng-template #detailsTpl>
+  @if (dateLine() || data().place) {
+    <div class="ws__details">
+      @if (dateLine()) {
+        <div class="ws__detail">
+          <span class="ws__detail-label">{{ 'wsite.when' | translate }}</span>
+          <span class="ws__detail-val">{{ dateLine() }}</span>
+        </div>
+      }
+      @if (data().place) {
+        <div class="ws__detail">
+          <span class="ws__detail-label">{{ 'wsite.where' | translate }}</span>
+          <span class="ws__detail-val">{{ data().place }}</span>
+        </div>
+      }
+    </div>
+  }
+</ng-template>
+
+<ng-template #brandTpl>
+  <p class="ws__brand">
+    {{ 'wsite.madeWith' | translate }} <a href="/" translate="no">{{ 'brand.name' | translate }}</a>
+  </p>
+</ng-template>

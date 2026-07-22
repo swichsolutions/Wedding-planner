@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Add the sitemap once a production domain is set, e.g.:
+# Sitemap: https://your-domain.ge/sitemap.xml

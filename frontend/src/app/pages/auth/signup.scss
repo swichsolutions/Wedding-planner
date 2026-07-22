@@ -1,0 +1,294 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+// mobile: photo banner stacked above the card; desktop: photo panel beside it (Zola-style)
+.ob {
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-4) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  @include bp.respond-to(lg) {
+    max-width: 62rem;
+    display: grid;
+    grid-template-columns: 0.85fr 1fr;
+    gap: var(--space-8);
+    align-items: stretch;
+    padding-block: var(--space-14);
+  }
+}
+
+.ob__aside {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  min-height: 9rem;
+
+  @include bp.respond-to(lg) {
+    min-height: 34rem;
+  }
+
+  // darkening scrim so the white brand + caption stay legible over any photo
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(165deg, rgba(20, 12, 14, 0.18) 30%, rgba(20, 12, 14, 0.68));
+  }
+}
+
+.ob__photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ob__brand {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-5);
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: #fff;
+
+  @include bp.respond-to(lg) {
+    top: var(--space-6);
+    left: var(--space-6);
+  }
+}
+
+.ob__caption {
+  position: absolute;
+  left: var(--space-5);
+  right: var(--space-5);
+  bottom: var(--space-5);
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  line-height: var(--lh-tight);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+
+  @include bp.respond-to(lg) {
+    left: var(--space-6);
+    right: var(--space-6);
+    bottom: var(--space-8);
+    font-size: var(--fs-h3);
+  }
+}
+
+.ob__card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6) var(--space-6) var(--space-8);
+
+  @include bp.respond-to(sm) {
+    padding: var(--space-8) var(--space-10) var(--space-10);
+  }
+}
+
+// slim progress bar (Knot-style)
+.ob__progress {
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  overflow: hidden;
+  margin-bottom: var(--space-8);
+}
+
+.ob__progress-fill {
+  height: 100%;
+  background: var(--color-brand-500);
+  border-radius: inherit;
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+// fixed min-height keeps the nav row from jumping between steps
+.ob__body {
+  min-height: 15rem;
+}
+
+.ob__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-tight);
+}
+
+.ob__sub {
+  margin: 0 0 var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.ob__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 var(--space-4);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ob__amp {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  color: var(--color-text-secondary);
+}
+
+.ob__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-brand-500);
+  }
+}
+
+// single-select (stage, guests) + card options
+.ob__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ob__options--grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ob__option {
+  padding: var(--space-4);
+  text-align: left;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-400);
+  }
+
+  &.is-on {
+    border-color: var(--color-brand-500);
+    background: color-mix(in srgb, var(--color-brand-500) 8%, var(--color-surface));
+    box-shadow: inset 0 0 0 1px var(--color-brand-500);
+  }
+}
+
+.ob__options--grid .ob__option {
+  text-align: center;
+}
+
+// multi-select chips (needs)
+.ob__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ob__chip {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-500);
+  }
+
+  &.is-on {
+    border-color: var(--color-brand-500);
+    background: var(--color-brand-500);
+    color: #fff;
+  }
+}
+
+.ob__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.ob__spacer {
+  flex: 1;
+}
+
+.ob__back,
+.ob__skip {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  padding: var(--space-2);
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.ob__skip {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ob__alt {
+  margin: var(--space-6) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+// validation feedback — tells the user WHY they can't continue
+.ob__err {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-danger-600);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+}
+
+.ob__err--step {
+  margin-top: var(--space-5);
+}
+
+.auth__field input.is-invalid {
+  border-color: var(--color-danger-600);
+  box-shadow: 0 0 0 1px var(--color-danger-600);
+}

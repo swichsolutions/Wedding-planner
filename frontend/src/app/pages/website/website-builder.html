@@ -1,0 +1,275 @@
+<section class="wb container">
+  @if (!isCouple()) {
+    <!-- ================= guest explainer ================= -->
+    <header class="wb__head wb__head--guest">
+      <h1>{{ 'website.guestTitle' | translate }}</h1>
+      <p class="wb__sub">{{ 'website.guestBody' | translate }}</p>
+      <a class="btn btn--pink" routerLink="/signup">{{ 'website.guestCta' | translate }}</a>
+    </header>
+    <ul class="wb-gallery wb-gallery--teaser" role="list" aria-hidden="true">
+      @for (t of templates.slice(0, 4); track t) {
+        <li class="wb-card">
+          <span class="wb-card__thumb">
+            <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+          </span>
+        </li>
+      }
+    </ul>
+  } @else if (loadError()) {
+    <p class="wb__error" role="alert">{{ 'website.loadError' | translate }}</p>
+  } @else if (!loaded()) {
+    <div class="wb-skel" aria-hidden="true">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <span class="wb-skel__card"></span>
+      }
+    </div>
+  } @else if (stage() === 'pick') {
+    <!-- ================= 1. find your design ================= -->
+    <header class="wb__head">
+      <h1>{{ 'website.pickTitle' | translate }}</h1>
+      <p class="wb__sub">{{ 'website.pickSub' | translate }}</p>
+    </header>
+    <ul class="wb-gallery" role="list">
+      @for (t of templates; track t) {
+        <li class="wb-card">
+          <button type="button" class="wb-card__btn" (click)="pick(t)">
+            <span class="wb-card__thumb">
+              <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+            </span>
+            <span class="wb-card__name">{{ 'wsTemplate.' + t | translate }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  } @else if (stage() === 'info') {
+    <!-- ================= 2. add your info ================= -->
+    <button type="button" class="wb__back blink" (click)="backToDesigns()">
+      ← {{ 'website.backToDesigns' | translate }}
+    </button>
+
+    <div class="wb-info">
+      <div class="wb-info__preview">
+        <app-wedding-site [data]="sample" [template]="pickedTemplate()!" />
+        <p class="wb-info__tplname">{{ 'wsTemplate.' + pickedTemplate() | translate }}</p>
+      </div>
+
+      <form class="wb-info__form"
+        (submit)="$event.preventDefault(); createSite(fFirst, fLast, fPartnerFirst, fPartnerLast, fDate, fPlace)">
+        <h1>{{ 'website.infoTitle' | translate }}</h1>
+
+        <div class="wb-info__row">
+          <div class="wb-field">
+            <label for="wbi-first">{{ 'website.firstName' | translate }}</label>
+            <input id="wbi-first" #fFirst type="text" maxlength="120" autocomplete="off"
+              [value]="couple()?.firstName ?? ''" />
+          </div>
+          <div class="wb-field">
+            <label for="wbi-last">{{ 'website.lastName' | translate }}</label>
+            <input id="wbi-last" #fLast type="text" maxlength="120" autocomplete="off"
+              [value]="couple()?.lastName ?? ''" />
+          </div>
+        </div>
+        <div class="wb-info__row">
+          <div class="wb-field">
+            <label for="wbi-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
+            <input id="wbi-pfirst" #fPartnerFirst type="text" maxlength="120" autocomplete="off"
+              [value]="couple()?.partnerFirstName ?? ''" />
+          </div>
+          <div class="wb-field">
+            <label for="wbi-plast">{{ 'website.partnerLastName' | translate }}</label>
+            <input id="wbi-plast" #fPartnerLast type="text" maxlength="120" autocomplete="off"
+              [value]="couple()?.partnerLastName ?? ''" />
+          </div>
+        </div>
+        <div class="wb-info__row">
+          <div class="wb-field">
+            <label for="wbi-date">{{ 'website.weddingDate' | translate }}</label>
+            <input id="wbi-date" #fDate type="date" [value]="couple()?.weddingDate ?? ''" />
+          </div>
+          <div class="wb-field">
+            <label for="wbi-place">{{ 'website.place' | translate }}</label>
+            <input id="wbi-place" #fPlace type="text" maxlength="200" autocomplete="off"
+              [attr.placeholder]="'website.placePlaceholder' | translate" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--pink wb-info__continue" [disabled]="creating()">
+          {{ 'website.continue' | translate }}
+        </button>
+        <p class="wb-info__hint">{{ 'website.editLater' | translate }}</p>
+      </form>
+    </div>
+  } @else {
+    <!-- ================= 3. view & edit ================= -->
+    @if (site(); as s) {
+      <div class="wb-bar">
+        <div class="wb-bar__status">
+          @if (s.isPublished) {
+            <span class="wb-bar__badge is-live">{{ 'website.published' | translate }}</span>
+            <a class="wb-bar__url num" [href]="siteUrl()" target="_blank" rel="noopener">{{ siteUrl() }}</a>
+            <button type="button" class="blink" (click)="copyLink()">{{ 'website.copy' | translate }}</button>
+          } @else {
+            <span class="wb-bar__badge">{{ 'website.draft' | translate }}</span>
+          }
+        </div>
+        <div class="wb-bar__actions">
+          @if (s.isPublished) {
+            <button type="button" class="btn btn--ghost" (click)="unpublish()" [disabled]="publishBusy()">
+              {{ 'website.unpublish' | translate }}
+            </button>
+          } @else {
+            <button type="button" class="btn btn--pink" (click)="publish()" [disabled]="publishBusy()">
+              {{ 'website.publish' | translate }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="wb-edit">
+        <div class="wb-edit__preview">
+          <app-wedding-site [data]="previewData()" [template]="s.templateKey" />
+        </div>
+
+        <aside class="wb-panel">
+          <section class="wb-panel__section">
+            <h2>{{ 'website.designHeading' | translate }}</h2>
+            <ul class="wb-swatches" role="list">
+              @for (t of templates; track t) {
+                <li>
+                  <button type="button" class="wb-swatch" [class.is-active]="t === s.templateKey"
+                    (click)="switchTemplate(t)" [attr.aria-label]="'wsTemplate.' + t | translate"
+                    [attr.title]="'wsTemplate.' + t | translate"
+                    [attr.aria-pressed]="t === s.templateKey">
+                    <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+
+          <section class="wb-panel__section">
+            <h2>{{ 'website.colorsHeading' | translate }}</h2>
+
+            <div class="wb-colors">
+              <span class="wb-colors__label">{{ 'website.textColor' | translate }}</span>
+              <div class="wb-colors__row">
+                <button type="button" class="wb-dot wb-dot--reset" [class.is-active]="!s.inkColor"
+                  (click)="setColor('inkColor', null)"
+                  [attr.title]="'website.colorDefault' | translate"
+                  [attr.aria-label]="'website.colorDefault' | translate"></button>
+                @for (c of inkSwatches; track c) {
+                  <button type="button" class="wb-dot" [class.is-active]="s.inkColor === c"
+                    [style.background]="c" (click)="setColor('inkColor', c)"
+                    [attr.aria-label]="('website.textColor' | translate) + ' ' + c"></button>
+                }
+                <label class="wb-dot wb-dot--custom" [class.is-active]="s.inkColor && !inkSwatches.includes(s.inkColor)"
+                  [attr.title]="'website.customColor' | translate">
+                  <input type="color" [value]="s.inkColor ?? '#1c1714'"
+                    (change)="onColorInput('inkColor', $event)"
+                    [attr.aria-label]="'website.customColor' | translate" />
+                </label>
+              </div>
+              @if (lowContrast()) {
+                <p class="wb-colors__warn">{{ 'website.lowContrast' | translate }}</p>
+              }
+            </div>
+
+            <div class="wb-colors">
+              <span class="wb-colors__label">{{ 'website.accentColor' | translate }}</span>
+              <div class="wb-colors__row">
+                <button type="button" class="wb-dot wb-dot--reset" [class.is-active]="!s.accentColor"
+                  (click)="setColor('accentColor', null)"
+                  [attr.title]="'website.colorDefault' | translate"
+                  [attr.aria-label]="'website.colorDefault' | translate"></button>
+                @for (c of accentSwatches; track c) {
+                  <button type="button" class="wb-dot" [class.is-active]="s.accentColor === c"
+                    [style.background]="c" (click)="setColor('accentColor', c)"
+                    [attr.aria-label]="('website.accentColor' | translate) + ' ' + c"></button>
+                }
+                <label class="wb-dot wb-dot--custom" [class.is-active]="s.accentColor && !accentSwatches.includes(s.accentColor)"
+                  [attr.title]="'website.customColor' | translate">
+                  <input type="color" [value]="s.accentColor ?? '#c8a96a'"
+                    (change)="onColorInput('accentColor', $event)"
+                    [attr.aria-label]="'website.customColor' | translate" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="wb-panel__section">
+            <h2>{{ 'website.detailsHeading' | translate }}</h2>
+            <div class="wb-info__row">
+              <div class="wb-field">
+                <label for="wbe-first">{{ 'website.firstName' | translate }}</label>
+                <input id="wbe-first" type="text" maxlength="120" autocomplete="off"
+                  [value]="s.firstName ?? ''" (change)="commitField('firstName', $event)" />
+              </div>
+              <div class="wb-field">
+                <label for="wbe-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
+                <input id="wbe-pfirst" type="text" maxlength="120" autocomplete="off"
+                  [value]="s.partnerFirstName ?? ''" (change)="commitField('partnerFirstName', $event)" />
+              </div>
+            </div>
+            <div class="wb-info__row">
+              <div class="wb-field">
+                <label for="wbe-date">{{ 'website.weddingDate' | translate }}</label>
+                <input id="wbe-date" type="date" [value]="s.weddingDate ?? ''" (change)="commitDate($event)" />
+              </div>
+              <div class="wb-field">
+                <label for="wbe-place">{{ 'website.place' | translate }}</label>
+                <input id="wbe-place" type="text" maxlength="200" autocomplete="off"
+                  [value]="s.place ?? ''" (change)="commitField('place', $event)"
+                  [attr.placeholder]="'website.placePlaceholder' | translate" />
+              </div>
+            </div>
+            <div class="wb-field">
+              <label for="wbe-message">{{ 'website.message' | translate }}</label>
+              <textarea id="wbe-message" rows="3" maxlength="2000"
+                [value]="s.message ?? ''" (change)="commitField('message', $event)"
+                [attr.placeholder]="'website.messagePlaceholder' | translate"></textarea>
+            </div>
+          </section>
+
+          <section class="wb-panel__section">
+            <h2>{{ 'website.photoHeading' | translate }}</h2>
+            @if (s.photoUrl; as photo) {
+              <img class="wb-panel__photo" [src]="photo" alt="" width="320" height="200" />
+            }
+            <div class="wb-panel__photo-actions">
+              <label class="btn btn--ghost wb-panel__upload" [class.is-busy]="photoBusy()">
+                {{ (photoBusy() ? 'website.uploading' : 'website.uploadPhoto') | translate }}
+                <input type="file" accept="image/jpeg,image/png,image/webp" #photoInput
+                  (change)="onPhoto(photoInput)" [disabled]="photoBusy()" />
+              </label>
+              @if (s.photoUrl) {
+                <button type="button" class="blink" (click)="removePhoto()" [disabled]="photoBusy()">
+                  {{ 'website.removePhoto' | translate }}
+                </button>
+              }
+            </div>
+          </section>
+        </aside>
+      </div>
+    }
+  }
+</section>
+
+<!-- published! dialog -->
+@if (showPublished()) {
+  <div class="wb-pub" role="dialog" aria-modal="true"
+    [attr.aria-label]="'website.publishedTitle' | translate" (click)="onPublishedOverlay($event)">
+    <div class="wb-pub__panel">
+      <span class="wb-pub__icon" aria-hidden="true">🎉</span>
+      <h2>{{ 'website.publishedTitle' | translate }}</h2>
+      <p class="wb-pub__body">{{ 'website.publishedBody' | translate }}</p>
+      <div class="wb-pub__url">
+        <span class="num">{{ siteUrl() }}</span>
+        <button type="button" class="blink" (click)="copyLink()">{{ 'website.copy' | translate }}</button>
+      </div>
+      <div class="wb-pub__actions">
+        <a class="btn btn--ghost" [href]="siteUrl()" target="_blank" rel="noopener">{{ 'website.view' | translate }}</a>
+        <button type="button" class="btn btn--primary" (click)="closePublished()">{{ 'website.done' | translate }}</button>
+      </div>
+    </div>
+  </div>
+}

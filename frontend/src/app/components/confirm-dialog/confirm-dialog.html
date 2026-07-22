@@ -1,0 +1,41 @@
+@if (svc.request(); as req) {
+  <div class="cdlg" (click)="onOverlay($event)">
+    <div class="cdlg__panel" role="alertdialog" aria-modal="true" aria-labelledby="cdlg-title">
+      <span class="cdlg__icon" [class.is-danger]="req.danger" aria-hidden="true">
+        @if (req.danger) {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </svg>
+        }
+      </span>
+
+      <h2 id="cdlg-title" class="cdlg__title">{{ req.title | translate }}</h2>
+      @if (req.detail) {
+        <p class="cdlg__detail">„{{ req.detail }}“</p>
+      }
+      @if (req.body) {
+        <p class="cdlg__body">{{ req.body | translate }}</p>
+      }
+
+      <div class="cdlg__actions">
+        <button #cancelBtn type="button" class="btn btn--ghost" (click)="svc.settle(false)">
+          {{ (req.cancelLabel ?? 'confirm.cancel') | translate }}
+        </button>
+        <button type="button" class="btn cdlg__ok" [class.is-danger]="req.danger"
+          (click)="svc.settle(true)">
+          {{ (req.confirmLabel ?? 'confirm.ok') | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

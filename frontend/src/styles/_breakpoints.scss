@@ -1,0 +1,23 @@
+// Breakpoints + responsive mixin. Media queries can't read CSS custom properties,
+// so breakpoints live here as Sass variables. Mobile-first: `respond-to` is min-width.
+// Usage:  @use 'styles/breakpoints' as bp;  .x { ... @include bp.respond-to(md) { ... } }
+
+@use 'sass:map';
+
+$breakpoints: (
+  'sm': 600px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1280px,
+  'xxl': 1440px,
+);
+
+@mixin respond-to($name) {
+  @if map.has-key($breakpoints, $name) {
+    @media (min-width: map.get($breakpoints, $name)) {
+      @content;
+    }
+  } @else {
+    @error "Unknown breakpoint `#{$name}`. Use one of: #{map.keys($breakpoints)}.";
+  }
+}

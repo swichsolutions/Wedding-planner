@@ -1,0 +1,110 @@
+:host {
+  display: contents;
+}
+
+.cdlg {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--color-overlay);
+  backdrop-filter: blur(3px);
+  animation: cdlg-fade var(--dur-fast) var(--ease-out);
+}
+
+@keyframes cdlg-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cdlg__panel {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8);
+  text-align: center;
+  animation: cdlg-rise var(--dur-base) var(--ease-out);
+}
+
+@keyframes cdlg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cdlg__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  color: var(--color-ink-700);
+  margin-bottom: var(--space-4);
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  &.is-danger {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+.cdlg__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-h5);
+}
+
+.cdlg__detail {
+  margin: 0 0 var(--space-2);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+  overflow-wrap: break-word;
+}
+
+.cdlg__body {
+  margin: 0 0 var(--space-6);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.cdlg__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+
+  .btn {
+    min-width: 7rem;
+  }
+}
+
+.cdlg__ok {
+  background: var(--color-action);
+  color: var(--color-text-on-brand);
+
+  &:hover {
+    background: var(--color-action-hover);
+    color: var(--color-text-on-brand);
+  }
+
+  &.is-danger {
+    background: var(--color-danger-600);
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-danger-600) 85%, black);
+    }
+  }
+}

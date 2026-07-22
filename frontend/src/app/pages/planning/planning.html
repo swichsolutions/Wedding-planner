@@ -1,0 +1,196 @@
+@if (isCouple()) {
+  <!-- ============ checklist (logged-in couple) ============ -->
+  <section class="planning container">
+    @if (greetingNames() || daysToWedding() !== null) {
+      <div class="planning__welcome">
+        @if (greetingNames()) {
+          <p class="planning__hello">{{ 'planning.greeting' | translate: { names: greetingNames() } }}</p>
+        }
+        @if (daysToWedding() !== null && daysToWedding()! > 0) {
+          <p class="planning__countdown">
+            <span class="num">{{ daysToWedding() }}</span> {{ 'planning.countdown' | translate }}
+          </p>
+        } @else if (daysToWedding() === 0) {
+          <p class="planning__countdown">{{ 'planning.countdownToday' | translate }}</p>
+        }
+      </div>
+    }
+    @if (visibleReminders().length) {
+      <aside class="preminders">
+        <div class="preminders__head">
+          <h2>{{ 'planning.remindersTitle' | translate }}</h2>
+          <a class="link-arrow" routerLink="/budget">{{ 'planning.remindersLink' | translate }}</a>
+        </div>
+        <ul class="preminders__list" role="list">
+          @for (r of visibleReminders(); track r.id) {
+            <li class="preminder"
+              [class.is-overdue]="reminderBadge(r) === 'overdue'"
+              [class.is-soon]="reminderBadge(r) === 'soon'">
+              <span class="preminder__date num">{{ formatDate(r.reminderDate) }}</span>
+              <span class="preminder__name">{{ r.name }}</span>
+              @if (reminderBadge(r); as badge) {
+                <span class="preminder__badge">
+                  {{ (badge === 'overdue' ? 'budgetPage.overdue' : 'budgetPage.soon') | translate }}
+                </span>
+              }
+              @if (outstanding(r) > 0) {
+                <span class="preminder__amount num">{{ formatMoney(outstanding(r)) }}</span>
+              }
+            </li>
+          }
+        </ul>
+      </aside>
+    }
+
+    <header class="planning__head">
+      <h1>{{ 'planning.checklistTitle' | translate }}</h1>
+      <p class="planning__progress">
+        <span class="num">{{ doneCount() }}</span> / <span class="num">{{ items().length }}</span>
+        {{ 'planning.completed' | translate }}
+      </p>
+    </header>
+
+    <form class="checklist-add" (submit)="$event.preventDefault(); addItem(newTask)">
+      <input #newTask type="text" [attr.placeholder]="'planning.addPlaceholder' | translate"
+        [attr.aria-label]="'planning.addPlaceholder' | translate" />
+      <button type="submit" class="btn btn--pink" [disabled]="adding()">{{ 'planning.add' | translate }}</button>
+    </form>
+
+    @if (loadError()) {
+      <p class="cform__error" role="alert">{{ 'planning.loadError' | translate }}</p>
+    }
+
+    @if (loaded() && items().length === 0) {
+      <p class="planning__empty">{{ 'planning.empty' | translate }}</p>
+    } @else {
+      <ul class="checklist" role="list">
+        @for (item of items(); track item.id) {
+          <li class="checklist__item" [class.is-done]="item.isDone">
+            <label class="checklist__label">
+              <input type="checkbox" [checked]="item.isDone" (change)="toggle(item)" />
+              <span>{{ item.title }}</span>
+            </label>
+            <button type="button" class="checklist__del" (click)="remove(item.id)"
+              [attr.aria-label]="'planning.delete' | translate">×</button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+} @else {
+  <!-- ============ explainer (guest) ============ -->
+
+  <!-- hero: full-bleed photo with overlaid text -->
+  <section class="pl-hero">
+    <img class="pl-hero__bg"
+      src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1900&q=80"
+      alt="" aria-hidden="true" fetchpriority="high" />
+    <div class="pl-hero__scrim"></div>
+    <div class="container pl-hero__content">
+      <h1>{{ 'planning.heroTitle' | translate }}</h1>
+      <p class="pl-hero__sub">{{ 'planning.heroSubtitle' | translate }}</p>
+      <div class="pl-hero__cta">
+        <a class="btn btn--pink" routerLink="/signup">{{ 'planning.signup' | translate }}</a>
+        <a class="btn btn--ghost-light" routerLink="/login">{{ 'planning.login' | translate }}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- make it easy (cream band) -->
+  <section class="pl-easy">
+    <div class="container pl-easy__inner">
+      <div class="pl-easy__copy">
+        <h2>{{ 'planning.easyTitle' | translate }}</h2>
+        <p>{{ 'planning.easyText' | translate }}</p>
+        <a class="btn btn--primary" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+      </div>
+      <div class="pl-easy__media">
+        <img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=800&q=80"
+          alt="ქორწილის დაგეგმვის ჩანაწერები" width="800" height="600" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <!-- everything in one spot -->
+  <section class="section container">
+    <header class="pl-sec-head">
+      <h2>{{ 'planning.oneSpotTitle' | translate }}</h2>
+      <p>{{ 'planning.oneSpotText' | translate }}</p>
+    </header>
+    <div class="pl-cards">
+      <article class="pl-card">
+        <span class="pl-card__media">
+          <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80"
+            alt="საქორწინო მომწოდებლები" loading="lazy" width="700" height="460" />
+        </span>
+        <h3>{{ 'planning.vendorCardTitle' | translate }}</h3>
+        <p>{{ 'planning.vendorCardText' | translate }}</p>
+        <a class="btn btn--ghost" routerLink="/vendors">{{ 'planning.vendorCardCta' | translate }}</a>
+      </article>
+      <article class="pl-card">
+        <span class="pl-card__media">
+          <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=80"
+            alt="ბიუჯეტის დაგეგმვა" loading="lazy" width="700" height="460" />
+        </span>
+        <h3>{{ 'planning.estimateCardTitle' | translate }}</h3>
+        <p>{{ 'planning.estimateCardText' | translate }}</p>
+        <a class="btn btn--ghost" routerLink="/budget">{{ 'planning.estimateCardCta' | translate }}</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- planning tips (guide cards) -->
+  @if (tips().length) {
+    <section class="section container">
+      <header class="pl-sec-head">
+        <h2>{{ 'planning.tipsTitle' | translate }}</h2>
+        <p>{{ 'planning.tipsText' | translate }}</p>
+      </header>
+      <ul class="pl-tips" role="list">
+        @for (t of tips(); track t.slug) {
+          <li>
+            <a class="pl-tip" [routerLink]="['/guides', t.slug]">
+              <span class="pl-tip__media">
+                <img [src]="t.image" [alt]="t.imageAlt" loading="lazy" width="700" height="470" />
+              </span>
+              <h3 class="pl-tip__title">{{ t.title }}</h3>
+            </a>
+          </li>
+        }
+      </ul>
+      <a class="link-arrow pl-tips__all" routerLink="/guides">{{ 'planning.seeAllTips' | translate }}</a>
+    </section>
+  }
+
+  <!-- FAQ -->
+  <section class="section container pl-faq">
+    <h2>{{ 'planning.faqTitle' | translate }}</h2>
+    <details class="pl-faq__item">
+      <summary>{{ 'planning.faq1q' | translate }}</summary>
+      <p>{{ 'planning.faq1a' | translate }}</p>
+    </details>
+    <details class="pl-faq__item">
+      <summary>{{ 'planning.faq2q' | translate }}</summary>
+      <p>{{ 'planning.faq2a' | translate }}</p>
+    </details>
+    <details class="pl-faq__item">
+      <summary>{{ 'planning.faq3q' | translate }}</summary>
+      <p>{{ 'planning.faq3a' | translate }}</p>
+    </details>
+  </section>
+
+  <!-- final CTA: full-bleed photo with overlaid text -->
+  <section class="pl-final">
+    <img class="pl-final__bg"
+      src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1900&q=80"
+      alt="" aria-hidden="true" loading="lazy" />
+    <div class="pl-final__scrim"></div>
+    <div class="container pl-final__content">
+      <div>
+        <h2>{{ 'planning.finalTitle' | translate }}</h2>
+        <p>{{ 'planning.finalText' | translate }}</p>
+      </div>
+      <a class="btn btn--pink" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+    </div>
+  </section>
+}

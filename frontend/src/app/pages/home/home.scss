@@ -1,0 +1,304 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+// ============================ shared section scaffolding ============================
+.section {
+  padding-block: var(--space-16);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-20);
+  }
+}
+
+.section__head {
+  margin-bottom: var(--space-10);
+
+  h2 {
+    margin: var(--space-2) 0 0;
+  }
+}
+
+.section__sub {
+  margin-top: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+  max-width: var(--measure);
+}
+
+.section__head--row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+// ================================== HERO ==================================
+// Full-bleed photo hero: image + scrim behind, white editorial text on top.
+.hero {
+  position: relative;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  min-height: clamp(28rem, 74svh, 46rem);
+  padding-block: var(--space-20);
+  overflow: hidden;
+}
+
+.hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// bottom-weighted scrim keeps Georgian display text legible over any photo
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(28, 23, 20, 0.55),
+    rgba(28, 23, 20, 0.3) 45%,
+    rgba(28, 23, 20, 0.55)
+  );
+}
+
+.hero__intro {
+  position: relative;
+  max-width: 50rem;
+  text-align: center;
+}
+
+.hero__title {
+  margin: 0;
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+  color: #fff;
+}
+
+.hero__subtitle {
+  margin: var(--space-5) auto 0;
+  max-width: 56ch;
+  font-size: var(--fs-lead);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.hero__cta {
+  margin-top: var(--space-8);
+}
+
+// ============================ BROWSE BY CATEGORY ============================
+.cat-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @include bp.respond-to(lg) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+.cat-tile {
+  display: block;
+  color: var(--color-text);
+
+  &__media {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 3 / 2;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+  }
+
+  &__label {
+    display: block;
+    margin-top: var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--fs-h5);
+    font-weight: var(--fw-medium);
+  }
+
+  &:hover &__media img {
+    transform: scale(1.04);
+  }
+  &:hover &__label {
+    color: var(--color-action);
+  }
+}
+
+// (Featured vendors use the shared global .vendor-grid + <app-vendor-card>.)
+
+// ============================ BUDGET BAND (light, real data) ============================
+.budget-band {
+  background: var(--color-surface-sunken);
+}
+
+.budget-band__inner {
+  padding-block: var(--space-16);
+  display: grid;
+  gap: var(--space-10);
+  align-items: center;
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1.1fr 0.9fr;
+    padding-block: var(--space-20);
+    gap: var(--space-16);
+  }
+}
+
+.budget-band__title {
+  margin: 0;
+}
+
+.budget-band__body {
+  margin: var(--space-5) 0 var(--space-8);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+  max-width: 50ch;
+}
+
+// real allocation preview — Georgian-norm percentages on a sample total
+.budget-preview {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+}
+
+.budget-preview__head {
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+}
+
+.budget-preview__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.budget-preview__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+.budget-preview__label {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.budget-preview__amt {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+}
+
+.budget-preview__track {
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  overflow: hidden;
+}
+
+.budget-preview__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+}
+
+.budget-preview__more {
+  margin: var(--space-5) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+}
+
+// ============================ GUIDES / REAL WEDDINGS ============================
+.guide-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @include bp.respond-to(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.guide-card {
+  display: block;
+  color: var(--color-text);
+
+  &__media {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 7 / 5;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+  }
+
+  &__tag {
+    display: inline-block;
+    margin-top: var(--space-4);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-sage-100);
+    color: var(--color-sage-700);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+  }
+
+  &__title {
+    margin: var(--space-3) 0 var(--space-4);
+    font-size: var(--fs-h4);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &:hover &__media img {
+    transform: scale(1.04);
+  }
+  &:hover &__title {
+    color: var(--color-action);
+  }
+}

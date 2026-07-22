@@ -1,0 +1,52 @@
+<section class="admin container">
+  <header class="admin__head">
+    <h1>{{ 'adminPage.title' | translate }}</h1>
+    <div class="admin__filter" role="group">
+      <button type="button" (click)="setPending(true)" [attr.aria-pressed]="pendingOnly()">
+        {{ 'adminPage.pendingOnly' | translate }}
+      </button>
+      <button type="button" (click)="setPending(false)" [attr.aria-pressed]="!pendingOnly()">
+        {{ 'adminPage.all' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (loadError()) {
+    <div class="admin__error" role="alert">{{ 'dash.loadError' | translate }}</div>
+  } @else if (vendors().length === 0) {
+    <p class="admin__empty">{{ 'adminPage.noVendors' | translate }}</p>
+  } @else {
+    <ul class="admin__list" role="list">
+      @for (v of vendors(); track v.id) {
+        <li class="admin__row">
+          <div class="admin__info">
+            <strong class="admin__name">{{ v.name }}</strong>
+            <span class="admin__sub">
+              {{ catKey(v.categorySlug) | translate }} · {{ v.city }}
+              · {{ 'adminPage.created' | translate }} {{ formatDate(v.createdAt) }}
+            </span>
+          </div>
+          <div class="admin__badges">
+            <span class="admin__badge" [class.is-approved]="v.isApproved">
+              {{ (v.isApproved ? 'adminPage.approved' : 'adminPage.pending') | translate }}
+            </span>
+            @if (v.isFeatured) {
+              <span class="admin__badge admin__badge--feat">{{ 'adminPage.feature' | translate }}</span>
+            }
+          </div>
+          <div class="admin__actions">
+            @if (!v.isApproved) {
+              <button type="button" class="btn btn--primary admin__btn" (click)="approve(v.id)">
+                {{ 'adminPage.approve' | translate }}
+              </button>
+            }
+            <button type="button" class="btn btn--ghost admin__btn" (click)="toggleFeature(v.id)"
+              [attr.aria-pressed]="v.isFeatured">
+              {{ 'adminPage.feature' | translate }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

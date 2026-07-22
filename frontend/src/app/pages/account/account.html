@@ -1,0 +1,111 @@
+<section class="account">
+  <div class="account__inner">
+    <header class="account__head">
+      <h1>{{ 'account.title' | translate }}</h1>
+      <p class="account__intro">{{ 'account.intro' | translate }}</p>
+    </header>
+
+    @if (loading()) {
+      <p class="account__loading">{{ 'common.loading' | translate }}</p>
+    } @else if (loadError()) {
+      <p class="auth__error" role="alert">{{ 'account.loadError' | translate }}</p>
+    } @else {
+      <!-- Account overview -->
+      <section class="account__card" aria-labelledby="acc-details-h">
+        <h2 id="acc-details-h" class="account__card-title">{{ 'account.detailsTitle' | translate }}</h2>
+        <dl class="account__facts">
+          <div class="account__fact">
+            <dt>{{ 'auth.email' | translate }}</dt>
+            <dd>{{ account()?.email }}</dd>
+          </div>
+          @if (account()?.displayName) {
+            <div class="account__fact">
+              <dt>{{ 'account.name' | translate }}</dt>
+              <dd>{{ account()?.displayName }}</dd>
+            </div>
+          }
+          <div class="account__fact">
+            <dt>{{ 'account.signInMethod' | translate }}</dt>
+            <dd>{{ (account()?.hasPassword ? 'account.methodPassword' : 'account.methodGoogle') | translate }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Change / set password -->
+      <section class="account__card" aria-labelledby="acc-pw-h">
+        <h2 id="acc-pw-h" class="account__card-title">
+          {{ (account()?.hasPassword ? 'account.changePwTitle' : 'account.setPwTitle') | translate }}
+        </h2>
+        @if (!account()?.hasPassword) {
+          <p class="account__note">{{ 'account.googleNote' | translate }}</p>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          @if (account()?.hasPassword) {
+            <div class="auth__field">
+              <label for="a-current">{{ 'account.currentPw' | translate }}</label>
+              <input id="a-current" type="password" formControlName="currentPassword"
+                autocomplete="current-password" aria-required="true"
+                [class.is-invalid]="(attempted() && form.controls.currentPassword.invalid) || currentError()"
+                [attr.aria-invalid]="((attempted() && form.controls.currentPassword.invalid) || currentError()) ? 'true' : null" />
+              @if (attempted() && form.controls.currentPassword.hasError('required')) {
+                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+              } @else if (currentError()) {
+                <span class="auth__err" role="alert">{{ 'account.currentWrong' | translate }}</span>
+              }
+            </div>
+          }
+
+          <div class="auth__field">
+            <label for="a-new">{{ 'account.newPw' | translate }}</label>
+            <input id="a-new" type="password" formControlName="newPassword"
+              autocomplete="new-password" aria-required="true" aria-describedby="a-new-reqs"
+              [class.is-invalid]="attempted() && form.controls.newPassword.invalid"
+              [attr.aria-invalid]="attempted() && form.controls.newPassword.invalid ? 'true' : null" />
+            @if (attempted() && form.controls.newPassword.hasError('required')) {
+              <span class="auth__err">{{ 'auth.required' | translate }}</span>
+            } @else if (attempted() && form.controls.newPassword.hasError('password')) {
+              <span class="auth__err">{{ 'auth.pwReqNotMet' | translate }}</span>
+            }
+            <ul id="a-new-reqs" class="pw-reqs" aria-live="polite"
+              [class.is-checking]="attempted() && form.controls.newPassword.hasError('password')">
+              <li class="pw-req" [class.is-met]="pwChecks().length">{{ 'auth.pwReqLength' | translate }}</li>
+              <li class="pw-req" [class.is-met]="pwChecks().upper">{{ 'auth.pwReqUpper' | translate }}</li>
+              <li class="pw-req" [class.is-met]="pwChecks().lower">{{ 'auth.pwReqLower' | translate }}</li>
+              <li class="pw-req" [class.is-met]="pwChecks().digit">{{ 'auth.pwReqDigit' | translate }}</li>
+            </ul>
+          </div>
+
+          <div class="auth__field">
+            <label for="a-confirm">{{ 'account.confirmPw' | translate }}</label>
+            <input id="a-confirm" type="password" formControlName="confirmPassword"
+              autocomplete="new-password" aria-required="true"
+              [class.is-invalid]="attempted() && (form.controls.confirmPassword.invalid || form.hasError('mismatch'))"
+              [attr.aria-invalid]="attempted() && (form.controls.confirmPassword.invalid || form.hasError('mismatch')) ? 'true' : null" />
+            @if (attempted() && form.controls.confirmPassword.hasError('required')) {
+              <span class="auth__err">{{ 'auth.required' | translate }}</span>
+            } @else if (attempted() && form.hasError('mismatch')) {
+              <span class="auth__err">{{ 'account.pwMismatch' | translate }}</span>
+            }
+          </div>
+
+          @if (success()) {
+            <p class="account__success" role="status">{{ 'account.pwSaved' | translate }}</p>
+          }
+          @if (saveError()) {
+            <p class="auth__error" role="alert">{{ 'account.saveError' | translate }}</p>
+          }
+
+          <button class="btn btn--pink" type="submit" [disabled]="saving()">
+            {{ (account()?.hasPassword ? 'account.changePwCta' : 'account.setPwCta') | translate }}
+          </button>
+        </form>
+      </section>
+
+      <!-- Sign out -->
+      <div class="account__signout">
+        <button type="button" class="btn btn--ghost" (click)="signOut()">{{ 'auth.logout' | translate }}</button>
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,4 @@
+/* Global styles. Design tokens + base layer + shared primitives. Build UI from tokens. */
+@use './styles/tokens';
+@use './styles/base';
+@use './styles/components';

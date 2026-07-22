@@ -1,0 +1,692 @@
+@use 'breakpoints' as bp;
+
+// =============================================================================
+// Wedding-site renderer. 5 structural layouts × theme palettes (2 themes each).
+// Palettes here are each site's own content design (like a poster), intentionally
+// independent from the app's UI tokens.
+// =============================================================================
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.ws {
+  // Theme contract — every theme overrides these.
+  --wsbg: #fdfbf7;
+  --wsink: #22201d;
+  --wsaccent: #a08b5f;
+  --wsmuted: rgba(34, 32, 29, 0.62);
+  --wsfont: var(--font-display);
+  --wsradius: 10px;
+
+  // Type voice — per-theme typography for the names, built from the variable
+  // axes of Noto Sans/Serif Georgian (wght 100–900, Sans wdth 62.5–100) plus
+  // Mtavruli capitals (text-transform: uppercase maps Mkhedruli → Mtavruli).
+  --wsname-family: var(--wsfont);
+  --wsname-weight: var(--fw-semibold);
+  --wsname-style: italic;
+  --wsname-case: none;
+  --wsname-track: -0.01em;
+  --wsname-stretch: 100%;
+  --wsname-scale: 1;
+
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  background: var(--wsbg);
+  color: var(--wsink);
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.ws__ornament {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+// Centered layouts (classic / arch / monogram) share this container.
+.ws__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(3rem, 9vw, 6.5rem) var(--space-6) clamp(2.5rem, 6vw, 4rem);
+}
+
+// ---- shared type ----
+.ws__eyebrow {
+  margin: 0 0 var(--space-4);
+  font-size: 0.78rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--wsmuted);
+}
+
+.ws__names {
+  margin: 0 0 var(--space-4);
+  // Explicit — the app's global h1 rule (color: var(--color-text)) would
+  // otherwise beat inheritance and lock the names to the app ink.
+  color: var(--wsink);
+  font-family: var(--wsname-family);
+  font-style: var(--wsname-style);
+  font-weight: var(--wsname-weight);
+  font-stretch: var(--wsname-stretch);
+  font-size: calc(clamp(2.4rem, 7vw, 4.25rem) * var(--wsname-scale));
+  line-height: 1.1;
+  letter-spacing: var(--wsname-track);
+  text-transform: var(--wsname-case);
+  overflow-wrap: break-word;
+}
+
+.ws__names--stacked {
+  display: grid;
+  gap: var(--space-1);
+
+  .ws__amp {
+    font-size: 0.45em;
+    color: var(--wsaccent);
+    font-style: italic;
+    letter-spacing: 0;
+  }
+}
+
+.ws__meta {
+  margin: 0;
+  font-size: 0.92rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wsmuted);
+}
+
+.ws__dot {
+  margin-inline: var(--space-2);
+  color: var(--wsaccent);
+}
+
+.ws__count {
+  margin: var(--space-5) 0 0;
+  font-size: 0.92rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wsaccent);
+
+  .num {
+    font-family: var(--wsfont);
+    font-size: 1.4rem;
+    font-weight: var(--fw-bold);
+  }
+}
+
+.ws__photo {
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+
+  img {
+    width: 100%;
+    height: auto;
+    max-height: 34rem;
+    object-fit: cover;
+    border-radius: var(--wsradius);
+    box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.45);
+  }
+}
+
+.ws__rule {
+  width: 72px;
+  height: 2px;
+  margin: clamp(2rem, 5vw, 3rem) auto;
+  background: var(--wsaccent);
+}
+
+.ws__message {
+  margin: 0 auto;
+  max-width: 34rem;
+  font-size: var(--fs-lead);
+  line-height: 1.75;
+}
+
+.ws__details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-6) var(--space-12);
+  margin-top: clamp(2rem, 5vw, 3rem);
+}
+
+.ws__detail {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.ws__detail-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--wsaccent);
+}
+
+.ws__detail-val {
+  font-family: var(--wsfont);
+  font-size: var(--fs-h5);
+}
+
+.ws__brand {
+  margin: clamp(2.5rem, 7vw, 4rem) 0 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--wsmuted);
+
+  a {
+    color: inherit;
+    font-weight: var(--fw-semibold);
+  }
+}
+
+// =============================================================================
+// LAYOUT: banner — the photo is the hero, names overlaid on it.
+// =============================================================================
+.ws-banner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-items: center;
+  min-height: clamp(22rem, 62vh, 34rem);
+  padding: var(--space-8) var(--space-6);
+  overflow: hidden;
+}
+
+.ws-banner__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ws-banner__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.42) 100%);
+  opacity: 0;
+}
+
+.ws-banner.has-photo {
+  --wsink: #ffffff;
+  --wsmuted: rgba(255, 255, 255, 0.78);
+
+  .ws-banner__scrim {
+    opacity: 1;
+  }
+}
+
+.ws-banner__content {
+  position: relative;
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.ws--layout-banner .ws__body {
+  position: relative;
+  z-index: 1;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 3.5rem) var(--space-6) clamp(2.5rem, 6vw, 4rem);
+}
+
+// Details as a three-column band under a banner hero.
+.ws--layout-banner .ws__details {
+  border-block: 1px solid color-mix(in srgb, var(--wsaccent) 45%, transparent);
+  padding-block: var(--space-5);
+}
+
+// =============================================================================
+// LAYOUT: split — asymmetric editorial, text left / photo panel right.
+// =============================================================================
+.ws-split {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: 100%;
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1.15fr 1fr;
+    min-height: clamp(30rem, 80vh, 44rem);
+  }
+}
+
+.ws-split__text {
+  padding: clamp(2.5rem, 7vw, 5rem) clamp(1.5rem, 5vw, 4rem);
+  text-align: start;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+
+  .ws__meta {
+    letter-spacing: 0.14em;
+  }
+
+  .ws__rule {
+    margin-inline: 0;
+  }
+
+  .ws__message {
+    margin-inline: 0;
+    text-align: start;
+  }
+}
+
+// Left-aligned rule-list details in split layout.
+.ws--layout-split .ws__details {
+  justify-content: start;
+  gap: var(--space-4);
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 24rem;
+
+  .ws__detail {
+    grid-template-columns: 7rem 1fr;
+    align-items: baseline;
+    text-align: start;
+    border-top: 1px solid color-mix(in srgb, var(--wsaccent) 40%, transparent);
+    padding-top: var(--space-3);
+  }
+}
+
+.ws--layout-split .ws__brand {
+  text-align: start;
+}
+
+.ws-split__media {
+  position: relative;
+  min-height: 14rem;
+  background: color-mix(in srgb, var(--wsaccent) 18%, var(--wsbg));
+  display: grid;
+  place-items: center;
+  order: -1; // photo first on mobile
+
+  @include bp.respond-to(md) {
+    order: 0;
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ws-split__amp {
+  font-family: var(--wsfont);
+  font-style: italic;
+  font-size: clamp(6rem, 18vw, 11rem);
+  color: var(--wsaccent);
+  opacity: 0.55;
+}
+
+// =============================================================================
+// LAYOUT: arch — the photo in a wedding-arch shape.
+// =============================================================================
+.ws-arch {
+  position: relative;
+  width: min(21rem, 78%);
+  aspect-ratio: 3 / 4;
+  margin: clamp(2rem, 5vw, 3rem) auto 0;
+  border-radius: 50% 50% var(--wsradius) var(--wsradius) / 40% 40% var(--wsradius) var(--wsradius);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--wsaccent) 20%, var(--wsbg));
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.4);
+  display: grid;
+  place-items: center;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ws-arch__amp {
+  font-family: var(--wsfont);
+  font-style: italic;
+  font-size: clamp(4rem, 12vw, 7rem);
+  color: var(--wsaccent);
+  opacity: 0.6;
+}
+
+// Stacked, divided details under the arch.
+.ws--layout-arch .ws__details {
+  flex-direction: column;
+  gap: var(--space-5);
+
+  .ws__detail + .ws__detail {
+    border-top: 1px solid color-mix(in srgb, var(--wsaccent) 40%, transparent);
+    padding-top: var(--space-5);
+  }
+}
+
+// =============================================================================
+// LAYOUT: monogram — initials seal + tilted polaroid photo.
+// =============================================================================
+.ws-mono {
+  display: inline-grid;
+  place-items: center;
+  width: 5.25rem;
+  height: 5.25rem;
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--wsaccent);
+  outline: 1px solid color-mix(in srgb, var(--wsaccent) 40%, transparent);
+  outline-offset: 5px;
+  border-radius: 50%;
+  font-family: var(--wsfont);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--wsaccent);
+}
+
+.ws-polaroid {
+  width: min(26rem, 92%);
+  margin: clamp(2rem, 5vw, 3rem) auto 0;
+  padding: 12px 12px 34px;
+  background: #ffffff;
+  border-radius: 3px;
+  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.5);
+  transform: rotate(-2.4deg);
+
+  img {
+    width: 100%;
+    height: auto;
+    max-height: 22rem;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// Framed-card details for the monogram layout.
+.ws--layout-monogram .ws__details {
+  border: 1px solid color-mix(in srgb, var(--wsaccent) 50%, transparent);
+  border-radius: var(--wsradius);
+  padding: var(--space-6);
+  margin-inline: auto;
+  width: fit-content;
+}
+
+// =============================================================================
+// Thumb mode (gallery cards): hero structure only, scaled down.
+// =============================================================================
+.ws--thumb {
+  min-height: 0;
+  height: 100%;
+  pointer-events: none;
+
+  .ws__inner {
+    padding: var(--space-6) var(--space-3);
+    display: grid;
+    align-content: center;
+    height: 100%;
+  }
+
+  .ws__eyebrow {
+    font-size: 0.5rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .ws__names {
+    font-size: 1.35rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .ws__names--stacked {
+    gap: 0;
+
+    .ws__amp {
+      font-size: 0.55em;
+    }
+  }
+
+  .ws__meta {
+    font-size: 0.52rem;
+  }
+
+  .ws-banner {
+    min-height: 100%;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .ws-split {
+    grid-template-columns: 1.2fr 1fr;
+    min-height: 100%;
+    height: 100%;
+  }
+
+  .ws-split__text {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .ws-split__media {
+    order: 0;
+    min-height: 0;
+  }
+
+  .ws-split__amp {
+    font-size: 3rem;
+  }
+
+  .ws-arch {
+    width: 6.5rem;
+    margin-top: var(--space-3);
+  }
+
+  .ws-arch__amp {
+    font-size: 2rem;
+  }
+
+  .ws-mono {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 0.8rem;
+    margin-bottom: var(--space-3);
+    outline-offset: 3px;
+  }
+}
+
+// =============================================================================
+// The 10 designs (palette + ornament; layout via TEMPLATE_LAYOUTS in the TS)
+// =============================================================================
+
+// 1. Elegant glow — classic · midnight navy, champagne bokeh confetti.
+//    Voice: serif italic semibold — the classic romance.
+.ws--glow {
+  --wsbg: #1d2a44;
+  --wsink: #f4e8d8;
+  --wsaccent: #d8b47f;
+  --wsmuted: rgba(244, 232, 216, 0.65);
+
+  .ws__ornament {
+    background:
+      radial-gradient(circle 5px at 12% 6%, rgba(216, 180, 127, 0.9) 98%, transparent),
+      radial-gradient(circle 3px at 30% 12%, rgba(216, 180, 127, 0.55) 98%, transparent),
+      radial-gradient(circle 6px at 48% 4%, rgba(244, 232, 216, 0.5) 98%, transparent),
+      radial-gradient(circle 4px at 66% 10%, rgba(216, 180, 127, 0.75) 98%, transparent),
+      radial-gradient(circle 3px at 82% 5%, rgba(244, 232, 216, 0.4) 98%, transparent),
+      radial-gradient(circle 5px at 93% 12%, rgba(216, 180, 127, 0.6) 98%, transparent),
+      radial-gradient(circle 3px at 20% 20%, rgba(216, 180, 127, 0.4) 98%, transparent),
+      radial-gradient(circle 4px at 74% 18%, rgba(244, 232, 216, 0.3) 98%, transparent);
+  }
+}
+
+// 2. Romantic calligraphy — monogram · ivory, ink, double hairline frame.
+//    Voice: featherweight serif italic, slightly enlarged — a fine-nib hand.
+.ws--calligraphy {
+  --wsbg: #fcfaf5;
+  --wsink: #2b2724;
+  --wsaccent: #8a7e72;
+  --wsmuted: rgba(43, 39, 36, 0.6);
+  --wsname-weight: 250;
+  --wsname-scale: 1.12;
+
+  .ws__ornament {
+    inset: 14px;
+    border: 1px solid rgba(43, 39, 36, 0.35);
+    outline: 1px solid rgba(43, 39, 36, 0.15);
+    outline-offset: 4px;
+  }
+}
+
+// 3. Beloved garnet — monogram · deep wine, blush blooms in the corners.
+//    Voice: lush extra-bold serif italic.
+.ws--garnet {
+  --wsbg: #571e2a;
+  --wsink: #f7e6e2;
+  --wsaccent: #e8a8a2;
+  --wsmuted: rgba(247, 230, 226, 0.66);
+  --wsname-weight: 800;
+
+  .ws__ornament {
+    background:
+      radial-gradient(circle at -4% -6%, rgba(232, 168, 162, 0.5) 0, transparent 26%),
+      radial-gradient(circle at 104% -8%, rgba(232, 168, 162, 0.4) 0, transparent 24%),
+      radial-gradient(circle at 102% 104%, rgba(140, 45, 60, 0.8) 0, transparent 30%);
+  }
+}
+
+// 4. Evergreen — classic · deep forest, cream, fine gold inner border.
+//    Voice: hairline serif in spaced Mtavruli capitals — an engraved invitation.
+.ws--forest {
+  --wsbg: #22372c;
+  --wsink: #f1ead9;
+  --wsaccent: #c8a96a;
+  --wsmuted: rgba(241, 234, 217, 0.62);
+  --wsname-weight: 200;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-track: 0.2em;
+  --wsname-scale: 0.82;
+
+  .ws__ornament {
+    inset: 16px;
+    border: 1px solid rgba(200, 169, 106, 0.55);
+  }
+}
+
+// 5. Seaside — banner · airy aqua sky, white foam base.
+//    Voice: light sans in wide-tracked Mtavruli — coastal signage air.
+.ws--seaside {
+  --wsbg: #f2fafa;
+  --wsink: #274954;
+  --wsaccent: #4f93a3;
+  --wsmuted: rgba(39, 73, 84, 0.6);
+  --wsfont: var(--font-body);
+  --wsname-weight: 300;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-track: 0.26em;
+  --wsname-scale: 0.8;
+
+  .ws-banner:not(.has-photo) {
+    background: linear-gradient(180deg, #cfe9ed 0%, #eef8f8 100%);
+  }
+}
+
+// 6. Minimal — split · gallery white, near-black.
+//    Voice: extralight sans Mtavruli, generous tracking — gallery caption.
+.ws--minimal {
+  --wsbg: #ffffff;
+  --wsink: #111111;
+  --wsaccent: #111111;
+  --wsmuted: rgba(17, 17, 17, 0.55);
+  --wsradius: 0;
+  --wsfont: var(--font-body);
+  --wsname-weight: 200;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-track: 0.18em;
+  --wsname-scale: 0.85;
+
+  .ws-split__media {
+    background: #f2f2f0;
+  }
+}
+
+// 7. Blush — arch · soft pink wash, terracotta accents.
+//    Voice: soft semibold sans oblique — modern warmth.
+.ws--blush {
+  --wsbg: #fbeeea;
+  --wsink: #5d3a34;
+  --wsaccent: #c26d54;
+  --wsmuted: rgba(93, 58, 52, 0.6);
+  --wsfont: var(--font-body);
+  --wsname-weight: 600;
+  --wsname-track: 0;
+
+  .ws__ornament {
+    background: radial-gradient(ellipse 46% 30% at 50% 12%, rgba(255, 255, 255, 0.75) 0, transparent 70%);
+  }
+}
+
+// 8. Vineyard — split · sage and olive, Georgian countryside calm.
+//    Voice: upright book-weight serif, unadorned — letterpress warmth.
+.ws--vineyard {
+  --wsbg: #e9ede2;
+  --wsink: #3c4636;
+  --wsaccent: #75855f;
+  --wsmuted: rgba(60, 70, 54, 0.62);
+  --wsname-weight: 500;
+  --wsname-style: normal;
+  --wsname-track: 0;
+
+  .ws-split__media {
+    background: linear-gradient(160deg, #cdd8bd 0%, #a9ba92 100%);
+  }
+}
+
+// 9. Midnight — banner · black tie, faint stars.
+//    Voice: black-weight upright serif, tight — dramatic masthead.
+.ws--midnight {
+  --wsbg: #121212;
+  --wsink: #f5f2ec;
+  --wsaccent: #b9b3a6;
+  --wsmuted: rgba(245, 242, 236, 0.55);
+  --wsname-weight: 900;
+  --wsname-style: normal;
+  --wsname-track: -0.02em;
+
+  .ws__ornament {
+    background:
+      radial-gradient(circle 2px at 16% 10%, rgba(245, 242, 236, 0.5) 98%, transparent),
+      radial-gradient(circle 1.5px at 38% 6%, rgba(245, 242, 236, 0.35) 98%, transparent),
+      radial-gradient(circle 2px at 62% 12%, rgba(245, 242, 236, 0.4) 98%, transparent),
+      radial-gradient(circle 1.5px at 84% 7%, rgba(245, 242, 236, 0.3) 98%, transparent);
+  }
+
+  .ws-banner:not(.has-photo) {
+    background: radial-gradient(circle at 50% 120%, #2c2c2c 0%, #121212 70%);
+  }
+}
+
+// 10. Sunrise — arch · warm apricot-peach horizon.
+//     Voice: bold condensed sans Mtavruli — festival-poster energy.
+.ws--sunrise {
+  --wsbg: linear-gradient(180deg, #fddcc0 0%, #fbeadd 48%, #fdf7f1 100%);
+  --wsink: #6a4632;
+  --wsaccent: #d07a4a;
+  --wsmuted: rgba(106, 70, 50, 0.6);
+  --wsfont: var(--font-body);
+  --wsname-weight: 800;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-stretch: 75%;
+  --wsname-track: 0.05em;
+  --wsname-scale: 0.9;
+  background: var(--wsbg);
+
+  .ws__ornament {
+    background: radial-gradient(circle 120px at 50% 0%, rgba(255, 255, 255, 0.55) 0, transparent 100%);
+  }
+}

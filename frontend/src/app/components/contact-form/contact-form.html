@@ -1,0 +1,59 @@
+@if (state() === 'sent') {
+  <div class="form-result" role="status">
+    <span class="form-result__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+    </span>
+    <h3 class="form-result__title">{{ 'contact.sentTitle' | translate }}</h3>
+    <p class="form-result__body">{{ 'contact.sentBody' | translate }}</p>
+  </div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="cform" novalidate>
+    <div class="cform__field">
+      <label for="cf-name">{{ 'contact.name' | translate }} <span class="req" aria-hidden="true">*</span></label>
+      <input id="cf-name" type="text" formControlName="name" autocomplete="name" aria-required="true" />
+      @if (showError('name')) {
+        <p class="cform__error">{{ 'contact.required' | translate }}</p>
+      }
+    </div>
+
+    <div class="cform__row">
+      <div class="cform__field">
+        <label for="cf-phone">{{ 'contact.phone' | translate }}</label>
+        <input id="cf-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" />
+      </div>
+      <div class="cform__field">
+        <label for="cf-email">{{ 'contact.email' | translate }}</label>
+        <input id="cf-email" type="email" inputmode="email" formControlName="email"
+          autocomplete="email" spellcheck="false" />
+        @if (showError('email')) {
+          <p class="cform__error">{{ 'contact.invalidEmail' | translate }}</p>
+        }
+      </div>
+    </div>
+
+    @if (contactGroupError) {
+      <p class="cform__error" role="alert">{{ 'contact.contactRequired' | translate }}</p>
+    } @else {
+      <p class="cform__hint">{{ 'contact.replyHint' | translate }}</p>
+    }
+
+    <div class="cform__field">
+      <label for="cf-body">{{ 'contact.message' | translate }} <span class="req" aria-hidden="true">*</span></label>
+      <textarea id="cf-body" rows="4" formControlName="body" aria-required="true"></textarea>
+      @if (showError('body')) {
+        <p class="cform__error">{{ 'contact.required' | translate }}</p>
+      }
+    </div>
+
+    @if (state() === 'error') {
+      <p class="cform__error cform__error--block" role="alert">{{ 'contact.errorBody' | translate }}</p>
+    }
+
+    <button type="submit" class="btn btn--pink" [disabled]="state() === 'sending'">
+      {{ (state() === 'sending' ? 'contact.sending' : 'contact.send') | translate }}
+    </button>
+  </form>
+}

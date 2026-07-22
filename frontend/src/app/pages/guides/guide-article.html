@@ -1,0 +1,31 @@
+@if (article(); as a) {
+  <article class="article">
+    <div class="article__container">
+      <a class="article__back" routerLink="/guides">{{ 'guides.backToGuides' | translate }}</a>
+
+      <header class="article__head">
+        <span class="article__tag">{{ 'contentType.' + a.type | translate }}</span>
+        <h1 class="article__title">{{ headline() }}</h1>
+        <time class="article__date" [attr.datetime]="a.date">
+          {{ 'guides.published' | translate }} · {{ formatDate(a.date) }}
+        </time>
+      </header>
+
+      <figure class="article__figure">
+        <img [src]="a.image" [alt]="a.imageAlt" width="1400" height="930" fetchpriority="high" />
+      </figure>
+
+      <div class="article__body">
+        @for (p of paragraphs(); track $index) {
+          <p>{{ p }}</p>
+        }
+      </div>
+    </div>
+  </article>
+} @else if (loaded()) {
+  <div class="container article-missing">
+    <h1>{{ 'guides.notFoundTitle' | translate }}</h1>
+    <p>{{ 'guides.notFoundBody' | translate }}</p>
+    <a class="btn btn--primary" routerLink="/guides">{{ 'guides.backToGuides' | translate }}</a>
+  </div>
+}

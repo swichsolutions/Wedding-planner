@@ -1,0 +1,1493 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.budget {
+  padding-block: var(--space-12) var(--space-20);
+}
+
+.budget__head {
+  max-width: var(--measure);
+  margin-bottom: var(--space-8);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.budget__sub {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+}
+
+.budget__error {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-100);
+  color: var(--color-danger-600);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+}
+
+.budget__note {
+  margin-top: var(--space-10);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+// Visually hidden (a11y-only table header text).
+.bhidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// =============================================================================
+// Loading skeleton
+// =============================================================================
+.bskel {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.bskel__bar {
+  height: 3.25rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-surface-sunken) 50%, var(--color-ink-100) 75%);
+  background-size: 200% 100%;
+  animation: bskel-shimmer 1.4s ease-in-out infinite;
+
+  &--wide {
+    height: 6rem;
+  }
+}
+
+@keyframes bskel-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+// =============================================================================
+// Summary band — total budget + estimate/actual/paid meters. Ledger head:
+// hairline rules above and below, serif figures.
+// =============================================================================
+.bsum {
+  display: grid;
+  gap: var(--space-8);
+  padding-block: var(--space-6);
+  border-block: 1px solid var(--color-border);
+  margin-bottom: var(--space-6);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: minmax(14rem, 18rem) 1fr;
+    gap: var(--space-12);
+  }
+}
+
+.bsum__label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.bsum__input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  max-width: 16rem;
+
+  input {
+    width: 100%;
+    height: 56px;
+    padding: 0 2rem 0 var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: var(--fw-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.bsum__cur {
+  position: absolute;
+  right: var(--space-3);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.bsum__saved {
+  margin-inline-start: var(--space-2);
+  text-transform: none;
+  letter-spacing: var(--tracking-normal);
+  color: var(--color-success-600);
+  font-weight: var(--fw-semibold);
+}
+
+.bsum__hint {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  max-width: 24rem;
+}
+
+.bsum__recalc {
+  margin-top: var(--space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-600);
+  }
+}
+
+.bsum__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-6);
+  margin: 0;
+  align-content: start;
+}
+
+.bsum__stat {
+  dt {
+    font-size: var(--fs-caption);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-1);
+  }
+
+  dd {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: var(--fw-semibold);
+  }
+
+  &.is-over {
+    dt,
+    dd {
+      color: var(--color-danger-600);
+    }
+
+    .bsum__fill--actual {
+      background: var(--color-danger-600);
+    }
+  }
+}
+
+.bsum__meter {
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  overflow: hidden;
+}
+
+.bsum__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+  transition: width var(--dur-base) var(--ease-out);
+
+  &--actual {
+    background: var(--color-ink-900);
+  }
+
+  &--paid {
+    background: var(--color-success-600);
+  }
+}
+
+// =============================================================================
+// Toolbar + add form
+// =============================================================================
+.btool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.badd {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 2fr 1.4fr 1fr auto;
+    align-items: end;
+  }
+}
+
+.badd__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+
+  input,
+  select {
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+}
+
+.badd__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+// =============================================================================
+// The ledger table. Mobile-first: rows are stacked cards; ≥md reverts to a
+// true table with hairline rules and a double rule above the totals.
+// =============================================================================
+.btable-wrap {
+  @include bp.respond-to(md) {
+    overflow-x: auto;
+  }
+}
+
+.btable {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    display: none;
+  }
+
+  tbody,
+  tfoot,
+  tr,
+  td,
+  th {
+    display: block;
+  }
+
+  @include bp.respond-to(md) {
+    thead {
+      display: table-header-group;
+    }
+
+    tbody {
+      display: table-row-group;
+    }
+
+    tfoot {
+      display: table-footer-group;
+    }
+
+    tr {
+      display: table-row;
+    }
+
+    td,
+    th {
+      display: table-cell;
+    }
+  }
+
+  th {
+    padding: var(--space-3) var(--space-3);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    text-align: start;
+    border-bottom: 1px solid var(--color-border-strong);
+  }
+
+  .btable__money {
+    text-align: end;
+    width: 9.5rem;
+  }
+
+  .btable__actions {
+    width: 8.5rem;
+  }
+}
+
+// ---- rows ----
+.brow {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  cursor: pointer; // clicking the row (not its controls) opens the detail popup
+
+  @include bp.respond-to(md) {
+    display: table-row;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+
+    > td {
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+
+    &:hover > td {
+      background: color-mix(in srgb, var(--color-surface-sunken) 55%, transparent);
+    }
+  }
+}
+
+// Editable cells. Mobile-first: visible boxed inputs (touch has no hover to reveal
+// affordance). ≥md: ghost "typeset figures" that show their box on hover/focus.
+.brow input[type='text'],
+.brow input[type='number'] {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-focus);
+    background: var(--color-surface);
+  }
+
+  @include bp.respond-to(md) {
+    border-color: transparent;
+    background: transparent;
+
+    &:hover {
+      border-color: var(--color-border);
+    }
+
+    &:focus {
+      border-color: var(--color-focus);
+      background: var(--color-surface);
+    }
+  }
+}
+
+// Money cells carry a permanent dashed "ledger line" on desktop — the blank-to-fill-in
+// cue that says "this is editable" without waiting for a hover.
+.brow__money input {
+  @include bp.respond-to(md) {
+    border-bottom: 1px dashed var(--color-border-strong);
+
+    &:focus {
+      border-bottom-style: solid;
+    }
+  }
+}
+
+.brow__name {
+  grid-column: 1 / -1;
+}
+
+.brow__name-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.brow__name-input {
+  font-weight: var(--fw-medium);
+}
+
+// ---- drag to reorder ----
+.brow__grip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-ink-300);
+  cursor: grab;
+  touch-action: none;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    color: var(--color-ink-900);
+    background: var(--color-ink-100);
+  }
+
+  &:active {
+    cursor: grabbing;
+    color: var(--color-brand-600);
+    background: var(--color-brand-50);
+  }
+}
+
+// Row hover invites the handle out — the whole row hints "you can grab me here".
+.brow:hover .brow__grip {
+  color: var(--color-ink-600);
+}
+
+// One-time coach mark for reordering (dismiss persists in localStorage).
+.bhint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-sage-100);
+  color: var(--color-sage-700);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+}
+
+.bhint__grip {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+.bhint__close {
+  margin-inline-start: auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-sage-700);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-sage-300);
+  }
+}
+
+.btable .cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+// No accidental text selection while a row is mid-drag.
+.btable tbody.cdk-drop-list-dragging {
+  user-select: none;
+}
+
+.bempty td {
+  padding: var(--space-8) var(--space-3);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+// Custom drag preview (teleported to <body>; keeps this component's scope attrs).
+.bdrag-preview {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+}
+
+.brow__vendor {
+  grid-column: 1 / -1;
+  font-size: var(--fs-caption);
+
+  @include bp.respond-to(md) {
+    font-size: var(--fs-body);
+  }
+}
+
+.brow__vendor-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  a {
+    font-weight: var(--fw-semibold);
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-brand-400);
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-brand-700);
+    }
+  }
+}
+
+.brow__unlink {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+.brow__merchant {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: inherit;
+  color: var(--color-text);
+  border-bottom: 1px dashed var(--color-border-strong);
+  cursor: pointer;
+
+  &:hover {
+    border-bottom-color: var(--color-brand-500);
+  }
+}
+
+.brow__vendor-empty {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.brow__or {
+  color: var(--color-text-muted);
+  font-size: var(--fs-caption);
+}
+
+// Quiet text-link buttons ("add your vendor", "see top matches").
+.blink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-600);
+  }
+}
+
+.brow__money {
+  @include bp.respond-to(md) {
+    text-align: end;
+  }
+
+  input {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+
+    @include bp.respond-to(md) {
+      text-align: end;
+    }
+  }
+
+  // Actual cost exceeded the estimate — quiet warning, explained by the input's title.
+  &.is-over input {
+    color: var(--color-danger-600);
+  }
+
+  // Fully paid — green figure plus the ✓ (non-color signal).
+  &.is-paid-up input {
+    color: var(--color-success-600);
+  }
+
+  // Mobile: label the three money fields.
+  &::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-1);
+  }
+
+  @include bp.respond-to(md) {
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.brow__money-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding-right: 1.75rem; // room for the ₾ suffix
+  }
+
+  @include bp.respond-to(md) {
+    justify-content: flex-end;
+  }
+}
+
+.brow__cur {
+  position: absolute;
+  right: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.brow__check {
+  flex: none;
+  color: var(--color-success-600);
+  font-weight: var(--fw-bold);
+}
+
+// One-click "mark as paid" under the paid amount. Styled as a pressable pill so it
+// reads as an ACTION — green text + checkmark would read as an already-paid status.
+.brow__payfull {
+  display: inline-flex;
+  align-items: center;
+  margin-top: var(--space-1);
+  padding: 2px var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-success-600);
+    background: var(--color-success-100);
+    color: var(--color-success-600);
+  }
+
+  @include bp.respond-to(md) {
+    margin-inline-start: auto;
+    display: flex;
+    width: fit-content;
+  }
+}
+
+.brow__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--space-1);
+  justify-content: flex-end;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+
+  @include bp.respond-to(md) {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+.bicon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink-500);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-ink-900);
+  }
+
+  // Has a saved note / reminder — pink dot.
+  &.is-on {
+    color: var(--color-ink-900);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 7px;
+      height: 7px;
+      border-radius: var(--radius-pill);
+      background: var(--color-brand-500);
+    }
+  }
+
+  &.is-soon::after {
+    background: var(--color-warning-600);
+  }
+
+  &.is-overdue {
+    color: var(--color-danger-600);
+
+    &::after {
+      background: var(--color-danger-600);
+    }
+  }
+
+  &--danger:hover {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+// ---- totals row: classic ledger double rule ----
+.btotal {
+  background: none;
+  border: 0;
+  padding: var(--space-4);
+  margin-top: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  border-top: 3px double var(--color-ink-900);
+
+  @include bp.respond-to(md) {
+    display: table-row;
+    padding: 0;
+    margin: 0;
+    border-top: 0;
+
+    > td {
+      padding: var(--space-4) var(--space-3);
+      border-top: 3px double var(--color-ink-900);
+    }
+  }
+}
+
+.btotal__label {
+  grid-column: 1 / -1;
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-h5);
+}
+
+.btotal__val {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-lead);
+
+  @include bp.respond-to(md) {
+    text-align: end;
+  }
+
+  &::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-body);
+    font-weight: var(--fw-regular);
+    font-size: 0.75rem;
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-1);
+  }
+
+  @include bp.respond-to(md) {
+    &::before {
+      display: none;
+    }
+  }
+}
+
+// =============================================================================
+// Drawers — vendor picker & note/reminder details
+// =============================================================================
+.bdrawer {
+  display: block;
+  margin: calc(-1 * var(--space-3)) 0 var(--space-4);
+
+  > td {
+    display: block;
+    padding: 0;
+  }
+
+  @include bp.respond-to(md) {
+    display: table-row;
+    margin: 0;
+
+    > td {
+      display: table-cell;
+      padding: 0 0 var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+}
+
+.bpicker,
+.bdetails {
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+
+  @include bp.respond-to(md) {
+    margin-top: var(--space-3);
+  }
+}
+
+.bpicker__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.bpicker__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+}
+
+.bpicker__search {
+  flex: 1 1 14rem;
+  height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+}
+
+.bpicker__empty {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+.bpicker__list {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.bpicker__vendor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  color: var(--color-text);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-500);
+    box-shadow: var(--shadow-xs);
+  }
+
+  img {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    flex: none;
+  }
+}
+
+.bpicker__vname {
+  flex: 1;
+  font-weight: var(--fw-medium);
+  min-width: 0;
+}
+
+.bpicker__saved {
+  display: inline-block;
+  margin-inline-start: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-700);
+}
+
+.bpicker__vmeta {
+  flex: none;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.bpicker__all {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+}
+
+.bpicker__manual {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+
+  label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+}
+
+.bpicker__manual-row {
+  display: flex;
+  gap: var(--space-3);
+
+  input {
+    flex: 1;
+    height: 44px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+}
+
+// ---- note + reminder ----
+.bdetails {
+  display: grid;
+  gap: var(--space-5);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: minmax(12rem, 16rem) 1fr;
+  }
+}
+
+.bdetails__field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+
+  input[type='date'] {
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+
+  textarea {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    resize: vertical;
+  }
+}
+
+.bdetails__badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: var(--fw-semibold);
+
+  &.is-overdue {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+
+  &.is-soon {
+    background: var(--color-warning-100);
+    color: var(--color-warning-600);
+  }
+}
+
+// =============================================================================
+// Row detail popup (Zola-style) — everything about one item in one place.
+// =============================================================================
+.bmodal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--color-overlay);
+}
+
+.bmodal__panel {
+  width: 100%;
+  max-width: 36rem;
+  max-height: min(88vh, 46rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-5);
+  animation: bmodal-in var(--dur-base) var(--ease-out);
+
+  @include bp.respond-to(sm) {
+    padding: var(--space-8);
+  }
+}
+
+@keyframes bmodal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.bmodal__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.bmodal__name {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+
+  &:hover {
+    border-color: var(--color-border);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-focus);
+  }
+}
+
+.bmodal__close {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-text);
+  }
+}
+
+.bmodal__label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.bmodal__section {
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--color-border);
+
+  .bpicker {
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+  }
+}
+
+.bmodal__money {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.bmodal__field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+
+  input[type='date'] {
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+
+  textarea {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    resize: vertical;
+  }
+
+  &.is-over .bmodal__amount input {
+    color: var(--color-danger-600);
+  }
+
+  &.is-paid-up .bmodal__amount input {
+    color: var(--color-success-600);
+  }
+}
+
+.bmodal__amount {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+
+  input {
+    width: 100%;
+    height: 44px;
+    padding: 0 1.75rem 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    position: absolute;
+    right: var(--space-3);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+}
+
+.bmodal__paid-badge {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-success-600);
+}
+
+.bmodal__details {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--color-border);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: minmax(10rem, 13rem) 1fr;
+  }
+}
+
+.bmodal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.bmodal__delete {
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-danger-600);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-danger-100);
+  }
+}
+
+// =============================================================================
+// Guest signup CTA
+// =============================================================================
+.bcta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-top: var(--space-12);
+  padding: var(--space-8);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-xl);
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--fs-h4);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    max-width: 44rem;
+  }
+}
+
+// =============================================================================
+// Guest estimator (the public SEO tool — unchanged interaction)
+// =============================================================================
+.budget__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.budget__total-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+}
+
+.budget__total-input,
+.alloc__amount {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  input {
+    width: 100%;
+    height: 48px;
+    padding: 0 2rem 0 var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .budget__cur,
+  .alloc__cur {
+    position: absolute;
+    right: var(--space-3);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+}
+
+.budget__total-input {
+  width: 220px;
+
+  input {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: var(--fw-semibold);
+    height: 56px;
+  }
+}
+
+.budget__summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+
+  @include bp.respond-to(sm) {
+    max-width: 480px;
+  }
+}
+
+.summary-stat {
+  padding: var(--space-5);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+
+  &__label {
+    display: block;
+    font-size: var(--fs-caption);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2);
+  }
+
+  &__val {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: var(--fw-semibold);
+  }
+
+  &.is-over {
+    background: var(--color-danger-100);
+
+    .summary-stat__val {
+      color: var(--color-danger-600);
+    }
+  }
+}
+
+.alloc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.alloc__row {
+  display: grid;
+  gap: var(--space-3);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 14rem 1fr 10rem;
+    align-items: center;
+    gap: var(--space-6);
+  }
+}
+
+.alloc__info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.alloc__name {
+  font-weight: var(--fw-medium);
+}
+
+.alloc__share {
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+.alloc__bar {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  overflow: hidden;
+}
+
+.alloc__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-brand-500), var(--color-brand-700));
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.alloc__amount input {
+  height: 44px;
+}

@@ -1,0 +1,210 @@
+<section class="ob">
+  <aside class="ob__aside">
+    <img class="ob__photo" [src]="stepPhoto()" alt="" aria-hidden="true" width="900" height="1100" />
+    <span class="ob__brand" translate="no">{{ 'brand.name' | translate }}</span>
+    <p class="ob__caption">{{ stepCaption() | translate }}</p>
+  </aside>
+
+  <form class="ob__card" [formGroup]="form" (ngSubmit)="primary()" novalidate>
+    <div class="ob__progress" role="progressbar" [attr.aria-valuenow]="step() + 1"
+      aria-valuemin="1" [attr.aria-valuemax]="totalSteps"
+      [attr.aria-label]="'signup.progress' | translate">
+      <div class="ob__progress-fill" [style.width.%]="progress()"></div>
+    </div>
+
+    <div class="ob__body">
+      @switch (step()) {
+        <!-- 0 — names -->
+        @case (0) {
+          <h1 class="ob__title">{{ 'signup.namesTitle' | translate }}</h1>
+          <p class="ob__sub">{{ 'signup.namesSub' | translate }}</p>
+          <div class="ob__grid">
+            <div class="auth__field">
+              <label for="s-fn">{{ 'signup.firstName' | translate }}</label>
+              <input id="s-fn" type="text" formControlName="firstName" autocomplete="given-name" aria-required="true"
+                [class.is-invalid]="attempted() && (!form.controls.firstName.value?.trim() || form.controls.firstName.invalid)"
+                [attr.aria-invalid]="attempted() && (!form.controls.firstName.value?.trim() || form.controls.firstName.invalid) ? 'true' : null" />
+              @if (attempted() && !form.controls.firstName.value?.trim()) {
+                <span class="ob__err">{{ 'signup.required' | translate }}</span>
+              } @else if (attempted() && form.controls.firstName.invalid) {
+                <span class="ob__err">{{ 'signup.invalidName' | translate }}</span>
+              }
+            </div>
+            <div class="auth__field">
+              <label for="s-ln">{{ 'signup.lastName' | translate }}</label>
+              <input id="s-ln" type="text" formControlName="lastName" autocomplete="family-name" aria-required="true"
+                [class.is-invalid]="attempted() && (!form.controls.lastName.value?.trim() || form.controls.lastName.invalid)"
+                [attr.aria-invalid]="attempted() && (!form.controls.lastName.value?.trim() || form.controls.lastName.invalid) ? 'true' : null" />
+              @if (attempted() && !form.controls.lastName.value?.trim()) {
+                <span class="ob__err">{{ 'signup.required' | translate }}</span>
+              } @else if (attempted() && form.controls.lastName.invalid) {
+                <span class="ob__err">{{ 'signup.invalidName' | translate }}</span>
+              }
+            </div>
+          </div>
+          <p class="ob__amp" aria-hidden="true">&amp;</p>
+          <div class="ob__grid">
+            <div class="auth__field">
+              <label for="s-pfn">{{ 'signup.partnerFirstName' | translate }}</label>
+              <input id="s-pfn" type="text" formControlName="partnerFirstName" aria-required="true"
+                [class.is-invalid]="attempted() && (!form.controls.partnerFirstName.value?.trim() || form.controls.partnerFirstName.invalid)"
+                [attr.aria-invalid]="attempted() && (!form.controls.partnerFirstName.value?.trim() || form.controls.partnerFirstName.invalid) ? 'true' : null" />
+              @if (attempted() && !form.controls.partnerFirstName.value?.trim()) {
+                <span class="ob__err">{{ 'signup.required' | translate }}</span>
+              } @else if (attempted() && form.controls.partnerFirstName.invalid) {
+                <span class="ob__err">{{ 'signup.invalidName' | translate }}</span>
+              }
+            </div>
+            <div class="auth__field">
+              <label for="s-pln">{{ 'signup.partnerLastName' | translate }}</label>
+              <input id="s-pln" type="text" formControlName="partnerLastName" aria-required="true"
+                [class.is-invalid]="attempted() && (!form.controls.partnerLastName.value?.trim() || form.controls.partnerLastName.invalid)"
+                [attr.aria-invalid]="attempted() && (!form.controls.partnerLastName.value?.trim() || form.controls.partnerLastName.invalid) ? 'true' : null" />
+              @if (attempted() && !form.controls.partnerLastName.value?.trim()) {
+                <span class="ob__err">{{ 'signup.required' | translate }}</span>
+              } @else if (attempted() && form.controls.partnerLastName.invalid) {
+                <span class="ob__err">{{ 'signup.invalidName' | translate }}</span>
+              }
+            </div>
+          </div>
+          <p class="auth__hint">{{ 'signup.allRequired' | translate }}</p>
+        }
+
+        <!-- 1 — wedding date -->
+        @case (1) {
+          <h1 class="ob__title">{{ 'signup.dateTitle' | translate }}</h1>
+          <p class="ob__sub">{{ 'signup.dateSub' | translate }}</p>
+          <div class="auth__field">
+            <label for="s-date">{{ 'signup.weddingDate' | translate }}</label>
+            <input id="s-date" type="date" formControlName="weddingDate" aria-required="true" />
+          </div>
+          <label class="ob__check">
+            <input type="checkbox" [checked]="stillDeciding()"
+              (change)="setStillDeciding($any($event.target).checked)" />
+            <span>{{ 'signup.stillDeciding' | translate }}</span>
+          </label>
+        }
+
+        <!-- 2 — planning stage -->
+        @case (2) {
+          <h1 class="ob__title">{{ 'signup.stageTitle' | translate }}</h1>
+          <p class="ob__sub">{{ 'signup.stageSub' | translate }}</p>
+          <div class="ob__options">
+            @for (s of stages; track s) {
+              <button type="button" class="ob__option" [class.is-on]="planningStage() === s"
+                [attr.aria-pressed]="planningStage() === s" (click)="planningStage.set(s)">
+                {{ ('signup.stage_' + s) | translate }}
+              </button>
+            }
+          </div>
+        }
+
+        <!-- 3 — what you'll need -->
+        @case (3) {
+          <h1 class="ob__title">{{ 'signup.needsTitle' | translate }}</h1>
+          <p class="ob__sub">{{ 'signup.needsSub' | translate }}</p>
+          <div class="ob__chips">
+            @for (c of categories; track c.slug) {
+              <button type="button" class="ob__chip" [class.is-on]="isNeeded(c.slug)"
+                [attr.aria-pressed]="isNeeded(c.slug)" (click)="toggleNeeded(c.slug)">
+                {{ c.key | translate }}
+              </button>
+            }
+          </div>
+        }
+
+        <!-- 4 — guest count -->
+        @case (4) {
+          <h1 class="ob__title">{{ 'signup.guestsTitle' | translate }}</h1>
+          <p class="ob__sub">{{ 'signup.guestsSub' | translate }}</p>
+          <div class="ob__options ob__options--grid">
+            @for (g of guestRanges; track g) {
+              <button type="button" class="ob__option" [class.is-on]="guestRange() === g"
+                [attr.aria-pressed]="guestRange() === g" (click)="guestRange.set(g)">
+                @if (g === 'notSure') {
+                  {{ 'signup.guestNotSure' | translate }}
+                } @else if (g === '300plus') {
+                  300+
+                } @else {
+                  {{ g }}
+                }
+              </button>
+            }
+          </div>
+        }
+
+        <!-- 5 — account (credentials last) -->
+        @case (5) {
+          @if (greeting()) {
+            <h1 class="ob__title">{{ 'signup.accountTitleNamed' | translate: { names: greeting() } }}</h1>
+          } @else {
+            <h1 class="ob__title">{{ 'signup.accountTitle' | translate }}</h1>
+          }
+          <p class="ob__sub">{{ 'signup.accountSub' | translate }}</p>
+          <div class="auth__field">
+            <label for="s-email">{{ 'auth.email' | translate }}</label>
+            <input id="s-email" type="email" formControlName="email" autocomplete="email"
+              spellcheck="false" aria-required="true"
+              [class.is-invalid]="attempted() && form.controls.email.invalid"
+              [attr.aria-invalid]="attempted() && form.controls.email.invalid ? 'true' : null" />
+            @if (attempted() && form.controls.email.hasError('required')) {
+              <span class="ob__err">{{ 'signup.required' | translate }}</span>
+            } @else if (attempted() && form.controls.email.hasError('email')) {
+              <span class="ob__err">{{ 'auth.emailInvalid' | translate }}</span>
+            }
+          </div>
+          <div class="auth__field">
+            <label for="s-pass">{{ 'auth.password' | translate }}</label>
+            <input id="s-pass" type="password" formControlName="password"
+              autocomplete="new-password" aria-required="true"
+              aria-describedby="s-pass-reqs"
+              [class.is-invalid]="attempted() && form.controls.password.invalid"
+              [attr.aria-invalid]="attempted() && form.controls.password.invalid ? 'true' : null" />
+            @if (attempted() && form.controls.password.hasError('required')) {
+              <span class="ob__err">{{ 'signup.required' | translate }}</span>
+            } @else if (attempted() && form.controls.password.hasError('password')) {
+              <span class="ob__err">{{ 'auth.pwReqNotMet' | translate }}</span>
+            }
+            <ul id="s-pass-reqs" class="pw-reqs" aria-live="polite"
+              [class.is-checking]="attempted() && form.controls.password.hasError('password')">
+              <li class="pw-req" [class.is-met]="pwChecks().length"
+                [attr.data-met]="pwChecks().length">{{ 'auth.pwReqLength' | translate }}</li>
+              <li class="pw-req" [class.is-met]="pwChecks().upper"
+                [attr.data-met]="pwChecks().upper">{{ 'auth.pwReqUpper' | translate }}</li>
+              <li class="pw-req" [class.is-met]="pwChecks().lower"
+                [attr.data-met]="pwChecks().lower">{{ 'auth.pwReqLower' | translate }}</li>
+              <li class="pw-req" [class.is-met]="pwChecks().digit"
+                [attr.data-met]="pwChecks().digit">{{ 'auth.pwReqDigit' | translate }}</li>
+            </ul>
+          </div>
+          @if (error()) {
+            <p class="auth__error" role="alert">{{ 'signup.error' | translate }}</p>
+          }
+        }
+      }
+    </div>
+
+    @if (attempted() && stepErrorKey() && !stepValid()) {
+      <p class="ob__err ob__err--step" role="alert">{{ stepErrorKey() | translate }}</p>
+    }
+
+    <div class="ob__nav">
+      @if (step() > 0) {
+        <button type="button" class="ob__back" (click)="back()">{{ 'signup.back' | translate }}</button>
+      }
+      <span class="ob__spacer"></span>
+      @if (step() === 3) {
+        <button type="button" class="ob__skip" (click)="skip()">{{ 'signup.skip' | translate }}</button>
+      }
+      @if (step() < totalSteps - 1) {
+        <button type="submit" class="btn btn--pink">{{ 'signup.continue' | translate }}</button>
+      } @else {
+        <button type="submit" class="btn btn--pink" [disabled]="loading()">{{ 'signup.createAccount' | translate }}</button>
+      }
+    </div>
+
+    <p class="ob__alt">
+      {{ 'auth.haveAccount' | translate }} <a routerLink="/login">{{ 'auth.login' | translate }}</a>
+    </p>
+  </form>
+</section>

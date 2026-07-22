@@ -1,0 +1,21 @@
+# ---- .NET ----
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/
+
+# ---- Node / Angular ----
+node_modules/
+dist/
+.angular/
+*.log
+npm-debug.log*
+
+# ---- Secrets / local config ----
+# Dev connection string (contains the ipsum_app password) — never commit.
+**/appsettings.Development.json
+
+# ---- OS ----
+Thumbs.db
+.DS_Store

@@ -1,0 +1,91 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.fv-hero {
+  background:
+    radial-gradient(110% 90% at 90% 0%, rgba(184, 145, 84, 0.12), transparent 60%),
+    var(--color-surface-sunken);
+  padding-block: var(--space-16) var(--space-16);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-24);
+  }
+}
+
+.fv-hero__inner {
+  max-width: 48rem;
+}
+
+.fv-hero__overline {
+  color: var(--color-action);
+}
+
+.fv-hero__title {
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+}
+
+.fv-hero__sub {
+  margin-top: var(--space-5);
+  font-size: var(--fs-lead);
+  color: var(--color-text-secondary);
+  max-width: 46ch;
+}
+
+.fv-hero__cta {
+  margin-top: var(--space-8);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.fv-hero__free {
+  margin-top: var(--space-5);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+.fv-how__title {
+  margin: 0 0 var(--space-10);
+}
+
+.fv-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-8);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-10);
+  }
+}
+
+.fv-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-50);
+  color: var(--color-action);
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-bold);
+}
+
+.fv-step__title {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--fs-h4);
+}
+
+.fv-step__body {
+  margin: 0;
+  color: var(--color-text-secondary);
+}

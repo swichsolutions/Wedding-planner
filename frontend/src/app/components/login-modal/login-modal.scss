@@ -1,0 +1,182 @@
+:host {
+  display: contents;
+}
+
+.lm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: rgba(20, 12, 14, 0.55);
+  backdrop-filter: blur(2px);
+  animation: lm-fade var(--dur-fast) var(--ease-out);
+}
+
+.lm-card {
+  position: relative;
+  width: 100%;
+  max-width: 27rem;
+  margin: auto;
+  padding: var(--space-8) var(--space-7) var(--space-7);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: lm-rise var(--dur-base) var(--ease-out);
+}
+
+.lm-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-text);
+  }
+}
+
+.lm-title {
+  margin: 0 0 var(--space-6);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+}
+
+// Branded "Continue with Google" button, with Google's real (invisible) button layered on top.
+.lm-google-wrap {
+  position: relative;
+
+  // Show a focus ring on the branded button when Google's (transparent) button is keyboard-focused.
+  &:focus-within .lm-google {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+
+  &:hover .lm-google {
+    background: var(--color-ink-100);
+    border-color: var(--color-text-secondary);
+  }
+}
+
+.lm-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+// Google's rendered button: fills the wrapper, scaled up so a click anywhere hits it, fully transparent.
+.lm-google-native {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 0;
+  cursor: pointer;
+
+  > * {
+    transform: scale(2);
+    transform-origin: center;
+  }
+}
+
+.lm-note {
+  margin: var(--space-2) 0 0;
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+
+  &--error {
+    color: var(--color-danger, #c0392b);
+  }
+}
+
+// "or" divider
+.lm-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-caption);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+}
+
+.lm-submit {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.lm-alt {
+  margin: var(--space-6) 0 0;
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.lm-vendor {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+// inline text-button links (Sign up / Start here)
+.lm-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-700);
+  }
+}
+
+@keyframes lm-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lm-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}

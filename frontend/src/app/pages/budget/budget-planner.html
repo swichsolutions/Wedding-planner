@@ -1,0 +1,527 @@
+<section class="budget container">
+  <header class="budget__head">
+    <h1>{{ 'budgetPage.title' | translate }}</h1>
+    @if (!isCouple()) {
+      <p class="budget__sub">{{ 'budgetPage.subtitle' | translate }}</p>
+    }
+  </header>
+
+  @if (isCouple()) {
+    <!-- ================= real tracker (signed-in couple) ================= -->
+
+    @if (loadError()) {
+      <p class="budget__error" role="alert">{{ 'budgetPage.loadError' | translate }}</p>
+    } @else if (!loaded()) {
+      <div class="bskel" aria-hidden="true">
+        <span class="bskel__bar bskel__bar--wide"></span>
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <span class="bskel__bar"></span>
+        }
+      </div>
+    } @else {
+      <!-- ---- summary: total budget + estimate / actual / paid meters ---- -->
+      <div class="bsum">
+        <div class="bsum__total">
+          <label class="bsum__label" for="bt-total">
+            {{ 'budgetPage.totalBudget' | translate }}
+            @if (totalSaved()) {
+              <span class="bsum__saved" role="status">✓ {{ 'budgetPage.saved' | translate }}</span>
+            }
+          </label>
+          <div class="bsum__input">
+            <input id="bt-total" type="number" min="0" step="500" inputmode="numeric" autocomplete="off"
+              [value]="total() ?? ''" (input)="onTotalInput($event)" />
+            <span class="bsum__cur" aria-hidden="true">₾</span>
+          </div>
+          @if (total() === null) {
+            <p class="bsum__hint">{{ 'budgetPage.setBudgetHint' | translate }}</p>
+          } @else {
+            <button type="button" class="bsum__recalc" (click)="recalcEstimates()">
+              {{ 'budgetPage.recalc' | translate }}
+            </button>
+          }
+        </div>
+
+        <dl class="bsum__stats" aria-live="polite">
+          <div class="bsum__stat">
+            <dt>{{ 'budgetPage.estimateCol' | translate }}</dt>
+            <dd class="num">{{ format(sumEstimate()) }}</dd>
+            <span class="bsum__meter" aria-hidden="true">
+              <span class="bsum__fill" [style.width.%]="meterPct(sumEstimate())"></span>
+            </span>
+          </div>
+          <div class="bsum__stat" [class.is-over]="overBudget()">
+            <dt>
+              {{ (overBudget() ? 'budgetPage.overBudget' : 'budgetPage.actualCol') | translate }}
+            </dt>
+            <dd class="num">{{ format(sumActual()) }}</dd>
+            <span class="bsum__meter" aria-hidden="true">
+              <span class="bsum__fill bsum__fill--actual" [style.width.%]="meterPct(sumActual())"></span>
+            </span>
+          </div>
+          <div class="bsum__stat">
+            <dt>{{ 'budgetPage.paidCol' | translate }}</dt>
+            <dd class="num">{{ format(sumPaid()) }}</dd>
+            <span class="bsum__meter" aria-hidden="true">
+              <span class="bsum__fill bsum__fill--paid" [style.width.%]="meterPct(sumPaid())"></span>
+            </span>
+          </div>
+        </dl>
+      </div>
+
+      <!-- ---- toolbar ---- -->
+      <div class="btool">
+        <button type="button" class="btn btn--primary btool__add" (click)="showAdd.set(!showAdd())">
+          + {{ 'budgetPage.addItem' | translate }}
+        </button>
+      </div>
+
+      @if (showAdd()) {
+        <form class="badd" (submit)="$event.preventDefault(); addItem(newName, newCat, newEst)">
+          <div class="badd__field badd__field--name">
+            <label for="badd-name">{{ 'budgetPage.itemName' | translate }}</label>
+            <input id="badd-name" #newName type="text" required maxlength="200" autocomplete="off"
+              [attr.placeholder]="'budgetPage.newItemName' | translate" />
+          </div>
+          <div class="badd__field">
+            <label for="badd-cat">{{ 'budgetPage.newItemCategory' | translate }}</label>
+            <select id="badd-cat" #newCat>
+              <option value="">{{ 'budgetPage.noCategory' | translate }}</option>
+              @for (c of vendorCategories; track c.slug) {
+                <option [value]="c.slug">{{ c.key | translate }}</option>
+              }
+            </select>
+          </div>
+          <div class="badd__field">
+            <label for="badd-est">{{ 'budgetPage.newItemEstimate' | translate }}</label>
+            <input id="badd-est" #newEst type="number" min="0" step="100" inputmode="numeric"
+              autocomplete="off" placeholder="0" />
+          </div>
+          <div class="badd__actions">
+            <button type="submit" class="btn btn--pink" [disabled]="addBusy()">{{ 'budgetPage.add' | translate }}</button>
+            <button type="button" class="btn btn--ghost" (click)="showAdd.set(false)">{{ 'budgetPage.cancel' | translate }}</button>
+          </div>
+        </form>
+      }
+
+      <!-- ---- the ledger ---- -->
+      @if (!dragHintDismissed() && items().length > 1) {
+        <p class="bhint">
+          <svg class="bhint__grip" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+            <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+            <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+          </svg>
+          <span>{{ 'budgetPage.dragHint' | translate }}</span>
+          <button type="button" class="bhint__close" (click)="dismissDragHint()"
+            [attr.aria-label]="'budgetPage.dismiss' | translate">×</button>
+        </p>
+      }
+      <div class="btable-wrap">
+        <table class="btable">
+          <thead>
+            <tr>
+              <th scope="col" class="btable__name">{{ 'budgetPage.itemName' | translate }}</th>
+              <th scope="col" class="btable__vendor">{{ 'budgetPage.vendorCol' | translate }}</th>
+              <th scope="col" class="btable__money">{{ 'budgetPage.estimateCol' | translate }}</th>
+              <th scope="col" class="btable__money">{{ 'budgetPage.actualCol' | translate }}</th>
+              <th scope="col" class="btable__money">{{ 'budgetPage.paidCol' | translate }}</th>
+              <th scope="col" class="btable__actions"><span class="bhidden">{{ 'budgetPage.actionsCol' | translate }}</span></th>
+            </tr>
+          </thead>
+          <tbody cdkDropList (cdkDropListDropped)="drop($event)">
+            @if (items().length === 0) {
+              <tr class="bempty">
+                <td colspan="6">{{ 'budgetPage.empty' | translate }}</td>
+              </tr>
+            }
+            @for (item of items(); track item.id) {
+              <tr class="brow" cdkDrag (cdkDragStarted)="drawer.set(null)" (click)="openRow(item, $event)">
+                <div *cdkDragPreview class="bdrag-preview">{{ item.name }}</div>
+                <td class="brow__name">
+                  <div class="brow__name-wrap">
+                    <span class="brow__grip" cdkDragHandle aria-hidden="true"
+                      [attr.title]="'budgetPage.dragHandle' | translate">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+                        <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+                        <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+                      </svg>
+                    </span>
+                    <input class="brow__name-input" type="text" maxlength="200" autocomplete="off"
+                      [value]="item.name" (change)="commitName(item, $event)"
+                      [attr.aria-label]="'budgetPage.itemName' | translate" />
+                  </div>
+                </td>
+
+                <td class="brow__vendor" [attr.data-label]="'budgetPage.vendorCol' | translate">
+                  <ng-container *ngTemplateOutlet="vendorState; context: { $implicit: item }" />
+                </td>
+
+                <td class="brow__money" [attr.data-label]="'budgetPage.estimateCol' | translate">
+                  <div class="brow__money-wrap">
+                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="—"
+                      [value]="item.estimate ?? ''" (change)="commitMoney(item, 'estimate', $event)"
+                      [attr.aria-label]="('budgetPage.estimateCol' | translate) + ' — ' + item.name" />
+                    <span class="brow__cur" aria-hidden="true">₾</span>
+                  </div>
+                </td>
+                <td class="brow__money" [class.is-over]="isOverEstimate(item)"
+                  [attr.data-label]="'budgetPage.actualCol' | translate">
+                  <div class="brow__money-wrap">
+                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="—"
+                      [value]="item.actualCost ?? ''" (change)="commitMoney(item, 'actualCost', $event)"
+                      [attr.title]="isOverEstimate(item) ? ('budgetPage.overEstimate' | translate) : null"
+                      [attr.aria-label]="('budgetPage.actualCol' | translate) + ' — ' + item.name" />
+                    <span class="brow__cur" aria-hidden="true">₾</span>
+                  </div>
+                </td>
+                <td class="brow__money" [class.is-paid-up]="isPaidUp(item)"
+                  [attr.data-label]="'budgetPage.paidCol' | translate">
+                  <div class="brow__money-wrap">
+                    @if (isPaidUp(item)) {
+                      <span class="brow__check" role="img"
+                        [attr.aria-label]="'budgetPage.paidUp' | translate"
+                        [attr.title]="'budgetPage.paidUp' | translate">✓</span>
+                    }
+                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="—"
+                      [value]="item.paid ?? ''" (change)="commitMoney(item, 'paid', $event)"
+                      [attr.aria-label]="('budgetPage.paidCol' | translate) + ' — ' + item.name" />
+                    <span class="brow__cur" aria-hidden="true">₾</span>
+                  </div>
+                  @if (canPayFull(item)) {
+                    <button type="button" class="brow__payfull" (click)="markPaidFull(item)"
+                      [attr.title]="'budgetPage.payFullTitle' | translate">
+                      {{ 'budgetPage.payFull' | translate }}
+                    </button>
+                  }
+                </td>
+
+                <td class="brow__actions">
+                  <button type="button" class="bicon" [class.is-on]="item.reminderDate"
+                    [class.is-overdue]="reminderState(item) === 'overdue'"
+                    [class.is-soon]="reminderState(item) === 'soon'"
+                    (click)="toggleDetails(item, 'bell')"
+                    [attr.title]="'budgetPage.reminderLabel' | translate"
+                    [attr.aria-label]="'budgetPage.reminderLabel' | translate"
+                    [attr.aria-expanded]="isDrawerOpen(item, 'details')"
+                    [attr.aria-controls]="'bd-details-' + item.id">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                    </svg>
+                  </button>
+                  <button type="button" class="bicon" [class.is-on]="item.note"
+                    (click)="toggleDetails(item, 'note')"
+                    [attr.title]="'budgetPage.noteLabel' | translate"
+                    [attr.aria-label]="'budgetPage.noteLabel' | translate"
+                    [attr.aria-expanded]="isDrawerOpen(item, 'details')"
+                    [attr.aria-controls]="'bd-details-' + item.id">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                      <path d="M14 3v6h6" />
+                      <path d="M9 14h6M9 17h4" />
+                    </svg>
+                  </button>
+                  <button type="button" class="bicon bicon--danger" (click)="askRemove(item)"
+                    [attr.title]="'budgetPage.deleteItem' | translate"
+                    [attr.aria-label]="('budgetPage.deleteItem' | translate) + ' — ' + item.name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+
+              @if (isDrawerOpen(item, 'vendor') && modalId() === null) {
+                <tr class="bdrawer">
+                  <td colspan="6">
+                    <ng-container *ngTemplateOutlet="vendorPicker; context: { $implicit: item }" />
+                  </td>
+                </tr>
+              }
+
+              @if (isDrawerOpen(item, 'details') && modalId() === null) {
+                <tr class="bdrawer" [attr.id]="'bd-details-' + item.id">
+                  <td colspan="6">
+                    <div class="bdetails">
+                      <div class="bdetails__field">
+                        <label for="bd-reminder-{{ item.id }}">{{ 'budgetPage.reminderLabel' | translate }}</label>
+                        <input id="bd-reminder-{{ item.id }}" type="date" [value]="item.reminderDate ?? ''"
+                          (change)="commitReminder(item, $event)" />
+                        @if (reminderState(item) === 'overdue') {
+                          <span class="bdetails__badge is-overdue">{{ 'budgetPage.overdue' | translate }}</span>
+                        } @else if (reminderState(item) === 'soon') {
+                          <span class="bdetails__badge is-soon">{{ 'budgetPage.soon' | translate }}</span>
+                        }
+                      </div>
+                      <div class="bdetails__field bdetails__field--note">
+                        <label for="bd-note-{{ item.id }}">{{ 'budgetPage.noteLabel' | translate }}</label>
+                        <textarea id="bd-note-{{ item.id }}" #noteBox rows="2" maxlength="1000"
+                          [value]="item.note ?? ''" (change)="commitNote(item, noteBox)"
+                          [attr.placeholder]="'budgetPage.notePlaceholder' | translate"></textarea>
+                        <button type="button" class="btn btn--ghost" (click)="commitNote(item, noteBox)">
+                          {{ 'budgetPage.noteSave' | translate }}
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+          <tfoot>
+            <tr class="btotal">
+              <td class="btotal__label" colspan="2">{{ 'budgetPage.overall' | translate }}</td>
+              <td class="btotal__val num" [attr.data-label]="'budgetPage.estimateCol' | translate">{{ format(sumEstimate()) }}</td>
+              <td class="btotal__val num" [attr.data-label]="'budgetPage.actualCol' | translate">{{ format(sumActual()) }}</td>
+              <td class="btotal__val num" [attr.data-label]="'budgetPage.paidCol' | translate">{{ format(sumPaid()) }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p class="budget__note">{{ 'budgetPage.note' | translate }}</p>
+    }
+  } @else {
+    <!-- ================= guest estimator + signup CTA ================= -->
+
+    <div class="budget__controls">
+      <div class="budget__total">
+        <label class="budget__total-label" for="b-total">{{ 'budgetPage.totalLabel' | translate }}</label>
+        <div class="budget__total-input">
+          <input id="b-total" type="number" min="0" step="500" inputmode="numeric" autocomplete="off"
+            [value]="estTotal()" (input)="setEstTotal($event)" />
+          <span class="budget__cur" aria-hidden="true">₾</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn--ghost" (click)="resetEst()">{{ 'budgetPage.reset' | translate }}</button>
+    </div>
+
+    <div class="budget__summary" aria-live="polite">
+      <div class="summary-stat">
+        <span class="summary-stat__label">{{ 'budgetPage.allocated' | translate }}</span>
+        <span class="summary-stat__val num">{{ format(estAllocated()) }}</span>
+      </div>
+      <div class="summary-stat" [class.is-over]="estRemaining() < 0">
+        <span class="summary-stat__label">
+          {{ (estRemaining() < 0 ? 'budgetPage.over' : 'budgetPage.remaining') | translate }}
+        </span>
+        <span class="summary-stat__val num">{{ format(abs(estRemaining())) }}</span>
+      </div>
+    </div>
+
+    <ul class="alloc" role="list">
+      @for (c of estCategories; track c.key; let i = $index) {
+        <li class="alloc__row">
+          <div class="alloc__info">
+            <span class="alloc__name">{{ 'budgetCat.' + c.key | translate }}</span>
+            <span class="alloc__share num">{{ estSharePct(i) }}%</span>
+          </div>
+          <div class="alloc__bar" aria-hidden="true">
+            <span class="alloc__fill" [style.width.%]="estShare(i)"></span>
+          </div>
+          <div class="alloc__amount">
+            <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off"
+              [value]="estAmounts()[i]" (input)="setEstAmount(i, $event)"
+              [attr.aria-label]="('budgetCat.' + c.key | translate) + ' — ' + ('budgetPage.amount' | translate)" />
+            <span class="alloc__cur" aria-hidden="true">₾</span>
+          </div>
+        </li>
+      }
+    </ul>
+
+    <p class="budget__note">{{ 'budgetPage.note' | translate }}</p>
+
+    <aside class="bcta">
+      <div class="bcta__copy">
+        <h2>{{ 'budgetPage.guestCtaTitle' | translate }}</h2>
+        <p>{{ 'budgetPage.guestCtaBody' | translate }}</p>
+      </div>
+      <a class="btn btn--pink" routerLink="/signup">{{ 'budgetPage.guestCtaBtn' | translate }}</a>
+    </aside>
+  }
+</section>
+
+<!-- ================= row detail popup (Zola-style) ================= -->
+@if (modalItem(); as item) {
+  <div class="bmodal" role="dialog" aria-modal="true" [attr.aria-label]="item.name"
+    (click)="onOverlayClick($event)">
+    <div class="bmodal__panel">
+      <div class="bmodal__head">
+        <input class="bmodal__name" type="text" maxlength="200" autocomplete="off"
+          [value]="item.name" (change)="commitName(item, $event)"
+          [attr.aria-label]="'budgetPage.itemName' | translate" />
+        <button type="button" class="bmodal__close" (click)="closeModal()"
+          [attr.aria-label]="'budgetPage.dismiss' | translate">×</button>
+      </div>
+
+      <div class="bmodal__section">
+        <span class="bmodal__label">{{ 'budgetPage.vendorCol' | translate }}</span>
+        <ng-container *ngTemplateOutlet="vendorState; context: { $implicit: item }" />
+        @if (isDrawerOpen(item, 'vendor')) {
+          <ng-container *ngTemplateOutlet="vendorPicker; context: { $implicit: item }" />
+        }
+      </div>
+
+      <div class="bmodal__money">
+        <div class="bmodal__field">
+          <label for="bm-est-{{ item.id }}">{{ 'budgetPage.estimateCol' | translate }}</label>
+          <div class="bmodal__amount">
+            <input id="bm-est-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
+              autocomplete="off" placeholder="—" [value]="item.estimate ?? ''"
+              (change)="commitMoney(item, 'estimate', $event)" />
+            <span aria-hidden="true">₾</span>
+          </div>
+        </div>
+        <div class="bmodal__field" [class.is-over]="isOverEstimate(item)">
+          <label for="bm-act-{{ item.id }}">{{ 'budgetPage.actualCol' | translate }}</label>
+          <div class="bmodal__amount">
+            <input id="bm-act-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
+              autocomplete="off" placeholder="—" [value]="item.actualCost ?? ''"
+              (change)="commitMoney(item, 'actualCost', $event)"
+              [attr.title]="isOverEstimate(item) ? ('budgetPage.overEstimate' | translate) : null" />
+            <span aria-hidden="true">₾</span>
+          </div>
+        </div>
+        <div class="bmodal__field" [class.is-paid-up]="isPaidUp(item)">
+          <label for="bm-paid-{{ item.id }}">{{ 'budgetPage.paidCol' | translate }}</label>
+          <div class="bmodal__amount">
+            <input id="bm-paid-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
+              autocomplete="off" placeholder="—" [value]="item.paid ?? ''"
+              (change)="commitMoney(item, 'paid', $event)" />
+            <span aria-hidden="true">₾</span>
+          </div>
+          @if (canPayFull(item)) {
+            <button type="button" class="brow__payfull" (click)="markPaidFull(item)"
+              [attr.title]="'budgetPage.payFullTitle' | translate">
+              {{ 'budgetPage.payFull' | translate }}
+            </button>
+          } @else if (isPaidUp(item)) {
+            <span class="bmodal__paid-badge">✓ {{ 'budgetPage.paidUp' | translate }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="bmodal__details">
+        <div class="bmodal__field">
+          <label for="bm-reminder-{{ item.id }}">{{ 'budgetPage.reminderLabel' | translate }}</label>
+          <input id="bm-reminder-{{ item.id }}" type="date" [value]="item.reminderDate ?? ''"
+            (change)="commitReminder(item, $event)" />
+          @if (reminderState(item) === 'overdue') {
+            <span class="bdetails__badge is-overdue">{{ 'budgetPage.overdue' | translate }}</span>
+          } @else if (reminderState(item) === 'soon') {
+            <span class="bdetails__badge is-soon">{{ 'budgetPage.soon' | translate }}</span>
+          }
+        </div>
+        <div class="bmodal__field">
+          <label for="bm-note-{{ item.id }}">{{ 'budgetPage.noteLabel' | translate }}</label>
+          <textarea id="bm-note-{{ item.id }}" #modalNote rows="3" maxlength="1000"
+            [value]="item.note ?? ''" (change)="commitNote(item, modalNote)"
+            [attr.placeholder]="'budgetPage.notePlaceholder' | translate"></textarea>
+        </div>
+      </div>
+
+      <div class="bmodal__foot">
+        <button type="button" class="bmodal__delete" (click)="askRemove(item)">
+          {{ 'budgetPage.deleteItem' | translate }}
+        </button>
+        <button type="button" class="btn btn--primary" (click)="closeModal()">
+          {{ 'budgetPage.done' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Vendor cell states — shared by the table row and the detail popup. -->
+<ng-template #vendorState let-item>
+  @if (item.vendor; as v) {
+    <span class="brow__vendor-link">
+      <a [routerLink]="['/', v.categorySlug, v.citySlug, v.slug]">{{ v.name }}</a>
+      <button type="button" class="brow__unlink" (click)="clearVendor(item)"
+        [attr.aria-label]="'budgetPage.unlink' | translate">×</button>
+    </span>
+  } @else if (item.merchantName) {
+    <button type="button" class="brow__merchant" (click)="toggleDrawer(item, 'vendor')">
+      {{ item.merchantName }}
+    </button>
+  } @else {
+    <span class="brow__vendor-empty">
+      <button type="button" class="blink" (click)="toggleDrawer(item, 'vendor')">
+        {{ 'budgetPage.addVendor' | translate }}
+      </button>
+      @if (item.categorySlug) {
+        <span class="brow__or">{{ 'budgetPage.orSep' | translate }}</span>
+        <button type="button" class="blink" (click)="toggleDrawer(item, 'vendor')">
+          {{ 'budgetPage.topMatches' | translate }}
+        </button>
+      }
+    </span>
+  }
+</ng-template>
+
+<!-- Vendor picker — top matches (saved & featured first), search, manual merchant. -->
+<ng-template #vendorPicker let-item>
+  <div class="bpicker">
+    <div class="bpicker__head">
+      <p class="bpicker__title">{{ 'budgetPage.pickerTitle' | translate }}</p>
+      <input type="search" class="bpicker__search" autocomplete="off" [value]="pickerQuery()"
+        (input)="setPickerQuery($event)"
+        [attr.placeholder]="'budgetPage.pickerSearch' | translate"
+        [attr.aria-label]="'budgetPage.pickerSearch' | translate" />
+    </div>
+
+    @if (pickerLoading()) {
+      <p class="bpicker__empty">…</p>
+    } @else if (pickerResults().length === 0) {
+      <p class="bpicker__empty">
+        {{ 'budgetPage.pickerEmpty' | translate }}
+        <a class="blink" routerLink="/vendors"
+          [queryParams]="item.categorySlug ? { category: item.categorySlug } : {}">
+          {{ 'budgetPage.pickerBrowse' | translate }}
+        </a>
+      </p>
+    } @else {
+      <ul class="bpicker__list" role="list">
+        @for (v of pickerResults(); track v.id) {
+          <li>
+            <button type="button" class="bpicker__vendor" (click)="chooseVendor(item, v)">
+              @if (v.photos[0]; as photo) {
+                <img [src]="photo.url" [alt]="" width="44" height="44" loading="lazy" />
+              }
+              <span class="bpicker__vname">
+                {{ v.name }}
+                @if (isSaved(v.id)) {
+                  <span class="bpicker__saved">♥ {{ 'budgetPage.pickerSaved' | translate }}</span>
+                }
+              </span>
+              <span class="bpicker__vmeta num">{{ v.city }} · {{ format(v.priceFrom) }}+</span>
+            </button>
+          </li>
+        }
+      </ul>
+      <a class="blink bpicker__all" routerLink="/vendors"
+        [queryParams]="item.categorySlug ? { category: item.categorySlug } : {}">
+        {{ 'budgetPage.pickerBrowse' | translate }} →
+      </a>
+    }
+
+    <form class="bpicker__manual" (submit)="$event.preventDefault(); saveMerchant(item, merchant)">
+      <label for="bp-merchant-{{ item.id }}">{{ 'budgetPage.merchantLabel' | translate }}</label>
+      <div class="bpicker__manual-row">
+        <input id="bp-merchant-{{ item.id }}" #merchant type="text" maxlength="200"
+          autocomplete="off" [value]="item.merchantName ?? ''"
+          [attr.placeholder]="'budgetPage.merchantPlaceholder' | translate" />
+        <button type="submit" class="btn btn--ghost">{{ 'budgetPage.noteSave' | translate }}</button>
+      </div>
+    </form>
+  </div>
+</ng-template>

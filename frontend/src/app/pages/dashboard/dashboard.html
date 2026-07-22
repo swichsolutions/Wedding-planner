@@ -1,0 +1,288 @@
+<section class="dash container">
+  @if (loadError()) {
+    <div class="dash__error" role="alert">{{ 'dash.loadError' | translate }}</div>
+  } @else if (vendor(); as v) {
+    <div class="dash-shell">
+      <!-- ===================== SIDEBAR: identity + nav ===================== -->
+      <aside class="dash-side">
+        <div class="dash-id">
+          <span class="dash-id__avatar">
+            @if (photos()[0]; as p) {
+              <img [src]="p.url" alt="" />
+            } @else {
+              <span class="dash-id__initial" aria-hidden="true">{{ v.name.charAt(0) }}</span>
+            }
+          </span>
+          <div class="dash-id__text">
+            <h1 class="dash-id__name">{{ v.name }}</h1>
+            @if (categoryKey(v.categorySlug); as ck) {
+              <p class="dash-id__cat">{{ ck | translate }}</p>
+            }
+          </div>
+        </div>
+
+        <span class="dash-status" [class.is-approved]="v.isApproved">
+          <span class="dash-status__dot" aria-hidden="true"></span>
+          {{ (v.isApproved ? 'dash.statusApproved' : 'dash.statusPending') | translate }}
+        </span>
+
+        <nav class="dash-nav" role="tablist" [attr.aria-label]="'dash.title' | translate">
+          <button role="tab" type="button" id="tab-overview" aria-controls="dash-panel"
+            [attr.aria-selected]="activeSection() === 'overview'"
+            [class.is-active]="activeSection() === 'overview'" (click)="setSection('overview')">
+            <span>{{ 'dash.tabOverview' | translate }}</span>
+          </button>
+          <button role="tab" type="button" id="tab-profile" aria-controls="dash-panel"
+            [attr.aria-selected]="activeSection() === 'profile'"
+            [class.is-active]="activeSection() === 'profile'" (click)="setSection('profile')">
+            <span>{{ 'dash.editTitle' | translate }}</span>
+          </button>
+          <button role="tab" type="button" id="tab-photos" aria-controls="dash-panel"
+            [attr.aria-selected]="activeSection() === 'photos'"
+            [class.is-active]="activeSection() === 'photos'" (click)="setSection('photos')">
+            <span>{{ 'dash.photosTitle' | translate }}</span>
+            @if (photos().length) { <span class="dash-nav__count">{{ photos().length }}</span> }
+          </button>
+          <button role="tab" type="button" id="tab-messages" aria-controls="dash-panel"
+            [attr.aria-selected]="activeSection() === 'messages'"
+            [class.is-active]="activeSection() === 'messages'" (click)="setSection('messages')">
+            <span>{{ 'dash.inboxTitle' | translate }}</span>
+            @if (unreadCount()) { <span class="dash-nav__count is-unread">{{ unreadCount() }}</span> }
+          </button>
+        </nav>
+
+        <div class="dash-side__links">
+          <a class="dash-link" routerLink="/account">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
+            </svg>
+            {{ 'dash.accountSettings' | translate }}
+          </a>
+          @if (v.isApproved) {
+            <a class="dash-link" [routerLink]="['/', v.categorySlug, v.citySlug, v.slug]">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                <path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+              {{ 'dash.viewPublic' | translate }}
+            </a>
+          }
+        </div>
+      </aside>
+
+      <!-- ===================== MAIN: active section ===================== -->
+      <div class="dash-main" id="dash-panel" role="tabpanel"
+        [attr.aria-labelledby]="'tab-' + activeSection()">
+        @switch (activeSection()) {
+          <!-- ---------- OVERVIEW ---------- -->
+          @case ('overview') {
+            <div class="panel">
+              <ul class="stat-row" role="list">
+                <li class="stat">
+                  <span class="stat__num num">{{ stats()?.totalViews ?? 0 }}</span>
+                  <span class="stat__label">{{ 'dash.views' | translate }}</span>
+                </li>
+                <li class="stat">
+                  <span class="stat__num num">{{ stats()?.totalContacts ?? 0 }}</span>
+                  <span class="stat__label">{{ 'dash.contacts' | translate }}</span>
+                </li>
+                <li class="stat">
+                  <span class="stat__num num">{{ stats()?.totalMessages ?? 0 }}</span>
+                  <span class="stat__label">{{ 'dash.messages' | translate }}</span>
+                </li>
+                <li class="stat" [class.is-alert]="(stats()?.unreadMessages ?? 0) > 0">
+                  <span class="stat__num num">{{ stats()?.unreadMessages ?? 0 }}</span>
+                  <span class="stat__label">{{ 'dash.unread' | translate }}</span>
+                </li>
+              </ul>
+
+              <div class="strength">
+                <div class="strength__head">
+                  <h2 class="strength__title">{{ 'dash.strengthTitle' | translate }}</h2>
+                  <span class="strength__count num">{{ strength().done }}/{{ strength().total }}</span>
+                </div>
+                <div class="strength__bar" role="progressbar"
+                  [attr.aria-valuenow]="strength().pct" aria-valuemin="0" aria-valuemax="100">
+                  <span class="strength__fill" [style.width.%]="strength().pct"></span>
+                </div>
+                <ul class="strength__list" role="list">
+                  @for (item of strength().items; track item.key) {
+                    <li class="strength__item" [class.is-done]="item.done">
+                      @if (item.done) {
+                        <span class="strength__check" aria-hidden="true"></span>
+                        <span>{{ item.key | translate }}</span>
+                      } @else {
+                        <span class="strength__check" aria-hidden="true"></span>
+                        <button type="button" class="strength__go" (click)="setSection(item.section)">
+                          {{ item.key | translate }}
+                        </button>
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (strength().done === strength().total) {
+                  <p class="strength__done">{{ 'dash.strengthDone' | translate }}</p>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- ---------- EDIT PROFILE ---------- -->
+          @case ('profile') {
+            <div class="panel">
+              <h2 class="panel__title">{{ 'dash.editTitle' | translate }}</h2>
+              <form [formGroup]="form" (ngSubmit)="save()" novalidate class="dash__form">
+                <div class="auth__field">
+                  <label for="d-name">{{ 'dash.name' | translate }}</label>
+                  <input id="d-name" type="text" formControlName="name" aria-required="true" />
+                </div>
+                <div class="auth__field">
+                  <label for="d-city">{{ 'dash.city' | translate }}</label>
+                  <input id="d-city" type="text" formControlName="city" autocomplete="address-level2" />
+                </div>
+                <div class="auth__field">
+                  <label for="d-bio">{{ 'dash.bio' | translate }}</label>
+                  <textarea id="d-bio" rows="5" formControlName="bio"></textarea>
+                </div>
+                <div class="dash__row">
+                  <div class="auth__field">
+                    <label for="d-pmin">{{ 'dash.priceMin' | translate }}</label>
+                    <input id="d-pmin" type="number" min="0" inputmode="numeric" formControlName="priceMin" />
+                  </div>
+                  <div class="auth__field">
+                    <label for="d-prange">{{ 'dash.priceRange' | translate }}</label>
+                    <input id="d-prange" type="text" formControlName="priceRange" />
+                  </div>
+                </div>
+                <div class="dash__row">
+                  <div class="auth__field">
+                    <label for="d-phone">{{ 'dash.phone' | translate }}</label>
+                    <input id="d-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" />
+                  </div>
+                  <div class="auth__field">
+                    <label for="d-ig">{{ 'dash.instagram' | translate }}</label>
+                    <input id="d-ig" type="text" formControlName="instagram" placeholder="@username" />
+                  </div>
+                </div>
+                <div class="dash__row">
+                  <div class="auth__field">
+                    <label for="d-fb">{{ 'dash.facebook' | translate }}</label>
+                    <input id="d-fb" type="text" formControlName="facebook" placeholder="facebook.com/…" />
+                  </div>
+                  <div class="auth__field">
+                    <label for="d-map">{{ 'dash.mapUrl' | translate }}</label>
+                    <input id="d-map" type="url" inputmode="url" formControlName="mapUrl" placeholder="https://maps.google.com/…" />
+                  </div>
+                </div>
+                <div class="dash__save-row">
+                  <button class="btn btn--pink" type="submit" [disabled]="saving()">{{ 'dash.save' | translate }}</button>
+                  @if (saved()) {
+                    <span class="dash__saved" role="status">{{ 'dash.saved' | translate }}</span>
+                  }
+                </div>
+              </form>
+            </div>
+          }
+
+          <!-- ---------- PHOTOS ---------- -->
+          @case ('photos') {
+            <div class="panel">
+              <div class="panel__head">
+                <h2 class="panel__title">{{ 'dash.photosTitle' | translate }}</h2>
+                <label class="btn btn--pink photos__add">
+                  {{ 'dash.addPhotos' | translate }}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
+                    (change)="onPhotoSelected($event)" />
+                </label>
+              </div>
+              <p class="photos__hint">{{ 'dash.photoHint' | translate }}</p>
+              @if (uploading()) { <p class="photos__status" role="status">{{ 'dash.uploading' | translate }}</p> }
+              @if (uploadError()) { <p class="cform__error" role="alert">{{ 'dash.uploadError' | translate }}</p> }
+
+              @if (photos().length === 0) {
+                <p class="dash__empty">{{ 'dash.noPhotos' | translate }}</p>
+              } @else {
+                @if (photos().length > 1) {
+                  <p class="photos__reorder-hint">{{ 'dash.dragHint' | translate }}</p>
+                }
+                <ul class="photo-grid" role="list" cdkDropList cdkDropListOrientation="mixed"
+                  (cdkDropListDropped)="drop($event)">
+                  @for (p of photos(); track p.id; let i = $index) {
+                    <li class="photo-card" cdkDrag [cdkDragDisabled]="photos().length < 2">
+                      <div class="photo-card__media">
+                        <img class="photo-card__img" [src]="p.url" [alt]="p.alt || ''" loading="lazy" />
+                        @if (i === 0) {
+                          <span class="photo-card__cover">{{ 'dash.cover' | translate }}</span>
+                        }
+                        @if (photos().length > 1) {
+                          <button type="button" class="photo-card__grip" cdkDragHandle
+                            [attr.aria-label]="'dash.dragHandle' | translate">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                              <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+                              <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+                              <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                      <div class="photo-card__body">
+                        <input class="photo-card__alt" type="text" [value]="p.alt || ''"
+                          [attr.placeholder]="'dash.altPlaceholder' | translate" (blur)="saveAlt(p, $event)" />
+                        <label class="photo-card__real">
+                          <input type="checkbox" [checked]="p.isRealWedding" (change)="toggleReal(p)" />
+                          {{ 'dash.realWedding' | translate }}
+                        </label>
+                        <div class="photo-card__actions">
+                          @if (photos().length > 1) {
+                            <button type="button" class="photo-card__nudge" (click)="move(i, -1)" [disabled]="i === 0"
+                              [attr.aria-label]="'dash.moveUp' | translate">↑</button>
+                            <button type="button" class="photo-card__nudge" (click)="move(i, 1)"
+                              [disabled]="i === photos().length - 1"
+                              [attr.aria-label]="'dash.moveDown' | translate">↓</button>
+                          }
+                          <button type="button" class="photo-card__delete" (click)="deletePhoto(p.id)">
+                            {{ 'dash.deletePhoto' | translate }}
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+
+          <!-- ---------- MESSAGES ---------- -->
+          @case ('messages') {
+            <div class="panel">
+              <h2 class="panel__title">{{ 'dash.inboxTitle' | translate }}</h2>
+              @if (messages().length === 0) {
+                <p class="dash__empty">{{ 'dash.noMessages' | translate }}</p>
+              } @else {
+                <ul class="inbox" role="list">
+                  @for (m of messages(); track m.id) {
+                    <li class="inbox__item" [class.is-unread]="!m.isRead">
+                      <div class="inbox__meta">
+                        <strong>{{ m.senderName || m.senderEmail || m.senderPhone }}</strong>
+                        <time [attr.datetime]="m.createdAt">{{ formatDate(m.createdAt) }}</time>
+                      </div>
+                      <p class="inbox__body">{{ m.body }}</p>
+                      <div class="inbox__contacts">
+                        @if (m.senderPhone) { <a [href]="'tel:' + m.senderPhone">{{ m.senderPhone }}</a> }
+                        @if (m.senderEmail) { <a [href]="'mailto:' + m.senderEmail">{{ m.senderEmail }}</a> }
+                        @if (!m.isRead) {
+                          <button type="button" class="inbox__read" (click)="markRead(m.id)">{{ 'dash.markRead' | translate }}</button>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  } @else {
+    <p class="dash__loading">{{ 'common.loading' | translate }}</p>
+  }
+</section>

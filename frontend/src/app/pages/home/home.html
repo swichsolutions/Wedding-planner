@@ -1,0 +1,116 @@
+<!-- ========================= HERO ========================= -->
+<!-- Full-bleed photo hero: image behind, scrim for legibility, white text on top.
+     PLACEHOLDER image — swap for a wide image or <video> later. -->
+<section class="hero">
+  <img class="hero__img"
+    src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80"
+    alt="" aria-hidden="true" width="2000" height="1100" fetchpriority="high" />
+  <div class="hero__scrim" aria-hidden="true"></div>
+
+  <div class="hero__intro container">
+    <h1 class="hero__title">{{ 'home.tagline' | translate }}</h1>
+    <p class="hero__subtitle">{{ 'home.subtitle' | translate }}</p>
+    <a class="btn btn--pink hero__cta" [routerLink]="heroCta().link">{{ heroCta().key | translate }}</a>
+  </div>
+</section>
+
+<!-- ===================== BROWSE BY CATEGORY ===================== -->
+<section class="section categories">
+  <div class="container">
+    <header class="section__head">
+      <h2>{{ 'categories.title' | translate }}</h2>
+      <p class="section__sub">{{ 'categories.subtitle' | translate }}</p>
+    </header>
+
+    <ul class="cat-grid" role="list">
+      @for (c of categories; track c.slug) {
+        <li>
+          <a class="cat-tile" [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
+            <span class="cat-tile__media">
+              <img [src]="c.img" [alt]="c.key | translate" loading="lazy" width="600" height="400" />
+            </span>
+            <span class="cat-tile__label">{{ c.key | translate }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== FEATURED VENDORS ===================== -->
+<section class="section featured">
+  <div class="container">
+    <header class="section__head section__head--row">
+      <div>
+        <h2>{{ 'featured.title' | translate }}</h2>
+        <p class="section__sub">{{ 'featured.subtitle' | translate }}</p>
+      </div>
+      <a class="link-arrow" [routerLink]="['/vendors']">{{ 'featured.viewAll' | translate }}</a>
+    </header>
+
+    <ul class="vendor-grid" role="list">
+      @for (v of featured(); track v.id) {
+        <li><app-vendor-card [vendor]="v" /></li>
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== BUDGET PLANNER BAND ===================== -->
+<section class="budget-band">
+  <div class="container budget-band__inner">
+    <div class="budget-band__copy">
+      <h2 class="budget-band__title">{{ 'budgetTeaser.title' | translate }}</h2>
+      <p class="budget-band__body">{{ 'budgetTeaser.body' | translate }}</p>
+      <a class="btn btn--pink" [routerLink]="['/budget']">{{ 'budgetTeaser.cta' | translate }}</a>
+    </div>
+
+    <!-- Real allocation preview: actual Georgian-norm percentages from core/budget.ts -->
+    <div class="budget-preview">
+      <p class="budget-preview__head">{{ 'budgetTeaser.sample' | translate: { amount: sampleTotal() } }}</p>
+      <ul class="budget-preview__list" role="list">
+        @for (row of budgetRows(); track row.key) {
+          <li class="budget-preview__row">
+            <span class="budget-preview__top">
+              <span class="budget-preview__label">{{ row.key | translate }}</span>
+              <span class="budget-preview__amt num">{{ row.amount }}</span>
+            </span>
+            <span class="budget-preview__track" aria-hidden="true">
+              <span class="budget-preview__fill" [style.width.%]="row.scale"></span>
+            </span>
+          </li>
+        }
+      </ul>
+      <p class="budget-preview__more">{{ 'budgetTeaser.more' | translate }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GUIDES / REAL WEDDINGS ===================== -->
+<section class="section guides">
+  <div class="container">
+    <header class="section__head section__head--row">
+      <div>
+        <p class="overline">{{ 'guides.overline' | translate }}</p>
+        <h2>{{ 'guides.title' | translate }}</h2>
+        <p class="section__sub">{{ 'guides.subtitle' | translate }}</p>
+      </div>
+      <a class="link-arrow" [routerLink]="['/guides']">{{ 'nav.guides' | translate }}</a>
+    </header>
+
+    <ul class="guide-grid" role="list">
+      @for (g of guides; track g.titleKey) {
+        <li>
+          <a class="guide-card" [routerLink]="['/guides']">
+            <span class="guide-card__media">
+              <img [src]="g.img" [alt]="g.titleKey | translate" loading="lazy" width="700" height="500" />
+            </span>
+            <span class="guide-card__tag">{{ g.tagKey | translate }}</span>
+            <h3 class="guide-card__title">{{ g.titleKey | translate }}</h3>
+            <span class="link-arrow guide-card__more">{{ 'guides.readMore' | translate }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>

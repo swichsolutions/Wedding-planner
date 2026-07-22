@@ -1,0 +1,174 @@
+@if (vendor(); as v) {
+  <article class="profile">
+    <div class="container">
+      <a class="profile__back" routerLink="/vendors">{{ 'profile.backToVendors' | translate }}</a>
+
+      <div class="profile__layout">
+        <!-- ---------- gallery ---------- -->
+        <div class="gallery">
+          <div class="gallery__main">
+            @if (v.photos[activePhoto()]; as photo) {
+              <button type="button" class="gallery__zoom" (click)="openLightbox()"
+                [attr.aria-label]="'gallery.fullscreen' | translate">
+                <img id="profile-gallery-main" [src]="photo.url" [alt]="photo.alt"
+                  width="1200" height="900" fetchpriority="high" />
+              </button>
+              @if (photo.isRealWedding) {
+                <span class="gallery__badge">{{ 'profile.realWedding' | translate }}</span>
+              }
+              @if (v.photos.length > 1) {
+                <button type="button" class="gallery__nav gallery__nav--prev" (click)="prev()"
+                  [attr.aria-label]="'gallery.prev' | translate">‹</button>
+                <button type="button" class="gallery__nav gallery__nav--next" (click)="next()"
+                  [attr.aria-label]="'gallery.next' | translate">›</button>
+              }
+            }
+          </div>
+
+          @if (v.photos.length > 1) {
+            <ul class="gallery__thumbs" role="list">
+              @for (p of v.photos; track p.url; let i = $index) {
+                <li>
+                  <button type="button" class="gallery__thumb" [class.is-active]="i === activePhoto()"
+                    (click)="selectPhoto(i)" aria-controls="profile-gallery-main"
+                    [attr.aria-label]="p.alt" [attr.aria-pressed]="i === activePhoto()">
+                    <img [src]="p.url" alt="" loading="lazy" width="160" height="120" />
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <!-- ---------- info rail ---------- -->
+        <aside class="info">
+          <p class="info__cat">{{ v.categoryKey | translate }} · {{ v.city }}</p>
+          <h1 class="info__name">{{ v.name }}</h1>
+
+          <p class="info__price">
+            <span class="info__price-label">{{ 'profile.from' | translate }}</span>
+            <span class="num info__price-val">{{ formatPrice(v.priceFrom) }}</span>
+          </p>
+          @if (v.priceRange) {
+            <p class="info__range num">{{ v.priceRange }}</p>
+          }
+
+          <dl class="info__facts">
+            @if (v.styleSlugs.length) {
+              <div class="info__fact">
+                <dt>{{ 'profile.styles' | translate }}</dt>
+                <dd class="info__tags">
+                  @for (s of v.styleSlugs; track s) {
+                    <span class="tag">{{ 'style.' + s | translate }}</span>
+                  }
+                </dd>
+              </div>
+            }
+          </dl>
+
+          <div class="info__contact">
+            <button type="button" class="btn btn--pink info__cta" (click)="openContact()">{{ 'profile.contactCta' | translate }}</button>
+
+            @if (v.phone) {
+              <a class="contact-phone" [href]="'tel:' + v.phone">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.58.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1A17 17 0 0 1 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.46.57 3.58.12.35.03.75-.24 1.02L6.6 10.8Z"/>
+                </svg>
+                <span class="num">{{ v.phone }}</span>
+              </a>
+            }
+
+            @if (v.instagram || v.facebook || v.mapUrl) {
+              <div class="social" role="group" [attr.aria-label]="'profile.contact' | translate">
+                @if (v.instagram) {
+                  <a class="social__btn social__btn--ig" aria-label="Instagram"
+                    [href]="socialUrl(v.instagram, 'https://instagram.com/')" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2c2.72 0 3.06.01 4.12.06 1.06.05 1.79.22 2.42.46.66.26 1.21.6 1.76 1.15.55.55.89 1.1 1.15 1.76.24.63.41 1.36.46 2.42.05 1.06.06 1.4.06 4.12s-.01 3.06-.06 4.12c-.05 1.06-.22 1.79-.46 2.42a4.9 4.9 0 0 1-1.15 1.76 4.9 4.9 0 0 1-1.76 1.15c-.63.24-1.36.41-2.42.46-1.06.05-1.4.06-4.12.06s-3.06-.01-4.12-.06c-1.06-.05-1.79-.22-2.42-.46a4.9 4.9 0 0 1-1.76-1.15 4.9 4.9 0 0 1-1.15-1.76c-.24-.63-.41-1.36-.46-2.42C2.01 15.06 2 14.72 2 12s.01-3.06.06-4.12c.05-1.06.22-1.79.46-2.42A4.9 4.9 0 0 1 3.67 3.7 4.9 4.9 0 0 1 5.43 2.55c.63-.24 1.36-.41 2.42-.46C8.94 2.01 9.28 2 12 2Zm0 1.8c-2.67 0-2.99.01-4.04.06-.97.04-1.5.21-1.85.34-.47.18-.8.4-1.15.74-.34.35-.56.68-.74 1.15-.13.35-.3.88-.34 1.85-.05 1.05-.06 1.37-.06 4.04s.01 2.99.06 4.04c.04.97.21 1.5.34 1.85.18.47.4.8.74 1.15.35.34.68.56 1.15.74.35.13.88.3 1.85.34 1.05.05 1.37.06 4.04.06s2.99-.01 4.04-.06c.97-.04 1.5-.21 1.85-.34.47-.18.8-.4 1.15-.74.34-.35.56-.68.74-1.15.13-.35.3-.88.34-1.85.05-1.05.06-1.37.06-4.04s-.01-2.99-.06-4.04c-.04-.97-.21-1.5-.34-1.85a3.1 3.1 0 0 0-.74-1.15 3.1 3.1 0 0 0-1.15-.74c-.35-.13-.88-.3-1.85-.34-1.05-.05-1.37-.06-4.04-.06Zm0 3.06a5.14 5.14 0 1 1 0 10.28 5.14 5.14 0 0 1 0-10.28Zm0 1.8a3.34 3.34 0 1 0 0 6.68 3.34 3.34 0 0 0 0-6.68Zm5.34-3.15a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/>
+                    </svg>
+                  </a>
+                }
+                @if (v.facebook) {
+                  <a class="social__btn social__btn--fb" aria-label="Facebook"
+                    [href]="socialUrl(v.facebook, 'https://facebook.com/')" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path d="M14 8.5h2.2V5.6c-.38-.05-1.3-.12-2.36-.12-2.34 0-3.94 1.43-3.94 4.06v2.26H7v3.06h2.9V22h3.46v-7.14h2.78l.44-3.06h-3.22V9.84c0-.88.24-1.34 1.64-1.34Z"/>
+                    </svg>
+                  </a>
+                }
+                @if (v.mapUrl) {
+                  <a class="social__btn social__btn--map" [attr.aria-label]="'profile.maps' | translate"
+                    [href]="ensureHttp(v.mapUrl)" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"/>
+                    </svg>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        </aside>
+      </div>
+
+      <!-- ---------- about ---------- -->
+      <section class="about">
+        <h2>{{ 'profile.about' | translate }}</h2>
+        <p class="about__bio">{{ v.bio }}</p>
+      </section>
+
+      <!-- ---------- portfolio ---------- -->
+      @if (v.photos.length) {
+        <section class="portfolio">
+          <h2>{{ 'profile.portfolio' | translate }}</h2>
+          <ul class="portfolio__grid" role="list">
+            @for (p of v.photos; track p.url) {
+              <li class="portfolio__item">
+                <img [src]="p.url" [alt]="p.alt" loading="lazy" width="800" height="600" />
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+    </div>
+  </article>
+
+  <!-- ---------- fullscreen lightbox ---------- -->
+  @if (lightboxOpen()) {
+    <div class="lightbox" role="dialog" aria-modal="true" [attr.aria-label]="v.name" (click)="closeLightbox()">
+      <button type="button" class="lightbox__close" (click)="closeLightbox()"
+        [attr.aria-label]="'gallery.close' | translate">×</button>
+
+      @if (v.photos[activePhoto()]; as photo) {
+        <img class="lightbox__img" [src]="photo.url" [alt]="photo.alt" (click)="$event.stopPropagation()" />
+      }
+
+      @if (v.photos.length > 1) {
+        <button type="button" class="lightbox__nav lightbox__nav--prev"
+          (click)="$event.stopPropagation(); prev()" [attr.aria-label]="'gallery.prev' | translate">‹</button>
+        <button type="button" class="lightbox__nav lightbox__nav--next"
+          (click)="$event.stopPropagation(); next()" [attr.aria-label]="'gallery.next' | translate">›</button>
+        <span class="lightbox__counter">{{ activePhoto() + 1 }} / {{ v.photos.length }}</span>
+      }
+    </div>
+  }
+
+  <!-- ---------- contact (message) dialog ---------- -->
+  @if (contactOpen()) {
+    <div class="cmodal" (click)="onContactBackdrop($event)">
+      <div class="cmodal__card" role="dialog" aria-modal="true" aria-labelledby="cmodal-title">
+        <button type="button" class="cmodal__close" (click)="closeContact()"
+          [attr.aria-label]="'gallery.close' | translate">×</button>
+        <h2 id="cmodal-title" class="cmodal__title">{{ 'contact.modalTitle' | translate: { name: v.name } }}</h2>
+        <p class="cmodal__intro">{{ 'contact.intro' | translate }}</p>
+        <app-contact-form [vendorId]="v.id" />
+      </div>
+    </div>
+  }
+} @else if (loaded()) {
+  <div class="container profile-missing">
+    <h1>{{ 'profile.notFoundTitle' | translate }}</h1>
+    <p>{{ 'profile.notFoundBody' | translate }}</p>
+    <a class="btn btn--primary" routerLink="/vendors">{{ 'profile.backToVendors' | translate }}</a>
+  </div>
+}

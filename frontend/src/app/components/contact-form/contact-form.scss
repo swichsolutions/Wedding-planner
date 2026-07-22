@@ -1,0 +1,107 @@
+:host {
+  display: block;
+}
+
+.cform {
+  display: grid;
+  gap: var(--space-5);
+
+  // Full-width submit — the form lives in a modal, so the button spans the card.
+  .btn {
+    width: 100%;
+    margin-top: var(--space-1);
+  }
+}
+
+// Persistent helper under the phone/email row (swapped for the error when both are empty).
+.cform__hint {
+  margin: calc(var(--space-3) * -1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-caption);
+}
+
+.cform__row {
+  display: grid;
+  gap: var(--space-5);
+
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.cform__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+
+    .req {
+      color: var(--color-danger-600);
+    }
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+
+  input {
+    height: 48px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 110px;
+  }
+}
+
+.cform__error {
+  margin: 0;
+  color: var(--color-danger-600);
+  font-size: var(--fs-caption);
+
+  &--block {
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-danger-100);
+    border-radius: var(--radius-md);
+  }
+}
+
+.form-result {
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-success-100);
+  border-radius: var(--radius-lg);
+  text-align: center;
+
+  &__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: var(--space-4);
+    border-radius: var(--radius-pill);
+    background: var(--color-success-600);
+    color: #fff;
+  }
+
+  &__title {
+    margin: 0 0 var(--space-2);
+    color: var(--color-success-600);
+  }
+
+  &__body {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+}

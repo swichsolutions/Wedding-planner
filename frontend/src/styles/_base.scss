@@ -1,0 +1,121 @@
+// Base layer — minimal reset + element defaults wired to design tokens.
+// Keep this lean; component styles live with their components.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-regular);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// ---- Headings: editorial serif, tight tracking ----
+h1, h2, h3, h4, h5 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--fs-display); line-height: var(--lh-display); letter-spacing: var(--tracking-display); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: var(--fs-h4); }
+h5 { font-size: var(--fs-h5); }
+
+p {
+  margin: 0 0 var(--space-4);
+  max-width: var(--measure);
+}
+
+a {
+  color: var(--color-action);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--color-brand-700); } // pink reveal on hover
+
+img,
+picture,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// ---- Interactive elements: snappier touch, intentional tap highlight ----
+button,
+a,
+select,
+input,
+textarea,
+[role='button'] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(28, 23, 20, 0.08);
+}
+
+// ---- Accessible, visible focus everywhere ----
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--radius-sm);
+}
+
+// Skip-link target: focusable container, no ring, clears the sticky header on jump.
+#main {
+  scroll-margin-top: var(--space-16);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+// ---- Eyebrow / overline helper (editorial small-caps label) ----
+.overline {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+// ---- Layout helpers ----
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+// ---- Respect reduced motion ----
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

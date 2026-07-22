@@ -1,0 +1,23 @@
+<section class="guides container">
+  <header class="guides__head">
+    <p class="overline">{{ 'guides.overline' | translate }}</p>
+    <h1>{{ 'guides.title' | translate }}</h1>
+    <p class="guides__sub">{{ 'guides.subtitle' | translate }}</p>
+  </header>
+
+  <ul class="article-grid" role="list">
+    @for (a of items(); track a.slug) {
+      <li>
+        <a class="article-card" [routerLink]="['/guides', a.slug]">
+          <span class="article-card__media">
+            <img [src]="a.image" [alt]="a.imageAlt" loading="lazy" width="700" height="470" />
+          </span>
+          <span class="article-card__tag">{{ 'contentType.' + a.type | translate }}</span>
+          <h2 class="article-card__title">{{ a.title }}</h2>
+          <p class="article-card__excerpt">{{ a.excerpt }}</p>
+          <time class="article-card__date" [attr.datetime]="a.date">{{ formatDate(a.date) }}</time>
+        </a>
+      </li>
+    }
+  </ul>
+</section>

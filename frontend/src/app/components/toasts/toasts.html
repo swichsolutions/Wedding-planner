@@ -1,0 +1,19 @@
+<div class="toasts" aria-live="polite">
+  @for (t of svc.toasts(); track t.id) {
+    <div class="toast" [class.is-success]="t.kind === 'success'" [class.is-error]="t.kind === 'error'"
+      [attr.role]="t.kind === 'error' ? 'alert' : 'status'">
+      <span class="toast__icon" aria-hidden="true">
+        @if (t.kind === 'success') {
+          ✓
+        } @else if (t.kind === 'error') {
+          !
+        } @else {
+          i
+        }
+      </span>
+      <p class="toast__msg">{{ t.message | translate }}</p>
+      <button type="button" class="toast__close" (click)="svc.dismiss(t.id)"
+        [attr.aria-label]="'common.dismiss' | translate">×</button>
+    </div>
+  }
+</div>

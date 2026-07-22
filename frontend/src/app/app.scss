@@ -1,0 +1,478 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+// ---- skip link (visible on focus) ----
+.skip-link {
+  position: absolute;
+  left: var(--space-3);
+  top: -100px;
+  z-index: var(--z-toast);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: top var(--dur-fast) var(--ease-out);
+
+  &:focus-visible {
+    top: var(--space-3);
+  }
+}
+
+// ---- brand wordmark ----
+.brand {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  text-decoration: none;
+
+  &--light {
+    color: #fff;
+  }
+}
+
+// pink signature dot after the wordmark in the header
+.site-header .brand::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--color-brand-500);
+}
+
+// ============================== HEADER ==============================
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: color-mix(in srgb, var(--color-canvas) 85%, transparent);
+  backdrop-filter: saturate(1.1) blur(10px);
+  border-bottom: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+
+  &.is-scrolled {
+    background: color-mix(in srgb, var(--color-canvas) 95%, transparent);
+    border-bottom-color: var(--color-border);
+    box-shadow: 0 8px 28px -18px rgba(20, 12, 14, 0.45);
+  }
+}
+
+.site-header__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 76px;
+  transition: min-height var(--dur-fast) var(--ease-out);
+
+  .is-scrolled & {
+    min-height: 58px;
+  }
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+// nav: dropdown on mobile, inline on desktop
+.site-nav {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: var(--space-3) var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+
+  a {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-weight: var(--fw-medium);
+
+    &:hover {
+      background: var(--color-ink-100);
+    }
+    &.is-active {
+      color: var(--color-action);
+    }
+  }
+
+  .is-open & {
+    display: flex;
+  }
+
+  @include bp.respond-to(lg) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-1);
+    position: static;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+
+    a {
+      position: relative;
+      padding: var(--space-2) var(--space-3);
+      letter-spacing: 0.01em;
+
+      // editorial underline that wipes in on hover / marks the active page
+      &::after {
+        content: '';
+        position: absolute;
+        left: var(--space-3);
+        right: var(--space-3);
+        bottom: 4px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--color-brand-500);
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform var(--dur-base, 220ms) var(--ease-out);
+      }
+
+      &:hover {
+        background: none;
+        color: var(--color-text);
+      }
+      &:hover::after,
+      &.is-active::after {
+        transform: scaleX(1);
+      }
+      &.is-active {
+        color: var(--color-text);
+      }
+    }
+  }
+}
+
+// auth controls inside the mobile dropdown (hidden on desktop — shown in the bar instead)
+.site-nav__auth {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+
+  a:not(.btn) {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-weight: var(--fw-medium);
+
+    &:hover {
+      background: var(--color-ink-100);
+    }
+  }
+
+  @include bp.respond-to(lg) {
+    display: none;
+  }
+}
+
+// auth controls in the header bar, to the right of the language toggle (desktop)
+.site-header__auth {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+
+  @include bp.respond-to(lg) {
+    display: flex;
+  }
+}
+
+.site-header__login {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--color-text);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--color-action);
+  }
+}
+
+// small, de-emphasized vendor entry point — couples are the priority, so this
+// sits quietly to the left of the Log in link + primary Sign up button
+.site-header__vendor {
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.site-header__cta {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  white-space: nowrap;
+}
+
+.site-header__logout {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  cursor: pointer;
+  font: inherit;
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--color-ink-100);
+  }
+}
+
+// saved heart icon in the header actions
+.icon-link {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  svg {
+    display: block;
+  }
+
+  &:hover {
+    color: var(--color-brand-600);
+    background: var(--color-ink-100);
+  }
+
+  // filled heart once the wishlist has items
+  &.is-filled svg {
+    fill: var(--color-brand-500);
+    stroke: var(--color-brand-500);
+  }
+
+  // notification bell turns pink (outline only) when there are unread messages
+  &.is-alert {
+    color: var(--color-brand-600);
+  }
+}
+
+.icon-link__badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  border: 2px solid var(--color-canvas);
+}
+
+// logout looks like a nav link
+.site-nav__logout {
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--color-text);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+
+  &:hover {
+    background: var(--color-ink-100);
+  }
+
+  @include bp.respond-to(lg) {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+// language switch
+.lang {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: 3px;
+  background: var(--color-ink-100);
+  border-radius: var(--radius-pill);
+}
+
+.lang__btn {
+  min-width: 40px;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--shadow-xs);
+  }
+}
+
+.site-header .lang__btn {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+// mobile hamburger
+.menu-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    background: var(--color-ink-100);
+  }
+
+  &__bar {
+    height: 2px;
+    width: 100%;
+    background: var(--color-text);
+    border-radius: 2px;
+    transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .is-open &__bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .is-open &__bar:nth-child(2) {
+    opacity: 0;
+  }
+  .is-open &__bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  @include bp.respond-to(lg) {
+    display: none;
+  }
+}
+
+// ============================== FOOTER ==============================
+.site-footer {
+  margin-top: var(--space-24);
+  background: var(--color-ink-900);
+  color: #d9cfc3;
+}
+
+.site-footer__inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-10);
+  padding-block: var(--space-16);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @include bp.respond-to(lg) {
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: var(--space-12);
+  }
+}
+
+.site-footer__tagline {
+  margin-top: var(--space-4);
+  color: #a89e91;
+  max-width: 38ch;
+}
+
+.site-footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  a {
+    color: #d9cfc3;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.site-footer__heading {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: #8c8174;
+}
+
+.lang--footer {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.06);
+
+  .lang__btn {
+    color: #d9cfc3;
+
+    &[aria-pressed='true'] {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      box-shadow: none;
+    }
+  }
+}
+
+.site-footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  justify-content: space-between;
+  padding-block: var(--space-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8c8174;
+  font-size: var(--fs-caption);
+}

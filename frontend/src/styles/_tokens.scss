@@ -1,0 +1,185 @@
+// =============================================================================
+// Ipsum — Design Tokens  ("Editorial Georgian")
+// Single source of truth for color, type, space, radius, elevation, motion.
+// Generated once at project start (CLAUDE.md design rules). Build UI from these
+// tokens via frontend-design; do not introduce raw hex/px in components.
+// -----------------------------------------------------------------------------
+// Direction: warm editorial canvas + near-black ink + one confident garnet accent
+// (Georgian wine heritage), with restrained brass + calm sage. Photo-forward:
+// UI chrome stays quiet so vendor portfolios dominate.
+// =============================================================================
+
+:root {
+  color-scheme: light;
+
+  // ---- Brand: bright pink (accent — used selectively) -----------------------
+  --color-brand-50:  #ffe6f1;
+  --color-brand-100: #ffd0e4;
+  --color-brand-200: #ffb3d2;
+  --color-brand-400: #ff6fb0;
+  --color-brand-500: #ff3fa4; // bright "girl" pink
+  --color-brand-600: #f5208f; // deeper pink (hover)
+  --color-brand-700: #c9176f; // dark pink (readable text on light bg)
+  --color-brand-900: #7d0e44;
+
+  // ---- Accent: brass / gold (use sparingly — fine lines, marks, large only) --
+  --color-gold-100: #f1e6cc;
+  --color-gold-300: #dfc894;
+  --color-gold-500: #b89154;
+  --color-gold-600: #9a7636;
+
+  // ---- Tertiary: sage (calm tags, secondary surfaces) -----------------------
+  --color-sage-100: #e7ece0;
+  --color-sage-300: #b7c2a9;
+  --color-sage-600: #5e6b53;
+  --color-sage-700: #4c5945;
+
+  // ---- Ink (warm neutrals) --------------------------------------------------
+  --color-ink-900: #1c1714; // primary text
+  --color-ink-700: #4d433b; // secondary text (AA on surfaces)
+  --color-ink-600: #6b5f54;
+  --color-ink-500: #8a7e72; // muted — large/secondary text only
+  --color-ink-300: #c9bfb4; // borders
+  --color-ink-200: #e2d9cd; // hairlines
+  --color-ink-100: #efe9df; // subtle fills
+
+  // ---- Surfaces -------------------------------------------------------------
+  --color-canvas: #fbf7f1;        // page background — warm ivory
+  --color-surface: #ffffff;       // cards / raised content
+  --color-surface-sunken: #f4ede3;// section bands
+  --color-overlay: rgba(28, 23, 20, 0.5); // modal scrim (≈50% — preserves legibility)
+
+  // ---- Semantic -------------------------------------------------------------
+  --color-success-600: #3c7a55;
+  --color-success-100: #e2f0e7;
+  --color-warning-600: #b5821f;
+  --color-warning-100: #f7eccf;
+  --color-danger-600:  #b83a2b; // distinct from garnet brand; always pair w/ icon
+  --color-danger-100:  #f6e0db;
+  --color-info-600:    #356c8c;
+  --color-info-100:    #deecf3;
+
+  // ---- Semantic aliases (use these in components) ---------------------------
+  --color-text:            var(--color-ink-900);
+  --color-text-secondary:  var(--color-ink-700);
+  --color-text-muted:      var(--color-ink-500);
+  --color-text-on-brand:   #ffffff;
+  --color-bg:              var(--color-canvas);
+  --color-border:          var(--color-ink-200);
+  --color-border-strong:   var(--color-ink-300);
+  --color-action:          var(--color-ink-900); // main UI color is now black/ink
+  --color-action-hover:    #000000;
+  --color-accent:          var(--color-brand-500); // pink, for selective highlights
+  --color-focus:           var(--color-brand-500);
+
+  // ---- Typography: families (Georgian Mkhedruli + Latin coverage) -----------
+  // Noto Serif/Sans Georgian render Georgian script AND Latin consistently, so
+  // bilingual ka/en strings stay visually coherent. Distinctiveness comes from
+  // scale + spacing + color, not an exotic face. (Self-hosted BPG fonts could
+  // be layered in later for more local character — see MASTER.md.)
+  --font-display: 'Noto Serif Georgian', 'Noto Serif', Georgia, 'Times New Roman', serif;
+  --font-body: 'Noto Sans Georgian', 'Noto Sans', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, system-ui, sans-serif;
+
+  // ---- Type scale (base 16px; display sizes fluid, mobile-first) ------------
+  --fs-caption: 0.875rem;  // 14
+  --fs-body:    1rem;      // 16 (min body — avoids iOS zoom)
+  --fs-lead:    1.125rem;  // 18
+  --fs-h5:      1.25rem;   // 20
+  --fs-h4:      1.5rem;    // 24
+  --fs-h3:      clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);   // 28→36
+  --fs-h2:      clamp(2.25rem, 1.8rem + 2.2vw, 3rem);      // 36→48
+  --fs-display: clamp(2.75rem, 2rem + 4vw, 4rem);          // 44→64 editorial hero
+
+  // ---- Line height / weight / tracking --------------------------------------
+  --lh-display: 1.05;
+  --lh-heading: 1.18;
+  --lh-body: 1.6;
+  --lh-tight: 1.3;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --tracking-display: -0.02em;
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-overline: 0.08em; // small uppercase eyebrow labels
+
+  // ---- Spacing scale (4px base) ---------------------------------------------
+  --space-1: 0.25rem;  // 4
+  --space-2: 0.5rem;   // 8
+  --space-3: 0.75rem;  // 12
+  --space-4: 1rem;     // 16
+  --space-5: 1.25rem;  // 20
+  --space-6: 1.5rem;   // 24
+  --space-7: 1.75rem;  // 28
+  --space-8: 2rem;     // 32
+  --space-10: 2.5rem;  // 40
+  --space-12: 3rem;    // 48
+  --space-16: 4rem;    // 64
+  --space-20: 5rem;    // 80
+  --space-24: 6rem;    // 96
+
+  // ---- Radius (crisp/editorial) ---------------------------------------------
+  --radius-sm: 4px;
+  --radius-md: 8px;   // buttons, inputs, images
+  --radius-lg: 12px;  // cards
+  --radius-xl: 20px;  // feature panels
+  --radius-pill: 999px;
+
+  // ---- Elevation (soft, warm-tinted; photo-forward) -------------------------
+  --shadow-xs: 0 1px 2px rgba(28, 23, 20, 0.06);
+  --shadow-sm: 0 2px 8px rgba(28, 23, 20, 0.06);
+  --shadow-md: 0 8px 24px rgba(28, 23, 20, 0.08);
+  --shadow-lg: 0 16px 40px rgba(28, 23, 20, 0.1);
+
+  // ---- Focus ring (double ring stays visible on any surface) ----------------
+  --ring: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-focus);
+
+  // ---- Layout ---------------------------------------------------------------
+  --container-max: 75rem;   // 1200 — primary content width
+  --container-wide: 90rem;  // 1440 — full-bleed galleries
+  --measure: 65ch;          // long-form reading width
+
+  // ---- Motion (150–300ms; ease-out enter) -----------------------------------
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ---- z-index scale --------------------------------------------------------
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-header: 1100;
+  --z-overlay: 1300;
+  --z-modal: 1400;
+  --z-toast: 1500;
+}
+
+// =============================================================================
+// Dark theme (optional, scaffolded). Apply via <html data-theme="dark">.
+// Desaturated/lighter tonal variants — NOT inverted. Verify contrast separately
+// before shipping; the product ships light-first.
+// =============================================================================
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-canvas: #16110e;
+  --color-surface: #211a16;
+  --color-surface-sunken: #1b1511;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  --color-text: #f3ece2;
+  --color-text-secondary: #cdbfb0;
+  --color-text-muted: #9a8c7d;
+  --color-border: #34291f;
+  --color-border-strong: #4a3b2e;
+
+  --color-action: var(--color-brand-500);
+  --color-action-hover: var(--color-brand-400);
+  --color-focus: var(--color-brand-400);
+}

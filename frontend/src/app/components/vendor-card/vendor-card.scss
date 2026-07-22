@@ -1,0 +1,105 @@
+:host {
+  display: block;
+}
+
+// Photo-first editorial card: the rounded image IS the card; text breathes
+// below it on the canvas (no box/border chrome).
+.vendor-card {
+  position: relative;
+
+  &__media {
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--dur-base) var(--ease-out);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+  }
+
+  &:hover &__media {
+    box-shadow: var(--shadow-md);
+  }
+
+  &:hover &__media img {
+    transform: scale(1.045);
+  }
+
+  &__save {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-ink-700);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition: color var(--dur-fast) var(--ease-out),
+      background var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--color-brand-500);
+      background: #fff;
+    }
+
+    &.is-saved {
+      color: var(--color-brand-500);
+
+      svg {
+        fill: currentColor;
+      }
+    }
+  }
+
+  &__body {
+    padding: var(--space-4) var(--space-1) 0;
+  }
+
+  &__name {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: var(--fs-h5);
+    font-weight: var(--fw-semibold);
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+
+    &:hover {
+      color: var(--color-action);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+  }
+
+  &__meta {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-secondary);
+    font-size: var(--fs-caption);
+  }
+
+  &__price {
+    margin: var(--space-2) 0 0;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-weight: var(--fw-semibold);
+  }
+
+  &__price-label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-regular);
+    color: var(--color-text-secondary);
+  }
+}

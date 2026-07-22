@@ -1,0 +1,32 @@
+<section class="saved container">
+  <header class="saved__head">
+    <h1>{{ 'savedPage.title' | translate }}</h1>
+    <p class="saved__sub">{{ 'savedPage.subtitle' | translate }}</p>
+  </header>
+
+  @if (auth.isCouple()) {
+    @if (saved().length > 0) {
+      <p class="saved__count"><span class="num">{{ saved().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
+      <ul class="vendor-grid" role="list">
+        @for (v of saved(); track v.id) {
+          <li><app-vendor-card [vendor]="v" /></li>
+        }
+      </ul>
+    } @else {
+      <div class="saved__empty">
+        <h2>{{ 'savedPage.emptyTitle' | translate }}</h2>
+        <p>{{ 'savedPage.emptyBody' | translate }}</p>
+        <a class="btn btn--pink-outline" routerLink="/vendors">{{ 'savedPage.browse' | translate }}</a>
+      </div>
+    }
+  } @else {
+    <div class="saved__empty">
+      <h2>{{ 'savedPage.guestTitle' | translate }}</h2>
+      <p>{{ 'savedPage.guestBody' | translate }}</p>
+      <div class="saved__guest-actions">
+        <a class="btn btn--pink" routerLink="/signup">{{ 'savedPage.signUp' | translate }}</a>
+        <a class="btn btn--pink-outline" routerLink="/vendors">{{ 'savedPage.browse' | translate }}</a>
+      </div>
+    </div>
+  }
+</section>

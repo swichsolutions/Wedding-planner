@@ -1,0 +1,67 @@
+<section class="browse">
+  <div class="container">
+    <header class="browse__head">
+      <h1>{{ 'vendors.title' | translate }}</h1>
+      <p class="browse__sub">{{ 'vendors.subtitle' | translate }}</p>
+    </header>
+
+    <form class="filters" (submit)="$event.preventDefault()">
+      <div class="filters__field">
+        <label class="filters__label" for="f-cat">{{ 'search.category' | translate }}</label>
+        <select id="f-cat" name="category" autocomplete="off" class="filters__select"
+          [value]="filter().category ?? ''" (change)="onFilterChange('category', $event)">
+          <option value="">{{ 'search.allCategories' | translate }}</option>
+          @for (c of categories; track c.slug) {
+            <option [value]="c.slug">{{ c.key | translate }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filters__field">
+        <label class="filters__label" for="f-style">{{ 'vendors.style' | translate }}</label>
+        <select id="f-style" name="style" autocomplete="off" class="filters__select"
+          [value]="filter().style ?? ''" (change)="onFilterChange('style', $event)">
+          <option value="">{{ 'vendors.allStyles' | translate }}</option>
+          @for (s of styles; track s.slug) {
+            <option [value]="s.slug">{{ s.key | translate }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filters__field">
+        <label class="filters__label" for="f-price">{{ 'vendors.price' | translate }}</label>
+        <select id="f-price" name="maxPrice" autocomplete="off" class="filters__select"
+          [value]="filter().maxPrice ?? ''" (change)="onFilterChange('maxPrice', $event)">
+          <option value="">{{ 'vendors.anyPrice' | translate }}</option>
+          @for (p of priceBuckets; track p) {
+            <option [value]="p">≤ {{ formatPrice(p) }}</option>
+          }
+        </select>
+      </div>
+
+      @if (hasFilters()) {
+        <button type="button" class="filters__clear link-arrow" (click)="clearFilters()">
+          {{ 'vendors.clear' | translate }}
+        </button>
+      }
+    </form>
+
+    <p class="browse__count"><span class="num">{{ results().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
+
+    @if (results().length > 0) {
+      <ul class="vendor-grid" role="list">
+        @for (v of results(); track v.id) {
+          <li><app-vendor-card [vendor]="v" /></li>
+        }
+      </ul>
+    } @else {
+      <div class="browse__empty">
+        <h2>{{ 'vendors.emptyTitle' | translate }}</h2>
+        <p>{{ 'vendors.emptyBody' | translate }}</p>
+        <button type="button" class="btn btn--ghost" (click)="clearFilters()">
+          {{ 'vendors.clear' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+</section>

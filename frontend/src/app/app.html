@@ -1,0 +1,138 @@
+<a class="skip-link" href="#main" (click)="skipToMain($event)">{{ 'common.skipToContent' | translate }}</a>
+
+@if (!chromeless()) {
+<header class="site-header" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled()">
+  <div class="container site-header__bar">
+    <a routerLink="/" class="brand" translate="no" (click)="closeMenu()">{{ 'brand.name' | translate }}</a>
+
+    <nav id="site-nav" class="site-nav" [attr.aria-label]="'nav.menu' | translate">
+      <a routerLink="/vendors" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.vendors' | translate }}</a>
+      <a routerLink="/planning" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.planning' | translate }}</a>
+      <a routerLink="/budget" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.budget' | translate }}</a>
+      <a routerLink="/website" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.website' | translate }}</a>
+
+      @if (auth.isAuthenticated()) {
+        <a [routerLink]="profileLink()" routerLinkActive="is-active" (click)="closeMenu()">{{ 'auth.dashboard' | translate }}</a>
+      }
+      @if (auth.isAdmin()) {
+        <a routerLink="/admin" routerLinkActive="is-active" (click)="closeMenu()">{{ 'auth.admin' | translate }}</a>
+      }
+      <!-- auth controls in the dropdown (mobile only; desktop shows them in the bar) -->
+      <div class="site-nav__auth">
+        @if (auth.isAuthenticated()) {
+          <button type="button" class="btn btn--pink" (click)="logout()">{{ 'auth.logout' | translate }}</button>
+        } @else {
+          <a class="btn btn--pink" routerLink="/signup" (click)="closeMenu()">{{ 'nav.signUp' | translate }}</a>
+          <button type="button" class="btn btn--pink-outline" (click)="openLogin()">{{ 'auth.login' | translate }}</button>
+        }
+      </div>
+    </nav>
+
+    <div class="site-header__actions">
+      @if (auth.isCouple()) {
+        <a class="icon-link" routerLink="/saved" routerLinkActive="is-active"
+          [class.is-filled]="wishlist.count() > 0" [attr.aria-label]="'nav.saved' | translate"
+          (click)="closeMenu()">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+            stroke-width="1.7" aria-hidden="true">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7Z" />
+          </svg>
+          @if (wishlist.count() > 0) {
+            <span class="icon-link__badge" aria-hidden="true">{{ wishlist.count() }}</span>
+          }
+        </a>
+      }
+
+      @if (auth.isVendor()) {
+        <a class="icon-link" routerLink="/dashboard" [queryParams]="{ tab: 'messages' }"
+          [class.is-alert]="notifications.unread() > 0"
+          [attr.aria-label]="'nav.notifications' | translate" (click)="closeMenu()">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+          </svg>
+          @if (notifications.unread() > 0) {
+            <span class="icon-link__badge" aria-hidden="true">{{ notifications.unread() }}</span>
+          }
+        </a>
+      }
+
+      <div class="lang" role="group" [attr.aria-label]="'common.language' | translate">
+        @for (l of lang.supported; track l.code) {
+          <button type="button" class="lang__btn" (click)="setLang(l.code)"
+            [attr.aria-pressed]="lang.current() === l.code">{{ l.code }}</button>
+        }
+      </div>
+
+      <!-- auth controls to the right of the language toggle (desktop) -->
+      <div class="site-header__auth">
+        @if (auth.isAuthenticated()) {
+          <button type="button" class="btn btn--pink site-header__cta" (click)="logout()">{{ 'auth.logout' | translate }}</button>
+        } @else {
+          <button type="button" class="site-header__login" (click)="openLogin()">{{ 'auth.login' | translate }}</button>
+          <a class="btn btn--pink site-header__cta" routerLink="/signup">{{ 'nav.signUp' | translate }}</a>
+        }
+      </div>
+
+      <button type="button" class="menu-toggle" (click)="toggleMenu()" aria-controls="site-nav"
+        [attr.aria-expanded]="menuOpen()" [attr.aria-label]="'nav.menu' | translate">
+        <span class="menu-toggle__bar"></span>
+        <span class="menu-toggle__bar"></span>
+        <span class="menu-toggle__bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+}
+
+<main id="main" tabindex="-1">
+  <router-outlet />
+</main>
+
+@if (!chromeless()) {
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__brand">
+      <a routerLink="/" class="brand brand--light" translate="no">{{ 'brand.name' | translate }}</a>
+      <p class="site-footer__tagline">{{ 'footer.tagline' | translate }}</p>
+    </div>
+
+    <nav class="site-footer__col" [attr.aria-label]="'footer.explore' | translate">
+      <h2 class="site-footer__heading">{{ 'footer.explore' | translate }}</h2>
+      <a routerLink="/vendors">{{ 'nav.vendors' | translate }}</a>
+      <a routerLink="/guides">{{ 'nav.guides' | translate }}</a>
+      <a routerLink="/budget">{{ 'nav.budget' | translate }}</a>
+      @if (auth.isCouple()) {
+        <a routerLink="/saved">{{ 'nav.saved' | translate }}</a>
+      }
+    </nav>
+
+    <nav class="site-footer__col" [attr.aria-label]="'footer.company' | translate">
+      <h2 class="site-footer__heading">{{ 'footer.company' | translate }}</h2>
+      <a routerLink="/about">{{ 'footer.about' | translate }}</a>
+      <a routerLink="/contact">{{ 'footer.contact' | translate }}</a>
+      <a routerLink="/for-vendors">{{ 'nav.listBusiness' | translate }}</a>
+    </nav>
+
+    <div class="site-footer__col">
+      <h2 class="site-footer__heading">{{ 'common.language' | translate }}</h2>
+      <div class="lang lang--footer" role="group" [attr.aria-label]="'common.language' | translate">
+        @for (l of lang.supported; track l.code) {
+          <button type="button" class="lang__btn" (click)="setLang(l.code)"
+            [attr.aria-pressed]="lang.current() === l.code">{{ l.label }}</button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="container site-footer__legal">
+    <span>© {{ year }} <span translate="no">{{ 'brand.name' | translate }}</span></span>
+    <span>{{ 'footer.rights' | translate }}</span>
+  </div>
+</footer>
+}
+
+<app-login-modal />
+<app-confirm-dialog />
+<app-toasts />

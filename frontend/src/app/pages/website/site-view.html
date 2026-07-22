@@ -1,0 +1,9 @@
+@if (notFound()) {
+  <section class="static-page static-page--center">
+    <h1>{{ 'website.notFoundTitle' | translate }}</h1>
+    <p>{{ 'website.notFoundBody' | translate }}</p>
+    <a class="btn btn--primary" routerLink="/">{{ 'notFound.home' | translate }}</a>
+  </section>
+} @else if (site(); as s) {
+  <app-wedding-site [data]="s" [template]="s.templateKey" />
+}

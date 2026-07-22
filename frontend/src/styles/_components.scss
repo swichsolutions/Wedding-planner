@@ -1,0 +1,312 @@
+// Shared, reusable primitives consumed across surfaces. Keep this small and generic;
+// surface-specific styles live with their components.
+
+// ---- Buttons ----
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px; // touch target
+  padding: 0 var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.btn--primary {
+  background: var(--color-action);
+  color: var(--color-text-on-brand);
+
+  &:hover {
+    background: var(--color-action-hover);
+    color: var(--color-text-on-brand);
+  }
+}
+
+.btn--pink {
+  background: var(--color-brand-500);
+  color: #fff;
+
+  &:hover {
+    background: var(--color-brand-600);
+    color: #fff;
+  }
+}
+
+.btn--pink-outline {
+  background: transparent;
+  color: var(--color-brand-700);
+  border-color: var(--color-brand-500);
+
+  &:hover {
+    background: var(--color-brand-500);
+    color: #fff;
+  }
+}
+
+// transparent with white border/text — secondary action on top of a photo/dark area
+.btn--ghost-light {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.7);
+
+  &:hover {
+    background: #fff;
+    color: var(--color-ink-900);
+    border-color: #fff;
+  }
+}
+
+// white background + pink border + pink text (e.g. CTA on a dark band)
+.btn--white {
+  background: #fff;
+  color: var(--color-brand-600);
+  border-color: var(--color-brand-500);
+
+  &:hover {
+    background: var(--color-brand-500);
+    color: #fff;
+    border-color: var(--color-brand-500);
+  }
+}
+
+.btn--gold {
+  background: var(--color-gold-500);
+  color: var(--color-ink-900);
+
+  &:hover {
+    background: var(--color-gold-600);
+    color: #fff;
+  }
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+
+  &:hover {
+    background: var(--color-ink-100);
+  }
+}
+
+// ---- Inline "more →" link with animated arrow ----
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--fw-semibold);
+  color: var(--color-action);
+  white-space: nowrap;
+
+  &::after {
+    content: '→';
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  &:hover::after {
+    transform: translateX(4px);
+  }
+}
+
+// ---- Tabular figures for prices / data ----
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+// ---- Auth forms (login / register) ----
+.auth {
+  max-width: 26rem;
+  margin-inline: auto;
+  padding: var(--space-16) var(--space-4) var(--space-20);
+
+  h1 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--fs-h3);
+  }
+}
+
+.auth__intro {
+  margin: 0 0 var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.auth__card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-8);
+
+  .btn {
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+}
+
+.auth__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+
+  input,
+  select {
+    height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+}
+
+.auth__hint {
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+}
+
+// Inline, per-field validation message (distinct from the block-level .auth__error banner).
+.auth__err {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-danger-600);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+}
+
+.auth__field input.is-invalid,
+.auth__field select.is-invalid {
+  border-color: var(--color-danger-600);
+  box-shadow: 0 0 0 1px var(--color-danger-600);
+}
+
+// Live password requirements — each rule shows unmet (muted) → met (green + check).
+.pw-reqs {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.pw-req {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+
+  &::before {
+    content: '';
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  }
+
+  &.is-met {
+    color: var(--color-success-600);
+
+    &::before {
+      border-color: var(--color-success-600);
+      background: var(--color-success-600)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E")
+        center / 0.7rem no-repeat;
+    }
+  }
+}
+
+// After a failed submit, unmet rules read as errors (red), not just muted hints.
+.pw-reqs.is-checking .pw-req:not(.is-met) {
+  color: var(--color-danger-600);
+
+  &::before {
+    border-color: var(--color-danger-600);
+  }
+}
+
+.auth__error {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-100);
+  color: var(--color-danger-600);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+}
+
+.auth__alt {
+  margin-top: var(--space-6);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+// ---- Simple prose page (about / contact / 404). ----
+.static-page {
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: var(--space-16) var(--space-4) var(--space-20);
+
+  h1 {
+    margin: 0 0 var(--space-6);
+  }
+
+  p {
+    font-size: var(--fs-lead);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-4);
+  }
+
+  &--center {
+    text-align: center;
+
+    .btn {
+      margin-top: var(--space-4);
+    }
+  }
+}
+
+// ---- Drag-and-drop preview (CDK teleports this clone to <body>, so it must be
+// styled globally — component-scoped CSS can't reach it). Used by the dashboard
+// photo reorder. ----
+.cdk-drag-preview {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  cursor: grabbing;
+}
+
+// ---- Vendor grid (shared by home + browse). Breakpoint-free responsive. ----
+.vendor-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-6);
+}
