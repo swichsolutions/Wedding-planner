@@ -51,6 +51,7 @@ public class VendorDashboardController : ControllerBase
         v.Instagram = dto.Instagram?.Trim();
         v.Facebook = dto.Facebook?.Trim();
         v.Phone = dto.Phone?.Trim();
+        v.Whatsapp = NormalizeWhatsapp(dto.Whatsapp);
         v.MapUrl = dto.MapUrl?.Trim();
         v.AreasServed = dto.AreasServed?.Trim();
         await _db.SaveChangesAsync();
@@ -102,10 +103,23 @@ public class VendorDashboardController : ControllerBase
             unread));
     }
 
+    /// <summary>
+    /// Accepts a phone ("+995 599 12 34 56", "599 12 34 56") or a pasted wa.me /
+    /// api.whatsapp.com link and stores bare digits. A 9-digit Georgian mobile
+    /// (5XX XX XX XX) gets the 995 country code prefixed — wa.me needs it.
+    /// </summary>
+    private static string? NormalizeWhatsapp(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var digits = new string(raw.Where(char.IsDigit).ToArray());
+        if (digits.Length == 9 && digits.StartsWith('5')) digits = "995" + digits;
+        return digits.Length is >= 11 and <= 15 ? digits : null;
+    }
+
     private static VendorDashboardDto ToDashboard(Vendor v) => new(
         v.Id, v.Name, v.Slug, v.Category.Slug, v.City, v.CitySlug,
         v.IsApproved, v.IsFeatured, v.Bio, v.PriceMin, v.PriceRange,
-        v.Instagram, v.Facebook, v.Phone, v.MapUrl, v.AreasServed,
+        v.Instagram, v.Facebook, v.Phone, v.Whatsapp, v.MapUrl, v.AreasServed,
         v.Photos.OrderBy(p => p.SortOrder)
             .Select(p => new VendorPhotoDto(p.Url, p.AltText, p.IsRealWedding)).ToArray());
 }

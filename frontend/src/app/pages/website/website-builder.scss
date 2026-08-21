@@ -23,6 +23,13 @@
     .btn {
       margin-top: var(--space-6);
     }
+
+    .wb__cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-3);
+    }
   }
 }
 

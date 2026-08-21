@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Ipsum.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ipsum.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260813123945_RemoveStyleTags")]
+    partial class RemoveStyleTags
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -351,48 +354,6 @@ namespace Ipsum.Infrastructure.Data.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("Ipsum.Domain.Entities.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AuthorName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Body")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<int>("VendorId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VendorId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("Reviews");
-                });
-
             modelBuilder.Entity("Ipsum.Domain.Entities.SavedVendor", b =>
                 {
                     b.Property<string>("UserId")
@@ -483,9 +444,6 @@ namespace Ipsum.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(220)
                         .HasColumnType("character varying(220)");
-
-                    b.Property<string>("Whatsapp")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -893,17 +851,6 @@ namespace Ipsum.Infrastructure.Data.Migrations
                     b.Navigation("Vendor");
                 });
 
-            modelBuilder.Entity("Ipsum.Domain.Entities.Review", b =>
-                {
-                    b.HasOne("Ipsum.Domain.Entities.Vendor", "Vendor")
-                        .WithMany("Reviews")
-                        .HasForeignKey("VendorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Vendor");
-                });
-
             modelBuilder.Entity("Ipsum.Domain.Entities.SavedVendor", b =>
                 {
                     b.HasOne("Ipsum.Domain.Entities.Vendor", "Vendor")
@@ -1009,8 +956,6 @@ namespace Ipsum.Infrastructure.Data.Migrations
                     b.Navigation("Messages");
 
                     b.Navigation("Photos");
-
-                    b.Navigation("Reviews");
 
                     b.Navigation("Stats");
                 });

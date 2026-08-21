@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CATEGORIES, CITIES, STYLE_TAGS, categoryKey, cityName } from './catalog';
+import { CATEGORIES, CITIES, categoryKey, cityName } from './catalog';
 
 describe('catalog', () => {
   it('has unique category slugs', () => {
@@ -8,9 +8,8 @@ describe('catalog', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('has unique city and style slugs', () => {
+  it('has unique city slugs', () => {
     expect(new Set(CITIES.map((c) => c.slug)).size).toBe(CITIES.length);
-    expect(new Set(STYLE_TAGS.map((s) => s.slug)).size).toBe(STYLE_TAGS.length);
   });
 
   it('maps a known category slug to its i18n key', () => {

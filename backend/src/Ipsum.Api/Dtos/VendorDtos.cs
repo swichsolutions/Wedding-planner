@@ -19,7 +19,9 @@ public record VendorDto(
     string? Instagram,
     string? Facebook,
     string? Phone,
+    string? Whatsapp,
     string? MapUrl,
-    string[] StyleSlugs,
     VendorPhotoDto[] Photos,
-    bool IsFeatured);
+    bool IsFeatured,
+    double? Rating,
+    int ReviewCount);

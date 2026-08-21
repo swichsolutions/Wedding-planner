@@ -1,5 +1,5 @@
 import { Component, ElementRef, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -14,6 +14,9 @@ import { focusFirstInvalid } from '../../core/forms';
     <section class="auth">
       <div class="auth__card">
         <h1>{{ 'auth.loginTitle' | translate }}</h1>
+        @if (sessionExpired()) {
+          <p class="auth__notice" role="alert">{{ 'auth.sessionExpired' | translate }}</p>
+        }
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <div class="auth__field">
             <label for="l-email">{{ 'auth.email' | translate }}</label>
@@ -53,12 +56,17 @@ export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly host = inject(ElementRef<HTMLElement>);
 
   protected readonly error = signal(false);
   protected readonly loading = signal(false);
   /** Set on a failed submit — reveals the inline email/password validation messages. */
   protected readonly attempted = signal(false);
+  /** The interceptor lands here with ?expired=1 when a stored token stops working. */
+  protected readonly sessionExpired = signal(
+    this.route.snapshot.queryParamMap.has('expired'),
+  );
 
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -90,6 +98,13 @@ export class Login {
   }
 
   private redirect(): void {
+    // Back to the page the expired session was kicked out of, when we know it.
+    // Internal app paths only — never a full URL someone pasted into the query string.
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
+      this.router.navigateByUrl(returnUrl);
+      return;
+    }
     const roles = this.auth.user()?.roles ?? [];
     const target = roles.includes('Admin')
       ? '/admin'

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ipsum.Infrastructure.Data;
 
 /// <summary>
-/// Idempotent dev seed: categories, style tags, and a starter set of approved vendors.
+/// Idempotent dev seed: categories and a starter set of approved vendors.
 /// Mirrors the frontend mock data so the directory looks the same once the API is live.
 /// Replace/extend with real vendors (CLAUDE.md §8 step 7).
 /// </summary>
@@ -18,24 +18,10 @@ public static class DbSeeder
         await EnsureCategoriesAsync(db); // idempotent — adds any categories missing by slug
 
         if (await db.Vendors.AnyAsync())
-            return; // starter style tags + vendors already seeded
-
-        var styles = new List<StyleTag>
-        {
-            new() { NameKa = "კლასიკური", NameEn = "Classic", Slug = "classic" },
-            new() { NameKa = "თანამედროვე", NameEn = "Modern", Slug = "modern" },
-            new() { NameKa = "ტრადიციული", NameEn = "Traditional", Slug = "traditional" },
-            new() { NameKa = "მინიმალისტური", NameEn = "Minimal", Slug = "minimal" },
-            new() { NameKa = "რუსტიკული", NameEn = "Rustic", Slug = "rustic" },
-        };
-        db.StyleTags.AddRange(styles);
-        await db.SaveChangesAsync();
+            return; // starter vendors already seeded
 
         var cat = await db.Categories.ToDictionaryAsync(c => c.Slug);
-        var style = styles.ToDictionary(s => s.Slug);
         var now = DateTimeOffset.UtcNow;
-
-        VendorStyleTag Link(string slug) => new() { StyleTag = style[slug] };
 
         var vendors = new List<Vendor>
         {
@@ -47,7 +33,6 @@ public static class DbSeeder
                 Bio = "დოკუმენტური სტილის საქორწინო ფოტოგრაფია, რომელიც ბუნებრივ ემოციას იჭერს. ვმუშაობთ წყვილებთან მთელი დღის განმავლობაში — მზადებიდან ცეკვებამდე. გვაქვს 8 წლის გამოცდილება და 200-ზე მეტი გადაღებული ქორწილი.",
                 Instagram = "studia_nateli", Phone = "+995 599 12 34 56",
                 IsFeatured = true, IsApproved = true, CreatedAt = now,
-                StyleTags = new List<VendorStyleTag> { Link("classic"), Link("modern") },
                 Photos = new List<VendorPhoto>
                 {
                     new() { Url = Img("photo-1583939003579-730e3918a45a"), AltText = "წყვილი საქორწინო ცერემონიაზე", IsRealWedding = true, SortOrder = 0 },
@@ -63,7 +48,6 @@ public static class DbSeeder
                 Bio = "ელეგანტური საქორწინო დარბაზი თბილისის ცენტრში, 300 სტუმრამდე. მაღალი ჭერი, ბუნებრივი განათება და დიდი ტერასა ცერემონიისთვის. სრული კეთერინგი და ტექნიკური უზრუნველყოფა.",
                 Instagram = "tetri_darbazi", Phone = "+995 599 22 33 44",
                 IsFeatured = true, IsApproved = true, CreatedAt = now,
-                StyleTags = new List<VendorStyleTag> { Link("classic"), Link("minimal") },
                 Photos = new List<VendorPhoto>
                 {
                     new() { Url = Img("photo-1464366400600-7168b8af9bc3"), AltText = "საქორწინო დარბაზის ინტერიერი", IsRealWedding = true, SortOrder = 0 },
@@ -78,7 +62,6 @@ public static class DbSeeder
                 Bio = "საქორწინო მაკიაჟი და ვარცხნილობა, რომელიც მთელ დღეს ძლებს. ვმუშაობ ბუნებრივ, ნატურალურ სტილში და ვითვალისწინებ თითოეული პატარძლის ინდივიდუალურ ნაკვთებს. შესაძლებელია გასვლითი მომსახურება.",
                 Instagram = "lile_makeup", Phone = "+995 577 55 66 77",
                 IsFeatured = true, IsApproved = true, CreatedAt = now,
-                StyleTags = new List<VendorStyleTag> { Link("modern"), Link("minimal") },
                 Photos = new List<VendorPhoto>
                 {
                     new() { Url = Img("photo-1457972729786-0411a3b2b626"), AltText = "პატარძლის მაკიაჟი", IsRealWedding = true, SortOrder = 0 },
@@ -93,7 +76,6 @@ public static class DbSeeder
                 Bio = "ცოცხალი ყვავილების საქორწინო დეკორი — თაიგულებიდან არქებამდე. ვქმნით სეზონურ კომპოზიციებს და ვმუშაობთ ადგილობრივ მებაღეებთან. თითოეული ქორწილი უნიკალურია.",
                 Instagram = "flora_dekori", Phone = "+995 591 88 99 00",
                 IsFeatured = true, IsApproved = true, CreatedAt = now,
-                StyleTags = new List<VendorStyleTag> { Link("rustic"), Link("classic") },
                 Photos = new List<VendorPhoto>
                 {
                     new() { Url = Img("photo-1522673607200-164d1b6ce486"), AltText = "საქორწინო ყვავილების დეკორი", IsRealWedding = true, SortOrder = 0 },
@@ -108,7 +90,6 @@ public static class DbSeeder
                 Bio = "მხატვრული საქორწინო ფოტოგრაფია ზღვისპირა ფონზე. მიყვარს ბუნებრივ განათებაში გადაღება და გულწრფელი მომენტების დაჭერა. ვაწვდი სრულ ციფრულ გალერეას და ნაბეჭდ ალბომს.",
                 Instagram = "gio_beridze_photo", Phone = "+995 593 11 22 33",
                 IsApproved = true, CreatedAt = now,
-                StyleTags = new List<VendorStyleTag> { Link("modern"), Link("minimal") },
                 Photos = new List<VendorPhoto>
                 {
                     new() { Url = Img("photo-1606800052052-a08af7148866"), AltText = "წყვილი ზღვის ფონზე", IsRealWedding = true, SortOrder = 0 },
@@ -123,7 +104,6 @@ public static class DbSeeder
                 Bio = "საქორწინო ვიდეოგრაფია კინემატოგრაფიულ სტილში. ვიღებთ მოკლე ფილმსაც და სრულ ვერსიასაც, საჰაერო კადრებით. თქვენი დღე ისე, როგორც ფილმში.",
                 Instagram = "kadri_films", Phone = "+995 595 77 88 99",
                 IsApproved = true, CreatedAt = now,
-                StyleTags = new List<VendorStyleTag> { Link("modern") },
                 Photos = new List<VendorPhoto>
                 {
                     new() { Url = Img("photo-1492691527719-9d1e07e534b4"), AltText = "ვიდეოგრაფი მუშაობის პროცესში", IsRealWedding = true, SortOrder = 0 },

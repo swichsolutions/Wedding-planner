@@ -12,12 +12,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Vendor> Vendors => Set<Vendor>();
     public DbSet<VendorPhoto> VendorPhotos => Set<VendorPhoto>();
     public DbSet<Category> Categories => Set<Category>();
-    public DbSet<StyleTag> StyleTags => Set<StyleTag>();
-    public DbSet<VendorStyleTag> VendorStyleTags => Set<VendorStyleTag>();
     public DbSet<Couple> Couples => Set<Couple>();
     public DbSet<SavedVendor> SavedVendors => Set<SavedVendor>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<VendorStat> VendorStats => Set<VendorStat>();
+    public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Availability> Availabilities => Set<Availability>();
     public DbSet<ContentPage> ContentPages => Set<ContentPage>();
     public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
@@ -74,26 +73,16 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => new { x.VendorId, x.SortOrder });
         });
 
-        // ---- StyleTag ----
-        b.Entity<StyleTag>(e =>
+        // ---- Review (one per couple per vendor; resubmit = update) ----
+        b.Entity<Review>(e =>
         {
-            e.HasIndex(x => x.Slug).IsUnique();
-            e.Property(x => x.NameKa).HasMaxLength(120).IsRequired();
-            e.Property(x => x.NameEn).HasMaxLength(120).IsRequired();
-            e.Property(x => x.Slug).HasMaxLength(120).IsRequired();
-        });
-
-        // ---- VendorStyleTag (join) ----
-        b.Entity<VendorStyleTag>(e =>
-        {
-            e.HasKey(x => new { x.VendorId, x.StyleTagId });
+            e.HasIndex(x => new { x.VendorId, x.UserId }).IsUnique();
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.AuthorName).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Body).HasMaxLength(4000);
             e.HasOne(x => x.Vendor)
-                .WithMany(v => v.StyleTags)
+                .WithMany(v => v.Reviews)
                 .HasForeignKey(x => x.VendorId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.StyleTag)
-                .WithMany(s => s.Vendors)
-                .HasForeignKey(x => x.StyleTagId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

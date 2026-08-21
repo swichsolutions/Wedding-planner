@@ -28,8 +28,8 @@ export class VendorService {
     let params = new HttpParams();
     if (filter.category) params = params.set('category', filter.category);
     if (filter.city) params = params.set('city', filter.city);
-    if (filter.style) params = params.set('style', filter.style);
     if (filter.maxPrice != null) params = params.set('maxPrice', String(filter.maxPrice));
+    if (filter.vip) params = params.set('featured', 'true');
 
     const request$ = this.http
       .get<VendorDto[]>(`${this.base}/api/vendors`, { params })
@@ -45,6 +45,15 @@ export class VendorService {
     return this.http.get<VendorDto[]>(`${this.base}/api/vendors`, { params }).pipe(
       map((dtos) => dtos.slice(0, limit).map(toVendor)),
       catchError(() => of(MOCK_VENDORS.filter((v) => v.isFeatured).slice(0, limit))),
+    );
+  }
+
+  /** Most-viewed vendors (lifetime profile views) — the home page "Popular" row. */
+  popular(limit = 8): Observable<Vendor[]> {
+    const params = new HttpParams().set('sort', 'popular');
+    return this.http.get<VendorDto[]>(`${this.base}/api/vendors`, { params }).pipe(
+      map((dtos) => dtos.slice(0, limit).map(toVendor)),
+      catchError(() => of(MOCK_VENDORS.slice(0, limit))),
     );
   }
 
@@ -68,8 +77,8 @@ export class VendorService {
     let result = MOCK_VENDORS.slice();
     if (filter.category) result = result.filter((v) => v.categorySlug === filter.category);
     if (filter.city) result = result.filter((v) => v.citySlug === filter.city);
-    if (filter.style) result = result.filter((v) => v.styleSlugs.includes(filter.style!));
     if (filter.maxPrice != null) result = result.filter((v) => v.priceFrom <= filter.maxPrice!);
+    if (filter.vip) result = result.filter((v) => v.isFeatured);
     result.sort((a, b) => {
       if (!!a.isFeatured !== !!b.isFeatured) return a.isFeatured ? -1 : 1;
       return a.name.localeCompare(b.name, 'ka');

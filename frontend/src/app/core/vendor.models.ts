@@ -23,10 +23,14 @@ export interface Vendor {
   instagram?: string;
   facebook?: string;
   phone?: string;
+  /** Normalized digits with country code — profile renders a wa.me button. */
+  whatsapp?: string;
   mapUrl?: string;
-  styleSlugs: string[];
   photos: VendorPhoto[];
   isFeatured?: boolean;
+  /** Average review rating (1 decimal), null/absent until the first review. */
+  rating?: number | null;
+  reviewCount?: number;
 }
 
 /** Filters accepted by the browse page (and mirrored to URL query params). */
@@ -34,5 +38,6 @@ export interface VendorFilter {
   category?: string;
   city?: string;
   maxPrice?: number;
-  style?: string;
+  /** Only VIP (paid-placement) vendors — the home VIP row's "view all". */
+  vip?: boolean;
 }

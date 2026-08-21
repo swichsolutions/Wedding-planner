@@ -83,6 +83,25 @@
     }
   }
 
+  // ★ 4.9 (124) — gold star, ink rating, muted count
+  &__rating {
+    margin: var(--space-1) 0 0;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+  }
+
+  &__star {
+    color: var(--color-gold-500);
+  }
+
+  &__votes {
+    font-weight: var(--fw-regular);
+    color: var(--color-text-secondary);
+  }
+
   &__meta {
     margin: var(--space-1) 0 0;
     color: var(--color-text-secondary);

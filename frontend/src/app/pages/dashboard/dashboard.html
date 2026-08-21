@@ -159,15 +159,22 @@
                     <input id="d-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" />
                   </div>
                   <div class="auth__field">
-                    <label for="d-ig">{{ 'dash.instagram' | translate }}</label>
-                    <input id="d-ig" type="text" formControlName="instagram" placeholder="@username" />
+                    <label for="d-wa">{{ 'dash.whatsapp' | translate }}</label>
+                    <input id="d-wa" type="text" inputmode="tel" formControlName="whatsapp"
+                      [placeholder]="'dash.whatsappHint' | translate" />
                   </div>
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
+                    <label for="d-ig">{{ 'dash.instagram' | translate }}</label>
+                    <input id="d-ig" type="text" formControlName="instagram" placeholder="@username" />
+                  </div>
+                  <div class="auth__field">
                     <label for="d-fb">{{ 'dash.facebook' | translate }}</label>
                     <input id="d-fb" type="text" formControlName="facebook" placeholder="facebook.com/…" />
                   </div>
+                </div>
+                <div class="dash__row">
                   <div class="auth__field">
                     <label for="d-map">{{ 'dash.mapUrl' | translate }}</label>
                     <input id="d-map" type="url" inputmode="url" formControlName="mapUrl" placeholder="https://maps.google.com/…" />

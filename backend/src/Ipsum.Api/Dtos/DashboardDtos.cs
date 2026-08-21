@@ -13,6 +13,8 @@ public class VendorEditDto
     [MaxLength(200)] public string? Instagram { get; set; }
     [MaxLength(200)] public string? Facebook { get; set; }
     [MaxLength(40)] public string? Phone { get; set; }
+    /// <summary>Accepts a phone number or a pasted wa.me link; normalized server-side.</summary>
+    [MaxLength(200)] public string? Whatsapp { get; set; }
     [MaxLength(1000)] public string? MapUrl { get; set; }
     public string? AreasServed { get; set; }
 }
@@ -32,6 +34,7 @@ public record VendorDashboardDto(
     string? Instagram,
     string? Facebook,
     string? Phone,
+    string? Whatsapp,
     string? MapUrl,
     string? AreasServed,
     VendorPhotoDto[] Photos);

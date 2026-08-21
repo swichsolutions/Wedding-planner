@@ -1,6 +1,6 @@
-// Shared catalog constants — categories, cities, style tags. Single source consumed by
+// Shared catalog constants — categories and cities. Single source consumed by
 // the home page, browse filters, and the mock vendor service. When the real API lands,
-// categories/styles come from the backend; this stays as the slug↔i18n-key map.
+// categories come from the backend; this stays as the slug↔i18n-key map.
 
 /** Build a stable Unsplash placeholder URL. Replace with real imagery later. */
 export const img = (id: string, w: number): string =>
@@ -15,11 +15,6 @@ export interface CategoryRef {
 export interface CityRef {
   name: string; // Georgian display name
   slug: string;
-}
-
-export interface StyleTagRef {
-  slug: string;
-  key: string; // i18n key, e.g. 'style.classic'
 }
 
 export const CATEGORIES: CategoryRef[] = [
@@ -45,14 +40,6 @@ export const CITIES: CityRef[] = [
   { name: 'ქუთაისი', slug: 'kutaisi' },
   { name: 'რუსთავი', slug: 'rustavi' },
   { name: 'თელავი', slug: 'telavi' },
-];
-
-export const STYLE_TAGS: StyleTagRef[] = [
-  { slug: 'classic', key: 'style.classic' },
-  { slug: 'modern', key: 'style.modern' },
-  { slug: 'traditional', key: 'style.traditional' },
-  { slug: 'minimal', key: 'style.minimal' },
-  { slug: 'rustic', key: 'style.rustic' },
 ];
 
 export const categoryKey = (slug: string): string =>

@@ -20,6 +20,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/website/website-builder').then((m) => m.WebsiteBuilder),
   },
   {
+    // Guest-facing couple-site search (name + year required — not a directory).
+    path: 'website/find',
+    loadComponent: () => import('./pages/website/site-finder').then((m) => m.SiteFinder),
+  },
+  {
     // Public wedding sites — the couple's shareable /w/{slug} link.
     path: 'w/:slug',
     loadComponent: () => import('./pages/website/site-view').then((m) => m.SiteView),

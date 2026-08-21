@@ -102,21 +102,68 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
 
-  @include bp.respond-to(sm) {
-    grid-template-columns: repeat(3, 1fr);
+  // Staggered columns (Zola-style): odd columns sit lower, even columns ride
+  // higher. Transform-only, so pad the bottom to keep section spacing honest.
+  // Works at both breakpoints: in 2- and 4-column row-major grids, odd children
+  // always land in odd columns.
+  margin-bottom: var(--space-5);
+
+  > li:nth-child(odd) {
+    transform: translateY(var(--space-5));
   }
-  @include bp.respond-to(lg) {
+
+  // 8 curated tiles: 2 columns (4 rows) on mobile, 4 columns (2 rows) from md.
+  // No 3-column step — it leaves a ragged last row with 8 items.
+  @include bp.respond-to(md) {
     grid-template-columns: repeat(4, 1fr);
     gap: var(--space-6);
+    margin-bottom: var(--space-8);
+
+    > li:nth-child(odd) {
+      transform: translateY(var(--space-8));
+    }
+  }
+
+  // Soft tinted grounds rotating on a 3-step cycle over a 4-column grid, so the
+  // colors drift diagonally instead of repeating per column.
+  > li:nth-child(3n + 1) .cat-tile {
+    background: var(--color-brand-50);
+  }
+  > li:nth-child(3n + 2) .cat-tile {
+    background: var(--color-gold-100);
+  }
+  > li:nth-child(3n) .cat-tile {
+    background: var(--color-sage-100);
   }
 }
 
 .cat-tile {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  text-align: center;
   color: var(--color-text);
+  transition: transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-heading);
+  }
+
+  &__tag {
+    margin: var(--space-2) 0 var(--space-4);
+    font-size: var(--fs-caption);
+    color: var(--color-text-secondary);
+  }
 
   &__media {
     display: block;
+    margin-top: auto; // bottom-align photos when ka/en taglines wrap differently
     overflow: hidden;
     border-radius: var(--radius-lg);
     aspect-ratio: 3 / 2;
@@ -129,23 +176,199 @@
     }
   }
 
-  &__label {
-    display: block;
-    margin-top: var(--space-3);
-    font-family: var(--font-display);
-    font-size: var(--fs-h5);
-    font-weight: var(--fw-medium);
+  &:hover {
+    transform: translateY(calc(-1 * var(--space-1)));
+    box-shadow: var(--shadow-md);
   }
-
   &:hover &__media img {
     transform: scale(1.04);
   }
-  &:hover &__label {
-    color: var(--color-action);
+}
+
+// ---- Full-bleed media tiles (photo or looping clip behind the text) ----
+.cat-tile--media {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  justify-content: center;
+}
+
+.cat-tile__bg {
+  position: absolute;
+  inset: 0;
+
+  img,
+  video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
   }
 }
 
-// (Featured vendors use the shared global .vendor-grid + <app-vendor-card>.)
+// The videographers tile: an animated gif clip on top; underneath, a crossfade
+// montage (three shots, slow zoom, 15s cycle) covers loading + reduced motion.
+.cat-tile--video .cat-tile__bg img:not(.cat-tile__clip) {
+  opacity: 0;
+  animation: cat-montage 15s linear infinite;
+
+  &:nth-child(2) {
+    animation-delay: 5s;
+  }
+  &:nth-child(3) {
+    animation-delay: 10s;
+  }
+}
+
+@keyframes cat-montage {
+  0% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  7% {
+    opacity: 1;
+  }
+  33% {
+    opacity: 1;
+    transform: scale(1.13);
+  }
+  40% {
+    opacity: 0;
+    transform: scale(1.16);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+.cat-tile__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-ink-900) 12%, transparent) 0%,
+    color-mix(in srgb, var(--color-ink-900) 56%, transparent) 100%
+  );
+}
+
+.cat-tile__overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) var(--space-5);
+  color: var(--color-text-on-brand);
+
+  .cat-tile__tag {
+    margin-bottom: 0;
+    color: color-mix(in srgb, var(--color-text-on-brand) 85%, transparent);
+  }
+}
+
+.cat-tile--media:hover .cat-tile__bg img,
+.cat-tile--media:hover .cat-tile__bg video {
+  transform: scale(1.04);
+}
+
+// No autoplaying motion for reduced-motion users — a single still stands in.
+// (A gif can't be paused with CSS, so it gets hidden outright.)
+@media (prefers-reduced-motion: reduce) {
+  .cat-tile--video .cat-tile__bg img {
+    animation: none;
+    opacity: 1;
+  }
+  .cat-tile__bg .cat-tile__clip {
+    display: none;
+  }
+}
+
+// ==================== VENDOR MARQUEES (Popular / VIP) ====================
+// Continuous slow drift; the duplicated (aria-hidden) set makes the -50% loop
+// seamless. Pauses on hover/focus; reduced motion gets a swipeable static row.
+
+// Both strips are secondary discovery rows — compact: modest headings,
+// tight padding, small cards. Deliberately quieter than the primary sections.
+.featured {
+  padding-block: var(--space-6);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-8);
+  }
+
+  .section__head {
+    margin-bottom: var(--space-4);
+
+    h2 {
+      font-size: var(--fs-h3);
+    }
+  }
+
+  .section__sub {
+    margin-top: var(--space-1);
+    font-size: var(--fs-body);
+  }
+}
+
+.section--flush-top {
+  padding-top: 0; // VIP row sits directly under Popular — one shared breath
+}
+
+.vendor-marquee {
+  overflow: hidden;
+  padding-block: var(--space-2); // room for card hover shadows inside the clip
+  mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
+}
+
+.vendor-marquee__track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  width: max-content;
+  animation: vendor-marquee 45s linear infinite;
+
+  &:hover,
+  &:focus-within {
+    animation-play-state: paused;
+  }
+}
+
+.vendor-marquee--reverse .vendor-marquee__track {
+  animation-direction: reverse;
+}
+
+.vendor-marquee__item {
+  flex: 0 0 11rem;
+  // Trailing gap lives on each item (not the flex gap) so the track's total
+  // width is exactly 2× one set and the -50% loop has no seam.
+  margin-inline-end: var(--space-4);
+
+  @include bp.respond-to(md) {
+    flex-basis: 13rem;
+  }
+}
+
+@keyframes vendor-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vendor-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  .vendor-marquee__track {
+    width: auto;
+    animation: none;
+  }
+  .vendor-marquee__item[aria-hidden='true'] {
+    display: none; // no visible duplicates in the static row
+  }
+}
 
 // ============================ BUDGET BAND (light, real data) ============================
 .budget-band {
@@ -238,6 +461,126 @@
   font-size: var(--fs-caption);
   color: var(--color-text-muted);
 }
+
+// ============================ WEDDING WEBSITE PROMO ============================
+// Preview left / copy right on desktop — mirrors the budget band's split so the
+// two tool promos zigzag down the page. White ground between two tinted bands.
+.wsite-band {
+  background: var(--color-surface);
+  overflow: hidden; // rotated card corners must not spawn horizontal scroll
+}
+
+.wsite-band__inner {
+  display: grid;
+  gap: var(--space-12);
+  align-items: center;
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: var(--space-16);
+
+    // Copy is first in DOM (it's the content); stage moves left visually.
+    .wsite-band__copy {
+      order: 2;
+    }
+    .wsite-band__stage {
+      order: 1;
+    }
+  }
+}
+
+.wsite-band__title {
+  margin: var(--space-2) 0 0;
+}
+
+.wsite-band__body {
+  margin: var(--space-5) 0 var(--space-8);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+  max-width: 50ch;
+}
+
+// Real product shot: <app-wedding-site> (seaside, thumb mode) in a mini browser
+// frame. The URL pill + published badge tell the story: one link, already live.
+.wsite-band__stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-block: var(--space-4);
+
+  // soft tilted backdrop so the shot doesn't float on bare white
+  &::before {
+    content: '';
+    position: absolute;
+    top: 6%;
+    width: min(24rem, 94%);
+    height: 90%;
+    border-radius: var(--radius-xl);
+    background: var(--color-brand-50);
+    transform: rotate(-4deg);
+  }
+}
+
+.wsite-shot {
+  position: relative;
+  width: min(23rem, 100%);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  transform: rotate(1.25deg);
+  transition: transform var(--dur-base) var(--ease-out);
+
+  .wsite-band__stage:hover & {
+    transform: rotate(0deg) translateY(calc(-1 * var(--space-1)));
+  }
+}
+
+.wsite-shot__chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-ink-100);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wsite-shot__dots {
+  display: inline-flex;
+  gap: var(--space-1);
+
+  i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink-300);
+  }
+}
+
+.wsite-shot__url {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wsite-shot__page {
+  display: block;
+  height: 24rem;
+
+  app-wedding-site {
+    display: block;
+    height: 100%;
+  }
+}
+
 
 // ============================ GUIDES / REAL WEDDINGS ============================
 .guide-grid {

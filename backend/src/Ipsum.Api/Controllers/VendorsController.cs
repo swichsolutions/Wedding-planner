@@ -19,31 +19,36 @@ public class VendorsController : ControllerBase
     public async Task<ActionResult<IEnumerable<VendorDto>>> List(
         [FromQuery] string? category,
         [FromQuery] string? city,
-        [FromQuery] string? style,
         [FromQuery] decimal? maxPrice,
-        [FromQuery] bool? featured)
+        [FromQuery] bool? featured,
+        [FromQuery] string? sort)
     {
         var query = _db.Vendors
             .AsNoTracking()
             .Where(v => v.IsApproved)
             .Include(v => v.Category)
             .Include(v => v.Photos)
-            .Include(v => v.StyleTags).ThenInclude(st => st.StyleTag)
+            .Include(v => v.Reviews)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(category))
             query = query.Where(v => v.Category.Slug == category);
         if (!string.IsNullOrWhiteSpace(city))
             query = query.Where(v => v.CitySlug == city);
-        if (!string.IsNullOrWhiteSpace(style))
-            query = query.Where(v => v.StyleTags.Any(st => st.StyleTag.Slug == style));
         if (maxPrice.HasValue)
             query = query.Where(v => v.PriceMin <= maxPrice.Value);
         if (featured == true)
             query = query.Where(v => v.IsFeatured);
 
-        var vendors = await query
-            .OrderByDescending(v => v.IsFeatured)
+        // sort=popular → lifetime profile views (the silently-tracked VendorStat data),
+        // featured breaking the tie so real vendors lead while views are still scarce;
+        // default → featured first. Name breaks remaining ties so ordering is stable.
+        var ordered = sort == "popular"
+            ? query.OrderByDescending(v => v.Stats.Sum(s => (int?)s.ProfileViews) ?? 0)
+                .ThenByDescending(v => v.IsFeatured)
+            : query.OrderByDescending(v => v.IsFeatured);
+
+        var vendors = await ordered
             .ThenBy(v => v.Name)
             .ToListAsync();
 
@@ -58,7 +63,7 @@ public class VendorsController : ControllerBase
             .AsNoTracking()
             .Include(v => v.Category)
             .Include(v => v.Photos)
-            .Include(v => v.StyleTags).ThenInclude(st => st.StyleTag)
+            .Include(v => v.Reviews)
             .FirstOrDefaultAsync(v =>
                 v.IsApproved &&
                 v.Category.Slug == category &&
@@ -82,10 +87,12 @@ public class VendorsController : ControllerBase
         v.Instagram,
         v.Facebook,
         v.Phone,
+        v.Whatsapp,
         v.MapUrl,
-        v.StyleTags.Select(st => st.StyleTag.Slug).OrderBy(s => s).ToArray(),
         v.Photos.OrderBy(p => p.SortOrder)
             .Select(p => new VendorPhotoDto(p.Url, p.AltText, p.IsRealWedding))
             .ToArray(),
-        v.IsFeatured);
+        v.IsFeatured,
+        v.Reviews.Count == 0 ? null : Math.Round(v.Reviews.Average(r => r.Rating), 1),
+        v.Reviews.Count);
 }

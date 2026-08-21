@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
@@ -97,4 +97,32 @@ export class WebsiteService {
   publicSite(slug: string): Observable<PublicSite> {
     return this.http.get<PublicSite>(`${this.base}/api/sites/${encodeURIComponent(slug)}`);
   }
+
+  /**
+   * Guest site finder — name + year are required (the API refuses broad browsing),
+   * month optionally tightens the ordering.
+   */
+  findSites(
+    firstName: string,
+    lastName: string,
+    year: number,
+    month?: number,
+  ): Observable<SiteSearchResult[]> {
+    let params = new HttpParams()
+      .set('firstName', firstName)
+      .set('lastName', lastName)
+      .set('year', String(year));
+    if (month) params = params.set('month', String(month));
+    return this.http.get<SiteSearchResult[]>(`${this.base}/api/sites/search`, { params });
+  }
+}
+
+export interface SiteSearchResult {
+  firstName: string | null;
+  lastName: string | null;
+  partnerFirstName: string | null;
+  partnerLastName: string | null;
+  weddingDate: string; // yyyy-MM-dd
+  place: string | null;
+  slug: string;
 }

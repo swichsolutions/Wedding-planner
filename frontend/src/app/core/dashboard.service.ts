@@ -25,6 +25,7 @@ export interface VendorDashboard {
   instagram: string | null;
   facebook: string | null;
   phone: string | null;
+  whatsapp: string | null;
   mapUrl: string | null;
   areasServed: string | null;
   photos: DashboardPhoto[];
@@ -39,6 +40,7 @@ export interface VendorEdit {
   instagram?: string | null;
   facebook?: string | null;
   phone?: string | null;
+  whatsapp?: string | null;
   mapUrl?: string | null;
   areasServed?: string | null;
 }

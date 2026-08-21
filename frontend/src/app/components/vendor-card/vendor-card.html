@@ -19,6 +19,14 @@
   <div class="vendor-card__body">
     <a class="vendor-card__name"
       [routerLink]="['/', vendor().categorySlug, vendor().citySlug, vendor().slug]">{{ vendor().name }}</a>
+    @if (vendor().reviewCount) {
+      <p class="vendor-card__rating"
+        [attr.aria-label]="'reviews.summaryAria' | translate: { rating: vendor().rating, count: vendor().reviewCount }">
+        <span class="vendor-card__star" aria-hidden="true">★</span>
+        <span class="num" aria-hidden="true">{{ vendor().rating }}</span>
+        <span class="vendor-card__votes num" aria-hidden="true">({{ vendor().reviewCount }})</span>
+      </p>
+    }
     <p class="vendor-card__meta">{{ vendor().categoryKey | translate }} · {{ vendor().city }}</p>
     <p class="vendor-card__price">
       <span class="vendor-card__price-label">{{ 'featured.starting' | translate }}</span>

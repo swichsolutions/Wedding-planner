@@ -20,10 +20,10 @@
       <!-- auth controls in the dropdown (mobile only; desktop shows them in the bar) -->
       <div class="site-nav__auth">
         @if (auth.isAuthenticated()) {
-          <button type="button" class="btn btn--pink" (click)="logout()">{{ 'auth.logout' | translate }}</button>
+          <button type="button" class="btn btn--pink btn--pill" (click)="logout()">{{ 'auth.logout' | translate }}</button>
         } @else {
-          <a class="btn btn--pink" routerLink="/signup" (click)="closeMenu()">{{ 'nav.signUp' | translate }}</a>
-          <button type="button" class="btn btn--pink-outline" (click)="openLogin()">{{ 'auth.login' | translate }}</button>
+          <a class="btn btn--pink btn--pill" routerLink="/signup" (click)="closeMenu()">{{ 'nav.signUp' | translate }}</a>
+          <button type="button" class="btn btn--pink-outline btn--pill" (click)="openLogin()">{{ 'auth.login' | translate }}</button>
         }
       </div>
     </nav>
@@ -68,10 +68,10 @@
       <!-- auth controls to the right of the language toggle (desktop) -->
       <div class="site-header__auth">
         @if (auth.isAuthenticated()) {
-          <button type="button" class="btn btn--pink site-header__cta" (click)="logout()">{{ 'auth.logout' | translate }}</button>
+          <button type="button" class="btn btn--pink btn--pill site-header__cta" (click)="logout()">{{ 'auth.logout' | translate }}</button>
         } @else {
           <button type="button" class="site-header__login" (click)="openLogin()">{{ 'auth.login' | translate }}</button>
-          <a class="btn btn--pink site-header__cta" routerLink="/signup">{{ 'nav.signUp' | translate }}</a>
+          <a class="btn btn--pink btn--pill site-header__cta" routerLink="/signup">{{ 'nav.signUp' | translate }}</a>
         }
       </div>
 

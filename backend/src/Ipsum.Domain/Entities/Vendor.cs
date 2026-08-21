@@ -33,6 +33,10 @@ public class Vendor
     public string? Instagram { get; set; }
     public string? Facebook { get; set; }
     public string? Phone { get; set; }
+
+    /// <summary>WhatsApp number, normalized to bare digits with country code (e.g. "995599123456").</summary>
+    public string? Whatsapp { get; set; }
+
     public string? MessageEmail { get; set; }
 
     /// <summary>Google Maps URL the vendor pastes (no API key needed to link out).</summary>
@@ -47,7 +51,7 @@ public class Vendor
     public DateTimeOffset CreatedAt { get; set; }
 
     public ICollection<VendorPhoto> Photos { get; set; } = new List<VendorPhoto>();
-    public ICollection<VendorStyleTag> StyleTags { get; set; } = new List<VendorStyleTag>();
     public ICollection<Message> Messages { get; set; } = new List<Message>();
     public ICollection<VendorStat> Stats { get; set; } = new List<VendorStat>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

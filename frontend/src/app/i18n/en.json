@@ -30,6 +30,15 @@
     "ctaVendor": "My profile",
     "ctaAdmin": "Admin panel"
   },
+  "homeWebsite": {
+    "overline": "Wedding website",
+    "title": "Your wedding website, ready in minutes",
+    "body": "Pick a design you love, add your names, date and venue, and share one beautiful link with every guest — free, with no tech skills needed.",
+    "cta": "Start your website",
+    "sampleFirst": "Nino",
+    "samplePartner": "Giorgi",
+    "samplePlace": "Tbilisi"
+  },
   "confirm": {
     "ok": "Confirm",
     "cancel": "Cancel"
@@ -128,13 +137,65 @@
   },
   "categories": {
     "overline": "Categories",
-    "title": "Browse by category",
-    "subtitle": "Every professional you need for the day — in one place."
+    "title": "Vendors for every vibe",
+    "subtitle": "Discover the right pros for any budget, style and city.",
+    "viewAll": "All categories"
+  },
+  "vip": {
+    "title": "VIP",
+    "subtitle": "Our premium partners."
+  },
+  "siteFinder": {
+    "cta": "Find a couple's website",
+    "title": "Find a couple's website",
+    "subtitle": "Looking for a wedding you're invited to? Enter the couple's name and wedding year — close matches count too.",
+    "back": "Wedding websites",
+    "year": "Year",
+    "month": "Month",
+    "anyMonth": "Any month",
+    "search": "Search",
+    "required": "Fill in first name, last name and year.",
+    "error": "Search failed. Check your connection and try again.",
+    "resultsCount": "We found {{count}} matches for “{{name}}”",
+    "noResults": "No matches found. Check the spelling, try the partner's name, or another year.",
+    "thCouple": "Couple",
+    "thDate": "Wedding date",
+    "thPlace": "Location",
+    "thSite": "Website",
+    "view": "View website"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "summaryAria": "Rated {{rating}} out of 5 from {{count}} reviews",
+    "writeTitle": "Leave a review",
+    "updateTitle": "Update your review",
+    "yourRating": "Your rating",
+    "ratingRequired": "Choose a star rating first.",
+    "bodyLabel": "Your review (optional)",
+    "bodyPlaceholder": "How was working with this vendor?",
+    "submit": "Publish review",
+    "update": "Update review",
+    "success": "Thanks! Your review is live.",
+    "error": "Couldn't save your review. Check your connection and try again.",
+    "signinPrompt": "Worked with this vendor? Sign in as a couple to leave a review.",
+    "signin": "Sign in",
+    "yours": "Your review",
+    "empty": "No reviews yet — be the first to share your experience."
+  },
+  "categoryTag": {
+    "fotografi": "Browse real galleries to find your look.",
+    "darbazi": "Compare venues, menus and prices.",
+    "videografi": "Watch films from real weddings.",
+    "musika": "Bands and DJs to keep the dance floor full.",
+    "kaba": "Find the dress you've been dreaming of.",
+    "makiaji": "Book a trial before the big day.",
+    "dekori": "Set the scene, from arch to tables.",
+    "torti": "Find your baker and book a tasting."
   },
   "featured": {
     "overline": "Selected",
-    "title": "Featured vendors",
-    "subtitle": "Hand-picked professionals from across Georgia.",
+    "title": "Popular",
+    "subtitle": "The most-viewed vendors on the platform.",
     "viewAll": "View all",
     "starting": "From",
     "save": "Save"
@@ -162,6 +223,8 @@
     "bio": "Description",
     "priceMin": "Starting price (₾)",
     "priceRange": "Price range",
+    "whatsapp": "WhatsApp",
+    "whatsappHint": "+995 5XX XX XX XX or wa.me link",
     "instagram": "Instagram",
     "facebook": "Facebook",
     "phone": "Phone",
@@ -335,6 +398,7 @@
     "haveAccount": "Already have an account?",
     "noAccount": "Don’t have an account?",
     "invalidCredentials": "Email or password is incorrect.",
+    "sessionExpired": "Your session has expired. Sign in again to continue.",
     "registerError": "Registration failed. This email may already be in use.",
     "required": "This field is required"
   },
@@ -406,21 +470,12 @@
     "checklist": "Checklist",
     "realWedding": "Real wedding"
   },
-  "style": {
-    "classic": "Classic",
-    "modern": "Modern",
-    "traditional": "Traditional",
-    "minimal": "Minimal",
-    "rustic": "Rustic"
-  },
   "vendors": {
     "title": "Vendors",
     "subtitle": "Browse and filter wedding vendors across Georgia.",
     "countLabel": "vendors",
     "price": "Max price",
     "anyPrice": "Any price",
-    "style": "Style",
-    "allStyles": "All styles",
     "clear": "Clear filters",
     "emptyTitle": "No matches found",
     "emptyBody": "Try changing or clearing the filters."
@@ -463,9 +518,7 @@
   "profile": {
     "from": "Starting from",
     "areasServed": "Areas served",
-    "styles": "Style",
     "about": "About",
-    "portfolio": "Portfolio",
     "contact": "Get in touch",
     "contactCta": "Send a message",
     "call": "Call",

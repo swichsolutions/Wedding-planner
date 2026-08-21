@@ -17,27 +17,57 @@
 <!-- ===================== BROWSE BY CATEGORY ===================== -->
 <section class="section categories">
   <div class="container">
-    <header class="section__head">
-      <h2>{{ 'categories.title' | translate }}</h2>
-      <p class="section__sub">{{ 'categories.subtitle' | translate }}</p>
+    <header class="section__head section__head--row">
+      <div>
+        <h2>{{ 'categories.title' | translate }}</h2>
+        <p class="section__sub">{{ 'categories.subtitle' | translate }}</p>
+      </div>
+      <a class="link-arrow" [routerLink]="['/vendors']">{{ 'categories.viewAll' | translate }}</a>
     </header>
 
     <ul class="cat-grid" role="list">
       @for (c of categories; track c.slug) {
         <li>
-          <a class="cat-tile" [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
-            <span class="cat-tile__media">
-              <img [src]="c.img" [alt]="c.key | translate" loading="lazy" width="600" height="400" />
-            </span>
-            <span class="cat-tile__label">{{ c.key | translate }}</span>
-          </a>
+          @if (c.variant === 'card') {
+            <a class="cat-tile" [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
+              <span class="cat-tile__title">{{ c.key | translate }}</span>
+              <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
+              <span class="cat-tile__media">
+                <img [src]="c.img" alt="" loading="lazy" width="600" height="400" />
+              </span>
+            </a>
+          } @else {
+            <!-- Full-bleed media tile: photo (or looping clip) covers the card,
+                 text sits on a scrim. -->
+            <a class="cat-tile cat-tile--media" [class.cat-tile--video]="c.variant === 'video'"
+              [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
+              <span class="cat-tile__bg" aria-hidden="true">
+                @if (c.variant === 'video') {
+                  <!-- Crossfade montage underneath (fallback while the clip loads and
+                       for reduced-motion users); the animated gif covers it. -->
+                  @for (shot of videoMontage; track shot) {
+                    <img [src]="shot" alt="" loading="lazy" width="600" height="750" />
+                  }
+                  <video class="cat-tile__clip" [src]="categoryClip" [muted]="true"
+                    autoplay loop playsinline preload="metadata" tabindex="-1"></video>
+                } @else {
+                  <img [src]="c.img" alt="" loading="lazy" width="600" height="750" />
+                }
+              </span>
+              <span class="cat-tile__scrim" aria-hidden="true"></span>
+              <span class="cat-tile__overlay">
+                <span class="cat-tile__title">{{ c.key | translate }}</span>
+                <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
+              </span>
+            </a>
+          }
         </li>
       }
     </ul>
   </div>
 </section>
 
-<!-- ===================== FEATURED VENDORS ===================== -->
+<!-- ===================== POPULAR (most-viewed) ===================== -->
 <section class="section featured">
   <div class="container">
     <header class="section__head section__head--row">
@@ -48,13 +78,45 @@
       <a class="link-arrow" [routerLink]="['/vendors']">{{ 'featured.viewAll' | translate }}</a>
     </header>
 
-    <ul class="vendor-grid" role="list">
-      @for (v of featured(); track v.id) {
-        <li><app-vendor-card [vendor]="v" /></li>
-      }
-    </ul>
+    <!-- Auto-drifting marquee: the set renders twice (clones aria-hidden) so the
+         -50% translate loops seamlessly. Pauses on hover/focus. -->
+    <div class="vendor-marquee">
+      <ul class="vendor-marquee__track" role="list">
+        @for (v of popularTrack(); track $index; let i = $index) {
+          <li class="vendor-marquee__item" [attr.aria-hidden]="i >= popular().length ? true : null">
+            <app-vendor-card [vendor]="v" />
+          </li>
+        }
+      </ul>
+    </div>
   </div>
 </section>
+
+<!-- ===================== VIP (paid placement) ===================== -->
+<!-- Drifts the opposite way. Hidden entirely while no vendor carries the flag. -->
+@if (vip().length) {
+  <section class="section section--flush-top featured">
+    <div class="container">
+      <header class="section__head section__head--row">
+        <div>
+          <h2>{{ 'vip.title' | translate }}</h2>
+          <p class="section__sub">{{ 'vip.subtitle' | translate }}</p>
+        </div>
+        <a class="link-arrow" [routerLink]="['/vendors']" [queryParams]="{ vip: 1 }">{{ 'featured.viewAll' | translate }}</a>
+      </header>
+
+      <div class="vendor-marquee vendor-marquee--reverse">
+        <ul class="vendor-marquee__track" role="list">
+          @for (v of vipTrack(); track $index; let i = $index) {
+            <li class="vendor-marquee__item" [attr.aria-hidden]="i >= vip().length ? true : null">
+              <app-vendor-card [vendor]="v" />
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+}
 
 <!-- ===================== BUDGET PLANNER BAND ===================== -->
 <section class="budget-band">
@@ -82,6 +144,36 @@
         }
       </ul>
       <p class="budget-preview__more">{{ 'budgetTeaser.more' | translate }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WEDDING WEBSITE PROMO ===================== -->
+<!-- Mirror of the budget band: preview LEFT, copy RIGHT, white ground — the two
+     tool promos zigzag. The stage is a CSS-only mock of a published couple site
+     (decorative — aria-hidden), fanned like the design picker. -->
+<section class="section wsite-band">
+  <div class="container wsite-band__inner">
+    <div class="wsite-band__copy">
+      <p class="overline">{{ 'homeWebsite.overline' | translate }}</p>
+      <h2 class="wsite-band__title">{{ 'homeWebsite.title' | translate }}</h2>
+      <p class="wsite-band__body">{{ 'homeWebsite.body' | translate }}</p>
+      <a class="btn btn--pink" [routerLink]="['/website']">{{ 'homeWebsite.cta' | translate }}</a>
+    </div>
+
+    <!-- Real product shot: the actual wedding-site component (seaside design,
+         thumb mode — same as the builder's design gallery) inside a mini browser
+         frame, so the promo shows literally what you get. Decorative. -->
+    <div class="wsite-band__stage" aria-hidden="true">
+      <div class="wsite-shot">
+        <span class="wsite-shot__chrome">
+          <span class="wsite-shot__dots"><i></i><i></i><i></i></span>
+          <span class="wsite-shot__url" translate="no">ipsum.ge/w/Anastasia-Beka</span>
+        </span>
+        <span class="wsite-shot__page">
+          <app-wedding-site [data]="siteSample()" template="seaside" [thumb]="true" />
+        </span>
+      </div>
     </div>
   </div>
 </section>

@@ -4,7 +4,10 @@
     <header class="wb__head wb__head--guest">
       <h1>{{ 'website.guestTitle' | translate }}</h1>
       <p class="wb__sub">{{ 'website.guestBody' | translate }}</p>
-      <a class="btn btn--pink" routerLink="/signup">{{ 'website.guestCta' | translate }}</a>
+      <div class="wb__cta-row">
+        <a class="btn btn--pink" routerLink="/signup">{{ 'website.guestCta' | translate }}</a>
+        <a class="btn btn--pink-outline" routerLink="/website/find">{{ 'siteFinder.cta' | translate }}</a>
+      </div>
     </header>
     <ul class="wb-gallery wb-gallery--teaser" role="list" aria-hidden="true">
       @for (t of templates.slice(0, 4); track t) {
@@ -28,6 +31,7 @@
     <header class="wb__head">
       <h1>{{ 'website.pickTitle' | translate }}</h1>
       <p class="wb__sub">{{ 'website.pickSub' | translate }}</p>
+      <a class="link-arrow" routerLink="/website/find">{{ 'siteFinder.cta' | translate }}</a>
     </header>
     <ul class="wb-gallery" role="list">
       @for (t of templates; track t) {

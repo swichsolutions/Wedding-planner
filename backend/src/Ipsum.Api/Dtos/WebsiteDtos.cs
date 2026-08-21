@@ -43,3 +43,13 @@ public record PublicSiteDto(
     string? InkColor,
     string? AccentColor,
     string? PhotoUrl);
+
+/// <summary>One row of the guest-facing "find a couple's website" search.</summary>
+public record SiteSearchResultDto(
+    string? FirstName,
+    string? LastName,
+    string? PartnerFirstName,
+    string? PartnerLastName,
+    DateOnly WeddingDate,
+    string? Place,
+    string Slug);

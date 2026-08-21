@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { VendorCard } from '../../components/vendor-card/vendor-card';
 import { VendorService } from '../../core/vendor.service';
 import { Vendor, VendorFilter } from '../../core/vendor.models';
-import { CATEGORIES, STYLE_TAGS } from '../../core/catalog';
+import { CATEGORIES } from '../../core/catalog';
 import { LanguageService } from '../../i18n/language.service';
 
 @Component({
@@ -23,7 +23,6 @@ export class VendorBrowse {
   private readonly lang = inject(LanguageService);
 
   protected readonly categories = CATEGORIES;
-  protected readonly styles = STYLE_TAGS;
   protected readonly priceBuckets = [1000, 2000, 3000, 5000, 10000];
 
   private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
@@ -35,14 +34,14 @@ export class VendorBrowse {
     return {
       category: p.get('category') ?? undefined,
       city: p.get('city') ?? undefined,
-      style: p.get('style') ?? undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      vip: p.get('vip') === '1' || undefined,
     };
   });
 
   protected readonly hasFilters = computed(() => {
     const f = this.filter();
-    return !!(f.category || f.city || f.style || f.maxPrice);
+    return !!(f.category || f.city || f.maxPrice || f.vip);
   });
 
   protected readonly results = toSignal(

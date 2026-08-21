@@ -25,6 +25,11 @@
   }
 }
 
+// Pill variant — fully rounded ends; combine with any color modifier.
+.btn--pill {
+  border-radius: var(--radius-pill);
+}
+
 .btn--primary {
   background: var(--color-action);
   color: var(--color-text-on-brand);
@@ -255,6 +260,17 @@
   padding: var(--space-3) var(--space-4);
   background: var(--color-danger-100);
   color: var(--color-danger-600);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+}
+
+// Informational banner on the auth card (e.g. "session expired") — warning tone,
+// not an error: nothing the user did wrong.
+.auth__notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-warning-100);
+  color: var(--color-warning-600);
   border-radius: var(--radius-md);
   font-size: var(--fs-caption);
 }

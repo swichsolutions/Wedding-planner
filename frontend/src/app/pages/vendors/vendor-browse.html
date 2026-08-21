@@ -18,17 +18,6 @@
       </div>
 
       <div class="filters__field">
-        <label class="filters__label" for="f-style">{{ 'vendors.style' | translate }}</label>
-        <select id="f-style" name="style" autocomplete="off" class="filters__select"
-          [value]="filter().style ?? ''" (change)="onFilterChange('style', $event)">
-          <option value="">{{ 'vendors.allStyles' | translate }}</option>
-          @for (s of styles; track s.slug) {
-            <option [value]="s.slug">{{ s.key | translate }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="filters__field">
         <label class="filters__label" for="f-price">{{ 'vendors.price' | translate }}</label>
         <select id="f-price" name="maxPrice" autocomplete="off" class="filters__select"
           [value]="filter().maxPrice ?? ''" (change)="onFilterChange('maxPrice', $event)">

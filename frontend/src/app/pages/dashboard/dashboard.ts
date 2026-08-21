@@ -68,7 +68,7 @@ export class Dashboard {
       { key: 'dash.strengthPhotos', done: this.photos().length > 0, section: 'photos' as DashSection },
       {
         key: 'dash.strengthContact',
-        done: !!(v?.phone || v?.instagram || v?.facebook),
+        done: !!(v?.phone || v?.instagram || v?.facebook || v?.whatsapp),
         section: 'profile' as DashSection,
       },
     ];
@@ -85,6 +85,7 @@ export class Dashboard {
     instagram: [''],
     facebook: [''],
     phone: [''],
+    whatsapp: [''],
     mapUrl: [''],
   });
 
@@ -113,6 +114,7 @@ export class Dashboard {
             instagram: v.instagram ?? '',
             facebook: v.facebook ?? '',
             phone: v.phone ?? '',
+            whatsapp: v.whatsapp ?? '',
             mapUrl: v.mapUrl ?? '',
           });
         },
@@ -218,6 +220,7 @@ export class Dashboard {
         instagram: v.instagram,
         facebook: v.facebook,
         phone: v.phone,
+        whatsapp: v.whatsapp,
         mapUrl: v.mapUrl,
       })
       .subscribe({

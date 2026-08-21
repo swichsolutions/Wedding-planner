@@ -1,0 +1,81 @@
+<section class="sf container">
+  <a class="sf__back" routerLink="/website">← {{ 'siteFinder.back' | translate }}</a>
+
+  <header class="sf__head">
+    <h1>{{ 'siteFinder.title' | translate }}</h1>
+    <p class="sf__sub">{{ 'siteFinder.subtitle' | translate }}</p>
+  </header>
+
+  <form class="sf-form" (submit)="$event.preventDefault(); search()">
+    <div class="sf-form__field">
+      <label for="sf-first">{{ 'website.firstName' | translate }}</label>
+      <input id="sf-first" type="text" autocomplete="off"
+        [value]="firstName()" (input)="firstName.set($any($event.target).value)" />
+    </div>
+    <div class="sf-form__field">
+      <label for="sf-last">{{ 'website.lastName' | translate }}</label>
+      <input id="sf-last" type="text" autocomplete="off"
+        [value]="lastName()" (input)="lastName.set($any($event.target).value)" />
+    </div>
+    <div class="sf-form__field sf-form__field--narrow">
+      <label for="sf-year">{{ 'siteFinder.year' | translate }}</label>
+      <select id="sf-year" [value]="year()" (change)="year.set($any($event.target).value)">
+        <option value="">—</option>
+        @for (y of years; track y) {
+          <option [value]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+    <div class="sf-form__field sf-form__field--narrow">
+      <label for="sf-month">{{ 'siteFinder.month' | translate }}</label>
+      <select id="sf-month" [value]="month()" (change)="month.set(+$any($event.target).value)">
+        <option [value]="0">{{ 'siteFinder.anyMonth' | translate }}</option>
+        @for (m of months(); track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <button class="btn btn--pink sf-form__submit" type="submit" [disabled]="busy()">
+      {{ 'siteFinder.search' | translate }}
+    </button>
+  </form>
+
+  @if (missingFields()) {
+    <p class="sf__error" role="alert">{{ 'siteFinder.required' | translate }}</p>
+  }
+  @if (failed()) {
+    <p class="sf__error" role="alert">{{ 'siteFinder.error' | translate }}</p>
+  }
+
+  @if (searched()) {
+    @if (results().length) {
+      <p class="sf__count" role="status">
+        {{ 'siteFinder.resultsCount' | translate: { count: results().length, name: searchedName() } }}
+      </p>
+      <div class="sf-results">
+        <table class="sf-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'siteFinder.thCouple' | translate }}</th>
+              <th scope="col">{{ 'siteFinder.thDate' | translate }}</th>
+              <th scope="col">{{ 'siteFinder.thPlace' | translate }}</th>
+              <th scope="col">{{ 'siteFinder.thSite' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of results(); track r.slug) {
+              <tr>
+                <td class="sf-table__couple">{{ coupleLine(r) }}</td>
+                <td>{{ formatDate(r.weddingDate) }}</td>
+                <td>{{ r.place || '—' }}</td>
+                <td><a class="link-arrow" [routerLink]="['/w', r.slug]">{{ 'siteFinder.view' | translate }}</a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="sf__empty" role="status">{{ 'siteFinder.noResults' | translate }}</p>
+    }
+  }
+</section>

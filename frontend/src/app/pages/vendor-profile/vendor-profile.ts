@@ -4,6 +4,7 @@ import {
   ElementRef,
   HostListener,
   PLATFORM_ID,
+  computed,
   effect,
   inject,
   signal,
@@ -14,8 +15,10 @@ import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { LanguageService } from '../../i18n/language.service';
+import { AuthService } from '../../core/auth.service';
 import { VendorService } from '../../core/vendor.service';
 import { Vendor } from '../../core/vendor.models';
+import { Review, ReviewService } from '../../core/review.service';
 import { ContactForm } from '../../components/contact-form/contact-form';
 
 const JSON_LD_ID = 'vendor-jsonld';
@@ -29,6 +32,8 @@ const JSON_LD_ID = 'vendor-jsonld';
 export class VendorProfile {
   private readonly route = inject(ActivatedRoute);
   private readonly vendorService = inject(VendorService);
+  private readonly reviewSvc = inject(ReviewService);
+  protected readonly auth = inject(AuthService);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly translate = inject(TranslateService);
@@ -44,6 +49,18 @@ export class VendorProfile {
   protected readonly contactOpen = signal(false);
   private contactTrigger: HTMLElement | null = null;
 
+  // ---- reviews ----
+  protected readonly stars = [1, 2, 3, 4, 5];
+  protected readonly reviews = signal<Review[]>([]);
+  protected readonly myRating = signal(0);
+  protected readonly hoverRating = signal(0);
+  protected readonly reviewBody = signal('');
+  protected readonly ratingMissing = signal(false);
+  protected readonly submitBusy = signal(false);
+  protected readonly submitSuccess = signal(false);
+  protected readonly submitError = signal(false);
+  protected readonly myReview = computed(() => this.reviews().find((r) => r.mine));
+
   constructor() {
     // Resolve on every param change (handles vendor→vendor navigation). of() is
     // synchronous, so this also runs during SSR and sets meta before serialization.
@@ -56,6 +73,8 @@ export class VendorProfile {
         this.activePhoto.set(0);
         this.loaded.set(true);
         this.applySeo(v);
+        if (v) this.loadReviews(v.id);
+        else this.reviews.set([]);
       });
     });
 
@@ -137,6 +156,75 @@ export class VendorProfile {
     return new Intl.NumberFormat(locale).format(amount) + ' ₾';
   }
 
+  // ---- reviews ----
+  private loadReviews(vendorId: number): void {
+    this.reviewSvc.list(vendorId).subscribe({
+      next: (list) => {
+        this.reviews.set(list);
+        // Prefill the form with the visitor's existing review so resubmit = edit.
+        const mine = list.find((r) => r.mine);
+        this.myRating.set(mine?.rating ?? 0);
+        this.reviewBody.set(mine?.body ?? '');
+      },
+      error: () => this.reviews.set([]), // e.g. mock-fallback vendor — no review API
+    });
+  }
+
+  protected pickRating(star: number): void {
+    this.myRating.set(star);
+    this.ratingMissing.set(false);
+    this.submitSuccess.set(false);
+  }
+
+  protected submitReview(): void {
+    const v = this.vendor();
+    if (!v) return;
+    if (!this.myRating()) {
+      this.ratingMissing.set(true);
+      return;
+    }
+    this.submitBusy.set(true);
+    this.submitSuccess.set(false);
+    this.submitError.set(false);
+    this.reviewSvc.submit(v.id, { rating: this.myRating(), body: this.reviewBody() || null }).subscribe({
+      next: (saved) => {
+        this.reviews.update((list) => [saved, ...list.filter((r) => !r.mine)]);
+        this.refreshAggregate();
+        this.submitBusy.set(false);
+        this.submitSuccess.set(true);
+      },
+      error: () => {
+        this.submitBusy.set(false);
+        this.submitError.set(true);
+      },
+    });
+  }
+
+  /** Keep the header ★-average honest after a submit, without a refetch. */
+  private refreshAggregate(): void {
+    const v = this.vendor();
+    if (!v) return;
+    const list = this.reviews();
+    const count = list.length;
+    const rating = count
+      ? Math.round((list.reduce((sum, r) => sum + r.rating, 0) / count) * 10) / 10
+      : null;
+    this.vendor.set({ ...v, rating, reviewCount: count });
+  }
+
+  protected round(value: number | null | undefined): number {
+    return Math.round(value ?? 0);
+  }
+
+  protected formatDate(iso: string): string {
+    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
+    return new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(iso));
+  }
+
   /** Build a social URL from a handle or a full URL. */
   protected socialUrl(value: string, base: string): string {
     const v = value.trim();
@@ -183,6 +271,16 @@ export class VendorProfile {
       },
       priceRange: v.priceRange,
       telephone: v.phone,
+      ...(v.reviewCount
+        ? {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: v.rating,
+              reviewCount: v.reviewCount,
+              bestRating: 5,
+            },
+          }
+        : {}),
     });
   }
 
