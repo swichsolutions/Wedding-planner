@@ -54,22 +54,35 @@ public class BudgetController : ControllerBase
         var hasAny = await _db.BudgetItems.AnyAsync(i => i.UserId == uid);
         if (!hasAny)
         {
-            var now = DateTimeOffset.UtcNow;
-            for (var i = 0; i < DefaultItems.Length; i++)
+            // Two concurrent first visits (two tabs) would both pass the check above and
+            // seed 28 rows. A unique index on (UserId, SortOrder) can't guard this —
+            // reorders would violate it transiently — so serialize the seed with a
+            // per-user advisory lock and re-check inside it.
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock(hashtext({uid}))");
+
+            if (!await _db.BudgetItems.AnyAsync(i => i.UserId == uid))
             {
-                var (name, slug, pct) = DefaultItems[i];
-                _db.BudgetItems.Add(new BudgetItem
+                var now = DateTimeOffset.UtcNow;
+                for (var i = 0; i < DefaultItems.Length; i++)
                 {
-                    UserId = uid,
-                    Name = name,
-                    CategorySlug = slug,
-                    DefaultPct = pct,
-                    Estimate = EstimateFor(total, pct),
-                    SortOrder = i,
-                    CreatedAt = now,
-                });
+                    var (name, slug, pct) = DefaultItems[i];
+                    _db.BudgetItems.Add(new BudgetItem
+                    {
+                        UserId = uid,
+                        Name = name,
+                        CategorySlug = slug,
+                        DefaultPct = pct,
+                        Estimate = EstimateFor(total, pct),
+                        SortOrder = i,
+                        CreatedAt = now,
+                    });
+                }
+                await _db.SaveChangesAsync();
             }
-            await _db.SaveChangesAsync();
+
+            await tx.CommitAsync();
         }
 
         return Ok(new BudgetDto(total, await LoadItemsAsync(uid)));

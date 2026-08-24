@@ -57,7 +57,12 @@
     </form>
 
     @if (loadError()) {
-      <p class="cform__error" role="alert">{{ 'planning.loadError' | translate }}</p>
+      <p class="cform__error" role="alert">
+        {{ 'planning.loadError' | translate }}
+        <button type="button" class="btn btn--ghost" (click)="retryLoad()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </p>
     }
 
     @if (loaded() && items().length === 0) {

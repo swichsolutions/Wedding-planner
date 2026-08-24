@@ -79,6 +79,10 @@ export class SiteFinder {
       error: () => {
         this.busy.set(false);
         this.failed.set(true);
+        // A failed search must not leave the PREVIOUS search's table under the
+        // error banner — that reads as if this search produced those rows.
+        this.searched.set(false);
+        this.results.set([]);
       },
     });
   }

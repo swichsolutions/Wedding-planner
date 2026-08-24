@@ -22,7 +22,12 @@
       }
     </ul>
   } @else if (loadError()) {
-    <p class="wb__error" role="alert">{{ 'website.loadError' | translate }}</p>
+    <p class="wb__error" role="alert">
+      {{ 'website.loadError' | translate }}
+      <button type="button" class="btn btn--ghost" (click)="retryLoad()">
+        {{ 'vendors.retry' | translate }}
+      </button>
+    </p>
   } @else if (!loaded()) {
     <div class="wb-skel" aria-hidden="true">
       @for (i of [1, 2, 3, 4, 5, 6]; track i) {
@@ -99,6 +104,7 @@
           <div class="wb-field">
             <label for="wbi-place">{{ 'website.place' | translate }}</label>
             <input id="wbi-place" #fPlace type="text" maxlength="200" autocomplete="off"
+              [value]="info.place()" (input)="onInfoInput('place', $event)"
               [attr.placeholder]="'website.placePlaceholder' | translate" />
           </div>
         </div>

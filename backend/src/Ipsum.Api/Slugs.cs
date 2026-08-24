@@ -27,9 +27,10 @@ public static class Slugs
             else sb.Append('-');
         }
         var slug = Regex.Replace(sb.ToString(), "-{2,}", "-").Trim('-');
-        // Transliteration can double the input length (შ→sh, ძ→dz, …), and callers
-        // append "-{id}"/"-{n}" suffixes on top; the tightest consumer column is
-        // WeddingSite.Slug varchar(160). Cap well below so no path can overflow.
+        // Transliteration can double the input length (შ→sh, ძ→dz, …). This caps a
+        // SINGLE part at 80 chars; a caller that joins several parts and appends
+        // suffixes must cap the joined result against its own column (see
+        // WebsiteController.UniqueSlugAsync — WeddingSite.Slug is varchar(160)).
         return slug.Length <= 80 ? slug : slug[..80].Trim('-');
     }
 

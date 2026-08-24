@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 import { environment } from '../../environments/environment';
+import { SILENT_AUTH_401 } from './auth.interceptor';
 import { AuthService } from './auth.service';
 
 /**
@@ -58,7 +59,13 @@ export class WishlistService {
       if (isCouple) {
         this.loaded.set(false);
         this.loadError.set(false);
-        this.http.get<number[]>(`${this.base}/api/planning/saved`).subscribe({
+        // Background sync: an expired-token 401 signs the user out quietly
+        // instead of throwing a login wall over whatever page they're reading.
+        this.http
+          .get<number[]>(`${this.base}/api/planning/saved`, {
+            context: new HttpContext().set(SILENT_AUTH_401, true),
+          })
+          .subscribe({
           next: (ids) => {
             if (seq !== this.loadSeq) return; // a newer auth state owns the list
             this._ids.set(ids);

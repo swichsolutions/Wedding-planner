@@ -261,6 +261,22 @@ export class Dashboard {
     [list[index], list[target]] = [list[target], list[index]];
     this.photos.set(list);
     this.queueReorder(list.map((p) => p.id));
+    // Keyboard continuity: when the moved photo reaches an end position, the
+    // pressed ↑/↓ becomes [disabled] and focus would drop to <body>, stranding
+    // the user mid-reorder. Re-focus after render: same-direction button while
+    // it stays enabled (repeat presses keep walking), else its sibling.
+    if (this.isBrowser) {
+      setTimeout(() => {
+        const card = this.host.nativeElement.querySelectorAll('.photo-card')[target] as
+          | HTMLElement
+          | undefined;
+        const nudges = card?.querySelectorAll<HTMLButtonElement>('.photo-card__nudge');
+        if (!nudges?.length) return;
+        const pressed = delta < 0 ? nudges[0] : nudges[nudges.length - 1];
+        const sibling = delta < 0 ? nudges[nudges.length - 1] : nudges[0];
+        (pressed.disabled ? sibling : pressed)?.focus();
+      });
+    }
   }
 
   /**
@@ -342,8 +358,9 @@ export class Dashboard {
           this.saving.set(false);
           // The API 400s with a ValidationProblem keyed "whatsapp" when a
           // non-empty number can't be normalized — surface it on the field
-          // instead of pretending the profile saved.
-          if (err.status === 400 && err.error?.errors?.['whatsapp']) {
+          // instead of pretending the profile saved. DataAnnotations failures
+          // (e.g. over MaxLength) key by PROPERTY name ("Whatsapp"), so check both.
+          if (err.status === 400 && (err.error?.errors?.['whatsapp'] ?? err.error?.errors?.['Whatsapp'])) {
             this.whatsappInvalid.set(true);
             (this.host.nativeElement.querySelector('#d-wa') as HTMLElement | null)?.focus();
           } else {

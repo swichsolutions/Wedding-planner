@@ -1,6 +1,7 @@
 using Ipsum.Api.Dtos;
 using Ipsum.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ipsum.Api.Controllers;
@@ -21,6 +22,9 @@ public class PublicSitesController : ControllerBase
     /// as a substring; results are ordered by closeness to the requested month.
     /// </summary>
     [HttpGet("search")]
+    // The most expensive anonymous endpoint (three-column ILIKE scan) — throttled so
+    // scripted name-pair iteration can't hammer the DB or harvest slugs at full speed.
+    [EnableRateLimiting("tracking")]
     public async Task<ActionResult<IEnumerable<SiteSearchResultDto>>> Search(
         [FromQuery] string? firstName,
         [FromQuery] string? lastName,

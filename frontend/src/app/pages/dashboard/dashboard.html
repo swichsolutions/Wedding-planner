@@ -174,7 +174,7 @@
                   </div>
                   <div class="auth__field">
                     <label for="d-wa">{{ 'dash.whatsapp' | translate }}</label>
-                    <input id="d-wa" type="text" inputmode="tel" formControlName="whatsapp"
+                    <input id="d-wa" type="text" inputmode="tel" formControlName="whatsapp" maxlength="200"
                       [placeholder]="'dash.whatsappHint' | translate"
                       [class.is-invalid]="whatsappInvalid()"
                       [attr.aria-invalid]="whatsappInvalid() ? 'true' : null"
@@ -254,7 +254,7 @@
                         }
                       </div>
                       <div class="photo-card__body">
-                        <input class="photo-card__alt" type="text" [value]="p.alt || ''"
+                        <input class="photo-card__alt" type="text" [value]="p.alt || ''" maxlength="300"
                           [attr.placeholder]="'dash.altPlaceholder' | translate" (blur)="saveAlt(p, $event)" />
                         <label class="photo-card__real">
                           <input type="checkbox" [checked]="p.isRealWedding" (change)="toggleReal(p)" />

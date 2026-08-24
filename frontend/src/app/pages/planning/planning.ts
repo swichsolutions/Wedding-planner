@@ -98,13 +98,7 @@ export class Planning {
     effect(() => {
       if (!this.isBrowser || !this.isCouple() || this.coupleLoadStarted) return;
       this.coupleLoadStarted = true;
-      this.checklist.list().subscribe({
-        next: (items) => {
-          this.items.set(items);
-          this.loaded.set(true);
-        },
-        error: () => this.loadError.set(true),
-      });
+      this.loadChecklist();
       this.coupleSvc.me().subscribe({
         next: (c) => this.couple.set(c),
         error: () => {},
@@ -114,6 +108,21 @@ export class Planning {
         error: () => {},
       });
     });
+  }
+
+  private loadChecklist(): void {
+    this.loadError.set(false);
+    this.checklist.list().subscribe({
+      next: (items) => {
+        this.items.set(items);
+        this.loaded.set(true);
+      },
+      error: () => this.loadError.set(true),
+    });
+  }
+
+  protected retryLoad(): void {
+    this.loadChecklist();
   }
 
   // ---- reminder panel helpers ----

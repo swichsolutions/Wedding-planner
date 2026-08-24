@@ -3,20 +3,26 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Ipsum.Api.Auth;
 
-/// <summary>Seeds the role set and a dev admin user. Dev-only.</summary>
+/// <summary>Seeds the role set (every environment) and a config-gated admin user (dev).</summary>
 public static class IdentitySeeder
 {
-    public static async Task SeedAsync(
-        UserManager<AppUser> users,
-        RoleManager<IdentityRole> roles,
-        IConfiguration config)
+    /// <summary>
+    /// Roles must exist in EVERY environment — registration's AddToRoleAsync throws
+    /// without them. Idempotent and credential-free, so it runs on every startup.
+    /// </summary>
+    public static async Task SeedRolesAsync(RoleManager<IdentityRole> roles)
     {
         foreach (var role in Roles.All)
         {
             if (!await roles.RoleExistsAsync(role))
                 await roles.CreateAsync(new IdentityRole(role));
         }
+    }
 
+    public static async Task SeedAdminAsync(
+        UserManager<AppUser> users,
+        IConfiguration config)
+    {
         // No fallback credentials: anything hardcoded here is public in the repo.
         // Without explicit Seed config the admin user simply isn't seeded.
         var adminEmail = config["Seed:AdminEmail"];

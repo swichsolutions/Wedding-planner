@@ -150,6 +150,11 @@ export class LoginModal {
       focusFirstInvalid(this.host.nativeElement);
       return;
     }
+    // The invisible Google button stays clickable in the DOM, so a second sign-in
+    // can start while one is in flight — the orphaned first subscription would
+    // survive close()'s cancellation (only the latest `pending` is unsubscribed),
+    // still store its session and still teleport. One pending sign-in at a time.
+    this.pending?.unsubscribe();
     this.loading.set(true);
     this.error.set(false);
     const { email, password } = this.form.getRawValue();
@@ -212,6 +217,7 @@ export class LoginModal {
   /** GIS fires this (outside Angular's zone) with the Google ID token; exchange it for our JWT. */
   private onGoogleCredential(credential: string): void {
     this.zone.run(() => {
+      this.pending?.unsubscribe(); // one pending sign-in at a time (see submit())
       this.loading.set(true);
       this.googleError.set(false);
       this.error.set(false);

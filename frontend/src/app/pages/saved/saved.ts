@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 
 import { VendorCard } from '../../components/vendor-card/vendor-card';
 import { VendorService } from '../../core/vendor.service';
@@ -28,10 +28,18 @@ export class Saved {
   private readonly reload = signal(0);
 
   // On error show a real error state — an empty directory here would masquerade
-  // as "nothing saved yet", which is a lie when the API is down.
+  // as "nothing saved yet", which is a lie when the API is down. Keyed on the
+  // (hydration-gated) couple signal so guests and the SSR pass never pay for a
+  // full directory fetch they can't see — the post-hydration flip triggers it,
+  // mirroring the couple-tools effect-latch pattern.
   private readonly all = toSignal(
-    toObservable(this.reload).pipe(
-      switchMap(() => {
+    combineLatest([toObservable(this.auth.isCouple), toObservable(this.reload)]).pipe(
+      switchMap(([couple]) => {
+        if (!couple) {
+          this.loading.set(false);
+          this.loadError.set(false);
+          return of([] as Vendor[]);
+        }
         this.loading.set(true);
         // Cleared at request start so Retry visibly returns to the skeleton.
         this.loadError.set(false);

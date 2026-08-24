@@ -10,7 +10,12 @@
     <!-- ================= real tracker (signed-in couple) ================= -->
 
     @if (loadError()) {
-      <p class="budget__error" role="alert">{{ 'budgetPage.loadError' | translate }}</p>
+      <p class="budget__error" role="alert">
+        {{ 'budgetPage.loadError' | translate }}
+        <button type="button" class="btn btn--ghost" (click)="retryLoad()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </p>
     } @else if (!loaded()) {
       <div class="bskel" aria-hidden="true">
         <span class="bskel__bar bskel__bar--wide"></span>

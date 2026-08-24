@@ -44,6 +44,13 @@ const TOKEN_KEY = 'ipsum.auth.token';
 const USER_KEY = 'ipsum.auth.user';
 
 /**
+ * Routes that render session-owned data. A tab sitting on one of these is evicted
+ * when the session changes under it cross-tab; public pages (browse, profiles,
+ * home) just re-render from the signals and are left alone.
+ */
+const SESSION_ROUTES = ['/dashboard', '/admin', '/account', '/planning', '/budget', '/website', '/saved'];
+
+/**
  * localStorage can THROW on mere access (Chrome "Block all cookies", some embedded
  * webviews) — not just be absent. An unguarded touch in a field initializer or the
  * app initializer aborts bootstrap to a blank page, so every read/write/remove in
@@ -138,12 +145,20 @@ export class AuthService {
     if (this.isBrowser) {
       window.addEventListener('storage', (e) => {
         if (e.key !== null && e.key !== TOKEN_KEY && e.key !== USER_KEY) return;
-        const hadToken = this._token() !== null;
+        const oldToken = this._token();
         this._token.set(this.read(TOKEN_KEY));
         this._user.set(this.readUser());
-        // Cross-tab sign-out: guards only run on navigation, so without this the
-        // tab would sit on a protected page firing unauthenticated requests.
-        if (hadToken && this._token() === null) this.router.navigateByUrl('/');
+        // Evict session-scoped pages on ANY session change, not just sign-out:
+        // - removal: guards only run on navigation, so the tab would sit on a
+        //   protected page firing unauthenticated requests;
+        // - swap (signed into a DIFFERENT account in another tab): the couple
+        //   pages' one-shot load latches would keep showing account A's data
+        //   and write every subsequent edit into account B's session.
+        // Public pages just re-render from the signals — no eviction.
+        const sessionChanged = oldToken !== null && this._token() !== oldToken;
+        if (sessionChanged && SESSION_ROUTES.some((p) => this.router.url.startsWith(p))) {
+          this.router.navigateByUrl('/');
+        }
       });
     }
   }

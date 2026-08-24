@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -6,6 +6,13 @@ import { catchError, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
+
+/**
+ * Marks a request as a BACKGROUND fetch (wishlist sync, notification badge): a 401
+ * still clears the stale session, but must not throw a login wall over whatever
+ * public page the user is reading — they just become signed-out where they stand.
+ */
+export const SILENT_AUTH_401 = new HttpContextToken<boolean>(() => false);
 
 /**
  * Attaches the JWT bearer token to outgoing requests aimed at OUR API — never to
@@ -40,15 +47,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         err.status === 401 &&
         !req.url.includes('/api/auth/')
       ) {
-        if (token) auth.logout();
-        // Concurrent 401s: the first one already landed us on /login. A second
-        // navigation here would capture the login URL itself as returnUrl
-        // (returnUrl=/login?expired=1...), bouncing the user straight back to
-        // the login page after they sign in — so skip it.
-        if (!router.url.startsWith('/login')) {
-          router.navigate(['/login'], {
-            queryParams: { expired: 1, returnUrl: router.url },
-          });
+        // A 401 for a token that is no longer the CURRENT token belongs to a
+        // previous session — e.g. an expired-session request settling after the
+        // user already signed in again. Acting on it would destroy the new
+        // session, so it gets no logout and no redirect.
+        const stale = token !== null && auth.token !== token;
+        if (!stale) {
+          // Unconditional (even tokenless): a user-without-token desync would
+          // otherwise loop /login → bounce effect → guarded page → 401 → /login.
+          auth.logout();
+          // Concurrent 401s: the first one already landed us on /login. A second
+          // navigation here would capture the login URL itself as returnUrl
+          // (returnUrl=/login?expired=1...), bouncing the user straight back to
+          // the login page after they sign in — so skip it.
+          if (!req.context.get(SILENT_AUTH_401) && !router.url.startsWith('/login')) {
+            router.navigate(['/login'], {
+              queryParams: { expired: 1, returnUrl: router.url },
+            });
+          }
         }
       }
       return throwError(() => err);

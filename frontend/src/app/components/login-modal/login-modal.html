@@ -25,7 +25,10 @@
             </svg>
             {{ 'authModal.google' | translate }}
           </span>
-          <div id="lm-google-btn" class="lm-google-native"></div>
+          <!-- Inert while a sign-in is in flight — the submit button disables, and
+               Google's invisible overlay button must not stay clickable either. -->
+          <div id="lm-google-btn" class="lm-google-native"
+            [style.pointerEvents]="loading() ? 'none' : null"></div>
         </div>
         @if (googleError()) {
           <p class="lm-note lm-note--error" role="alert">{{ 'authModal.googleError' | translate }}</p>

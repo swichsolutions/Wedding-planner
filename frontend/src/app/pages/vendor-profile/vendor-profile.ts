@@ -1,6 +1,7 @@
 import {
   Component,
   DOCUMENT,
+  DestroyRef,
   ElementRef,
   HostListener,
   OnDestroy,
@@ -12,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -38,6 +39,8 @@ type LoadParams = { category: string; city: string; slug: string };
 })
 export class VendorProfile implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly vendorService = inject(VendorService);
   private readonly reviewSvc = inject(ReviewService);
   protected readonly auth = inject(AuthService);
@@ -115,6 +118,15 @@ export class VendorProfile implements OnDestroy {
         this.loaded.set(true);
         this.loadError.set(failed);
         this.applySeo(v, failed);
+        // Fresh page = fresh review form: without this, vendor→vendor navigation
+        // carries the previous vendor's draft/rating/"review saved" state onto
+        // the new page (loadReviews re-prefills from the visitor's own review).
+        this.myRating.set(0);
+        this.hoverRating.set(0);
+        this.reviewBody.set('');
+        this.ratingMissing.set(false);
+        this.submitSuccess.set(false);
+        this.submitError.set(false);
         if (v) this.loadReviews(v.id);
         else this.reviews.set([]);
         // Dead URLs must answer 404 so crawlers drop them; a transient API
@@ -142,6 +154,11 @@ export class VendorProfile implements OnDestroy {
 
   protected retryLoad(): void {
     if (this.lastParams) this.retry$.next(this.lastParams);
+  }
+
+  /** Current app URL for sign-in returnUrl (mirrors the vendor-card save flow). */
+  protected currentUrl(): string {
+    return this.router.url;
   }
 
   /** Called from every contact affordance (call/WhatsApp/social/map/message). */
@@ -235,16 +252,27 @@ export class VendorProfile implements OnDestroy {
 
   // ---- reviews ----
   private loadReviews(vendorId: number): void {
-    this.reviewSvc.list(vendorId).subscribe({
-      next: (list) => {
-        this.reviews.set(list);
-        // Prefill the form with the visitor's existing review so resubmit = edit.
-        const mine = list.find((r) => r.mine);
-        this.myRating.set(mine?.rating ?? 0);
-        this.reviewBody.set(mine?.body ?? '');
-      },
-      error: () => this.reviews.set([]), // e.g. mock-fallback vendor — no review API
-    });
+    // This subscription lives outside the main switchMap, so a vendor→vendor
+    // navigation doesn't cancel it: guard each handler against the vendor that
+    // is CURRENTLY shown, or a slow response paints vendor A's reviews (and
+    // prefills A's draft) onto vendor B's page.
+    this.reviewSvc
+      .list(vendorId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (list) => {
+          if (this.vendor()?.id !== vendorId) return; // stale — a newer page owns the form
+          this.reviews.set(list);
+          // Prefill the form with the visitor's existing review so resubmit = edit.
+          const mine = list.find((r) => r.mine);
+          this.myRating.set(mine?.rating ?? 0);
+          this.reviewBody.set(mine?.body ?? '');
+        },
+        error: () => {
+          if (this.vendor()?.id !== vendorId) return;
+          this.reviews.set([]);
+        },
+      });
   }
 
   protected pickRating(star: number): void {

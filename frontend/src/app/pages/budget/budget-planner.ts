@@ -21,7 +21,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AuthService } from '../../core/auth.service';
+import { AuthService, safeStorageGet, safeStorageSet } from '../../core/auth.service';
 import { BUDGET_CATEGORIES, suggestedAllocation } from '../../core/budget';
 import {
   Budget,
@@ -168,11 +168,10 @@ export class BudgetPlanner {
     effect(() => {
       if (!this.isBrowser || !this.isCouple() || this.coupleLoadStarted) return;
       this.coupleLoadStarted = true;
-      this.dragHintDismissed.set(localStorage.getItem(DRAG_HINT_KEY) === '1');
-      this.budgetSvc.get().subscribe({
-        next: (b) => this.apply(b),
-        error: () => this.loadError.set(true),
-      });
+      this.loadBudget();
+      // After the load is underway, and via the throw-safe wrapper: a blocked
+      // localStorage must never take the tracker down with it.
+      this.dragHintDismissed.set(safeStorageGet(DRAG_HINT_KEY) === '1');
     });
 
     // Modal dialog contract, driven by presence (not just closeModal()) so every
@@ -193,7 +192,10 @@ export class BudgetPlanner {
       } else {
         document.body.style.overflow = this.prevBodyOverflow ?? '';
         this.prevBodyOverflow = null;
-        if (this.rowTrigger?.isConnected) this.rowTrigger.focus(); // row may be deleted
+        // The opening row may have been deleted from inside the popup — fall
+        // back to #main (tabindex="-1") instead of dropping focus to <body>.
+        if (this.rowTrigger?.isConnected) this.rowTrigger.focus();
+        else document.getElementById('main')?.focus();
         this.rowTrigger = null;
       }
     });
@@ -209,22 +211,41 @@ export class BudgetPlanner {
 
   protected dismissDragHint(): void {
     this.dragHintDismissed.set(true);
-    if (this.isBrowser) localStorage.setItem(DRAG_HINT_KEY, '1');
+    if (this.isBrowser) safeStorageSet(DRAG_HINT_KEY, '1');
   }
 
   // =============================== tracker ===============================
+
+  private loadBudget(): void {
+    this.loadError.set(false);
+    this.budgetSvc.get().subscribe({
+      next: (b) => this.apply(b),
+      error: () => this.loadError.set(true),
+    });
+  }
+
+  protected retryLoad(): void {
+    this.loadBudget();
+  }
 
   private apply(b: Budget): void {
     this.total.set(b.totalBudget);
     // Rows with a save in flight keep their optimistic state: a full payload
     // (total autosave / resync after another row's failure) landing mid-edit
     // must not roll them back — each pending row's own PUT settle decides it.
-    this.items.set(
-      b.items.map((row) => {
-        if (!this.pendingSaves.has(row.id)) return row;
-        return this.items().find((i) => i.id === row.id) ?? row;
-      }),
-    );
+    let rows = b.items.map((row) => {
+      if (!this.pendingSaves.has(row.id)) return row;
+      return this.items().find((i) => i.id === row.id) ?? row;
+    });
+    // A reorder in flight (or queued) owns the ORDER: this payload predates the
+    // move the server is about to apply, so keep the client's arrangement.
+    // Rows the client doesn't know yet keep their server order at the end
+    // (sort is stable).
+    if (this.reorderInFlight || this.pendingOrder) {
+      const rank = new Map(this.items().map((i, idx) => [i.id, idx]));
+      rows = rows.slice().sort((a, b2) => (rank.get(a.id) ?? rank.size) - (rank.get(b2.id) ?? rank.size));
+    }
+    this.items.set(rows);
     this.loaded.set(true);
   }
 
@@ -321,7 +342,12 @@ export class BudgetPlanner {
         }
       },
       error: () => {
-        this.pendingSaves.delete(id);
+        // Decrement symmetrically with the next path — dropping the whole
+        // counter would strip a still-in-flight second PUT of its protection
+        // against the resync below.
+        const left = (this.pendingSaves.get(id) ?? 1) - 1;
+        if (left <= 0) this.pendingSaves.delete(id);
+        else this.pendingSaves.set(id, left);
         this.toast.error('budgetPage.saveError');
         this.resync();
       },

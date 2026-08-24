@@ -3,6 +3,7 @@ using Ipsum.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Ipsum.Api.Controllers;
 
@@ -37,6 +38,9 @@ public class AccountController : ControllerBase
     /// email + password. Returns a short error code the client localizes.
     /// </summary>
     [HttpPost("password")]
+    // ChangePasswordAsync verifies the current password without touching lockout —
+    // throttle it so a session holder can't brute-force the current password.
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);

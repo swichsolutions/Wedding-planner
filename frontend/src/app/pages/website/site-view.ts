@@ -1,4 +1,5 @@
 import { Component, RESPONSE_INIT, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -29,6 +30,9 @@ export class SiteView {
 
     inject(WebsiteService)
       .publicSite(slug)
+      // A slow response landing after navigation must not retitle the next
+      // page or stamp noindex onto it.
+      .pipe(takeUntilDestroyed())
       .subscribe({
         next: (s) => {
           this.site.set(s);

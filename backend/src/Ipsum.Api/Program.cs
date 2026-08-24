@@ -159,18 +159,31 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
-    // Auto-apply migrations + seed in dev. Guarded so the API still boots if the
-    // database isn't up yet (endpoints will then fail until it is).
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// Startup seeding. Roles run in EVERY environment — registration's AddToRoleAsync
+// throws without them, so a fresh production DB would 500 on every sign-up.
+// Dev additionally auto-migrates, seeds demo data, and creates the configured admin.
+// Guarded so the API still boots if the database isn't up yet.
+using (var scope = app.Services.CreateScope())
+{
     try
     {
-        await db.Database.MigrateAsync();
-        await DbSeeder.SeedAsync(db);
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+        if (app.Environment.IsDevelopment())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.MigrateAsync();
+            await DbSeeder.SeedAsync(db);
+        }
+
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        await IdentitySeeder.SeedAsync(userManager, roleManager, app.Configuration);
+        await IdentitySeeder.SeedRolesAsync(roleManager);
+
+        if (app.Environment.IsDevelopment())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
+        }
     }
     catch (Exception ex)
     {

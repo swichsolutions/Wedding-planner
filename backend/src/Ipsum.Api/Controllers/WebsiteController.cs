@@ -234,6 +234,12 @@ public class WebsiteController : ControllerBase
         var baseSlug = parts.Count > 0 ? string.Join("-", parts) : "chveni-qortsili";
         if (site.WeddingDate is DateOnly d) baseSlug += $"-{d.Year}";
 
+        // Slugs.From caps each PART at 80 chars, but two joined parts + "-{year}"
+        // can still exceed WeddingSite.Slug's varchar(160) — and a 22001 "value too
+        // long" is not the unique violation the publish retry recovers from. Cap the
+        // joined base with room to spare for the "-{n}" collision suffix.
+        if (baseSlug.Length > 140) baseSlug = baseSlug[..140].Trim('-');
+
         var slug = baseSlug;
         for (var n = 2; await _db.WeddingSites.AnyAsync(s => s.Slug == slug); n++)
             slug = $"{baseSlug}-{n}";

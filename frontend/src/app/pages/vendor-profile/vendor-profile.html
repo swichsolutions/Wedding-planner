@@ -181,7 +181,8 @@
         } @else {
           <p class="reviews__signin">
             {{ 'reviews.signinPrompt' | translate }}
-            <a routerLink="/login">{{ 'reviews.signin' | translate }}</a>
+            <!-- returnUrl: signing in must land back on this profile, not /planning -->
+            <a routerLink="/login" [queryParams]="{ returnUrl: currentUrl() }">{{ 'reviews.signin' | translate }}</a>
           </p>
         }
 

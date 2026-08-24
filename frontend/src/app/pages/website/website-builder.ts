@@ -59,6 +59,7 @@ export class WebsiteBuilder {
     partnerFirstName: signal(''),
     partnerLastName: signal(''),
     weddingDate: signal(''),
+    place: signal(''), // controlled like the rest so back-and-forth keeps the value
   };
   private readonly infoTouched = new Set<InfoField>();
 
@@ -68,7 +69,8 @@ export class WebsiteBuilder {
   }
 
   private prefillInfo(c: CoupleProfile): void {
-    for (const field of Object.keys(this.info) as InfoField[]) {
+    // Only the fields the couple profile actually carries — place has no source.
+    for (const field of PREFILL_FIELDS) {
       const value = c[field];
       if (value && !this.infoTouched.has(field)) this.info[field].set(value);
     }
@@ -179,13 +181,7 @@ export class WebsiteBuilder {
     effect(() => {
       if (!this.isBrowser || !this.isCouple() || this.coupleLoadStarted) return;
       this.coupleLoadStarted = true;
-      this.svc.get().subscribe({
-        next: (s) => {
-          this.site.set(s);
-          this.loaded.set(true);
-        },
-        error: () => this.loadError.set(true),
-      });
+      this.loadSite();
       this.coupleSvc.me().subscribe({
         next: (c) => this.prefillInfo(c),
         error: () => {},
@@ -204,6 +200,21 @@ export class WebsiteBuilder {
   }
 
   private coupleLoadStarted = false;
+
+  private loadSite(): void {
+    this.loadError.set(false);
+    this.svc.get().subscribe({
+      next: (s) => {
+        this.site.set(s);
+        this.loaded.set(true);
+      },
+      error: () => this.loadError.set(true),
+    });
+  }
+
+  protected retryLoad(): void {
+    this.loadSite();
+  }
 
   // ---- pick + create ----
 
@@ -226,7 +237,9 @@ export class WebsiteBuilder {
     const template = this.pickedTemplate();
     if (!template || this.creating()) return;
     this.creating.set(true);
-    this.commitSeq++; // a stale commit settle must not clobber the created site
+    // Bump AND capture: stale commit settles can't clobber the created site, and
+    // this response itself only applies while nothing newer superseded it.
+    const seq = ++this.commitSeq;
     this.svc
       .update({
         templateKey: template,
@@ -244,7 +257,7 @@ export class WebsiteBuilder {
       })
       .subscribe({
         next: (s) => {
-          this.site.set(s);
+          if (seq === this.commitSeq) this.site.set(s);
           this.creating.set(false);
         },
         error: () => {
@@ -332,10 +345,12 @@ export class WebsiteBuilder {
     const file = input.files?.[0];
     if (!file || this.photoBusy()) return;
     this.photoBusy.set(true);
-    this.commitSeq++; // a stale commit settle must not clobber the photo response
+    // Bump AND capture: fences stale commits, and keeps this response from
+    // clobbering an even newer mutation (e.g. a publish clicked mid-upload).
+    const seq = ++this.commitSeq;
     this.svc.uploadPhoto(file).subscribe({
       next: (s) => {
-        this.site.set(s);
+        if (seq === this.commitSeq) this.site.set(s);
         this.photoBusy.set(false);
         input.value = '';
       },
@@ -350,10 +365,11 @@ export class WebsiteBuilder {
   protected removePhoto(): void {
     if (this.photoBusy()) return;
     this.photoBusy.set(true);
-    this.commitSeq++; // a stale commit settle must not resurrect the removed photo
+    // Bump AND capture — see onPhoto.
+    const seq = ++this.commitSeq;
     this.svc.removePhoto().subscribe({
       next: (s) => {
-        this.site.set(s);
+        if (seq === this.commitSeq) this.site.set(s);
         this.photoBusy.set(false);
       },
       error: () => {
@@ -490,12 +506,13 @@ export class WebsiteBuilder {
     // bar's action button once "Publish" has been swapped for "Unpublish").
     this.pubTrigger = this.isBrowser ? (document.activeElement as HTMLElement | null) : null;
     this.publishBusy.set(true);
-    // A stale commit settling later must not flip the site back to Draft and
-    // blank the URL in the "Published!" dialog.
-    this.commitSeq++;
+    // Bump AND capture: a stale commit settling later must not flip the site
+    // back to Draft, and a photo upload finishing after this click owns the
+    // newer state — the dialog still opens either way (the publish succeeded).
+    const seq = ++this.commitSeq;
     this.svc.publish().subscribe({
       next: (s) => {
-        this.site.set(s);
+        if (seq === this.commitSeq) this.site.set(s);
         this.publishBusy.set(false);
         this.showPublished.set(true);
         if (this.isBrowser) {
@@ -521,10 +538,11 @@ export class WebsiteBuilder {
   protected unpublish(): void {
     if (this.publishBusy()) return;
     this.publishBusy.set(true);
-    this.commitSeq++; // a stale commit settle must not clobber the unpublish response
+    // Bump AND capture — see publish().
+    const seq = ++this.commitSeq;
     this.svc.unpublish().subscribe({
       next: (s) => {
-        this.site.set(s);
+        if (seq === this.commitSeq) this.site.set(s);
         this.publishBusy.set(false);
       },
       error: () => {
@@ -631,7 +649,16 @@ export class WebsiteBuilder {
   }
 }
 
-type InfoField = 'firstName' | 'lastName' | 'partnerFirstName' | 'partnerLastName' | 'weddingDate';
+type InfoField = 'firstName' | 'lastName' | 'partnerFirstName' | 'partnerLastName' | 'weddingDate' | 'place';
+
+/** Info fields prefillable from the couple profile — place has no profile source. */
+const PREFILL_FIELDS = [
+  'firstName',
+  'lastName',
+  'partnerFirstName',
+  'partnerLastName',
+  'weddingDate',
+] as const;
 
 function clampPct(n: number): number {
   return Math.min(100, Math.max(0, Math.round(n)));
