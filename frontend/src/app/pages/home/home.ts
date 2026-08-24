@@ -81,6 +81,8 @@ export class Home {
       inkColor: null,
       accentColor: null,
       photoUrl: img('photo-1583939003579-730e3918a45a', 900),
+      photoFocusX: null,
+      photoFocusY: null,
     };
   });
 

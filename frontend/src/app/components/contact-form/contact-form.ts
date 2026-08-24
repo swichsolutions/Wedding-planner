@@ -34,12 +34,14 @@ export class ContactForm {
 
   protected readonly state = signal<SendState>('idle');
 
+  // Max lengths mirror the server's CreateMessageDto caps (200/40/4000) so an
+  // over-long message fails with a specific message, not a bare 400.
   protected readonly form = this.fb.group(
     {
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      phone: [''],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+      phone: ['', [Validators.maxLength(40)]],
       email: ['', [Validators.email]],
-      body: ['', [Validators.required, Validators.minLength(5)]],
+      body: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(4000)]],
     },
     { validators: contactRequired },
   );

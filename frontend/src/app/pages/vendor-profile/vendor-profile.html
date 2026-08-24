@@ -49,7 +49,10 @@
             <p class="info__rating">
               <span class="info__star" aria-hidden="true">★</span>
               <span class="num">{{ v.rating }}</span>
-              <a class="info__rating-link num" href="#reviews">({{ v.reviewCount }})</a>
+              <!-- routerLink, not href="#reviews": <base href="/"> rewrites a bare
+                   fragment href to /#reviews, navigating to the home page. -->
+              <a class="info__rating-link num" [routerLink]="[]" fragment="reviews"
+                queryParamsHandling="preserve">({{ v.reviewCount }})</a>
             </p>
           }
 
@@ -65,7 +68,7 @@
             <button type="button" class="btn btn--pink info__cta" (click)="openContact()">{{ 'profile.contactCta' | translate }}</button>
 
             @if (v.phone) {
-              <a class="contact-phone" [href]="'tel:' + v.phone">
+              <a class="contact-phone" [href]="'tel:' + v.phone" (click)="trackContact()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
                   <path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.58.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1A17 17 0 0 1 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.46.57 3.58.12.35.03.75-.24 1.02L6.6 10.8Z"/>
                 </svg>
@@ -77,7 +80,8 @@
               <div class="social" role="group" [attr.aria-label]="'profile.contact' | translate">
                 @if (v.whatsapp) {
                   <a class="social__btn social__btn--wa" aria-label="WhatsApp"
-                    [href]="'https://wa.me/' + v.whatsapp" target="_blank" rel="noopener">
+                    [href]="'https://wa.me/' + v.whatsapp" target="_blank" rel="noopener"
+                    (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
                     </svg>
@@ -85,7 +89,8 @@
                 }
                 @if (v.instagram) {
                   <a class="social__btn social__btn--ig" aria-label="Instagram"
-                    [href]="socialUrl(v.instagram, 'https://instagram.com/')" target="_blank" rel="noopener">
+                    [href]="socialUrl(v.instagram, 'https://instagram.com/')" target="_blank" rel="noopener"
+                    (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                       <path d="M12 2c2.72 0 3.06.01 4.12.06 1.06.05 1.79.22 2.42.46.66.26 1.21.6 1.76 1.15.55.55.89 1.1 1.15 1.76.24.63.41 1.36.46 2.42.05 1.06.06 1.4.06 4.12s-.01 3.06-.06 4.12c-.05 1.06-.22 1.79-.46 2.42a4.9 4.9 0 0 1-1.15 1.76 4.9 4.9 0 0 1-1.76 1.15c-.63.24-1.36.41-2.42.46-1.06.05-1.4.06-4.12.06s-3.06-.01-4.12-.06c-1.06-.05-1.79-.22-2.42-.46a4.9 4.9 0 0 1-1.76-1.15 4.9 4.9 0 0 1-1.15-1.76c-.24-.63-.41-1.36-.46-2.42C2.01 15.06 2 14.72 2 12s.01-3.06.06-4.12c.05-1.06.22-1.79.46-2.42A4.9 4.9 0 0 1 3.67 3.7 4.9 4.9 0 0 1 5.43 2.55c.63-.24 1.36-.41 2.42-.46C8.94 2.01 9.28 2 12 2Zm0 1.8c-2.67 0-2.99.01-4.04.06-.97.04-1.5.21-1.85.34-.47.18-.8.4-1.15.74-.34.35-.56.68-.74 1.15-.13.35-.3.88-.34 1.85-.05 1.05-.06 1.37-.06 4.04s.01 2.99.06 4.04c.04.97.21 1.5.34 1.85.18.47.4.8.74 1.15.35.34.68.56 1.15.74.35.13.88.3 1.85.34 1.05.05 1.37.06 4.04.06s2.99-.01 4.04-.06c.97-.04 1.5-.21 1.85-.34.47-.18.8-.4 1.15-.74.34-.35.56-.68.74-1.15.13-.35.3-.88.34-1.85.05-1.05.06-1.37.06-4.04s-.01-2.99-.06-4.04c-.04-.97-.21-1.5-.34-1.85a3.1 3.1 0 0 0-.74-1.15 3.1 3.1 0 0 0-1.15-.74c-.35-.13-.88-.3-1.85-.34-1.05-.05-1.37-.06-4.04-.06Zm0 3.06a5.14 5.14 0 1 1 0 10.28 5.14 5.14 0 0 1 0-10.28Zm0 1.8a3.34 3.34 0 1 0 0 6.68 3.34 3.34 0 0 0 0-6.68Zm5.34-3.15a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/>
                     </svg>
@@ -93,7 +98,8 @@
                 }
                 @if (v.facebook) {
                   <a class="social__btn social__btn--fb" aria-label="Facebook"
-                    [href]="socialUrl(v.facebook, 'https://facebook.com/')" target="_blank" rel="noopener">
+                    [href]="socialUrl(v.facebook, 'https://facebook.com/')" target="_blank" rel="noopener"
+                    (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                       <path d="M14 8.5h2.2V5.6c-.38-.05-1.3-.12-2.36-.12-2.34 0-3.94 1.43-3.94 4.06v2.26H7v3.06h2.9V22h3.46v-7.14h2.78l.44-3.06h-3.22V9.84c0-.88.24-1.34 1.64-1.34Z"/>
                     </svg>
@@ -101,7 +107,8 @@
                 }
                 @if (v.mapUrl) {
                   <a class="social__btn social__btn--map" [attr.aria-label]="'profile.maps' | translate"
-                    [href]="ensureHttp(v.mapUrl)" target="_blank" rel="noopener">
+                    [href]="ensureHttp(v.mapUrl)" target="_blank" rel="noopener"
+                    (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                       <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"/>
                     </svg>
@@ -210,7 +217,8 @@
 
   <!-- ---------- fullscreen lightbox ---------- -->
   @if (lightboxOpen()) {
-    <div class="lightbox" role="dialog" aria-modal="true" [attr.aria-label]="v.name" (click)="closeLightbox()">
+    <div class="lightbox" role="dialog" aria-modal="true" [attr.aria-label]="v.name"
+      (click)="closeLightbox()" (keydown)="onOverlayKeydown($event)">
       <button type="button" class="lightbox__close" (click)="closeLightbox()"
         [attr.aria-label]="'gallery.close' | translate">×</button>
 
@@ -230,7 +238,7 @@
 
   <!-- ---------- contact (message) dialog ---------- -->
   @if (contactOpen()) {
-    <div class="cmodal" (click)="onContactBackdrop($event)">
+    <div class="cmodal" (click)="onContactBackdrop($event)" (keydown)="onOverlayKeydown($event)">
       <div class="cmodal__card" role="dialog" aria-modal="true" aria-labelledby="cmodal-title">
         <button type="button" class="cmodal__close" (click)="closeContact()"
           [attr.aria-label]="'gallery.close' | translate">×</button>
@@ -240,10 +248,31 @@
       </div>
     </div>
   }
+} @else if (loadError()) {
+  <div class="container profile-missing">
+    <h1>{{ 'profile.loadErrorTitle' | translate }}</h1>
+    <p>{{ 'profile.loadErrorBody' | translate }}</p>
+    <button type="button" class="btn btn--primary" (click)="retryLoad()">
+      {{ 'vendors.retry' | translate }}
+    </button>
+  </div>
 } @else if (loaded()) {
   <div class="container profile-missing">
     <h1>{{ 'profile.notFoundTitle' | translate }}</h1>
     <p>{{ 'profile.notFoundBody' | translate }}</p>
     <a class="btn btn--primary" routerLink="/vendors">{{ 'profile.backToVendors' | translate }}</a>
+  </div>
+} @else {
+  <!-- loading — hold the page shape instead of rendering blank -->
+  <div class="profile-skel container" aria-hidden="true">
+    <div class="profile-skel__layout">
+      <div class="skel profile-skel__media"></div>
+      <div>
+        <div class="skel profile-skel__line" style="width: 40%"></div>
+        <div class="skel profile-skel__line profile-skel__line--lg" style="width: 75%"></div>
+        <div class="skel profile-skel__line" style="width: 55%"></div>
+        <div class="skel profile-skel__line" style="width: 65%"></div>
+      </div>
+    </div>
   </div>
 }

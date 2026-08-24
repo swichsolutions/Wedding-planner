@@ -1,10 +1,10 @@
-import { Component, ElementRef, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AuthService } from '../../core/auth.service';
+import { AuthService, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
 import { CATEGORIES, img } from '../../core/catalog';
 import { focusFirstInvalid, nameValidator, passwordChecks, passwordValidator } from '../../core/forms';
 
@@ -27,7 +27,9 @@ export class Signup {
   private readonly route = inject(ActivatedRoute);
   private readonly host = inject(ElementRef<HTMLElement>);
 
-  private readonly returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+  // Validated once at the single source — both consumers (the signed-in bounce
+  // effect and the post-registration navigate) only ever see a safe value.
+  private readonly returnUrl = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
 
   protected readonly totalSteps = 6;
   protected readonly step = signal(0);
@@ -82,6 +84,18 @@ export class Signup {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('signup.title')} | ${t.instant('brand.name')}`);
+
+    // Signed-in users have no business in the wizard — whether they arrived signed in
+    // or signed in mid-wizard via the navbar modal. Couples honor the returnUrl (e.g.
+    // back to /website); others go to their role's home. Skipped while our own
+    // registration request is in flight — submit() does that navigation itself.
+    effect(() => {
+      const user = this.auth.user();
+      if (!user || this.loading()) return;
+      const target =
+        this.returnUrl && user.roles.includes('Couple') ? this.returnUrl : defaultRouteFor(user);
+      this.router.navigateByUrl(target);
+    });
   }
 
   /** "Nino & Giorgi", "Nino", or "" — drives the personalized final-step heading. */

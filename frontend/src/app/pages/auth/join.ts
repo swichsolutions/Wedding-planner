@@ -1,10 +1,10 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, ElementRef, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AuthService } from '../../core/auth.service';
+import { AuthService, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 
 @Component({
@@ -72,7 +72,9 @@ export class Join {
   private readonly route = inject(ActivatedRoute);
   private readonly host = inject(ElementRef<HTMLElement>);
 
-  private readonly returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+  // Validated once at the single source — both consumers (the signed-in bounce
+  // effect and the post-registration navigate) only ever see a safe value.
+  private readonly returnUrl = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
   protected readonly reason = signal(this.route.snapshot.queryParamMap.get('reason'));
   protected readonly error = signal(false);
   protected readonly loading = signal(false);
@@ -88,6 +90,18 @@ export class Join {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('join.title')} | ${t.instant('brand.name')}`);
+
+    // Signed-in users have no business on a sign-up form — whether they arrived
+    // signed in or signed in mid-page via the navbar modal. Couples honor the
+    // returnUrl; others go to their role's home. Skipped while our own request
+    // is in flight — submit() does that navigation itself.
+    effect(() => {
+      const user = this.auth.user();
+      if (!user || this.loading()) return;
+      const target =
+        this.returnUrl && user.roles.includes('Couple') ? this.returnUrl : defaultRouteFor(user);
+      this.router.navigateByUrl(target);
+    });
   }
 
   /** Live per-rule state for the password requirements checklist (updates as the user types). */

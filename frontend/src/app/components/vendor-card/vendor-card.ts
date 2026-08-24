@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -21,6 +21,14 @@ export class VendorCard {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   protected readonly wishlist = inject(WishlistService);
+
+  /**
+   * Guests see the heart (it routes to couple sign-up); couples use it. A
+   * signed-in vendor/admin gets no heart at all — wishlists are a couple
+   * feature, and sending them to /signup just bounces them straight back to
+   * their own dashboard (a confusing teleport).
+   */
+  protected readonly showSave = computed(() => !this.auth.user() || this.auth.isCouple());
 
   protected toggleSave(event: Event): void {
     event.preventDefault();

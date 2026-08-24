@@ -6,15 +6,17 @@
     }
   </a>
 
-  <button class="vendor-card__save" type="button" (click)="toggleSave($event)"
-    [class.is-saved]="wishlist.isSaved(vendor().id)"
-    [attr.aria-pressed]="wishlist.isSaved(vendor().id)"
-    [attr.aria-label]="'featured.save' | translate">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-      stroke-width="1.75" aria-hidden="true">
-      <path d="M12 21s-7.5-4.6-10-9.2C.6 8.9 2 5.5 5.2 5.1c1.9-.2 3.6.9 4.4 2.4.8-1.5 2.5-2.6 4.4-2.4 3.2.4 4.6 3.8 3.2 6.7C19.5 16.4 12 21 12 21z"/>
-    </svg>
-  </button>
+  @if (showSave()) {
+    <button class="vendor-card__save" type="button" (click)="toggleSave($event)"
+      [class.is-saved]="wishlist.isSaved(vendor().id)"
+      [attr.aria-pressed]="wishlist.isSaved(vendor().id)"
+      [attr.aria-label]="'featured.save' | translate">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+        stroke-width="1.75" aria-hidden="true">
+        <path d="M12 21s-7.5-4.6-10-9.2C.6 8.9 2 5.5 5.2 5.1c1.9-.2 3.6.9 4.4 2.4.8-1.5 2.5-2.6 4.4-2.4 3.2.4 4.6 3.8 3.2 6.7C19.5 16.4 12 21 12 21z"/>
+      </svg>
+    </button>
+  }
 
   <div class="vendor-card__body">
     <a class="vendor-card__name"

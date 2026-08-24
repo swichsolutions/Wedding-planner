@@ -68,6 +68,8 @@
 </section>
 
 <!-- ===================== POPULAR (most-viewed) ===================== -->
+<!-- Hidden entirely when the row is empty (e.g. the API is unreachable). -->
+@if (popular().length) {
 <section class="section featured">
   <div class="container">
     <header class="section__head section__head--row">
@@ -83,7 +85,10 @@
     <div class="vendor-marquee">
       <ul class="vendor-marquee__track" role="list">
         @for (v of popularTrack(); track $index; let i = $index) {
-          <li class="vendor-marquee__item" [attr.aria-hidden]="i >= popular().length ? true : null">
+          <!-- inert: the clones' links/buttons must leave the tab order too —
+               aria-hidden alone leaves focusable elements screen readers can't see. -->
+          <li class="vendor-marquee__item" [attr.aria-hidden]="i >= popular().length ? true : null"
+            [attr.inert]="i >= popular().length ? '' : null">
             <app-vendor-card [vendor]="v" />
           </li>
         }
@@ -91,6 +96,7 @@
     </div>
   </div>
 </section>
+}
 
 <!-- ===================== VIP (paid placement) ===================== -->
 <!-- Drifts the opposite way. Hidden entirely while no vendor carries the flag. -->
@@ -108,7 +114,8 @@
       <div class="vendor-marquee vendor-marquee--reverse">
         <ul class="vendor-marquee__track" role="list">
           @for (v of vipTrack(); track $index; let i = $index) {
-            <li class="vendor-marquee__item" [attr.aria-hidden]="i >= vip().length ? true : null">
+            <li class="vendor-marquee__item" [attr.aria-hidden]="i >= vip().length ? true : null"
+              [attr.inert]="i >= vip().length ? '' : null">
               <app-vendor-card [vendor]="v" />
             </li>
           }

@@ -1,10 +1,10 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, ElementRef, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AuthService } from '../../core/auth.service';
+import { AuthService, defaultRouteFor } from '../../core/auth.service';
 import { CATEGORIES, img } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 
@@ -37,16 +37,26 @@ interface ScatterPhoto {
           <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <div class="auth__field">
               <label for="r-name">{{ 'auth.vendorName' | translate }}</label>
-              <input id="r-name" type="text" formControlName="vendorName" autocomplete="organization" aria-required="true" />
+              <input id="r-name" type="text" formControlName="vendorName" autocomplete="organization" aria-required="true"
+                [class.is-invalid]="attempted() && form.controls.vendorName.invalid"
+                [attr.aria-invalid]="attempted() && form.controls.vendorName.invalid ? 'true' : null" />
+              @if (attempted() && form.controls.vendorName.invalid) {
+                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+              }
             </div>
             <div class="auth__field">
               <label for="r-cat">{{ 'auth.category' | translate }}</label>
-              <select id="r-cat" formControlName="categorySlug" aria-required="true">
+              <select id="r-cat" formControlName="categorySlug" aria-required="true"
+                [class.is-invalid]="attempted() && form.controls.categorySlug.invalid"
+                [attr.aria-invalid]="attempted() && form.controls.categorySlug.invalid ? 'true' : null">
                 <option value="">{{ 'auth.selectCategory' | translate }}</option>
                 @for (c of categories; track c.slug) {
                   <option [value]="c.slug">{{ c.key | translate }}</option>
                 }
               </select>
+              @if (attempted() && form.controls.categorySlug.invalid) {
+                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+              }
             </div>
             <div class="auth__field">
               <label for="r-email">{{ 'auth.email' | translate }}</label>
@@ -130,6 +140,15 @@ export class Register {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('auth.registerTitle')} | ${t.instant('brand.name')}`);
+
+    // Signed-in users have no business on the vendor registration form. Without this,
+    // a couple who signs in via the navbar modal while on this page could still submit
+    // it and silently overwrite their session with a brand-new vendor account.
+    // Skipped while our own request is in flight — submit() navigates itself.
+    effect(() => {
+      const user = this.auth.user();
+      if (user && !this.loading()) this.router.navigateByUrl(defaultRouteFor(user));
+    });
   }
 
   /** Live per-rule state for the password requirements checklist (updates as the user types). */

@@ -13,7 +13,7 @@
   <form [formGroup]="form" (ngSubmit)="submit()" class="cform" novalidate>
     <div class="cform__field">
       <label for="cf-name">{{ 'contact.name' | translate }} <span class="req" aria-hidden="true">*</span></label>
-      <input id="cf-name" type="text" formControlName="name" autocomplete="name" aria-required="true" />
+      <input id="cf-name" type="text" formControlName="name" autocomplete="name" maxlength="200" aria-required="true" />
       @if (showError('name')) {
         <p class="cform__error">{{ 'contact.required' | translate }}</p>
       }
@@ -22,7 +22,7 @@
     <div class="cform__row">
       <div class="cform__field">
         <label for="cf-phone">{{ 'contact.phone' | translate }}</label>
-        <input id="cf-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" />
+        <input id="cf-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" maxlength="40" />
       </div>
       <div class="cform__field">
         <label for="cf-email">{{ 'contact.email' | translate }}</label>
@@ -42,9 +42,13 @@
 
     <div class="cform__field">
       <label for="cf-body">{{ 'contact.message' | translate }} <span class="req" aria-hidden="true">*</span></label>
-      <textarea id="cf-body" rows="4" formControlName="body" aria-required="true"></textarea>
+      <textarea id="cf-body" rows="4" formControlName="body" maxlength="4000" aria-required="true"></textarea>
       @if (showError('body')) {
-        <p class="cform__error">{{ 'contact.required' | translate }}</p>
+        @if (form.controls.body.hasError('maxlength')) {
+          <p class="cform__error">{{ 'contact.bodyTooLong' | translate }}</p>
+        } @else {
+          <p class="cform__error">{{ 'contact.required' | translate }}</p>
+        }
       }
     </div>
 

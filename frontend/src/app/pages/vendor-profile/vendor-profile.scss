@@ -28,6 +28,36 @@
   }
 }
 
+// ---- loading skeleton (mirrors .profile__layout so nothing jumps) ----
+.profile-skel {
+  padding-block: var(--space-8) var(--space-20);
+}
+
+.profile-skel__layout {
+  display: grid;
+  gap: var(--space-8);
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--space-12);
+    align-items: start;
+  }
+}
+
+.profile-skel__media {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+}
+
+.profile-skel__line {
+  height: 16px;
+  margin-bottom: var(--space-4);
+
+  &--lg {
+    height: 32px;
+  }
+}
+
 // ---- top layout: gallery + sticky info rail ----
 .profile__layout {
   display: grid;

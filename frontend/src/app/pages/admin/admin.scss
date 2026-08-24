@@ -8,6 +8,13 @@
   padding-block: var(--space-12) var(--space-20);
 }
 
+// Row-sized shimmer block for the loading state (shares the global .skel base).
+.admin__skel {
+  display: block;
+  width: 100%;
+  height: 56px;
+}
+
 .admin__head {
   display: flex;
   align-items: center;

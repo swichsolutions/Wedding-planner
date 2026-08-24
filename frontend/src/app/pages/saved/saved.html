@@ -5,7 +5,25 @@
   </header>
 
   @if (auth.isCouple()) {
-    @if (saved().length > 0) {
+    @if (showError()) {
+      <div class="saved__empty">
+        <h2>{{ 'vendors.loadErrorTitle' | translate }}</h2>
+        <p>{{ 'vendors.loadErrorBody' | translate }}</p>
+        <button type="button" class="btn btn--pink-outline" (click)="retry()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </div>
+    } @else if (showLoading()) {
+      <ul class="vendor-grid" role="list" aria-hidden="true">
+        @for (i of skeletons; track i) {
+          <li class="skel-card">
+            <div class="skel skel-card__media"></div>
+            <div class="skel skel-card__line"></div>
+            <div class="skel skel-card__line skel-card__line--sub"></div>
+          </li>
+        }
+      </ul>
+    } @else if (saved().length > 0) {
       <p class="saved__count"><span class="num">{{ saved().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
       <ul class="vendor-grid" role="list">
         @for (v of saved(); track v.id) {

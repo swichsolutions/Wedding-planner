@@ -1,7 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { VendorCard } from '../../components/vendor-card/vendor-card';
@@ -30,11 +30,12 @@ export class VendorBrowse {
   /** Active filter, derived from the URL so browse state is shareable/deep-linkable. */
   protected readonly filter = computed<VendorFilter>(() => {
     const p = this.params();
-    const maxPrice = p.get('maxPrice');
+    // Ignore non-numeric ?maxPrice (e.g. "abc" → NaN) instead of sending it to the API.
+    const maxPrice = Number(p.get('maxPrice'));
     return {
       category: p.get('category') ?? undefined,
       city: p.get('city') ?? undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      maxPrice: Number.isFinite(maxPrice) && maxPrice > 0 ? maxPrice : undefined,
       vip: p.get('vip') === '1' || undefined,
     };
   });
@@ -44,10 +45,37 @@ export class VendorBrowse {
     return !!(f.category || f.city || f.maxPrice || f.vip);
   });
 
+  protected readonly loadError = signal(false);
+  /** True until each request answers — the grid shows skeletons, not a false "0 vendors". */
+  protected readonly loading = signal(true);
+  protected readonly skeletons = [0, 1, 2, 3, 4, 5, 6, 7];
+  private readonly reload = signal(0);
+
+  // Errors are caught per-request so a failed load can't kill the filter stream —
+  // and never silently replaced with mock data (mock ids collide with real ones).
   protected readonly results = toSignal(
-    toObservable(this.filter).pipe(switchMap((f) => this.vendorService.list(f))),
+    combineLatest([toObservable(this.filter), toObservable(this.reload)]).pipe(
+      switchMap(([f]) => {
+        this.loading.set(true);
+        // Cleared at request start, not on success — the template checks the
+        // error branch first, so a lingering flag would make Retry look dead.
+        this.loadError.set(false);
+        return this.vendorService.list(f).pipe(
+          tap(() => this.loading.set(false)),
+          catchError(() => {
+            this.loading.set(false);
+            this.loadError.set(true);
+            return of([] as Vendor[]);
+          }),
+        );
+      }),
+    ),
     { initialValue: [] as Vendor[] },
   );
+
+  protected retry(): void {
+    this.reload.update((n) => n + 1);
+  }
 
   protected onFilterChange(key: keyof VendorFilter, event: Event): void {
     const value = (event.target as HTMLSelectElement).value;

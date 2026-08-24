@@ -35,15 +35,34 @@
       }
     </form>
 
-    <p class="browse__count"><span class="num">{{ results().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
-
-    @if (results().length > 0) {
+    @if (loadError()) {
+      <div class="browse__empty">
+        <h2>{{ 'vendors.loadErrorTitle' | translate }}</h2>
+        <p>{{ 'vendors.loadErrorBody' | translate }}</p>
+        <button type="button" class="btn btn--ghost" (click)="retry()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </div>
+    } @else if (loading()) {
+      <p class="browse__count" aria-hidden="true"><span class="skel skel--text"></span></p>
+      <ul class="vendor-grid" role="list" aria-hidden="true">
+        @for (i of skeletons; track i) {
+          <li class="skel-card">
+            <div class="skel skel-card__media"></div>
+            <div class="skel skel-card__line"></div>
+            <div class="skel skel-card__line skel-card__line--sub"></div>
+          </li>
+        }
+      </ul>
+    } @else if (results().length > 0) {
+      <p class="browse__count"><span class="num">{{ results().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
       <ul class="vendor-grid" role="list">
         @for (v of results(); track v.id) {
           <li><app-vendor-card [vendor]="v" /></li>
         }
       </ul>
     } @else {
+      <p class="browse__count"><span class="num">0</span> {{ 'vendors.countLabel' | translate }}</p>
       <div class="browse__empty">
         <h2>{{ 'vendors.emptyTitle' | translate }}</h2>
         <p>{{ 'vendors.emptyBody' | translate }}</p>

@@ -12,7 +12,18 @@
   </header>
 
   @if (loadError()) {
-    <div class="admin__error" role="alert">{{ 'dash.loadError' | translate }}</div>
+    <div class="admin__error" role="alert">
+      {{ 'dash.loadError' | translate }}
+      <button type="button" class="btn btn--ghost" (click)="retry()">
+        {{ 'vendors.retry' | translate }}
+      </button>
+    </div>
+  } @else if (loading()) {
+    <ul class="admin__list" role="list" aria-hidden="true">
+      @for (i of skeletons; track i) {
+        <li class="admin__row"><span class="skel admin__skel"></span></li>
+      }
+    </ul>
   } @else if (vendors().length === 0) {
     <p class="admin__empty">{{ 'adminPage.noVendors' | translate }}</p>
   } @else {

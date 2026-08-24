@@ -26,25 +26,31 @@
           {{ (v.isApproved ? 'dash.statusApproved' : 'dash.statusPending') | translate }}
         </span>
 
-        <nav class="dash-nav" role="tablist" [attr.aria-label]="'dash.title' | translate">
+        <!-- Roving tabindex + arrow keys (WAI-ARIA tabs, vertical) — see onTabKeydown. -->
+        <nav class="dash-nav" role="tablist" aria-orientation="vertical"
+          [attr.aria-label]="'dash.title' | translate" (keydown)="onTabKeydown($event)">
           <button role="tab" type="button" id="tab-overview" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'overview'"
+            [attr.tabindex]="activeSection() === 'overview' ? 0 : -1"
             [class.is-active]="activeSection() === 'overview'" (click)="setSection('overview')">
             <span>{{ 'dash.tabOverview' | translate }}</span>
           </button>
           <button role="tab" type="button" id="tab-profile" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'profile'"
+            [attr.tabindex]="activeSection() === 'profile' ? 0 : -1"
             [class.is-active]="activeSection() === 'profile'" (click)="setSection('profile')">
             <span>{{ 'dash.editTitle' | translate }}</span>
           </button>
           <button role="tab" type="button" id="tab-photos" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'photos'"
+            [attr.tabindex]="activeSection() === 'photos' ? 0 : -1"
             [class.is-active]="activeSection() === 'photos'" (click)="setSection('photos')">
             <span>{{ 'dash.photosTitle' | translate }}</span>
             @if (photos().length) { <span class="dash-nav__count">{{ photos().length }}</span> }
           </button>
           <button role="tab" type="button" id="tab-messages" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'messages'"
+            [attr.tabindex]="activeSection() === 'messages' ? 0 : -1"
             [class.is-active]="activeSection() === 'messages'" (click)="setSection('messages')">
             <span>{{ 'dash.inboxTitle' | translate }}</span>
             @if (unreadCount()) { <span class="dash-nav__count is-unread">{{ unreadCount() }}</span> }
@@ -70,12 +76,15 @@
       </aside>
 
       <!-- ===================== MAIN: active section ===================== -->
-      <div class="dash-main" id="dash-panel" role="tabpanel"
+      <div class="dash-main" id="dash-panel" role="tabpanel" tabindex="0"
         [attr.aria-labelledby]="'tab-' + activeSection()">
         @switch (activeSection()) {
           <!-- ---------- OVERVIEW ---------- -->
           @case ('overview') {
             <div class="panel">
+              @if (statsError()) {
+                <div class="dash__error" role="alert">{{ 'dash.loadError' | translate }}</div>
+              } @else {
               <ul class="stat-row" role="list">
                 <li class="stat">
                   <span class="stat__num num">{{ stats()?.totalViews ?? 0 }}</span>
@@ -94,6 +103,7 @@
                   <span class="stat__label">{{ 'dash.unread' | translate }}</span>
                 </li>
               </ul>
+              }
 
               <div class="strength">
                 <div class="strength__head">
@@ -133,7 +143,7 @@
               <form [formGroup]="form" (ngSubmit)="save()" novalidate class="dash__form">
                 <div class="auth__field">
                   <label for="d-name">{{ 'dash.name' | translate }}</label>
-                  <input id="d-name" type="text" formControlName="name" aria-required="true" />
+                  <input id="d-name" type="text" formControlName="name" maxlength="200" aria-required="true" />
                 </div>
                 <div class="auth__field">
                   <label for="d-city">{{ 'dash.city' | translate }}</label>
@@ -141,7 +151,11 @@
                 </div>
                 <div class="auth__field">
                   <label for="d-bio">{{ 'dash.bio' | translate }}</label>
-                  <textarea id="d-bio" rows="5" formControlName="bio"></textarea>
+                  <textarea id="d-bio" rows="5" formControlName="bio" maxlength="4000"></textarea>
+                </div>
+                <div class="auth__field">
+                  <label for="d-areas">{{ 'dash.areasServed' | translate }}</label>
+                  <textarea id="d-areas" rows="2" formControlName="areasServed" maxlength="500"></textarea>
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
@@ -150,34 +164,40 @@
                   </div>
                   <div class="auth__field">
                     <label for="d-prange">{{ 'dash.priceRange' | translate }}</label>
-                    <input id="d-prange" type="text" formControlName="priceRange" />
+                    <input id="d-prange" type="text" formControlName="priceRange" maxlength="120" />
                   </div>
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
                     <label for="d-phone">{{ 'dash.phone' | translate }}</label>
-                    <input id="d-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" />
+                    <input id="d-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" maxlength="40" />
                   </div>
                   <div class="auth__field">
                     <label for="d-wa">{{ 'dash.whatsapp' | translate }}</label>
                     <input id="d-wa" type="text" inputmode="tel" formControlName="whatsapp"
-                      [placeholder]="'dash.whatsappHint' | translate" />
+                      [placeholder]="'dash.whatsappHint' | translate"
+                      [class.is-invalid]="whatsappInvalid()"
+                      [attr.aria-invalid]="whatsappInvalid() ? 'true' : null"
+                      [attr.aria-describedby]="whatsappInvalid() ? 'd-wa-err' : null" />
+                    @if (whatsappInvalid()) {
+                      <span id="d-wa-err" class="auth__err" role="alert">{{ 'dash.whatsappInvalid' | translate }}</span>
+                    }
                   </div>
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
                     <label for="d-ig">{{ 'dash.instagram' | translate }}</label>
-                    <input id="d-ig" type="text" formControlName="instagram" placeholder="@username" />
+                    <input id="d-ig" type="text" formControlName="instagram" placeholder="@username" maxlength="200" />
                   </div>
                   <div class="auth__field">
                     <label for="d-fb">{{ 'dash.facebook' | translate }}</label>
-                    <input id="d-fb" type="text" formControlName="facebook" placeholder="facebook.com/…" />
+                    <input id="d-fb" type="text" formControlName="facebook" placeholder="facebook.com/…" maxlength="200" />
                   </div>
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
                     <label for="d-map">{{ 'dash.mapUrl' | translate }}</label>
-                    <input id="d-map" type="url" inputmode="url" formControlName="mapUrl" placeholder="https://maps.google.com/…" />
+                    <input id="d-map" type="url" inputmode="url" formControlName="mapUrl" placeholder="https://maps.google.com/…" maxlength="1000" />
                   </div>
                 </div>
                 <div class="dash__save-row">
@@ -195,11 +215,13 @@
             <div class="panel">
               <div class="panel__head">
                 <h2 class="panel__title">{{ 'dash.photosTitle' | translate }}</h2>
-                <label class="btn btn--pink photos__add">
+                <!-- A real button drives the hidden input — a label wrapping a
+                     display:none input is unreachable by keyboard. -->
+                <button type="button" class="btn btn--pink photos__add" (click)="photoInput.click()">
                   {{ 'dash.addPhotos' | translate }}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
-                    (change)="onPhotoSelected($event)" />
-                </label>
+                </button>
+                <input #photoInput type="file" accept="image/jpeg,image/png,image/webp" multiple hidden
+                  (change)="onPhotoSelected($event)" />
               </div>
               <p class="photos__hint">{{ 'dash.photoHint' | translate }}</p>
               @if (uploading()) { <p class="photos__status" role="status">{{ 'dash.uploading' | translate }}</p> }
@@ -246,7 +268,7 @@
                               [disabled]="i === photos().length - 1"
                               [attr.aria-label]="'dash.moveDown' | translate">↓</button>
                           }
-                          <button type="button" class="photo-card__delete" (click)="deletePhoto(p.id)">
+                          <button type="button" class="photo-card__delete" (click)="deletePhoto(p)">
                             {{ 'dash.deletePhoto' | translate }}
                           </button>
                         </div>
@@ -262,7 +284,9 @@
           @case ('messages') {
             <div class="panel">
               <h2 class="panel__title">{{ 'dash.inboxTitle' | translate }}</h2>
-              @if (messages().length === 0) {
+              @if (messagesError()) {
+                <div class="dash__error" role="alert">{{ 'dash.loadError' | translate }}</div>
+              } @else if (messages().length === 0) {
                 <p class="dash__empty">{{ 'dash.noMessages' | translate }}</p>
               } @else {
                 <ul class="inbox" role="list">

@@ -1,10 +1,10 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, ElementRef, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AuthService } from '../../core/auth.service';
+import { AuthService, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
 import { focusFirstInvalid } from '../../core/forms';
 
 @Component({
@@ -76,6 +76,14 @@ export class Login {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('auth.loginTitle')} | ${t.instant('brand.name')}`);
+
+    // Signed-in users have no business here — whether they arrived signed in or
+    // signed in mid-page via the navbar modal (which would otherwise strand them on
+    // a login form for a session that already exists). Skipped while our own
+    // request is in flight — submit() does that navigation itself.
+    effect(() => {
+      if (this.auth.user() && !this.loading()) this.redirect();
+    });
   }
 
   protected submit(): void {
@@ -98,21 +106,10 @@ export class Login {
   }
 
   private redirect(): void {
-    // Back to the page the expired session was kicked out of, when we know it.
-    // Internal app paths only — never a full URL someone pasted into the query string.
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-    if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
-      this.router.navigateByUrl(returnUrl);
-      return;
-    }
-    const roles = this.auth.user()?.roles ?? [];
-    const target = roles.includes('Admin')
-      ? '/admin'
-      : roles.includes('Vendor')
-        ? '/dashboard'
-        : roles.includes('Couple')
-          ? '/planning'
-          : '/';
-    this.router.navigateByUrl(target);
+    // Back to the page the expired session was kicked out of, when we know it —
+    // validated (internal path, not an auth page) so a stale or pasted returnUrl
+    // can't bounce a freshly signed-in user back into the auth flows.
+    const target = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+    this.router.navigateByUrl(target ?? defaultRouteFor(this.auth.user()));
   }
 }

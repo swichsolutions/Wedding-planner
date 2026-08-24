@@ -461,6 +461,12 @@
   gap: var(--space-3);
   margin-bottom: var(--space-2);
 
+  // Sender can be a long unbroken email address — wrap it, don't overflow.
+  strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   time {
     color: var(--color-text-muted);
     font-size: var(--fs-caption);
@@ -471,6 +477,10 @@
 .inbox__body {
   margin: 0 0 var(--space-3);
   color: var(--color-text);
+  // The couple's message renders as plain text: keep their line breaks, and
+  // wrap long unbroken strings (pasted URLs) instead of overflowing the card.
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .inbox__contacts {
@@ -479,6 +489,11 @@
   gap: var(--space-3);
   align-items: center;
   font-size: var(--fs-caption);
+
+  a {
+    min-width: 0;
+    overflow-wrap: anywhere; // long mailto/tel labels wrap inside the row
+  }
 }
 
 .inbox__read {
