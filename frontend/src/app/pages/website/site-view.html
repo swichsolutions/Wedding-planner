@@ -6,4 +6,11 @@
   </section>
 } @else if (site(); as s) {
   <app-wedding-site [data]="s" [template]="s.templateKey" />
+} @else {
+  <!-- loading (client-side navigation) — hold the page shape instead of blank -->
+  <div class="sv-skel" aria-hidden="true">
+    <div class="skel sv-skel__hero"></div>
+    <div class="skel sv-skel__line"></div>
+    <div class="skel sv-skel__line sv-skel__line--sub"></div>
+  </div>
 }

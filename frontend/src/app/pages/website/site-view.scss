@@ -1,4 +1,40 @@
+// Flex column (not plain min-height): the stretched child gets a DEFINITE height,
+// which the renderer's inner height:100% chain needs — with a block wrapper the
+// theme background would stop at the content and leave white below.
 :host {
-  display: block;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; // fallback
+  min-height: 100dvh; // mobile browsers: exclude the collapsing URL bar
+}
+
+app-wedding-site {
+  flex: 1;
+}
+
+// Loading skeleton — a quiet invitation-shaped placeholder while the site loads
+// during client-side navigation (SSR always serializes with data).
+.sv-skel {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+}
+
+.sv-skel__hero {
+  width: min(90%, 28rem);
+  height: 40vh;
+  border-radius: var(--radius-lg);
+}
+
+.sv-skel__line {
+  width: min(60%, 16rem);
+  height: 16px;
+}
+
+.sv-skel__line--sub {
+  width: min(40%, 10rem);
+  height: 12px;
 }

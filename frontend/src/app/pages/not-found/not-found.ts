@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, RESPONSE_INIT, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -20,5 +20,8 @@ export class NotFound {
     inject(Title).setTitle(`${t.instant('notFound.title')} | ${t.instant('brand.name')}`);
     // Keep soft-404 pages out of the index.
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
+    // And answer with a real 404 status on SSR (token is null in the browser).
+    const responseInit = inject(RESPONSE_INIT, { optional: true });
+    if (responseInit) responseInit.status = 404;
   }
 }

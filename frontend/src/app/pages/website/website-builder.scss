@@ -81,11 +81,144 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: var(--space-6);
+}
 
-  &--teaser {
-    margin-top: var(--space-12);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+// ---- guest teaser: big, staggered, clickable design peeks ----
+.wb-tease {
+  list-style: none;
+  margin: var(--space-12) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-6);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6) var(--space-8);
+    // the offset column needs breathing room at the bottom
+    padding-bottom: var(--space-10);
   }
+}
+
+.wb-tease__item {
+  @include bp.respond-to(md) {
+    // staggered editorial rhythm: the right column runs lower than the left
+    &:nth-child(even) {
+      transform: translateY(var(--space-10));
+    }
+  }
+}
+
+.wb-tease__btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  &:hover .wb-tease__thumb,
+  &:focus-visible .wb-tease__thumb {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.wb-tease__thumb {
+  display: block;
+  height: 18rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+
+  @include bp.respond-to(md) {
+    // asymmetric heights: tall–short / short–tall
+    .wb-tease__item:nth-child(1) &,
+    .wb-tease__item:nth-child(4) & {
+      height: 26rem;
+    }
+
+    .wb-tease__item:nth-child(2) &,
+    .wb-tease__item:nth-child(3) & {
+      height: 20rem;
+    }
+  }
+}
+
+// ---- guest design-preview dialog ----
+.wb-peek {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--color-overlay);
+  backdrop-filter: blur(3px);
+}
+
+// The dialog hugs the scaled poster exactly — the site IS the dialog, no
+// letterbox background around it. Its size comes from the frame's inline dims.
+.wb-peek__dialog {
+  position: relative; // anchors the floating close chip
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+// floating close chip — the preview owns the whole dialog, no header bar
+.wb-peek__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+}
+
+.wb-peek__frame {
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+
+  &.is-ready {
+    opacity: 1;
+  }
+}
+
+.wb-peek__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  pointer-events: none; // preview only — the brand link etc. must not navigate
+}
+
+.wb-peek__cta {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
 }
 
 .wb-card__btn {
@@ -114,12 +247,6 @@
   transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
-.wb-card__name {
-  display: block;
-  margin-top: var(--space-3);
-  font-weight: var(--fw-medium);
-}
-
 // ---- step 2: info ----
 .wb-info {
   display: grid;
@@ -136,16 +263,6 @@
   overflow: hidden;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
-}
-
-.wb-info__tplname {
-  margin: 0;
-  padding: var(--space-3);
-  text-align: center;
-  font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
 }
 
 .wb-info__form {
@@ -401,13 +518,59 @@
   color: var(--color-warning-600);
 }
 
-.wb-panel__photo {
+// ---- photo focal-point picker ----
+// Shows the photo UNcropped so pointer position maps 1:1 to image percentages.
+.wb-focal {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+  cursor: crosshair;
+  touch-action: none; // the drag IS the gesture — don't scroll the panel
+
+  &.is-dragging {
+    cursor: grabbing;
+  }
+}
+
+.wb-focal__img {
+  display: block;
   width: 100%;
   height: auto;
-  max-height: 12rem;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
+  user-select: none;
+}
+
+// The part of the photo the current design actually shows; everything outside is
+// dimmed by the oversized shadow (clipped by .wb-focal's overflow: hidden).
+.wb-focal__frame {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 0 999rem rgb(0 0 0 / 45%);
+  pointer-events: none;
+}
+
+.wb-focal__point {
+  position: absolute;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.875rem 0 0 -0.875rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: color-mix(in srgb, var(--color-brand-500) 45%, transparent);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 40%), var(--shadow-sm);
+  cursor: grab;
+
+  .wb-focal.is-dragging & {
+    cursor: grabbing;
+  }
+}
+
+.wb-focal__hint {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
 }
 
 .wb-panel__photo-actions {

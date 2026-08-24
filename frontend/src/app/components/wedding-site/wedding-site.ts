@@ -15,8 +15,17 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { WeddingSiteData } from '../../core/website.service';
 import { LanguageService } from '../../i18n/language.service';
 
-/** Structural layout archetypes — each theme maps to one, two themes per layout. */
-type SiteLayout = 'classic' | 'banner' | 'split' | 'arch' | 'monogram';
+/** Structural layout archetypes — each theme maps to one. */
+type SiteLayout =
+  | 'classic'
+  | 'banner'
+  | 'split'
+  | 'arch'
+  | 'monogram'
+  | 'medallion'
+  | 'tapestry'
+  | 'masthead'
+  | 'postcard';
 
 const TEMPLATE_LAYOUTS: Record<string, SiteLayout> = {
   glow: 'classic',
@@ -29,10 +38,14 @@ const TEMPLATE_LAYOUTS: Record<string, SiteLayout> = {
   sunrise: 'arch',
   calligraphy: 'monogram',
   garnet: 'monogram',
+  minankari: 'medallion',
+  pardagi: 'tapestry',
+  pearl: 'masthead',
+  tbilisi: 'postcard',
 };
 
 /**
- * Renders a couple's wedding site in one of the 10 designs. Designs differ
+ * Renders a couple's wedding site in one of the catalog designs. Designs differ
  * structurally (5 layout archetypes) as well as in palette/typography. Used at
  * full size by the public /w/{slug} page and the builder's live preview, and in
  * `thumb` mode (hero only) by the design gallery.
@@ -81,6 +94,12 @@ export class WeddingSite {
   protected readonly nameA = computed(() => (this.data().firstName ?? '').trim());
   protected readonly nameB = computed(() => (this.data().partnerFirstName ?? '').trim());
 
+  /** object-position for the couple's photo — keeps their chosen focal point in frame. */
+  protected readonly photoPos = computed(() => {
+    const d = this.data();
+    return `${d.photoFocusX ?? 50}% ${d.photoFocusY ?? 50}%`;
+  });
+
   /** Initials seal for the monogram layout, e.g. "ნ · გ". */
   protected readonly initials = computed(() => {
     const a = this.nameA().charAt(0);
@@ -110,10 +129,21 @@ export class WeddingSite {
   protected readonly daysToGo = computed<number | null>(() => {
     const date = this.data().weddingDate;
     if (!date) return null;
-    const wedding = new Date(date + 'T00:00:00').getTime();
+    const [y, m, d] = date.split('-').map(Number);
+    if (!y || !m || !d) return null;
+    // Anchor "today" to Georgia time (fixed UTC+4, no DST) so the SSR server (UTC)
+    // and the guest's browser count the same day — local-midnight math differed for
+    // ~4h around Tbilisi midnight and broke hydration.
+    const tbilisiNow = new Date(Date.now() + GEORGIA_UTC_OFFSET_MS);
+    const today = Date.UTC(
+      tbilisiNow.getUTCFullYear(),
+      tbilisiNow.getUTCMonth(),
+      tbilisiNow.getUTCDate(),
+    );
+    const wedding = Date.UTC(y, m - 1, d);
     if (Number.isNaN(wedding)) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Math.round((wedding - today.getTime()) / 86_400_000);
+    return Math.round((wedding - today) / 86_400_000);
   });
 }
+
+const GEORGIA_UTC_OFFSET_MS = 4 * 3_600_000;

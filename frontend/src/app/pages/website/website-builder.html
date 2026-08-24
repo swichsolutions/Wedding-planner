@@ -5,16 +5,19 @@
       <h1>{{ 'website.guestTitle' | translate }}</h1>
       <p class="wb__sub">{{ 'website.guestBody' | translate }}</p>
       <div class="wb__cta-row">
-        <a class="btn btn--pink" routerLink="/signup">{{ 'website.guestCta' | translate }}</a>
+        <a class="btn btn--pink" routerLink="/signup" [queryParams]="{ returnUrl: '/website' }">{{ 'website.guestCta' | translate }}</a>
         <a class="btn btn--pink-outline" routerLink="/website/find">{{ 'siteFinder.cta' | translate }}</a>
       </div>
     </header>
-    <ul class="wb-gallery wb-gallery--teaser" role="list" aria-hidden="true">
-      @for (t of templates.slice(0, 4); track t) {
-        <li class="wb-card">
-          <span class="wb-card__thumb">
-            <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
-          </span>
+    <ul class="wb-tease" role="list">
+      @for (c of teaser; track c.template) {
+        <li class="wb-tease__item">
+          <button type="button" class="wb-tease__btn" (click)="openPeek(c, $event)"
+            [attr.aria-label]="'wsTemplate.' + c.template | translate">
+            <span class="wb-tease__thumb" aria-hidden="true">
+              <app-wedding-site [data]="c.data" [template]="c.template" [thumb]="true" />
+            </span>
+          </button>
         </li>
       }
     </ul>
@@ -36,11 +39,11 @@
     <ul class="wb-gallery" role="list">
       @for (t of templates; track t) {
         <li class="wb-card">
-          <button type="button" class="wb-card__btn" (click)="pick(t)">
-            <span class="wb-card__thumb">
+          <button type="button" class="wb-card__btn" (click)="pick(t)"
+            [attr.aria-label]="'wsTemplate.' + t | translate">
+            <span class="wb-card__thumb" aria-hidden="true">
               <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
             </span>
-            <span class="wb-card__name">{{ 'wsTemplate.' + t | translate }}</span>
           </button>
         </li>
       }
@@ -54,7 +57,6 @@
     <div class="wb-info">
       <div class="wb-info__preview">
         <app-wedding-site [data]="sample" [template]="pickedTemplate()!" />
-        <p class="wb-info__tplname">{{ 'wsTemplate.' + pickedTemplate() | translate }}</p>
       </div>
 
       <form class="wb-info__form"
@@ -65,30 +67,34 @@
           <div class="wb-field">
             <label for="wbi-first">{{ 'website.firstName' | translate }}</label>
             <input id="wbi-first" #fFirst type="text" maxlength="120" autocomplete="off"
-              [value]="couple()?.firstName ?? ''" />
+              [value]="info.firstName()" (input)="onInfoInput('firstName', $event)" />
           </div>
           <div class="wb-field">
             <label for="wbi-last">{{ 'website.lastName' | translate }}</label>
             <input id="wbi-last" #fLast type="text" maxlength="120" autocomplete="off"
-              [value]="couple()?.lastName ?? ''" />
+              [value]="info.lastName()" (input)="onInfoInput('lastName', $event)" />
           </div>
         </div>
         <div class="wb-info__row">
           <div class="wb-field">
             <label for="wbi-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
             <input id="wbi-pfirst" #fPartnerFirst type="text" maxlength="120" autocomplete="off"
-              [value]="couple()?.partnerFirstName ?? ''" />
+              [value]="info.partnerFirstName()" (input)="onInfoInput('partnerFirstName', $event)" />
           </div>
           <div class="wb-field">
             <label for="wbi-plast">{{ 'website.partnerLastName' | translate }}</label>
             <input id="wbi-plast" #fPartnerLast type="text" maxlength="120" autocomplete="off"
-              [value]="couple()?.partnerLastName ?? ''" />
+              [value]="info.partnerLastName()" (input)="onInfoInput('partnerLastName', $event)" />
           </div>
         </div>
         <div class="wb-info__row">
           <div class="wb-field">
             <label for="wbi-date">{{ 'website.weddingDate' | translate }}</label>
-            <input id="wbi-date" #fDate type="date" [value]="couple()?.weddingDate ?? ''" />
+            <!-- (change) too: some date pickers emit only change, and a slow profile
+                 prefill must never overwrite a just-picked date. -->
+            <input id="wbi-date" #fDate type="date"
+              [value]="info.weddingDate()" (input)="onInfoInput('weddingDate', $event)"
+              (change)="onInfoInput('weddingDate', $event)" />
           </div>
           <div class="wb-field">
             <label for="wbi-place">{{ 'website.place' | translate }}</label>
@@ -237,7 +243,28 @@
           <section class="wb-panel__section">
             <h2>{{ 'website.photoHeading' | translate }}</h2>
             @if (s.photoUrl; as photo) {
-              <img class="wb-panel__photo" [src]="photo" alt="" width="320" height="200" />
+              <!-- Focal-point picker: designs crop the photo differently; the dot marks
+                   what must stay in frame. Drag anywhere on the image, or arrow-key the dot. -->
+              <div class="wb-focal" [class.is-dragging]="focusDragging()"
+                (pointerdown)="startFocusDrag($event)"
+                (pointermove)="moveFocusDrag($event)"
+                (pointerup)="endFocusDrag()"
+                (pointercancel)="endFocusDrag()">
+                <img class="wb-focal__img" [src]="photo" alt="" draggable="false" />
+                @if (cropRect(); as r) {
+                  <div class="wb-focal__frame" aria-hidden="true"
+                    [style.left.%]="r.left" [style.top.%]="r.top"
+                    [style.width.%]="r.width" [style.height.%]="r.height"></div>
+                }
+                <button type="button" class="wb-focal__point"
+                  [style.left.%]="s.photoFocusX ?? 50" [style.top.%]="s.photoFocusY ?? 50"
+                  [attr.aria-label]="'website.focalPoint' | translate"
+                  (keydown.arrowleft)="nudgeFocus($event, -2, 0)"
+                  (keydown.arrowright)="nudgeFocus($event, 2, 0)"
+                  (keydown.arrowup)="nudgeFocus($event, 0, -2)"
+                  (keydown.arrowdown)="nudgeFocus($event, 0, 2)"></button>
+              </div>
+              <p class="wb-focal__hint">{{ 'website.focalHint' | translate }}</p>
             }
             <div class="wb-panel__photo-actions">
               <label class="btn btn--ghost wb-panel__upload" [class.is-busy]="photoBusy()">
@@ -261,7 +288,8 @@
 <!-- published! dialog -->
 @if (showPublished()) {
   <div class="wb-pub" role="dialog" aria-modal="true"
-    [attr.aria-label]="'website.publishedTitle' | translate" (click)="onPublishedOverlay($event)">
+    [attr.aria-label]="'website.publishedTitle' | translate" (click)="onPublishedOverlay($event)"
+    (keydown)="onDialogKeydown($event)">
     <div class="wb-pub__panel">
       <span class="wb-pub__icon" aria-hidden="true">🎉</span>
       <h2>{{ 'website.publishedTitle' | translate }}</h2>
@@ -274,6 +302,30 @@
         <a class="btn btn--ghost" [href]="siteUrl()" target="_blank" rel="noopener">{{ 'website.view' | translate }}</a>
         <button type="button" class="btn btn--primary" (click)="closePublished()">{{ 'website.done' | translate }}</button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- guest design preview -->
+@if (peek(); as p) {
+  <div class="wb-peek" role="dialog" aria-modal="true"
+    [attr.aria-label]="'wsTemplate.' + p.template | translate"
+    (click)="onPeekOverlay($event)" (keydown)="onDialogKeydown($event)">
+    <div class="wb-peek__dialog">
+      <button type="button" class="wb-peek__close" (click)="closePeek()"
+        [attr.aria-label]="'gallery.close' | translate">✕</button>
+      <!-- The full site rendered at desktop width, scaled to fill the dialog — no scrolling. -->
+      <div class="wb-peek__frame" [class.is-ready]="peekScale() > 0"
+        [style.width.px]="peekWidth * peekScale()" [style.height.px]="peekHeight() * peekScale()">
+        <div class="wb-peek__stage" [style.width.px]="peekWidth"
+          [style.transform]="'scale(' + peekScale() + ')'">
+          <app-wedding-site [data]="p.data" [template]="p.template" />
+        </div>
+      </div>
+      <footer class="wb-peek__cta">
+        <a class="btn btn--pink" routerLink="/signup" [queryParams]="{ returnUrl: '/website' }"
+          (click)="closePeek()">{{ 'website.guestCta' | translate }}</a>
+      </footer>
     </div>
   </div>
 }

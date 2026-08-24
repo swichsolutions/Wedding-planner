@@ -6,7 +6,7 @@
     @case ('banner') {
       <header class="ws-banner" [class.has-photo]="!!data().photoUrl">
         @if (data().photoUrl; as photo) {
-          <img class="ws-banner__bg" [src]="photo" alt="" width="1600" height="900" />
+          <img class="ws-banner__bg" [src]="photo" [style.object-position]="photoPos()" alt="" width="1600" height="900" />
         }
         <div class="ws-banner__scrim" aria-hidden="true"></div>
         <div class="ws-banner__content">
@@ -52,7 +52,7 @@
         </div>
         <div class="ws-split__media">
           @if (data().photoUrl; as photo) {
-            <img [src]="photo" alt="" width="900" height="1200" />
+            <img [src]="photo" [style.object-position]="photoPos()" alt="" width="900" height="1200" />
           } @else {
             <span class="ws-split__amp" aria-hidden="true">&</span>
           }
@@ -69,7 +69,7 @@
 
         <div class="ws-arch" [class.has-photo]="!!data().photoUrl">
           @if (data().photoUrl; as photo) {
-            <img [src]="photo" alt="" width="800" height="1100" />
+            <img [src]="photo" [style.object-position]="photoPos()" alt="" width="800" height="1100" />
           } @else {
             <span class="ws-arch__amp" aria-hidden="true">&</span>
           }
@@ -103,16 +103,121 @@
 
         @if (!thumb()) {
           <ng-container *ngTemplateOutlet="countTpl" />
-          @if (data().photoUrl; as photo) {
-            <figure class="ws-polaroid">
-              <img [src]="photo" alt="" width="900" height="640" />
-            </figure>
-          }
+        }
+        @if (data().photoUrl; as photo) {
+          <figure class="ws-polaroid">
+            <img [src]="photo" [style.object-position]="photoPos()" alt="" width="900" height="640" />
+          </figure>
+        }
+        @if (!thumb()) {
           <div class="ws__rule" aria-hidden="true"></div>
           <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
           <ng-container *ngTemplateOutlet="detailsTpl" />
           <ng-container *ngTemplateOutlet="brandTpl" />
         }
+      </div>
+    }
+
+    <!-- ============ MEDALLION: ringed circular photo — a jeweler's centerpiece ============ -->
+    @case ('medallion') {
+      <div class="ws__inner">
+        <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+        <div class="ws-medal" [class.has-photo]="!!data().photoUrl">
+          @if (data().photoUrl; as photo) {
+            <img [src]="photo" [style.object-position]="photoPos()" alt="" width="800" height="800" />
+          } @else {
+            <span class="ws-medal__amp" aria-hidden="true">{{ initials() }}</span>
+          }
+        </div>
+        <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        <ng-container *ngTemplateOutlet="metaTpl" />
+        @if (!thumb()) {
+          <ng-container *ngTemplateOutlet="countTpl" />
+          <ng-container *ngTemplateOutlet="messageTpl" />
+          <ng-container *ngTemplateOutlet="detailsTpl" />
+          <ng-container *ngTemplateOutlet="brandTpl" />
+        }
+      </div>
+    }
+
+    <!-- ============ TAPESTRY: bordered woven field, stepped-corner photo ============ -->
+    @case ('tapestry') {
+      <div class="ws-tap">
+        <div class="ws-tap__field">
+          <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+          @if (nameA() && nameB()) {
+            <h1 class="ws__names ws__names--stacked">
+              <span>{{ nameA() }}</span>
+              <span class="ws__amp" aria-hidden="true">&</span>
+              <span>{{ nameB() }}</span>
+            </h1>
+          } @else {
+            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          }
+          <ng-container *ngTemplateOutlet="metaTpl" />
+          @if (!thumb()) {
+            <ng-container *ngTemplateOutlet="countTpl" />
+          }
+          @if (data().photoUrl; as photo) {
+            <div class="ws-tap__photo">
+              <img [src]="photo" [style.object-position]="photoPos()" alt="" width="960" height="720" />
+            </div>
+          }
+          @if (!thumb()) {
+            <ng-container *ngTemplateOutlet="messageTpl" />
+            <ng-container *ngTemplateOutlet="detailsTpl" />
+            <ng-container *ngTemplateOutlet="brandTpl" />
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ============ MASTHEAD: editorial cover — left-set names, photo below the fold ============ -->
+    @case ('masthead') {
+      <div class="ws-mast">
+        <p class="ws__eyebrow ws-mast__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+        <h1 class="ws__names ws-mast__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        <div class="ws-mast__row">
+          <ng-container *ngTemplateOutlet="metaTpl" />
+          @if (!thumb()) {
+            <ng-container *ngTemplateOutlet="countTpl" />
+          }
+        </div>
+        @if (data().photoUrl; as photo) {
+          <div class="ws-mast__media">
+            <img [src]="photo" [style.object-position]="photoPos()" alt="" width="1600" height="900" />
+          </div>
+        }
+        @if (!thumb()) {
+          <div class="ws-mast__body">
+            <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
+            <ng-container *ngTemplateOutlet="detailsTpl" />
+            <ng-container *ngTemplateOutlet="brandTpl" />
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ============ POSTCARD: framed card, rotated photo-stamp, postmark ring ============ -->
+    @case ('postcard') {
+      <div class="ws-post">
+        <div class="ws-post__card">
+          @if (data().photoUrl; as photo) {
+            <figure class="ws-post__stamp">
+              <img [src]="photo" [style.object-position]="photoPos()" alt="" width="480" height="600" />
+            </figure>
+          }
+          <span class="ws-post__mark" aria-hidden="true"></span>
+          <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
+          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          <ng-container *ngTemplateOutlet="metaTpl" />
+          @if (!thumb()) {
+            <ng-container *ngTemplateOutlet="countTpl" />
+            <ng-container *ngTemplateOutlet="messageTpl" />
+            <ng-container *ngTemplateOutlet="detailsTpl" />
+            <ng-container *ngTemplateOutlet="brandTpl" />
+          }
+        </div>
       </div>
     }
 
@@ -125,11 +230,13 @@
 
         @if (!thumb()) {
           <ng-container *ngTemplateOutlet="countTpl" />
-          @if (data().photoUrl; as photo) {
-            <figure class="ws__photo">
-              <img [src]="photo" alt="" width="960" height="640" />
-            </figure>
-          }
+        }
+        @if (data().photoUrl; as photo) {
+          <figure class="ws__photo">
+            <img [src]="photo" [style.object-position]="photoPos()" alt="" width="960" height="640" />
+          </figure>
+        }
+        @if (!thumb()) {
           <div class="ws__rule" aria-hidden="true"></div>
           <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
           <ng-container *ngTemplateOutlet="detailsTpl" />

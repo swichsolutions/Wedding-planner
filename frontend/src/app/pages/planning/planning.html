@@ -67,7 +67,7 @@
         @for (item of items(); track item.id) {
           <li class="checklist__item" [class.is-done]="item.isDone">
             <label class="checklist__label">
-              <input type="checkbox" [checked]="item.isDone" (change)="toggle(item)" />
+              <input type="checkbox" [checked]="item.isDone" (change)="toggle(item, $event)" />
               <span>{{ item.title }}</span>
             </label>
             <button type="button" class="checklist__del" (click)="remove(item.id)"
@@ -106,7 +106,7 @@
       </div>
       <div class="pl-easy__media">
         <img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=800&q=80"
-          alt="ქორწილის დაგეგმვის ჩანაწერები" width="800" height="600" loading="lazy" />
+          [alt]="'planning.altNotes' | translate" width="800" height="600" loading="lazy" />
       </div>
     </div>
   </section>
@@ -121,7 +121,7 @@
       <article class="pl-card">
         <span class="pl-card__media">
           <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80"
-            alt="საქორწინო მომწოდებლები" loading="lazy" width="700" height="460" />
+            [alt]="'planning.altVendors' | translate" loading="lazy" width="700" height="460" />
         </span>
         <h3>{{ 'planning.vendorCardTitle' | translate }}</h3>
         <p>{{ 'planning.vendorCardText' | translate }}</p>
@@ -130,7 +130,7 @@
       <article class="pl-card">
         <span class="pl-card__media">
           <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=700&q=80"
-            alt="ბიუჯეტის დაგეგმვა" loading="lazy" width="700" height="460" />
+            [alt]="'planning.altBudget' | translate" loading="lazy" width="700" height="460" />
         </span>
         <h3>{{ 'planning.estimateCardTitle' | translate }}</h3>
         <p>{{ 'planning.estimateCardText' | translate }}</p>

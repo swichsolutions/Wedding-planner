@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { Component, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -8,6 +8,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { BudgetReminder, BudgetService, reminderStatus } from '../../core/budget.service';
 import { ChecklistItem, ChecklistService } from '../../core/checklist.service';
+import { ToastService } from '../../core/toast.service';
 import { CoupleProfile, CoupleService } from '../../core/couple.service';
 import { ContentService } from '../../core/content.service';
 import { ContentArticle } from '../../core/content.models';
@@ -30,10 +31,13 @@ export class Planning {
   private readonly auth = inject(AuthService);
   private readonly checklist = inject(ChecklistService);
   private readonly coupleSvc = inject(CoupleService);
+  private readonly budgetSvc = inject(BudgetService);
+  private readonly toast = inject(ToastService);
   private readonly lang = inject(LanguageService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
+  private coupleLoadStarted = false;
 
   // couple profile → personalized greeting + wedding countdown
   protected readonly couple = signal<CoupleProfile | null>(null);
@@ -86,7 +90,14 @@ export class Planning {
     inject(Title).setTitle(`${t.instant('planning.title')} | ${t.instant('brand.name')}`);
     inject(Meta).updateTag({ name: 'description', content: t.instant('planning.subtitle') });
 
-    if (this.isBrowser && this.auth.isCouple()) {
+    // Load when isCouple() BECOMES true, not only when it already is at
+    // construction — a guest who signs in via the navbar modal on this page
+    // (or a signed-in user whose auth state settles after hydration) must see
+    // their checklist, not an empty one inviting duplicate re-adds. The latch
+    // keeps it a one-time load.
+    effect(() => {
+      if (!this.isBrowser || !this.isCouple() || this.coupleLoadStarted) return;
+      this.coupleLoadStarted = true;
       this.checklist.list().subscribe({
         next: (items) => {
           this.items.set(items);
@@ -98,11 +109,11 @@ export class Planning {
         next: (c) => this.couple.set(c),
         error: () => {},
       });
-      inject(BudgetService).reminders().subscribe({
+      this.budgetSvc.reminders().subscribe({
         next: (r) => this.reminders.set(r),
         error: () => {},
       });
-    }
+    });
   }
 
   // ---- reminder panel helpers ----
@@ -139,23 +150,31 @@ export class Planning {
         input.value = '';
         this.adding.set(false);
       },
-      error: () => this.adding.set(false),
+      error: () => {
+        this.adding.set(false);
+        this.toast.error('planning.saveError');
+      },
     });
   }
 
-  protected toggle(item: ChecklistItem): void {
+  protected toggle(item: ChecklistItem, event: Event): void {
     const next = !item.isDone;
     this.checklist.update(item.id, { title: item.title, isDone: next }).subscribe({
       next: () =>
         this.items.update((list) => list.map((i) => (i.id === item.id ? { ...i, isDone: next } : i))),
-      error: () => {},
+      error: () => {
+        // The USER flipped the DOM checkbox, so the [checked] binding (whose bound
+        // value never changed) won't rewrite it — reset the element directly.
+        (event.target as HTMLInputElement).checked = item.isDone;
+        this.toast.error('planning.saveError');
+      },
     });
   }
 
   protected remove(id: number): void {
     this.checklist.remove(id).subscribe({
       next: () => this.items.update((list) => list.filter((i) => i.id !== id)),
-      error: () => {},
+      error: () => this.toast.error('planning.saveError'),
     });
   }
 }

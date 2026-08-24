@@ -136,12 +136,16 @@
               </tr>
             }
             @for (item of items(); track item.id) {
-              <tr class="brow" cdkDrag (cdkDragStarted)="drawer.set(null)" (click)="openRow(item, $event)">
+              <!-- tabindex="-1": the row is the popup's focus-restore target, never tabbable. -->
+              <tr class="brow" cdkDrag tabindex="-1" (cdkDragStarted)="drawer.set(null)"
+                (click)="openRow(item, $event)">
                 <div *cdkDragPreview class="bdrag-preview">{{ item.name }}</div>
                 <td class="brow__name">
                   <div class="brow__name-wrap">
-                    <span class="brow__grip" cdkDragHandle aria-hidden="true"
-                      [attr.title]="'budgetPage.dragHandle' | translate">
+                    <span class="brow__grip" cdkDragHandle role="button" tabindex="0"
+                      (keydown)="onGripKeydown(item, $event)"
+                      [attr.title]="'budgetPage.reorderHandle' | translate"
+                      [attr.aria-label]="('budgetPage.reorderHandle' | translate) + ' — ' + item.name">
                       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
                         <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
@@ -353,7 +357,7 @@
 <!-- ================= row detail popup (Zola-style) ================= -->
 @if (modalItem(); as item) {
   <div class="bmodal" role="dialog" aria-modal="true" [attr.aria-label]="item.name"
-    (click)="onOverlayClick($event)">
+    (click)="onOverlayClick($event)" (keydown)="onModalKeydown($event)">
     <div class="bmodal__panel">
       <div class="bmodal__head">
         <input class="bmodal__name" type="text" maxlength="200" autocomplete="off"

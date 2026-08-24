@@ -1,4 +1,13 @@
-import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  PLATFORM_ID,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -22,6 +31,7 @@ import {
   BudgetVendorRef,
   reminderStatus,
 } from '../../core/budget.service';
+import { trapTabKey } from '../../core/a11y';
 import { CATEGORIES } from '../../core/catalog';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
@@ -66,9 +76,11 @@ export class BudgetPlanner {
   private readonly wishlist = inject(WishlistService);
   private readonly lang = inject(LanguageService);
   private readonly translate = inject(TranslateService);
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
+  private coupleLoadStarted = false;
 
   // ---- tracker state (couple) ----
   protected readonly total = signal<number | null>(null);
@@ -100,6 +112,12 @@ export class BudgetPlanner {
     const id = this.modalId();
     return id === null ? null : (this.items().find((i) => i.id === id) ?? null);
   });
+
+  // Modal dialog contract state: the row that opened the popup (focus returns there),
+  // and the body overflow value the scroll lock replaced (null = no lock held).
+  private rowTrigger: HTMLElement | null = null;
+  private prevBodyOverflow: string | null = null;
+  private modalWasOpen = false;
 
   // ---- vendor picker ----
   protected readonly pickerVendors = signal<Vendor[]>([]);
@@ -143,13 +161,50 @@ export class BudgetPlanner {
       content: this.translate.instant('budgetPage.subtitle'),
     });
 
-    if (this.isBrowser && this.isCouple()) {
+    // Load when isCouple() BECOMES true, not only when it already is at
+    // construction — a guest who signs in via the navbar modal on this page
+    // (or a signed-in user whose auth state settles after hydration) must get
+    // the tracker without a refresh. The latch keeps it a one-time load.
+    effect(() => {
+      if (!this.isBrowser || !this.isCouple() || this.coupleLoadStarted) return;
+      this.coupleLoadStarted = true;
       this.dragHintDismissed.set(localStorage.getItem(DRAG_HINT_KEY) === '1');
       this.budgetSvc.get().subscribe({
         next: (b) => this.apply(b),
         error: () => this.loadError.set(true),
       });
-    }
+    });
+
+    // Modal dialog contract, driven by presence (not just closeModal()) so every
+    // close path — Esc, overlay, Done, delete, the item vanishing on a resync —
+    // releases the scroll lock and returns focus to the opening row.
+    effect(() => {
+      const open = this.modalItem() !== null;
+      if (!this.isBrowser || open === this.modalWasOpen) return;
+      this.modalWasOpen = open;
+      if (open) {
+        // Save what the lock replaces so nesting with other dialogs can't strand it.
+        this.prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        // setTimeout: the panel renders after this effect runs.
+        setTimeout(() =>
+          (this.host.nativeElement.querySelector('.bmodal__close') as HTMLElement | null)?.focus(),
+        );
+      } else {
+        document.body.style.overflow = this.prevBodyOverflow ?? '';
+        this.prevBodyOverflow = null;
+        if (this.rowTrigger?.isConnected) this.rowTrigger.focus(); // row may be deleted
+        this.rowTrigger = null;
+      }
+    });
+
+    // Leaving the page with the popup open (e.g. mobile back button) must not
+    // leave the site frozen behind a stranded scroll lock.
+    inject(DestroyRef).onDestroy(() => {
+      if (this.isBrowser && this.prevBodyOverflow !== null) {
+        document.body.style.overflow = this.prevBodyOverflow;
+      }
+    });
   }
 
   protected dismissDragHint(): void {
@@ -161,7 +216,15 @@ export class BudgetPlanner {
 
   private apply(b: Budget): void {
     this.total.set(b.totalBudget);
-    this.items.set(b.items);
+    // Rows with a save in flight keep their optimistic state: a full payload
+    // (total autosave / resync after another row's failure) landing mid-edit
+    // must not roll them back — each pending row's own PUT settle decides it.
+    this.items.set(
+      b.items.map((row) => {
+        if (!this.pendingSaves.has(row.id)) return row;
+        return this.items().find((i) => i.id === row.id) ?? row;
+      }),
+    );
     this.loaded.set(true);
   }
 
@@ -319,7 +382,7 @@ export class BudgetPlanner {
           next: () => {
             this.items.update((list) => list.filter((i) => i.id !== item.id));
             if (this.drawer()?.id === item.id) this.drawer.set(null);
-            if (this.modalId() === item.id) this.modalId.set(null);
+            if (this.modalId() === item.id) this.closeModal();
             this.toast.success('budgetPage.deletedToast');
           },
           error: () => this.toast.error('budgetPage.saveError'),
@@ -333,6 +396,7 @@ export class BudgetPlanner {
   protected openRow(item: BudgetItem, event: Event): void {
     const target = event.target as HTMLElement;
     if (target.closest('input, button, a, select, textarea, label, .brow__grip')) return;
+    this.rowTrigger = event.currentTarget as HTMLElement; // focus returns here on close
     this.drawer.set(null);
     this.modalId.set(item.id);
   }
@@ -346,8 +410,15 @@ export class BudgetPlanner {
     if (event.target === event.currentTarget) this.closeModal();
   }
 
+  /** Keep Tab cycling inside the open popup (aria-modal contract). */
+  protected onModalKeydown(event: KeyboardEvent): void {
+    trapTabKey(event.currentTarget as HTMLElement, event);
+  }
+
   protected onEscape(): void {
-    // The shared confirm dialog handles its own Escape.
+    // While the shared confirm dialog is open, that Esc belongs to it alone —
+    // the row popup underneath must survive until its own, later Esc.
+    if (this.confirmSvc.request() !== null) return;
     if (this.modalId() !== null) this.closeModal();
     else this.drawer.set(null);
   }
@@ -382,18 +453,70 @@ export class BudgetPlanner {
       });
   }
 
-  /** Drag-and-drop reorder (pointer + touch); persists the new order, resyncs on failure. */
+  /** Drag-and-drop reorder (pointer + touch). */
   protected drop(event: CdkDragDrop<BudgetItem[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    const list = this.items().slice();
-    moveItemInArray(list, event.previousIndex, event.currentIndex);
-    this.items.set(list);
-    this.budgetSvc.reorder(list.map((i) => i.id)).subscribe({
-      error: () => {
-        this.toast.error('budgetPage.saveError');
-        this.resync();
-      },
+    this.reorderRows(event.previousIndex, event.currentIndex);
+  }
+
+  /** Keyboard fallback for the drag handle: Arrow Up/Down moves the row one position. */
+  protected onGripKeydown(item: BudgetItem, event: KeyboardEvent): void {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault(); // arrows must move the row, not scroll the page
+    const from = this.items().findIndex((i) => i.id === item.id);
+    if (from === -1) return;
+    const to = event.key === 'ArrowUp' ? from - 1 : from + 1;
+    if (to < 0 || to >= this.items().length) return;
+    this.reorderRows(from, to);
+    // Re-render moves the row's DOM node, which drops focus — put it back on the
+    // same handle so repeated presses keep walking the row up/down.
+    const grip = event.currentTarget as HTMLElement;
+    setTimeout(() => {
+      if (grip.isConnected) grip.focus();
     });
+  }
+
+  /** Shared by drag and keyboard: applies the move, then queues the persist. */
+  private reorderRows(from: number, to: number): void {
+    if (from === to) return;
+    const list = this.items().slice();
+    moveItemInArray(list, from, to);
+    this.items.set(list);
+    this.queueReorder(list.map((i) => i.id));
+  }
+
+  // Reorder PUTs are serialized (same pattern as the dashboard photo grid): at
+  // most one in flight; while it runs only the NEWEST pending order is kept, so
+  // rapid drags / held arrow keys coalesce and the server can't apply them out
+  // of order. A failure only resyncs when nothing newer superseded it.
+  private reorderInFlight = false;
+  private pendingOrder: number[] | null = null;
+
+  private queueReorder(ids: number[]): void {
+    this.pendingOrder = ids;
+    if (!this.reorderInFlight) this.sendReorder();
+  }
+
+  private sendReorder(): void {
+    const ids = this.pendingOrder;
+    if (!ids) return;
+    this.pendingOrder = null;
+    this.reorderInFlight = true;
+    this.budgetSvc.reorder(ids).subscribe({
+      next: () => this.finishReorder(false),
+      error: () => this.finishReorder(true),
+    });
+  }
+
+  private finishReorder(failed: boolean): void {
+    this.reorderInFlight = false;
+    if (this.pendingOrder) {
+      this.sendReorder(); // a newer order supersedes this outcome either way
+      return;
+    }
+    if (failed) {
+      this.toast.error('budgetPage.saveError');
+      this.resync();
+    }
   }
 
   // ---- drawers (vendor picker / note+reminder) ----
@@ -409,7 +532,10 @@ export class BudgetPlanner {
       return;
     }
     this.drawer.set({ id: item.id, kind });
-    if (kind === 'vendor') this.loadPicker(item);
+    if (kind === 'vendor') {
+      this.loadPicker(item);
+      this.focusDrawer('.bpicker__search');
+    }
   }
 
   /** Bell/note share the details drawer: same icon toggles, the other icon switches. */
@@ -420,16 +546,24 @@ export class BudgetPlanner {
       return;
     }
     this.drawer.set({ id: item.id, kind: 'details', src });
+    // Land on the field the icon promised: bell → reminder date, note → textarea.
+    this.focusDrawer(src === 'bell' ? `#bd-reminder-${item.id}` : `#bd-note-${item.id}`);
+  }
+
+  /** The drawer is a non-modal inline panel — move focus in, no trap/restore needed. */
+  private focusDrawer(selector: string): void {
+    if (!this.isBrowser) return;
+    setTimeout(() =>
+      (this.host.nativeElement.querySelector(selector) as HTMLElement | null)?.focus(),
+    );
   }
 
   private loadPicker(item: BudgetItem): void {
     this.pickerQuery.set('');
     this.pickerLoading.set(true);
     this.pickerVendors.set([]);
-    // No mock fallback here — picking writes a vendor id to the server, and mock ids
-    // could silently link the wrong real vendor when the API is unreachable.
     this.vendorSvc
-      .list(item.categorySlug ? { category: item.categorySlug } : {}, { mockFallback: false })
+      .list(item.categorySlug ? { category: item.categorySlug } : {})
       .subscribe({
         next: (vendors) => {
           // Ignore stale responses if the drawer moved to another row meanwhile.

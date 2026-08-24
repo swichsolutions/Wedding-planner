@@ -418,6 +418,271 @@
 }
 
 // =============================================================================
+// LAYOUT: medallion — the photo as a ringed circular centerpiece.
+// =============================================================================
+.ws-medal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(17rem, 62%);
+  aspect-ratio: 1;
+  margin: var(--space-6) auto var(--space-8);
+  border-radius: 50%;
+  border: 1px solid var(--wsaccent);
+
+  // outer ring, set off like a bezel
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--wsaccent) 45%, transparent);
+  }
+
+  img {
+    position: absolute;
+    inset: 8px;
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.ws-medal__amp {
+  font-family: var(--wsfont);
+  font-style: italic;
+  font-size: clamp(3rem, 9vw, 5rem);
+  color: var(--wsaccent);
+  opacity: 0.75;
+}
+
+// =============================================================================
+// LAYOUT: tapestry — a woven field with selvage side borders; kilim-notched photo.
+// =============================================================================
+.ws-tap {
+  position: relative;
+  z-index: 1;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(2.5rem, 7vw, 4.5rem) var(--space-6);
+}
+
+.ws-tap__field {
+  position: relative;
+  padding: clamp(2.25rem, 6vw, 3.75rem) clamp(1.5rem, 5vw, 3.25rem);
+  border-block: 3px solid var(--wsaccent);
+
+  // vertical selvage stripes, like a carpet's side border
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    width: 9px;
+    background: repeating-linear-gradient(
+      0deg,
+      var(--wsaccent) 0 7px,
+      transparent 7px 14px
+    );
+  }
+
+  &::before {
+    left: 0;
+  }
+
+  &::after {
+    right: 0;
+  }
+}
+
+.ws-tap__photo {
+  width: min(24rem, 88%);
+  aspect-ratio: 4 / 3;
+  margin: clamp(1.75rem, 5vw, 2.75rem) auto 0;
+  // stepped (notched) corners — the kilim motif
+  clip-path: polygon(
+    0 14px, 14px 14px, 14px 0,
+    calc(100% - 14px) 0, calc(100% - 14px) 14px, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 14px calc(100% - 14px), 0 calc(100% - 14px)
+  );
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// =============================================================================
+// LAYOUT: masthead — editorial cover: left-set names, meta rule, photo below.
+// =============================================================================
+.ws-mast {
+  --mastpad: clamp(1.5rem, 6vw, 4.5rem);
+
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  text-align: left;
+  padding: clamp(2rem, 6vw, 3.5rem) var(--mastpad) 0;
+}
+
+.ws-mast__eyebrow,
+.ws-mast__names {
+  text-align: left;
+}
+
+.ws-mast__names {
+  font-size: calc(clamp(2.8rem, 9vw, 5.5rem) * var(--wsname-scale));
+  margin-bottom: var(--space-5);
+}
+
+.ws-mast__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid color-mix(in srgb, var(--wsaccent) 55%, transparent);
+
+  .ws__meta,
+  .ws__count {
+    margin: 0;
+  }
+}
+
+.ws-mast__media {
+  margin: clamp(1.75rem, 5vw, 3rem) calc(-1 * var(--mastpad)) 0; // full bleed
+
+  img {
+    display: block;
+    width: 100%;
+    height: clamp(16rem, 46vh, 30rem);
+    object-fit: cover;
+  }
+}
+
+.ws-mast__body {
+  max-width: 34rem;
+  padding-block: clamp(2rem, 5vw, 3rem);
+
+  .ws__message {
+    text-align: left;
+    margin-top: 0;
+  }
+
+  .ws__details {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .ws__brand {
+    text-align: left;
+  }
+}
+
+// =============================================================================
+// LAYOUT: postcard — a framed card, photo as a rotated postage stamp + postmark.
+// =============================================================================
+.ws-post {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: clamp(2rem, 6vw, 4rem) var(--space-6);
+}
+
+.ws-post__card {
+  position: relative;
+  width: min(46rem, 100%);
+  padding: clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 3rem);
+  text-align: left;
+  background: color-mix(in srgb, #ffffff 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wsink) 25%, transparent);
+  box-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.35);
+
+  // inner deckled frame
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 9px;
+    border: 1.5px dashed color-mix(in srgb, var(--wsaccent) 60%, transparent);
+    pointer-events: none;
+  }
+
+  .ws__eyebrow,
+  .ws__names,
+  .ws__meta,
+  .ws__count,
+  .ws__message {
+    text-align: left;
+  }
+
+  .ws__details {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .ws__rule {
+    margin-inline: 0;
+  }
+
+  .ws__brand {
+    text-align: left;
+  }
+}
+
+.ws-post__stamp {
+  position: absolute;
+  z-index: 1;
+  top: clamp(1.25rem, 4vw, 2rem);
+  right: clamp(1.25rem, 4vw, 2rem);
+  width: clamp(5.5rem, 16vw, 7.5rem);
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  padding: 5px;
+  background: #ffffff;
+  border: 4px dotted color-mix(in srgb, var(--wsbg) 90%, #000000);
+  transform: rotate(3deg);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.4);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ws-post__mark {
+  position: absolute;
+  top: clamp(2.25rem, 6vw, 3.5rem);
+  right: clamp(9rem, 24vw, 11.5rem);
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 1.5px solid color-mix(in srgb, var(--wsink) 40%, transparent);
+  border-radius: 50%;
+  transform: rotate(-8deg);
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -1.4rem;
+    right: -1.4rem;
+    border-top: 1.5px solid color-mix(in srgb, var(--wsink) 30%, transparent);
+    transform: rotate(-4deg);
+  }
+}
+
+// =============================================================================
 // Thumb mode (gallery cards): hero structure only, scaled down.
 // =============================================================================
 .ws--thumb {
@@ -494,10 +759,123 @@
     margin-bottom: var(--space-3);
     outline-offset: 3px;
   }
+
+  .ws__photo {
+    width: min(11rem, 78%);
+    margin: var(--space-3) auto 0;
+
+    img {
+      max-height: 6.5rem;
+    }
+  }
+
+  .ws-polaroid {
+    width: min(9.5rem, 72%);
+    margin: var(--space-3) auto 0;
+    padding: 5px 5px 16px;
+
+    img {
+      max-height: 5.5rem;
+    }
+  }
+
+  .ws-medal {
+    width: 6.5rem;
+    margin: var(--space-2) auto var(--space-3);
+
+    &::before {
+      inset: -7px;
+    }
+  }
+
+  .ws-medal__amp {
+    font-size: 1.8rem;
+  }
+
+  .ws-tap {
+    display: grid;
+    align-content: center;
+    height: 100%;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .ws-tap__field {
+    padding: var(--space-4) var(--space-3);
+    border-block-width: 2px;
+
+    &::before,
+    &::after {
+      width: 5px;
+    }
+  }
+
+  .ws-mast {
+    --mastpad: var(--space-3);
+
+    justify-content: center;
+    padding: var(--space-4) var(--mastpad);
+  }
+
+  .ws-mast__names {
+    font-size: 1.6rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .ws-mast__row {
+    padding-top: var(--space-2);
+  }
+
+  .ws-mast__media {
+    margin-top: var(--space-3);
+
+    img {
+      height: 6rem;
+    }
+  }
+
+  .ws-tap__photo {
+    width: min(10rem, 72%);
+    margin: var(--space-3) auto 0;
+    clip-path: polygon(
+      0 8px, 8px 8px, 8px 0,
+      calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px,
+      100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%,
+      8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px)
+    );
+  }
+
+  .ws-post {
+    align-content: center;
+    height: 100%;
+    padding: var(--space-3);
+  }
+
+  .ws-post__card {
+    padding: var(--space-4) var(--space-3);
+
+    &::before {
+      inset: 5px;
+    }
+  }
+
+  .ws-post__stamp {
+    top: var(--space-3);
+    right: var(--space-3);
+    width: 3.6rem;
+    padding: 3px;
+    border-width: 3px;
+  }
+
+  .ws-post__mark {
+    top: var(--space-4);
+    right: 4.6rem;
+    width: 1.8rem;
+    height: 1.8rem;
+  }
 }
 
 // =============================================================================
-// The 10 designs (palette + ornament; layout via TEMPLATE_LAYOUTS in the TS)
+// The designs (palette + ornament; layout via TEMPLATE_LAYOUTS in the TS)
 // =============================================================================
 
 // 1. Elegant glow — classic · midnight navy, champagne bokeh confetti.
@@ -688,5 +1066,107 @@
 
   .ws__ornament {
     background: radial-gradient(circle 120px at 50% 0%, rgba(255, 255, 255, 0.55) 0, transparent 100%);
+  }
+}
+
+// 11. Minankari — medallion · cloisonné cobalt, gold wire frame, enamel-bead corners.
+//     Voice: bold upright serif in spaced Mtavruli — a jeweler's inscription.
+.ws--minankari {
+  --wsbg: #1b2f5e;
+  --wsink: #f3ede0;
+  --wsaccent: #d9a94e;
+  --wsmuted: rgba(243, 237, 224, 0.62);
+  --wsname-weight: 700;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-track: 0.12em;
+  --wsname-scale: 0.82;
+
+  .ws__ornament {
+    inset: 14px;
+    border: 1px solid rgba(217, 169, 78, 0.6);
+    outline: 1px solid rgba(217, 169, 78, 0.22);
+    outline-offset: 4px;
+    // enamel beads set into the frame corners (garnet + turquoise, like the real craft)
+    background:
+      radial-gradient(circle 4px at 10px 10px, #b23a48 98%, transparent),
+      radial-gradient(circle 4px at calc(100% - 10px) 10px, #3f8f8a 98%, transparent),
+      radial-gradient(circle 4px at 10px calc(100% - 10px), #3f8f8a 98%, transparent),
+      radial-gradient(circle 4px at calc(100% - 10px) calc(100% - 10px), #b23a48 98%, transparent);
+  }
+
+  // enamel beads at the medallion ring's compass points
+  .ws-medal::before {
+    background:
+      radial-gradient(circle 3.5px at 50% 0, #b23a48 98%, transparent),
+      radial-gradient(circle 3.5px at 50% 100%, #b23a48 98%, transparent),
+      radial-gradient(circle 3.5px at 0 50%, #3f8f8a 98%, transparent),
+      radial-gradient(circle 3.5px at 100% 50%, #3f8f8a 98%, transparent);
+  }
+}
+
+// 12. Pardagi — tapestry · Tushetian carpet: madder-red field, loomed gold bands.
+//     Voice: black-weight condensed sans Mtavruli — geometry off the loom.
+.ws--pardagi {
+  --wsbg: #802b26;
+  --wsink: #f6e8d4;
+  --wsaccent: #e0b15c;
+  --wsmuted: rgba(246, 232, 212, 0.62);
+  --wsfont: var(--font-body);
+  --wsname-weight: 900;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-stretch: 80%;
+  --wsname-track: 0.08em;
+  --wsname-scale: 0.85;
+
+  .ws__ornament {
+    // woven selvage bands along the top and bottom edges
+    background:
+      repeating-linear-gradient(45deg, #e0b15c 0 5px, #5f1f1c 5px 10px) top / 100% 8px no-repeat,
+      repeating-linear-gradient(-45deg, #e0b15c 0 5px, #5f1f1c 5px 10px) bottom / 100% 8px no-repeat;
+  }
+
+}
+
+// 13. Pearl — masthead · oyster satin, silver hairlines, quiet shimmer.
+//     Voice: featherweight serif italic, enlarged — engraved vows.
+.ws--pearl {
+  --wsbg: #f4f1eb;
+  --wsink: #45413b;
+  --wsaccent: #9d968a;
+  --wsmuted: rgba(69, 65, 59, 0.58);
+  --wsname-weight: 250;
+  --wsname-scale: 1.1;
+
+  .ws__ornament {
+    // one diagonal sheen pass, like light across satin
+    background:
+      linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.75) 46%, transparent 60%),
+      linear-gradient(295deg, transparent 25%, rgba(203, 196, 186, 0.3) 50%, transparent 72%);
+  }
+
+}
+
+// 14. Old Tbilisi — postcard · sun-warmed plaster, verdigris balcony-lattice trim.
+//     Voice: book-weight upright serif, gentle track — hand-painted shop signage.
+.ws--tbilisi {
+  --wsbg: #f7ead6;
+  --wsink: #4c3526;
+  --wsaccent: #3e7d76;
+  --wsmuted: rgba(76, 53, 38, 0.6);
+  --wsname-weight: 500;
+  --wsname-style: normal;
+  --wsname-track: 0.02em;
+
+  .ws__ornament {
+    // wrought-iron balcony arcs along the top edge
+    background: radial-gradient(
+        circle 7px at 8px 0,
+        transparent 5px,
+        rgba(62, 125, 118, 0.55) 5px 6.5px,
+        transparent 7.5px
+      )
+      top / 16px 11px repeat-x;
   }
 }
