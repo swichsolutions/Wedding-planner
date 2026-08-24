@@ -317,6 +317,25 @@
   cursor: grabbing;
 }
 
+// ---- Quiet text-link buttons ("back to designs", "copy link", "remove photo").
+// Global: used across budget planner, website builder, and future surfaces. ----
+.blink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-600);
+  }
+}
+
 // ---- Vendor grid (shared by home + browse). Breakpoint-free responsive. ----
 .vendor-grid {
   list-style: none;
@@ -325,4 +344,64 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: var(--space-6);
+}
+
+// ---- Loading skeletons (browse / saved / profile) ----
+// Quiet shimmer blocks that hold the layout while data loads, so pages don't
+// flash "0 results" / empty states before the first response arrives.
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: skel-sweep 1.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+    }
+  }
+}
+
+@keyframes skel-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+// Inline text-sized placeholder (e.g. the "N vendors" count line).
+.skel--text {
+  display: inline-block;
+  width: 6em;
+  height: 1em;
+  vertical-align: middle;
+}
+
+// Mirrors .vendor-card geometry (4:5 media, name + meta line) so nothing jumps
+// when the real cards arrive.
+.skel-card {
+  &__media {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+  }
+
+  &__line {
+    height: 14px;
+    width: 70%;
+    margin-top: var(--space-3);
+  }
+
+  &__line--sub {
+    height: 12px;
+    width: 45%;
+    margin-top: var(--space-2);
+  }
 }

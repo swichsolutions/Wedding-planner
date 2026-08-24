@@ -63,6 +63,10 @@
     "blush": "Blush",
     "vineyard": "Vineyard",
     "midnight": "Midnight",
+    "minankari": "Minankari",
+    "pardagi": "Pardagi Weave",
+    "pearl": "Pearl",
+    "tbilisi": "Old Tbilisi",
     "sunrise": "Sunrise"
   },
   "website": {
@@ -97,6 +101,8 @@
     "uploadPhoto": "Upload photo",
     "uploading": "Uploading…",
     "removePhoto": "Remove photo",
+    "focalPoint": "Photo focal point — drag it or move it with the arrow keys",
+    "focalHint": "Drag the dot to the most important part of the photo. The bright area is what this design shows — the dimmed part stays out of frame.",
     "draft": "Draft — only you can see it",
     "published": "Published",
     "publish": "Publish website",
@@ -225,6 +231,8 @@
     "priceRange": "Price range",
     "whatsapp": "WhatsApp",
     "whatsappHint": "+995 5XX XX XX XX or wa.me link",
+    "whatsappInvalid": "That doesn't look like a valid WhatsApp number. Check it and try again.",
+    "saveError": "Couldn't save your profile. Check your connection and try again.",
     "instagram": "Instagram",
     "facebook": "Facebook",
     "phone": "Phone",
@@ -241,6 +249,11 @@
     "photoHint": "JPG, PNG or WebP — max 8MB, up to 20.",
     "uploading": "Uploading…",
     "uploadError": "Upload failed.",
+    "photoError": "Couldn't save the change. Try again.",
+    "reorderError": "Couldn't save the new photo order. Try again.",
+    "deleteError": "Couldn't delete the photo. Try again.",
+    "deleteConfirmTitle": "Delete this photo?",
+    "deleteConfirmBody": "The photo will be removed from your profile. This can't be undone.",
     "noPhotos": "No photos yet.",
     "altPlaceholder": "Photo description (alt, for SEO)",
     "realWedding": "Real wedding",
@@ -255,6 +268,7 @@
     "title": "Admin — moderation",
     "pendingOnly": "Pending only",
     "all": "All",
+    "saveError": "That action didn't go through. Try again.",
     "approve": "Approve",
     "approved": "Approved",
     "pending": "Pending",
@@ -312,7 +326,11 @@
     "empty": "No tasks yet. Add your first one above.",
     "completed": "completed",
     "delete": "Delete",
-    "loadError": "Couldn’t load your checklist."
+    "loadError": "Couldn’t load your checklist.",
+    "saveError": "Couldn't save that. Check your connection and try again.",
+    "altNotes": "Wedding planning notes",
+    "altVendors": "Wedding vendors",
+    "altBudget": "Budget planning"
   },
   "join": {
     "title": "Create your account",
@@ -478,7 +496,10 @@
     "anyPrice": "Any price",
     "clear": "Clear filters",
     "emptyTitle": "No matches found",
-    "emptyBody": "Try changing or clearing the filters."
+    "emptyBody": "Try changing or clearing the filters.",
+    "loadErrorTitle": "Couldn't load vendors",
+    "loadErrorBody": "Something went wrong. Check your connection and try again.",
+    "retry": "Try again"
   },
   "contact": {
     "heading": "Contact this vendor",
@@ -495,6 +516,7 @@
     "sentBody": "The vendor will get back to you soon.",
     "errorTitle": "Couldn’t send",
     "errorBody": "Please try again or call them directly.",
+    "bodyTooLong": "Message is too long — up to 4000 characters.",
     "required": "This field is required",
     "invalidEmail": "Invalid email address",
     "contactRequired": "Add a phone or email"
@@ -529,6 +551,8 @@
     "backToVendors": "All vendors",
     "notFoundTitle": "Vendor not found",
     "notFoundBody": "The link may be outdated or the vendor was removed.",
+    "loadErrorTitle": "Couldn't load this page",
+    "loadErrorBody": "Something went wrong. Check your connection and try again.",
     "metaSuffix": "wedding vendor"
   },
   "budgetPage": {
@@ -577,6 +601,7 @@
     "delete": "Delete",
     "deletedToast": "Item deleted.",
     "dragHandle": "Drag to reorder",
+    "reorderHandle": "Reorder — drag, or use the arrow keys",
     "dragHint": "Tip: grab the dotted handle to drag rows into your own order.",
     "dismiss": "Dismiss",
     "paidUp": "Paid in full",
@@ -625,6 +650,7 @@
     "backToGuides": "All articles",
     "notFoundTitle": "Article not found",
     "notFoundBody": "The link may be outdated.",
+    "metaDescription": "Wedding planning guides, checklists and real Georgian weddings — practical advice on venues, budgets and vendors for every step of the way.",
     "item1": { "tag": "Guide", "title": "How to choose your photographer" },
     "item2": { "tag": "Real wedding", "title": "Nino & Giorgi — a Kakheti wedding" },
     "item3": { "tag": "Checklist", "title": "The 12-month wedding plan" }
