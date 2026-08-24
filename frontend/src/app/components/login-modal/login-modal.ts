@@ -12,9 +12,11 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../core/auth.service';
 import { AuthModalService } from '../../core/auth-modal.service';
+import { trapTabKey } from '../../core/a11y';
 import { focusFirstInvalid } from '../../core/forms';
 import { environment } from '../../../environments/environment';
 
@@ -57,6 +59,12 @@ export class LoginModal {
   protected readonly googleEnabled = !!environment.googleClientId;
 
   private gisReady = false;
+  /** The in-flight sign-in request — cancelled if the modal is dismissed. */
+  private pending: Subscription | null = null;
+  /** True when the current press started on the backdrop itself (not inside the card). */
+  private pressOnBackdrop = false;
+  /** Whatever had focus when the modal opened — focus returns there on close. */
+  private modalTrigger: HTMLElement | null = null;
 
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -70,6 +78,9 @@ export class LoginModal {
       if (!this.isBrowser) return;
       document.body.style.overflow = open ? 'hidden' : '';
       if (open) {
+        // Captured before our own focus move below — this is the navbar button
+        // (or whatever else) that focus must return to on close.
+        this.modalTrigger = document.activeElement as HTMLElement | null;
         this.error.set(false);
         this.googleError.set(false);
         this.attempted.set(false);
@@ -77,6 +88,15 @@ export class LoginModal {
           (this.host.nativeElement.querySelector('#lm-email') as HTMLElement | null)?.focus();
           void this.renderGoogleButton();
         });
+      } else if (this.pending || this.modalTrigger) {
+        // Closed from OUTSIDE close() — the service shuts the modal on router
+        // navigation. Honor the same cancellation contract, but don't steal
+        // focus back across a navigation: just drop the trigger.
+        this.pending?.unsubscribe();
+        this.pending = null;
+        this.loading.set(false);
+        this.form.reset();
+        this.modalTrigger = null;
       }
     });
   }
@@ -87,15 +107,40 @@ export class LoginModal {
   }
 
   protected close(): void {
+    // Dismissal must actually cancel: an in-flight login left running would land
+    // later, store a session via its tap(), and teleport the user to a dashboard
+    // after they said no. Unsubscribing aborts the HTTP request outright.
+    this.pending?.unsubscribe();
+    this.pending = null;
+    this.loading.set(false);
     this.modal.close();
     this.form.reset();
     this.error.set(false);
     this.attempted.set(false);
+    this.modalTrigger?.focus(); // back to the element that opened the modal (a11y)
+    this.modalTrigger = null;
   }
 
-  /** Close when the dimmed backdrop (not the card) is clicked. */
+  /** Keep Tab cycling inside the open modal (the overlay wraps the whole card). */
+  protected onOverlayKeydown(event: KeyboardEvent): void {
+    trapTabKey(event.currentTarget as HTMLElement, event);
+  }
+
+  /** Remember whether the press itself began on the backdrop (vs inside the card). */
+  protected onBackdropDown(event: PointerEvent): void {
+    this.pressOnBackdrop = event.target === event.currentTarget;
+  }
+
+  /**
+   * Close only when the interaction both started AND ended on the dimmed backdrop.
+   * A text-selection drag that starts in a field and releases over the backdrop
+   * fires a click on the backdrop (the common ancestor) — that must not close the
+   * modal and wipe the form.
+   */
   protected onBackdrop(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.close();
+    const startedHere = this.pressOnBackdrop;
+    this.pressOnBackdrop = false;
+    if (startedHere && event.target === event.currentTarget) this.close();
   }
 
   protected submit(): void {
@@ -108,13 +153,15 @@ export class LoginModal {
     this.loading.set(true);
     this.error.set(false);
     const { email, password } = this.form.getRawValue();
-    this.auth.login(email!, password!).subscribe({
+    this.pending = this.auth.login(email!, password!).subscribe({
       next: () => {
+        this.pending = null;
         this.loading.set(false);
         this.close();
         this.redirect();
       },
       error: () => {
+        this.pending = null;
         this.error.set(true);
         this.loading.set(false);
       },
@@ -168,13 +215,15 @@ export class LoginModal {
       this.loading.set(true);
       this.googleError.set(false);
       this.error.set(false);
-      this.auth.googleLogin(credential).subscribe({
+      this.pending = this.auth.googleLogin(credential).subscribe({
         next: () => {
+          this.pending = null;
           this.loading.set(false);
           this.close();
           this.redirect();
         },
         error: () => {
+          this.pending = null;
           this.googleError.set(true);
           this.loading.set(false);
         },
@@ -201,7 +250,14 @@ export class LoginModal {
       script.async = true;
       script.defer = true;
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error('GIS failed to load'));
+      script.onerror = () => {
+        // A failed load (adblocker, offline) must not poison every later open:
+        // the dead tag would sit in the DOM with its error event already fired,
+        // and the `existing` branch above would wait forever on listeners that
+        // never fire. Removing it makes the next attempt inject a fresh tag.
+        script.remove();
+        reject(new Error('GIS failed to load'));
+      };
       document.head.appendChild(script);
     });
   }

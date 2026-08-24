@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 
-/** The 10 design theme keys — must match WebsiteController.TemplateKeys. */
+/** The design theme keys — must match WebsiteController.TemplateKeys. */
 export const WEDDING_TEMPLATES = [
   'glow',
   'calligraphy',
@@ -16,6 +16,10 @@ export const WEDDING_TEMPLATES = [
   'vineyard',
   'midnight',
   'sunrise',
+  'minankari',
+  'pardagi',
+  'pearl',
+  'tbilisi',
 ] as const;
 
 export type WeddingTemplateKey = (typeof WEDDING_TEMPLATES)[number];
@@ -30,6 +34,9 @@ export interface WeddingSiteData {
   inkColor: string | null; // '#rrggbb'; null = the design's own text color
   accentColor: string | null; // '#rrggbb'; null = the design's own accent
   photoUrl: string | null;
+  /** Photo focal point in percent (50/50 = center) — kept in frame by every design's crop. */
+  photoFocusX: number | null;
+  photoFocusY: number | null;
 }
 
 /** The couple's own site — full editable state + publish status. */
@@ -52,6 +59,9 @@ export interface WeddingSiteUpdate {
   message: string | null;
   inkColor: string | null;
   accentColor: string | null;
+  /** null = keep the stored focal point. */
+  photoFocusX: number | null;
+  photoFocusY: number | null;
 }
 
 export interface PublicSite extends WeddingSiteData {

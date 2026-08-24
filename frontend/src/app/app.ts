@@ -1,5 +1,14 @@
 import { Component, DOCUMENT, HostListener, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  NavigationEnd,
+  NavigationStart,
+  Router,
+  RouterOutlet,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
+import { PlatformLocation } from '@angular/common';
+import { Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -43,14 +52,35 @@ export class App {
       filter((e) => e instanceof NavigationEnd),
       map(() => this.router.url),
     ),
-    { initialValue: this.router.url },
+    // NOT router.url: that's still '/' at client bootstrap, so the first
+    // hydrating render of /w/{slug} would grow a header/footer the server never
+    // serialized (NG0500 + a chrome flash on the couple's shared link). The
+    // platform location knows the real path on both server and browser.
+    { initialValue: inject(PlatformLocation).pathname },
   );
   protected readonly chromeless = computed(() => this.currentUrl().startsWith('/w/'));
+
+  constructor() {
+    // noindex must not leak across client-side navigations (the site finder,
+    // account page, and not-found/error states all set it). Pages assert robots
+    // in constructors or load handlers — both run after NavigationStart — so
+    // clearing here lets every destination start indexable and re-assert as needed.
+    const meta = inject(Meta);
+    this.router.events.subscribe((e) => {
+      if (e instanceof NavigationStart) meta.removeTag("name='robots'");
+    });
+  }
 
   /** Condense the header once the page is scrolled (browser-only; SSR renders the tall state). */
   @HostListener('window:scroll')
   protected onScroll(): void {
-    this.scrolled.set(window.scrollY > 8);
+    // Hysteresis, not one threshold: condensing shrinks the header by ~18px, which
+    // shifts the page and can push scrollY back across a single cutoff — the header
+    // then oscillates ("shivers"). Separate enter/exit points wider than the height
+    // delta make the toggle one-way in each direction.
+    const y = window.scrollY;
+    if (y > 32) this.scrolled.set(true);
+    else if (y < 4) this.scrolled.set(false);
   }
 
   /** Skip-to-content. A bare href="#main" is rewritten by <base href="/"> to /#main

@@ -15,15 +15,19 @@ import { environment } from '../../environments/environment';
 describe('WishlistService (server-backed, couple-gated)', () => {
   const url = `${environment.apiBaseUrl}/api/planning/saved`;
   let isCouple: WritableSignal<boolean>;
+  let user: WritableSignal<{ email: string; roles: string[] } | null>;
   let httpMock: HttpTestingController;
 
   function setup(couple: boolean): WishlistService {
     isCouple = signal(couple);
+    // The service keys its load effect on the account identity (user()?.email),
+    // not just the role boolean — the fake must provide both.
+    user = signal(couple ? { email: 'couple@test.ge', roles: ['Couple'] } : null);
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { isCouple } },
+        { provide: AuthService, useValue: { isCouple, user } },
       ],
     });
     const service = TestBed.inject(WishlistService);

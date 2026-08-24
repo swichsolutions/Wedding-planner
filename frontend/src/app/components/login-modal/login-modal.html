@@ -1,5 +1,6 @@
 @if (modal.isOpen()) {
-  <div class="lm-overlay" (click)="onBackdrop($event)">
+  <div class="lm-overlay" (pointerdown)="onBackdropDown($event)" (click)="onBackdrop($event)"
+    (keydown)="onOverlayKeydown($event)">
     <div class="lm-card" role="dialog" aria-modal="true" aria-labelledby="lm-title">
       <button type="button" class="lm-close" (click)="close()"
         [attr.aria-label]="'authModal.close' | translate">

@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { NavigationStart, Router } from '@angular/router';
 
 export interface ConfirmRequest {
   /** i18n key for the dialog title. */
@@ -24,6 +26,17 @@ export class ConfirmService {
   private readonly _request = signal<ConfirmRequest | null>(null);
   readonly request = this._request.asReadonly();
   private resolver: ((ok: boolean) => void) | null = null;
+
+  constructor() {
+    // Navigating away cancels an open confirm: the overlay must not survive onto
+    // the next page, and running the previous (destroyed) page's continuation is
+    // never right — the caller's promise settles false.
+    if (isPlatformBrowser(inject(PLATFORM_ID))) {
+      inject(Router).events.subscribe((e) => {
+        if (e instanceof NavigationStart && this._request()) this.settle(false);
+      });
+    }
+  }
 
   /** Resolves true on confirm; false on cancel, Escape, or backdrop click. */
   confirm(request: ConfirmRequest): Promise<boolean> {

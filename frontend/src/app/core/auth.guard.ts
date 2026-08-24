@@ -9,14 +9,21 @@ import { AuthService } from './auth.service';
  * server we let the route render (private pages are noindex) and enforce on the client.
  */
 export function roleGuard(role?: string): CanActivateFn {
-  return () => {
+  return (_route, state) => {
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return true;
 
     const auth = inject(AuthService);
     const router = inject(Router);
 
-    if (!auth.isAuthenticated()) return router.createUrlTree(['/login']);
-    if (role && !auth.user()?.roles.includes(role)) return router.createUrlTree(['/']);
+    // sessionUser(), not user(): the UI-facing signal reads null until hydration
+    // completes, and guards run before the first render — the gated read would
+    // bounce every signed-in hard-load to /login.
+    const user = auth.sessionUser();
+
+    // Carry the attempted destination so signing in lands the user where they
+    // were headed, not on a generic page.
+    if (!user) return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+    if (role && !user.roles.includes(role)) return router.createUrlTree(['/']);
     return true;
   };
 }

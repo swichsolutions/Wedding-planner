@@ -2,6 +2,7 @@ import { DOCUMENT, Injectable, PLATFORM_ID, inject, signal } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 
+import { safeStorageGet, safeStorageSet } from '../core/auth.service';
 import { DEFAULT_LANG, LANG_STORAGE_KEY, LangCode, SUPPORTED_LANGS } from './languages';
 
 /**
@@ -19,8 +20,10 @@ export class LanguageService {
 
   /** Called once at app startup. Picks the stored language, else the default. */
   init(): void {
+    // safeStorageGet: this runs in the app initializer — a SecurityError from
+    // blocked storage here would abort bootstrap to a blank page.
     const stored = this.isBrowser
-      ? (localStorage.getItem(LANG_STORAGE_KEY) as LangCode | null)
+      ? (safeStorageGet(LANG_STORAGE_KEY) as LangCode | null)
       : null;
     const lang = stored && this.isSupported(stored) ? stored : DEFAULT_LANG;
     this.translate.addLangs(SUPPORTED_LANGS.map((l) => l.code));
@@ -33,7 +36,7 @@ export class LanguageService {
     this.current.set(lang);
     this.document.documentElement.lang = lang;
     if (this.isBrowser) {
-      localStorage.setItem(LANG_STORAGE_KEY, lang);
+      safeStorageSet(LANG_STORAGE_KEY, lang);
     }
   }
 

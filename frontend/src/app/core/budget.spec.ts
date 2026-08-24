@@ -22,6 +22,12 @@ describe('budget allocation', () => {
     expect(suggestedAllocation(-100).every((x) => x === 0)).toBe(true);
   });
 
+  it('sums exactly to the total for non-round budgets (largest remainder)', () => {
+    for (const total of [25050, 10001, 333, 99999, 7]) {
+      expect(suggestedAllocation(total).reduce((a, b) => a + b, 0)).toBe(total);
+    }
+  });
+
   it('makes venue the largest single allocation', () => {
     const amounts = suggestedAllocation(10000);
     expect(amounts[0]).toBe(Math.max(...amounts));

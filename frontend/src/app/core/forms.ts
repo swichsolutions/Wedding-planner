@@ -9,8 +9,9 @@ export function focusFirstInvalid(host: HTMLElement): void {
 }
 
 // A person's name: at least one letter, and only letters (any script — Georgian, Latin, …),
+// combining marks (\p{M} — decomposed input like "é" typed as e+U+0301 must validate),
 // spaces, hyphens, apostrophes and dots. Rejects digit-only or number-containing input like "123".
-const NAME_RE = /^(?=.*\p{L})[\p{L} .'’-]+$/u;
+const NAME_RE = /^(?=.*\p{L})[\p{L}\p{M} .'’-]+$/u;
 
 /**
  * Validator for human name fields. Only trips when the field has (trimmed) content that isn't a

@@ -1,5 +1,5 @@
 @if (svc.request(); as req) {
-  <div class="cdlg" (click)="onOverlay($event)">
+  <div class="cdlg" (click)="onOverlay($event)" (keydown)="onKeydown($event)">
     <div class="cdlg__panel" role="alertdialog" aria-modal="true" aria-labelledby="cdlg-title">
       <span class="cdlg__icon" [class.is-danger]="req.danger" aria-hidden="true">
         @if (req.danger) {

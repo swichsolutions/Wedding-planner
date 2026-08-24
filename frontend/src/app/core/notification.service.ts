@@ -22,8 +22,11 @@ export class NotificationService {
 
   constructor() {
     // Refresh when the user becomes a vendor; clear on sign-out / role change.
+    // Keyed on the account identity too — a vendor→vendor account switch keeps
+    // the role boolean true but must still refetch the new account's badge.
     effect(() => {
       const isVendor = this.auth.isVendor();
+      void this.auth.user()?.email;
       if (!this.isBrowser) return;
       if (isVendor) this.refresh();
       else this.unread.set(0);
