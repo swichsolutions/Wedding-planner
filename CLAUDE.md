@@ -170,3 +170,39 @@ generous whitespace, mobile-first. Vendor portfolios are the showcase — invest
 6. Couple accounts: wishlist + message form. Vendor inbox. Stat tracking (silent).
 7. Seed 30–50 real vendor profiles by hand (from Instagram) to make the directory look full.
 
+## 9. Code health status (updated 2026-08-24 — don't re-audit without new evidence)
+
+Three full adversarial review passes were completed and ALL findings fixed (commits
+2afba7a..e35d79c): a 29-item review, a ~30-finding whole-app sweep, and a verification
+sweep of the fixes themselves. Details live in the session memory file
+(security-review-status.md). Deliberately accepted, with reasons: no vendors-list
+pagination (MVP scale; reviews capped at 200), Identity lockout undercount under truly
+parallel failures + login timing enumeration (both bounded by per-IP rate limits),
+browse has no city select (never existed; city filter works via URL).
+
+## 10. DEPLOYMENT CHECKLIST (production) — things that WILL break if forgotten
+
+The app is deliberately config-driven; a bare deploy fails in specific known ways:
+
+1. **Proxy `/api` to the .NET API in front of the SSR Node server.** The Angular prod
+   build uses a relative `apiBaseUrl` (`''`); without the reverse-proxy route, SSR
+   fetches hit the Express catch-all and get HTML instead of JSON. One origin, e.g.
+   nginx/Caddy: `/api` + `/uploads` → Kestrel (5119), everything else → SSR server.
+2. **`Jwt:Key`** (≥32 chars) must be set in production config/env — the API refuses to
+   start without it (deliberate fail-fast; the dev key lives only in the untracked
+   appsettings.Development.json).
+3. **`ForwardedHeaders:TrustedProxies`** (array of proxy IPs) must be set behind any
+   reverse proxy — otherwise every client shares the proxy's IP and the per-IP rate
+   limits (auth 10/min, messages 5/min, tracking/search 60/min) become site-wide.
+4. **Migrations do NOT auto-apply outside Development.** Run them explicitly on deploy
+   (e.g. `dotnet ef database update` from Ipsum.Infrastructure, or a migration bundle).
+   Roles (Couple/Vendor/Admin) DO seed automatically on every startup.
+5. **Admin account:** set `Seed:AdminEmail` + `Seed:AdminPassword` (no fallback exists,
+   deliberately) or create the admin manually.
+6. **Cloudinary** (`Cloudinary:CloudName/ApiKey/ApiSecret`) for photo storage — without
+   it the API falls back to local-disk uploads (then set `LocalUploads:PublicBase` to
+   the public URL and persist the uploads folder).
+7. **`Cors:AllowedOrigins`** = the production origin; **`Google:ClientId`** in BOTH
+   backend config and the frontend environment for Google sign-in (omitting it just
+   hides the button — password auth still works).
+
