@@ -40,6 +40,13 @@ public class WeddingSite
     public string? PhotoUrl { get; set; }
     public string? PhotoStorageId { get; set; }
 
+    /// <summary>
+    /// Photo focal point in percent (0–100, 50/50 = center), chosen by the couple.
+    /// Templates crop the photo to different aspect ratios; this point stays in frame.
+    /// </summary>
+    public int PhotoFocusX { get; set; } = 50;
+    public int PhotoFocusY { get; set; } = 50;
+
     public bool IsPublished { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

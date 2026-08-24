@@ -17,9 +17,17 @@ public class LocalPhotoStorage : IPhotoStorage
         Directory.CreateDirectory(_root);
     }
 
+    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+
     public async Task<StoredPhoto> UploadAsync(Stream content, string fileName, CancellationToken ct = default)
     {
-        var ext = Path.GetExtension(fileName);
+        // Defense-in-depth behind the controllers' magic-byte check: this folder is
+        // served statically, so nothing the static middleware would serve as
+        // non-image (e.g. .html, .svg) may ever land in it.
+        var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        if (!AllowedExtensions.Contains(ext))
+            throw new ArgumentException($"Disallowed upload extension '{ext}'.", nameof(fileName));
+
         var name = $"{Guid.NewGuid():N}{ext}";
         var path = Path.Combine(_root, name);
         await using (var fs = File.Create(path))

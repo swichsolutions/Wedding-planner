@@ -2,6 +2,7 @@ using Ipsum.Api.Dtos;
 using Ipsum.Domain.Entities;
 using Ipsum.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ipsum.Api.Controllers;
@@ -11,11 +12,17 @@ namespace Ipsum.Api.Controllers;
 public class MessagesController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ILogger<MessagesController> _logger;
 
-    public MessagesController(AppDbContext db) => _db = db;
+    public MessagesController(AppDbContext db, ILogger<MessagesController> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
 
     /// <summary>Couple → vendor message from the public contact form (no account required).</summary>
     [HttpPost]
+    [EnableRateLimiting("messages")]
     public async Task<IActionResult> Create([FromBody] CreateMessageDto dto)
     {
         if (!ModelState.IsValid)
@@ -39,17 +46,19 @@ public class MessagesController : ControllerBase
             CreatedAt = DateTimeOffset.UtcNow,
         });
 
-        // Silent engagement tracking — future sales tool for featured placement (CLAUDE.md §5).
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var stat = await _db.VendorStats.FirstOrDefaultAsync(s => s.VendorId == dto.VendorId && s.Date == today);
-        if (stat is null)
-        {
-            stat = new VendorStat { VendorId = dto.VendorId, Date = today };
-            _db.VendorStats.Add(stat);
-        }
-        stat.Messages++;
-
         await _db.SaveChangesAsync();
+
+        // Silent engagement tracking (CLAUDE.md §5). Atomic upsert (no first-two-of-the-day
+        // race), and best-effort AFTER the save — a stats hiccup must never lose the message.
+        try
+        {
+            await VendorStatTracking.IncrementAsync(_db, dto.VendorId, messages: 1);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "VendorStat message increment failed for vendor {VendorId}", dto.VendorId);
+        }
+
         return StatusCode(StatusCodes.Status201Created);
     }
 }

@@ -19,5 +19,6 @@ public class CreateMessageDto
 
     [Required]
     [MinLength(2)]
+    [MaxLength(4000)]
     public string Body { get; set; } = string.Empty;
 }

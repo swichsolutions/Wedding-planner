@@ -26,6 +26,7 @@ public class WebsiteController : ControllerBase
     {
         "glow", "calligraphy", "garnet", "forest", "seaside",
         "minimal", "blush", "vineyard", "midnight", "sunrise",
+        "minankari", "pardagi", "pearl", "tbilisi",
     };
 
     private const long MaxPhotoBytes = 8 * 1024 * 1024; // 8 MB
@@ -33,11 +34,30 @@ public class WebsiteController : ControllerBase
 
     private readonly AppDbContext _db;
     private readonly IPhotoStorage _storage;
+    private readonly ILogger<WebsiteController> _logger;
 
-    public WebsiteController(AppDbContext db, IPhotoStorage storage)
+    public WebsiteController(AppDbContext db, IPhotoStorage storage, ILogger<WebsiteController> logger)
     {
         _db = db;
         _storage = storage;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Best-effort blob cleanup AFTER the DB commit — an orphaned blob is recoverable
+    /// garbage, but a committed row pointing at a deleted blob is a broken image.
+    /// </summary>
+    private async Task TryDeleteBlobAsync(string? storageId)
+    {
+        if (string.IsNullOrEmpty(storageId)) return;
+        try
+        {
+            await _storage.DeleteAsync(storageId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Orphaned photo blob {StorageId} could not be deleted.", storageId);
+        }
     }
 
     private string? UserId => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -75,6 +95,8 @@ public class WebsiteController : ControllerBase
         site.Message = Clean(dto.Message);
         site.InkColor = Clean(dto.InkColor)?.ToLowerInvariant();
         site.AccentColor = Clean(dto.AccentColor)?.ToLowerInvariant();
+        site.PhotoFocusX = dto.PhotoFocusX ?? site.PhotoFocusX;
+        site.PhotoFocusY = dto.PhotoFocusY ?? site.PhotoFocusY;
         site.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
 
@@ -94,20 +116,33 @@ public class WebsiteController : ControllerBase
         if (!AllowedPhotoTypes.Contains(file.ContentType))
             return BadRequest("Unsupported file type. Use JPG, PNG, or WebP.");
 
+        // Content-Type and filename are client-controlled; only the magic bytes decide
+        // whether this is stored (and which extension it's served with).
+        string? ext;
+        await using (var sniff = file.OpenReadStream())
+        {
+            ext = await ImageSniffer.DetectExtensionAsync(sniff);
+        }
+        if (ext is null)
+            return BadRequest("Unsupported file type. Use JPG, PNG, or WebP.");
+
         StoredPhoto stored;
         await using (var stream = file.OpenReadStream())
         {
-            stored = await _storage.UploadAsync(stream, file.FileName);
+            stored = await _storage.UploadAsync(stream, $"photo{ext}");
         }
 
-        // Replace: remove the previous photo from storage before pointing at the new one.
-        if (!string.IsNullOrEmpty(site.PhotoStorageId))
-            await _storage.DeleteAsync(site.PhotoStorageId);
-
+        var oldStorageId = site.PhotoStorageId;
         site.PhotoUrl = stored.Url;
         site.PhotoStorageId = stored.StorageId;
+        // A new photo starts centered — the old focal point belonged to the old image.
+        site.PhotoFocusX = 50;
+        site.PhotoFocusY = 50;
         site.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
+
+        // Replace: the OLD blob is removed only after the new URL is committed.
+        await TryDeleteBlobAsync(oldStorageId);
 
         return Ok(Map(site));
     }
@@ -119,12 +154,15 @@ public class WebsiteController : ControllerBase
         var site = await _db.WeddingSites.FirstOrDefaultAsync(s => s.UserId == uid);
         if (site is null) return NotFound();
 
-        if (!string.IsNullOrEmpty(site.PhotoStorageId))
-            await _storage.DeleteAsync(site.PhotoStorageId);
+        var oldStorageId = site.PhotoStorageId;
         site.PhotoUrl = null;
         site.PhotoStorageId = null;
+        site.PhotoFocusX = 50;
+        site.PhotoFocusY = 50;
         site.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
+
+        await TryDeleteBlobAsync(oldStorageId);
 
         return Ok(Map(site));
     }
@@ -137,11 +175,24 @@ public class WebsiteController : ControllerBase
         if (site is null) return NotFound();
 
         // The slug is minted once, on first publish, and stays stable afterwards —
-        // shared links must not break when the couple re-publishes.
-        site.Slug ??= await UniqueSlugAsync(site);
-        site.IsPublished = true;
-        site.UpdatedAt = DateTimeOffset.UtcNow;
-        await _db.SaveChangesAsync();
+        // shared links must not break when the couple re-publishes. Minting is
+        // check-then-insert against a unique index, so a concurrent publish with the
+        // same names can win the slug between our check and save: re-mint and retry.
+        for (var attempt = 0; ; attempt++)
+        {
+            site.Slug ??= await UniqueSlugAsync(site);
+            site.IsPublished = true;
+            site.UpdatedAt = DateTimeOffset.UtcNow;
+            try
+            {
+                await _db.SaveChangesAsync();
+                break;
+            }
+            catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex) && attempt < 3)
+            {
+                site.Slug = null; // the next UniqueSlugAsync sees the winner's row and suffixes past it
+            }
+        }
 
         return Ok(Map(site));
     }
@@ -164,7 +215,7 @@ public class WebsiteController : ControllerBase
         new(
             s.TemplateKey, s.FirstName, s.LastName, s.PartnerFirstName, s.PartnerLastName,
             s.WeddingDate, s.Place, s.Message, s.InkColor, s.AccentColor,
-            s.PhotoUrl, s.IsPublished, s.Slug);
+            s.PhotoUrl, s.PhotoFocusX, s.PhotoFocusY, s.IsPublished, s.Slug);
 
     private static string? Clean(string? s)
     {
@@ -177,7 +228,7 @@ public class WebsiteController : ControllerBase
     private async Task<string> UniqueSlugAsync(WeddingSite site)
     {
         var parts = new[] { site.FirstName, site.PartnerFirstName }
-            .Select(Transliterate)
+            .Select(Slugs.From)
             .Where(p => p.Length > 0)
             .ToList();
         var baseSlug = parts.Count > 0 ? string.Join("-", parts) : "chveni-qortsili";
@@ -189,28 +240,4 @@ public class WebsiteController : ControllerBase
         return slug;
     }
 
-    /// <summary>Georgian Mkhedruli → Latin; Latin passes through; everything else drops.</summary>
-    private static string Transliterate(string? input)
-    {
-        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
-
-        var sb = new StringBuilder(input.Length * 2);
-        foreach (var ch in input.ToLowerInvariant())
-        {
-            if (GeorgianToLatin.TryGetValue(ch, out var latin)) sb.Append(latin);
-            else if (ch is >= 'a' and <= 'z' or >= '0' and <= '9') sb.Append(ch);
-            else sb.Append('-');
-        }
-        return Regex.Replace(sb.ToString(), "-{2,}", "-").Trim('-');
-    }
-
-    private static readonly Dictionary<char, string> GeorgianToLatin = new()
-    {
-        ['ა'] = "a", ['ბ'] = "b", ['გ'] = "g", ['დ'] = "d", ['ე'] = "e", ['ვ'] = "v",
-        ['ზ'] = "z", ['თ'] = "t", ['ი'] = "i", ['კ'] = "k", ['ლ'] = "l", ['მ'] = "m",
-        ['ნ'] = "n", ['ო'] = "o", ['პ'] = "p", ['ჟ'] = "zh", ['რ'] = "r", ['ს'] = "s",
-        ['ტ'] = "t", ['უ'] = "u", ['ფ'] = "p", ['ქ'] = "q", ['ღ'] = "gh", ['ყ'] = "q",
-        ['შ'] = "sh", ['ჩ'] = "ch", ['ც'] = "ts", ['ძ'] = "dz", ['წ'] = "ts", ['ჭ'] = "ch",
-        ['ხ'] = "kh", ['ჯ'] = "j", ['ჰ'] = "h",
-    };
 }

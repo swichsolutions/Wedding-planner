@@ -105,9 +105,21 @@ public class BudgetController : ControllerBase
         if (couple is null)
         {
             // Couple accounts predating onboarding have no profile row yet — create one.
+            // Committed on its own so a concurrent first-time save losing the race on
+            // the unique Couple.UserId index recovers instead of 500ing.
             var email = await _db.Users.Where(u => u.Id == uid).Select(u => u.Email).FirstOrDefaultAsync();
             couple = new Couple { UserId = uid, Email = email ?? string.Empty, CreatedAt = DateTimeOffset.UtcNow };
             _db.Couples.Add(couple);
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
+            {
+                // The racing request inserted the row first — continue with theirs.
+                _db.ChangeTracker.Clear();
+                couple = await _db.Couples.FirstAsync(c => c.UserId == uid);
+            }
         }
         couple.TotalBudget = dto.TotalBudget;
 

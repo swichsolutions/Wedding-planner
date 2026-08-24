@@ -17,8 +17,12 @@ public static class IdentitySeeder
                 await roles.CreateAsync(new IdentityRole(role));
         }
 
-        var adminEmail = config["Seed:AdminEmail"] ?? "admin@ipsum.ge";
-        var adminPassword = config["Seed:AdminPassword"] ?? "Admin!2026_dev";
+        // No fallback credentials: anything hardcoded here is public in the repo.
+        // Without explicit Seed config the admin user simply isn't seeded.
+        var adminEmail = config["Seed:AdminEmail"];
+        var adminPassword = config["Seed:AdminPassword"];
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            return;
 
         if (await users.FindByEmailAsync(adminEmail) is null)
         {

@@ -8,6 +8,7 @@ using Ipsum.Infrastructure.Data;
 using Ipsum.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ipsum.Api.Controllers;
@@ -31,6 +32,7 @@ public class AuthController : ControllerBase
 
     /// <summary>Vendor self-registration. Creates an unapproved Vendor + a Vendor-role user.</summary>
     [HttpPost("register/vendor")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<AuthResponseDto>> RegisterVendor([FromBody] RegisterVendorDto dto)
     {
         if (!ModelState.IsValid)
@@ -44,13 +46,15 @@ public class AuthController : ControllerBase
             return Conflict("Email already registered.");
 
         // Create the vendor first (unapproved) so we have an id for a unique slug.
+        // The placeholder must itself be unique: a constant ("pending") violates the
+        // (CategoryId, CitySlug, Slug) unique index when two registrations race.
         var vendor = new Vendor
         {
             Name = dto.VendorName.Trim(),
-            Slug = "pending",
+            Slug = $"pending-{Guid.NewGuid():N}",
             CategoryId = category.Id,
             City = dto.City?.Trim() ?? string.Empty,
-            CitySlug = AsciiSlug(dto.City ?? string.Empty),
+            CitySlug = Slugs.From(dto.City),
             Bio = string.Empty,
             IsApproved = false,
             IsFeatured = false,
@@ -59,7 +63,7 @@ public class AuthController : ControllerBase
         _db.Vendors.Add(vendor);
         await _db.SaveChangesAsync();
 
-        var nameSlug = AsciiSlug(dto.VendorName);
+        var nameSlug = Slugs.From(dto.VendorName);
         vendor.Slug = string.IsNullOrEmpty(nameSlug) ? $"vendor-{vendor.Id}" : $"{nameSlug}-{vendor.Id}";
         if (string.IsNullOrEmpty(vendor.CitySlug))
             vendor.CitySlug = $"city-{vendor.Id}";
@@ -72,7 +76,20 @@ public class AuthController : ControllerBase
             DisplayName = dto.VendorName.Trim(),
             VendorId = vendor.Id,
         };
-        var created = await _users.CreateAsync(user, dto.Password);
+        IdentityResult created;
+        try
+        {
+            created = await _users.CreateAsync(user, dto.Password);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
+        {
+            // A concurrent registration with the same email slipped past the
+            // FindByEmail pre-check. Clean up the orphaned vendor row.
+            _db.ChangeTracker.Clear();
+            _db.Vendors.Remove(vendor);
+            await _db.SaveChangesAsync();
+            return Conflict("Email already registered.");
+        }
         if (!created.Succeeded)
         {
             _db.Vendors.Remove(vendor);
@@ -87,6 +104,7 @@ public class AuthController : ControllerBase
 
     /// <summary>Couple self-registration (planning tools, wishlist sync, etc.).</summary>
     [HttpPost("register/couple")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<AuthResponseDto>> RegisterCouple([FromBody] RegisterCoupleDto dto)
     {
         if (!ModelState.IsValid)
@@ -101,7 +119,17 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             DisplayName = dto.FirstName?.Trim(),
         };
-        var created = await _users.CreateAsync(user, dto.Password);
+        IdentityResult created;
+        try
+        {
+            created = await _users.CreateAsync(user, dto.Password);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
+        {
+            // A concurrent registration with the same email slipped past the pre-check.
+            _db.ChangeTracker.Clear();
+            return Conflict("Email already registered.");
+        }
         if (!created.Succeeded)
             return BadRequest(created.Errors.Select(e => e.Description));
 
@@ -133,15 +161,30 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
     {
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
         var user = await _users.FindByEmailAsync(dto.Email);
-        if (user is null || !await _users.CheckPasswordAsync(user, dto.Password))
+        if (user is null)
             return Unauthorized();
 
+        // Every failure path answers the same bare 401 — responses must not reveal
+        // whether the account exists or is currently locked out.
+        if (await _users.IsLockedOutAsync(user))
+            return Unauthorized();
+
+        if (!await _users.CheckPasswordAsync(user, dto.Password))
+        {
+            // Counts toward the Lockout options in Program.cs — CheckPasswordAsync
+            // alone never increments AccessFailedCount.
+            await _users.AccessFailedAsync(user);
+            return Unauthorized();
+        }
+
+        await _users.ResetAccessFailedCountAsync(user);
         var roles = await _users.GetRolesAsync(user);
         return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
     }
@@ -152,6 +195,7 @@ public class AuthController : ControllerBase
     /// account on first sign-in. Existing accounts (any role) are matched by email and logged in.
     /// </summary>
     [HttpPost("google")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<AuthResponseDto>> Google([FromBody] GoogleLoginDto dto)
     {
         if (!ModelState.IsValid)
@@ -189,32 +233,48 @@ public class AuthController : ControllerBase
                 EmailConfirmed = true,
                 DisplayName = string.IsNullOrWhiteSpace(payload.GivenName) ? payload.Name : payload.GivenName,
             };
-            var created = await _users.CreateAsync(user);
+            IdentityResult created;
+            try
+            {
+                created = await _users.CreateAsync(user);
+            }
+            catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
+            {
+                // Two concurrent first sign-ins (e.g. a double-clicked Google button):
+                // the other request created the account — sign in with that one.
+                _db.ChangeTracker.Clear();
+                user = await _users.FindByEmailAsync(email);
+                if (user is null) return Unauthorized();
+                created = IdentityResult.Success;
+            }
             if (!created.Succeeded)
                 return BadRequest(created.Errors.Select(e => e.Description));
 
-            await _users.AddToRoleAsync(user, Roles.Couple);
-
-            _db.Couples.Add(new Couple
+            if (await _db.Couples.FirstOrDefaultAsync(c => c.UserId == user.Id) is null)
             {
-                UserId = user.Id,
-                FirstName = payload.GivenName,
-                LastName = payload.FamilyName,
-                Email = email,
-                CreatedAt = DateTimeOffset.UtcNow,
-            });
-            await _db.SaveChangesAsync();
+                await _users.AddToRoleAsync(user, Roles.Couple);
+                _db.Couples.Add(new Couple
+                {
+                    UserId = user.Id,
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName,
+                    Email = email,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                });
+                try
+                {
+                    await _db.SaveChangesAsync();
+                }
+                catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
+                {
+                    // The racing request inserted the Couple row first — theirs stands.
+                    _db.ChangeTracker.Clear();
+                }
+            }
         }
 
         var roles = await _users.GetRolesAsync(user);
         return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
     }
 
-    /// <summary>Lowercase ASCII slug; empty for non-Latin input (caller falls back to an id).</summary>
-    private static string AsciiSlug(string input)
-    {
-        var lower = input.Trim().ToLowerInvariant();
-        var slug = Regex.Replace(lower, "[^a-z0-9]+", "-").Trim('-');
-        return slug;
-    }
 }

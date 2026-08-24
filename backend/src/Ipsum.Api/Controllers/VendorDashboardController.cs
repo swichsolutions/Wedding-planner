@@ -43,15 +43,33 @@ public class VendorDashboardController : ControllerBase
             .FirstOrDefaultAsync(x => x.Id == id);
         if (v is null) return NotFound();
 
+        // A non-empty WhatsApp value that doesn't normalize is a typo the vendor must
+        // see — silently saving null returned 200 and the vendor believed it saved.
+        var whatsapp = NormalizeWhatsapp(dto.Whatsapp);
+        if (whatsapp is null && !string.IsNullOrWhiteSpace(dto.Whatsapp))
+        {
+            ModelState.AddModelError("whatsapp",
+                "Invalid WhatsApp number. Use a phone number like +995 5XX XX XX XX.");
+            return ValidationProblem(ModelState);
+        }
+
         v.Name = dto.Name.Trim();
-        v.City = dto.City?.Trim() ?? v.City;
+        var city = dto.City?.Trim();
+        if (!string.IsNullOrEmpty(city) && city != v.City)
+        {
+            // Keep the URL/filter slug in sync with the label — otherwise the profile
+            // says Batumi while its URL and the city filters still say Tbilisi.
+            v.City = city;
+            var citySlug = Slugs.From(city);
+            v.CitySlug = citySlug.Length > 0 ? citySlug : $"city-{v.Id}";
+        }
         v.Bio = dto.Bio?.Trim();
         v.PriceMin = dto.PriceMin;
         v.PriceRange = dto.PriceRange?.Trim();
         v.Instagram = dto.Instagram?.Trim();
         v.Facebook = dto.Facebook?.Trim();
         v.Phone = dto.Phone?.Trim();
-        v.Whatsapp = NormalizeWhatsapp(dto.Whatsapp);
+        v.Whatsapp = whatsapp;
         v.MapUrl = dto.MapUrl?.Trim();
         v.AreasServed = dto.AreasServed?.Trim();
         await _db.SaveChangesAsync();

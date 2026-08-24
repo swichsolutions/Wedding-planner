@@ -14,6 +14,8 @@ public record WeddingSiteDto(
     string? InkColor,
     string? AccentColor,
     string? PhotoUrl,
+    int PhotoFocusX,
+    int PhotoFocusY,
     bool IsPublished,
     string? Slug);
 
@@ -30,6 +32,10 @@ public class WeddingSiteUpdateDto
     [MaxLength(2000)] public string? Message { get; set; }
     [RegularExpression("^#[0-9a-fA-F]{6}$")] public string? InkColor { get; set; }
     [RegularExpression("^#[0-9a-fA-F]{6}$")] public string? AccentColor { get; set; }
+
+    /// <summary>Photo focal point in percent; null = keep the stored value.</summary>
+    [Range(0, 100)] public int? PhotoFocusX { get; set; }
+    [Range(0, 100)] public int? PhotoFocusY { get; set; }
 }
 
 /// <summary>What a published site exposes publicly — no owner/account information.</summary>
@@ -42,7 +48,9 @@ public record PublicSiteDto(
     string? Message,
     string? InkColor,
     string? AccentColor,
-    string? PhotoUrl);
+    string? PhotoUrl,
+    int PhotoFocusX,
+    int PhotoFocusY);
 
 /// <summary>One row of the guest-facing "find a couple's website" search.</summary>
 public record SiteSearchResultDto(

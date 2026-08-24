@@ -48,7 +48,8 @@ public class SavedVendorsController : ControllerBase
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         if (UserId is not string uid) return Forbid();
 
-        if (!await _db.Vendors.AnyAsync(v => v.Id == dto.VendorId))
+        // Approved vendors only — consistent with Messages/Reviews/Track.
+        if (!await _db.Vendors.AnyAsync(v => v.Id == dto.VendorId && v.IsApproved))
             return NotFound();
 
         var already = await _db.SavedVendors

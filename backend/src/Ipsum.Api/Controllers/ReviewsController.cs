@@ -42,6 +42,7 @@ public class ReviewsController : ControllerBase
             .AsNoTracking()
             .Where(r => r.VendorId == vendorId)
             .OrderByDescending(r => r.CreatedAt)
+            .Take(200) // newest 200 — the rating aggregates come from the vendor query, not this list
             .ToListAsync();
 
         return Ok(reviews.Select(r =>
@@ -81,7 +82,24 @@ public class ReviewsController : ControllerBase
 
         review.Rating = dto.Rating;
         review.Body = string.IsNullOrWhiteSpace(dto.Body) ? null : dto.Body.Trim();
-        await _db.SaveChangesAsync();
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (review.Id == 0 && DbErrors.IsUniqueViolation(ex))
+        {
+            // Double-submit race: a concurrent request inserted this couple's review
+            // between our lookup and save. Resubmit means update-in-place, so apply
+            // this submission to the row that won.
+            _db.Entry(review).State = EntityState.Detached;
+            var existing = await _db.Reviews.FirstAsync(r => r.VendorId == vendorId && r.UserId == uid);
+            existing.Rating = dto.Rating;
+            existing.Body = review.Body;
+            existing.UpdatedAt = now;
+            await _db.SaveChangesAsync();
+            review = existing;
+        }
 
         return Ok(new ReviewDto(review.Id, review.AuthorName, review.Rating, review.Body, review.CreatedAt, true));
     }

@@ -20,11 +20,13 @@ public class VendorPhotosController : ControllerBase
 
     private readonly AppDbContext _db;
     private readonly IPhotoStorage _storage;
+    private readonly ILogger<VendorPhotosController> _logger;
 
-    public VendorPhotosController(AppDbContext db, IPhotoStorage storage)
+    public VendorPhotosController(AppDbContext db, IPhotoStorage storage, ILogger<VendorPhotosController> logger)
     {
         _db = db;
         _storage = storage;
+        _logger = logger;
     }
 
     private int? VendorId =>
@@ -56,6 +58,16 @@ public class VendorPhotosController : ControllerBase
         if (!AllowedTypes.Contains(file.ContentType))
             return BadRequest("Unsupported file type. Use JPG, PNG, or WebP.");
 
+        // Content-Type and filename are client-controlled; only the magic bytes decide
+        // whether this is stored (and which extension it's served with).
+        string? ext;
+        await using (var sniff = file.OpenReadStream())
+        {
+            ext = await ImageSniffer.DetectExtensionAsync(sniff);
+        }
+        if (ext is null)
+            return BadRequest("Unsupported file type. Use JPG, PNG, or WebP.");
+
         var count = await _db.VendorPhotos.CountAsync(p => p.VendorId == vid);
         if (count >= MaxPhotos)
             return BadRequest($"Photo limit reached (max {MaxPhotos}).");
@@ -63,7 +75,7 @@ public class VendorPhotosController : ControllerBase
         StoredPhoto stored;
         await using (var stream = file.OpenReadStream())
         {
-            stored = await _storage.UploadAsync(stream, file.FileName);
+            stored = await _storage.UploadAsync(stream, $"photo{ext}");
         }
 
         var maxSort = await _db.VendorPhotos
@@ -119,9 +131,21 @@ public class VendorPhotosController : ControllerBase
         var photo = await _db.VendorPhotos.FirstOrDefaultAsync(p => p.Id == id && p.VendorId == vid);
         if (photo is null) return NotFound();
 
-        await _storage.DeleteAsync(photo.StorageId);
         _db.VendorPhotos.Remove(photo);
         await _db.SaveChangesAsync();
+
+        // Blob removal is best-effort AFTER the commit: an orphaned blob is
+        // recoverable garbage; a failed save after deletion would leave the row
+        // pointing at a blob that no longer exists.
+        try
+        {
+            await _storage.DeleteAsync(photo.StorageId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Orphaned photo blob {StorageId} could not be deleted.", photo.StorageId);
+        }
+
         return NoContent();
     }
 }

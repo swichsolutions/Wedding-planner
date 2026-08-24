@@ -31,9 +31,13 @@ public class PublicSitesController : ControllerBase
         var last = lastName?.Trim();
         if (string.IsNullOrEmpty(first) || string.IsNullOrEmpty(last) || year is < 2000 or > 2100)
             return BadRequest();
+        if (first.Length > 100 || last.Length > 100)
+            return BadRequest();
 
-        var fp = $"%{first}%";
-        var lp = $"%{last}%";
+        // Escape LIKE wildcards so "%"/"_" match literally — otherwise firstName=%
+        // lists every published couple, defeating the you-must-know-them design.
+        var fp = $"%{EscapeLike(first)}%";
+        var lp = $"%{EscapeLike(last)}%";
         var target = month is >= 1 and <= 12 ? month.Value : 0;
 
         var results = await _db.WeddingSites
@@ -41,8 +45,8 @@ public class PublicSitesController : ControllerBase
             .Where(s => s.IsPublished && s.Slug != null && s.WeddingDate != null)
             .Where(s => s.WeddingDate!.Value.Year == year)
             .Where(s =>
-                (EF.Functions.ILike(s.FirstName!, fp) && EF.Functions.ILike(s.LastName!, lp)) ||
-                (EF.Functions.ILike(s.PartnerFirstName!, fp) && EF.Functions.ILike(s.PartnerLastName!, lp)))
+                (EF.Functions.ILike(s.FirstName!, fp, "\\") && EF.Functions.ILike(s.LastName!, lp, "\\")) ||
+                (EF.Functions.ILike(s.PartnerFirstName!, fp, "\\") && EF.Functions.ILike(s.PartnerLastName!, lp, "\\")))
             .OrderBy(s => target == 0 ? 0 : Math.Abs(s.WeddingDate!.Value.Month - target))
             .ThenBy(s => s.WeddingDate)
             .Take(20)
@@ -53,6 +57,9 @@ public class PublicSitesController : ControllerBase
 
         return Ok(results);
     }
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
     [HttpGet("{slug}")]
     public async Task<ActionResult<PublicSiteDto>> Get(string slug)
@@ -71,6 +78,8 @@ public class PublicSitesController : ControllerBase
             site.Message,
             site.InkColor,
             site.AccentColor,
-            site.PhotoUrl));
+            site.PhotoUrl,
+            site.PhotoFocusX,
+            site.PhotoFocusY));
     }
 }

@@ -7,7 +7,7 @@ public class VendorEditDto
 {
     [Required, MaxLength(200)] public string Name { get; set; } = string.Empty;
     [MaxLength(120)] public string? City { get; set; }
-    public string? Bio { get; set; }
+    [MaxLength(4000)] public string? Bio { get; set; }
     public decimal? PriceMin { get; set; }
     [MaxLength(120)] public string? PriceRange { get; set; }
     [MaxLength(200)] public string? Instagram { get; set; }
@@ -16,7 +16,7 @@ public class VendorEditDto
     /// <summary>Accepts a phone number or a pasted wa.me link; normalized server-side.</summary>
     [MaxLength(200)] public string? Whatsapp { get; set; }
     [MaxLength(1000)] public string? MapUrl { get; set; }
-    public string? AreasServed { get; set; }
+    [MaxLength(500)] public string? AreasServed { get; set; }
 }
 
 public record VendorDashboardDto(

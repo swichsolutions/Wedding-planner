@@ -2,6 +2,7 @@ using Ipsum.Api.Dtos;
 using Ipsum.Domain.Entities;
 using Ipsum.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ipsum.Api.Controllers;
@@ -25,11 +26,7 @@ public class VendorsController : ControllerBase
     {
         var query = _db.Vendors
             .AsNoTracking()
-            .Where(v => v.IsApproved)
-            .Include(v => v.Category)
-            .Include(v => v.Photos)
-            .Include(v => v.Reviews)
-            .AsQueryable();
+            .Where(v => v.IsApproved);
 
         if (!string.IsNullOrWhiteSpace(category))
             query = query.Where(v => v.Category.Slug == category);
@@ -48,11 +45,60 @@ public class VendorsController : ControllerBase
                 .ThenByDescending(v => v.IsFeatured)
             : query.OrderByDescending(v => v.IsFeatured);
 
-        var vendors = await ordered
+        // Project in SQL instead of materializing entity graphs: review aggregates are
+        // computed by Postgres (bodies never leave the DB), and only the cover photo is
+        // fetched — every list consumer (cards, budget picker) renders photos[0] only.
+        var rows = await ordered
             .ThenBy(v => v.Name)
+            .Select(v => new
+            {
+                v.Id,
+                v.Name,
+                v.Slug,
+                CategorySlug = v.Category.Slug,
+                v.City,
+                v.CitySlug,
+                v.AreasServed,
+                v.PriceMin,
+                v.PriceRange,
+                v.Bio,
+                v.Instagram,
+                v.Facebook,
+                v.Phone,
+                v.Whatsapp,
+                v.MapUrl,
+                FirstPhoto = v.Photos
+                    .OrderBy(p => p.SortOrder)
+                    .Select(p => new { p.Url, p.AltText, p.IsRealWedding })
+                    .FirstOrDefault(),
+                v.IsFeatured,
+                ReviewCount = v.Reviews.Count(),
+                AvgRating = v.Reviews.Average(r => (double?)r.Rating),
+            })
             .ToListAsync();
 
-        return Ok(vendors.Select(ToDto));
+        return Ok(rows.Select(r => new VendorDto(
+            r.Id,
+            r.Name,
+            r.Slug,
+            r.CategorySlug,
+            r.City,
+            r.CitySlug,
+            r.AreasServed,
+            r.PriceMin ?? 0,
+            r.PriceRange,
+            r.Bio ?? string.Empty,
+            r.Instagram,
+            r.Facebook,
+            r.Phone,
+            r.Whatsapp,
+            r.MapUrl,
+            r.FirstPhoto is null
+                ? Array.Empty<VendorPhotoDto>()
+                : new[] { new VendorPhotoDto(r.FirstPhoto.Url, r.FirstPhoto.AltText, r.FirstPhoto.IsRealWedding) },
+            r.IsFeatured,
+            r.ReviewCount == 0 || r.AvgRating is null ? null : Math.Round(r.AvgRating.Value, 1),
+            r.ReviewCount)));
     }
 
     /// <summary>Single vendor by its SEO URL parts.</summary>
@@ -71,6 +117,29 @@ public class VendorsController : ControllerBase
                 v.Slug == slug);
 
         return vendor is null ? NotFound() : Ok(ToDto(vendor));
+    }
+
+    /// <summary>
+    /// Anonymous engagement ping: the SPA reports a profile view (browser only, so
+    /// SSR renders and crawlers don't count). Silent day-one stat collection — the
+    /// future featured-placement sales tool (CLAUDE.md §5).
+    /// </summary>
+    [HttpPost("{id:int}/track-view")]
+    [EnableRateLimiting("tracking")]
+    public Task<IActionResult> TrackView(int id) => Track(id, views: 1);
+
+    /// <summary>Anonymous engagement ping: a contact interaction (call/WhatsApp/social/message).</summary>
+    [HttpPost("{id:int}/track-contact")]
+    [EnableRateLimiting("tracking")]
+    public Task<IActionResult> TrackContact(int id) => Track(id, contacts: 1);
+
+    private async Task<IActionResult> Track(int id, int views = 0, int contacts = 0)
+    {
+        var exists = await _db.Vendors.AnyAsync(v => v.Id == id && v.IsApproved);
+        if (!exists) return NotFound();
+
+        await VendorStatTracking.IncrementAsync(_db, id, views: views, contacts: contacts);
+        return NoContent();
     }
 
     private static VendorDto ToDto(Vendor v) => new(
