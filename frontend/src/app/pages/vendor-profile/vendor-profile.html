@@ -1,7 +1,7 @@
 @if (vendor(); as v) {
   <article class="profile">
     <div class="container">
-      <a class="profile__back" routerLink="/vendors">{{ 'profile.backToVendors' | translate }}</a>
+      <a class="profile__back" [routerLink]="backLink()">{{ backLabel() }}</a>
 
       <div class="profile__layout">
         <!-- ---------- gallery ---------- -->

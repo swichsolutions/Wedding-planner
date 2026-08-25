@@ -20,6 +20,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, catchError, map, merge, of, switchMap } from 'rxjs';
 
 import { trapTabKey } from '../../core/a11y';
+import { categoryKey } from '../../core/catalog';
+import { cityDisplayEn, cityLocativeKa } from '../../core/city-name';
 import { LanguageService } from '../../i18n/language.service';
 import { AuthService } from '../../core/auth.service';
 import { VendorService } from '../../core/vendor.service';
@@ -159,6 +161,23 @@ export class VendorProfile implements OnDestroy {
   /** Current app URL for sign-in returnUrl (mirrors the vendor-card save flow). */
   protected currentUrl(): string {
     return this.router.url;
+  }
+
+  /** "Up" goes to the vendor's own category×city landing page, not the generic browse. */
+  protected backLink(): string {
+    const v = this.vendor();
+    return v && v.categorySlug && v.citySlug ? `/${v.categorySlug}/${v.citySlug}` : '/vendors';
+  }
+
+  protected backLabel(): string {
+    const v = this.vendor();
+    if (!v || !v.categorySlug || !v.citySlug) return this.translate.instant('profile.backToVendors');
+    const plural = this.translate.instant(
+      categoryKey(v.categorySlug).replace('category.', 'categoryPlural.'),
+    );
+    return this.lang.current() === 'en'
+      ? `${plural} in ${cityDisplayEn(v.citySlug)}`
+      : `${plural} ${cityLocativeKa(v.city)}`;
   }
 
   /** Called from every contact affordance (call/WhatsApp/social/map/message). */

@@ -101,6 +101,35 @@ public class VendorsController : ControllerBase
             r.ReviewCount)));
     }
 
+    /// <summary>
+    /// Distinct category×city pairings with approved-vendor counts — the SEO landing
+    /// pages' cross-link data and the sitemap's page list. Cheap grouped read; left
+    /// unthrottled like the main list (it renders on every landing page).
+    /// </summary>
+    [HttpGet("pairings")]
+    public async Task<ActionResult<IEnumerable<VendorPairingDto>>> Pairings()
+    {
+        var rows = await _db.Vendors
+            .AsNoTracking()
+            .Where(v => v.IsApproved && v.CitySlug != "")
+            .GroupBy(v => new { CategorySlug = v.Category.Slug, v.CitySlug })
+            .Select(g => new
+            {
+                g.Key.CategorySlug,
+                g.Key.CitySlug,
+                // Max = a deterministic representative display name for the group.
+                City = g.Max(v => v.City),
+                Count = g.Count(),
+            })
+            .OrderByDescending(x => x.Count)
+            .ThenBy(x => x.CategorySlug)
+            .ThenBy(x => x.CitySlug)
+            .ToListAsync();
+
+        // Max() types as nullable, but GroupBy never yields an empty group.
+        return Ok(rows.Select(x => new VendorPairingDto(x.CategorySlug, x.CitySlug, x.City ?? string.Empty, x.Count)));
+    }
+
     /// <summary>Single vendor by its SEO URL parts.</summary>
     [HttpGet("{category}/{city}/{slug}")]
     public async Task<ActionResult<VendorDto>> GetBySlug(string category, string city, string slug)

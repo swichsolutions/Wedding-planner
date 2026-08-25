@@ -100,6 +100,15 @@ export const routes: Routes = [
       import('./pages/vendor-profile/vendor-profile').then((m) => m.VendorProfile),
   },
 
+  // Category×city landing — SEO URL shape /{category}/{city} (e.g. /fotografi/tbilisi).
+  // Two segments, so every static two-segment route above (website/find, w/:slug,
+  // guides/:slug) still wins; unknown category slugs 404 inside the component.
+  {
+    path: ':category/:city',
+    loadComponent: () =>
+      import('./pages/category-city/category-city').then((m) => m.CategoryCity),
+  },
+
   // Real 404 (noindex) for anything unmatched — no more soft-404 redirects.
   { path: '**', loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFound) },
 ];

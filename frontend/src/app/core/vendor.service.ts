@@ -9,6 +9,15 @@ import { Vendor, VendorFilter } from './vendor.models';
 /** API payload — same shape as Vendor, minus the derived category i18n key. */
 type VendorDto = Omit<Vendor, 'categoryKey'>;
 
+/** One approved category×city combination (count > 0) — the landing-page inventory. */
+export interface Pairing {
+  categorySlug: string;
+  citySlug: string;
+  /** Georgian display name as stored on the vendors (e.g. "თბილისი"). */
+  city: string;
+  count: number;
+}
+
 /**
  * Vendor data access. The API is the single source of truth: list/getBySlug errors
  * propagate so pages can show a real error state. (The old bundled-mock fallback is
@@ -66,6 +75,15 @@ export class VendorService {
       .post(`${this.base}/api/vendors/${vendorId}/track-contact`, null)
       .pipe(catchError(() => of(null)))
       .subscribe();
+  }
+
+  /**
+   * Existing category×city combinations (approved vendors only), most-stocked first.
+   * Feeds the landing pages' cross-links; errors propagate — callers decide whether
+   * the links are essential (they usually degrade to hidden rows).
+   */
+  pairings(): Observable<Pairing[]> {
+    return this.http.get<Pairing[]>(`${this.base}/api/vendors/pairings`);
   }
 
   /** Emits undefined when the vendor doesn't exist (404); other errors propagate. */

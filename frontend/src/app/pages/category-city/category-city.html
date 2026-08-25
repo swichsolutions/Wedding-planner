@@ -1,0 +1,90 @@
+<section class="landing">
+  <div class="container">
+    @if (loadError()) {
+      <div class="landing__state">
+        <h1>{{ 'vendors.loadErrorTitle' | translate }}</h1>
+        <p>{{ 'vendors.loadErrorBody' | translate }}</p>
+        <button type="button" class="btn btn--ghost" (click)="retryLoad()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </div>
+    } @else if (!loaded()) {
+      <!-- loading — hold the editorial shape instead of flashing empty -->
+      <div aria-hidden="true">
+        <div class="landing__head">
+          <span class="skel skel--text landing__skel-overline"></span>
+          <div class="skel landing__skel-title"></div>
+          <div class="skel landing__skel-stand"></div>
+        </div>
+        <ul class="vendor-grid" role="list">
+          @for (i of skeletons; track i) {
+            <li class="skel-card">
+              <div class="skel skel-card__media"></div>
+              <div class="skel skel-card__line"></div>
+              <div class="skel skel-card__line skel-card__line--sub"></div>
+            </li>
+          }
+        </ul>
+      </div>
+    } @else if (vendors().length > 0) {
+      <header class="landing__head">
+        <p class="overline">{{ 'landing.overline' | translate }}</p>
+        <h1 class="landing__title">{{ h1() }}</h1>
+        <p class="landing__standfirst">{{ standfirst() }}</p>
+      </header>
+
+      <ul class="vendor-grid" role="list">
+        @for (v of vendors(); track v.id) {
+          <li><app-vendor-card [vendor]="v" /></li>
+        }
+      </ul>
+
+      <p class="landing__browse">
+        <a class="link-arrow" [routerLink]="['/vendors']"
+          [queryParams]="{ category: categorySlug(), city: citySlug() }">
+          {{ 'landing.browseCta' | translate }}
+        </a>
+      </p>
+
+      <!-- Cross-links — the internal-linking backbone between landing pages. -->
+      @if (crossCities().length || crossCategories().length) {
+        <nav class="landing__xlinks" [attr.aria-label]="'landing.overline' | translate">
+          @if (crossCities().length) {
+            <div class="landing__xrow">
+              <h2 class="landing__xhead">{{ otherCitiesHeading() }}</h2>
+              <ul class="landing__xlist" role="list">
+                @for (x of crossCities(); track x.link) {
+                  <li>
+                    <a class="landing__xlink" [routerLink]="x.link">
+                      {{ x.label }} <span class="num landing__xcount">({{ x.count }})</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+          @if (crossCategories().length) {
+            <div class="landing__xrow">
+              <h2 class="landing__xhead">{{ moreInCityHeading() }}</h2>
+              <ul class="landing__xlist" role="list">
+                @for (x of crossCategories(); track x.link) {
+                  <li>
+                    <a class="landing__xlink" [routerLink]="x.link">
+                      {{ x.label }} <span class="num landing__xcount">({{ x.count }})</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </nav>
+      }
+    } @else {
+      <div class="landing__state">
+        <h1>{{ 'landing.notFoundTitle' | translate }}</h1>
+        <p>{{ 'landing.notFoundBody' | translate }}</p>
+        <a class="btn btn--primary" routerLink="/vendors">{{ 'landing.browseAll' | translate }}</a>
+      </div>
+    }
+  </div>
+</section>

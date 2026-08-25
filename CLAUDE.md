@@ -184,10 +184,13 @@ browse has no city select (never existed; city filter works via URL).
 
 The app is deliberately config-driven; a bare deploy fails in specific known ways:
 
-1. **Proxy `/api` to the .NET API in front of the SSR Node server.** The Angular prod
-   build uses a relative `apiBaseUrl` (`''`); without the reverse-proxy route, SSR
-   fetches hit the Express catch-all and get HTML instead of JSON. One origin, e.g.
-   nginx/Caddy: `/api` + `/uploads` → Kestrel (5119), everything else → SSR server.
+1. **Proxy `/api`, `/uploads` AND `/sitemap.xml` to the .NET API in front of the SSR
+   Node server.** The Angular prod build uses a relative `apiBaseUrl` (`''`); without
+   the reverse-proxy route, SSR fetches hit the Express catch-all and get HTML instead
+   of JSON. One origin, e.g. nginx/Caddy: those three paths → Kestrel (5119),
+   everything else → SSR server. Also set **`Site:PublicOrigin`** (e.g.
+   `https://ourdomain.ge`) so the generated sitemap emits public URLs instead of the
+   proxy-internal host.
 2. **`Jwt:Key`** (≥32 chars) must be set in production config/env — the API refuses to
    start without it (deliberate fail-fast; the dev key lives only in the untracked
    appsettings.Development.json).

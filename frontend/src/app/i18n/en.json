@@ -141,6 +141,38 @@
     "rings": "Rings & jewelry",
     "transport": "Transport"
   },
+  "categoryPlural": {
+    "photographer": "Wedding photographers",
+    "videographer": "Wedding videographers",
+    "venue": "Wedding venues",
+    "decor": "Wedding decor",
+    "florist": "Wedding florists",
+    "makeup": "Wedding makeup artists",
+    "hair": "Wedding hair stylists",
+    "nails": "Wedding nail artists",
+    "cake": "Wedding cakes",
+    "music": "Wedding music & DJs",
+    "dress": "Wedding dresses",
+    "suit": "Groom’s suits",
+    "rings": "Wedding rings & jewelry",
+    "transport": "Wedding transport"
+  },
+  "landing": {
+    "overline": "Wedding vendors",
+    "standfirstCount": "Compare {{count}} vendors with real portfolios and couple reviews.",
+    "standfirstOne": "One vendor here so far — {{name}}.",
+    "standfirstPrice": "Prices start from {{price}}.",
+    "standfirstRated": "Average rating {{rating}}★ — standouts include {{top}}.",
+    "titleCountOne": "1 vendor",
+    "titleCountMany": "{{count}} vendors",
+    "titleFrom": "from {{price}}",
+    "otherCities": "{{category}} in other cities",
+    "moreInCity": "More wedding vendors in {{city}}",
+    "browseCta": "Filter & compare in the full directory",
+    "browseAll": "Browse all vendors",
+    "notFoundTitle": "Nothing here yet",
+    "notFoundBody": "We don't have vendors for this category and city yet — browse the full directory instead."
+  },
   "categories": {
     "overline": "Categories",
     "title": "Vendors for every vibe",

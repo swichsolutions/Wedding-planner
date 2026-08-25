@@ -1,0 +1,118 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.landing {
+  padding-block: var(--space-12) var(--space-20);
+}
+
+// ---- editorial opener: overline → display H1 → data standfirst ----
+.landing__head {
+  margin-bottom: var(--space-10);
+  max-width: 52rem; // ragged-right editorial column, not a centered banner
+}
+
+.landing__title {
+  margin: var(--space-3) 0 0;
+  // One step over the page-h1 scale — this is the surface's masthead.
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.landing__standfirst {
+  margin: var(--space-5) 0 0;
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  max-width: var(--measure);
+}
+
+// ---- skeleton (mirrors the opener so nothing jumps) ----
+.landing__skel-overline {
+  width: 9em;
+}
+
+.landing__skel-title {
+  height: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  width: min(60%, 26rem);
+  margin-top: var(--space-3);
+}
+
+.landing__skel-stand {
+  height: 1.2em;
+  width: min(85%, 38rem);
+  margin: var(--space-5) 0 var(--space-10);
+}
+
+// ---- below the grid ----
+.landing__browse {
+  margin: var(--space-8) 0 0;
+}
+
+.landing__xlinks {
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  gap: var(--space-8);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-12);
+  }
+}
+
+.landing__xhead {
+  margin: 0 0 var(--space-4);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+}
+
+.landing__xlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.landing__xlink {
+  color: var(--color-text);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-action);
+    text-decoration: underline;
+  }
+}
+
+.landing__xcount {
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-regular, 400);
+}
+
+// ---- error / empty states (match the browse page's empty block) ----
+.landing__state {
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+
+  h1 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--fs-h2, 1.5rem);
+  }
+
+  p {
+    margin: 0 auto var(--space-6);
+    color: var(--color-text-secondary);
+    max-width: var(--measure);
+  }
+}

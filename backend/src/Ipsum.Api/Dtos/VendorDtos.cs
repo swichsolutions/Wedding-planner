@@ -5,6 +5,10 @@ namespace Ipsum.Api.Dtos;
 
 public record VendorPhotoDto(string Url, string? Alt, bool IsRealWedding);
 
+/// <summary>One category×city grouping of approved vendors — feeds the SEO landing
+/// pages' cross-links and the sitemap.</summary>
+public record VendorPairingDto(string CategorySlug, string CitySlug, string City, int Count);
+
 public record VendorDto(
     int Id,
     string Name,
