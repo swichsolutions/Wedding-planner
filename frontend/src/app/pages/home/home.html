@@ -28,39 +28,29 @@
     <ul class="cat-grid" role="list">
       @for (c of categories; track c.slug) {
         <li>
-          @if (c.variant === 'card') {
-            <a class="cat-tile" [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
+          <!-- Full-bleed photo tile: the image covers the card, title + tag sit
+               bottom-left on a gradient scrim. One chrome for every category. -->
+          <a class="cat-tile" [class.cat-tile--video]="c.variant === 'video'"
+            [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
+            <span class="cat-tile__bg" aria-hidden="true">
+              @if (c.variant === 'video') {
+                <!-- Crossfade montage underneath (fallback while the clip loads and
+                     for reduced-motion users); the looping clip covers it. -->
+                @for (shot of videoMontage; track shot) {
+                  <img [src]="shot" alt="" loading="lazy" width="600" height="750" />
+                }
+                <video class="cat-tile__clip" [src]="categoryClip" [muted]="true"
+                  autoplay loop playsinline preload="metadata" tabindex="-1"></video>
+              } @else {
+                <img [src]="c.img" alt="" loading="lazy" width="600" height="750" />
+              }
+            </span>
+            <span class="cat-tile__scrim" aria-hidden="true"></span>
+            <span class="cat-tile__overlay">
               <span class="cat-tile__title">{{ c.key | translate }}</span>
               <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
-              <span class="cat-tile__media">
-                <img [src]="c.img" alt="" loading="lazy" width="600" height="400" />
-              </span>
-            </a>
-          } @else {
-            <!-- Full-bleed media tile: photo (or looping clip) covers the card,
-                 text sits on a scrim. -->
-            <a class="cat-tile cat-tile--media" [class.cat-tile--video]="c.variant === 'video'"
-              [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
-              <span class="cat-tile__bg" aria-hidden="true">
-                @if (c.variant === 'video') {
-                  <!-- Crossfade montage underneath (fallback while the clip loads and
-                       for reduced-motion users); the animated gif covers it. -->
-                  @for (shot of videoMontage; track shot) {
-                    <img [src]="shot" alt="" loading="lazy" width="600" height="750" />
-                  }
-                  <video class="cat-tile__clip" [src]="categoryClip" [muted]="true"
-                    autoplay loop playsinline preload="metadata" tabindex="-1"></video>
-                } @else {
-                  <img [src]="c.img" alt="" loading="lazy" width="600" height="750" />
-                }
-              </span>
-              <span class="cat-tile__scrim" aria-hidden="true"></span>
-              <span class="cat-tile__overlay">
-                <span class="cat-tile__title">{{ c.key | translate }}</span>
-                <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
-              </span>
-            </a>
-          }
+            </span>
+          </a>
         </li>
       }
     </ul>
@@ -175,7 +165,7 @@
       <div class="wsite-shot">
         <span class="wsite-shot__chrome">
           <span class="wsite-shot__dots"><i></i><i></i><i></i></span>
-          <span class="wsite-shot__url" translate="no">ipsum.ge/w/Anastasia-Beka</span>
+          <span class="wsite-shot__url" translate="no">weddingplanner.ge/w/Anastasia-Beka</span>
         </span>
         <span class="wsite-shot__page">
           <app-wedding-site [data]="siteSample()" template="seaside" [thumb]="true" />

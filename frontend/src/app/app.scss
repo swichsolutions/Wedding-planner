@@ -29,10 +29,16 @@
   letter-spacing: var(--tracking-tight);
   color: var(--color-text);
   text-decoration: none;
+  white-space: nowrap; // the wordmark (and its dot) must never break
 
   &--light {
     color: #fff;
   }
+}
+
+// the wordmark never yields width to the nav — it's the logo
+.site-header .brand {
+  flex-shrink: 0;
 }
 
 // pink signature dot after the wordmark in the header
@@ -68,7 +74,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3);
   min-height: 76px;
   transition: min-height var(--dur-fast) var(--ease-out);
 
@@ -115,7 +121,10 @@
     display: flex;
   }
 
-  @include bp.respond-to(lg) {
+  // Desktop nav from xl, not lg: Georgian labels are wide, and a signed-in user
+  // gains a Dashboard link — below 1280px the full set doesn't fit and flexbox
+  // squeezes links into two-line wraps. The hamburger is the honest tablet layout.
+  @include bp.respond-to(xl) {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -128,15 +137,16 @@
 
     a {
       position: relative;
-      padding: var(--space-2) var(--space-3);
+      padding: var(--space-2);
       letter-spacing: 0.01em;
+      white-space: nowrap; // a nav label never folds into two lines
 
       // editorial underline that wipes in on hover / marks the active page
       &::after {
         content: '';
         position: absolute;
-        left: var(--space-3);
-        right: var(--space-3);
+        left: var(--space-2);
+        right: var(--space-2);
         bottom: 4px;
         height: 2px;
         border-radius: 2px;
@@ -161,6 +171,20 @@
   }
 }
 
+// Georgian labels run wide (მომწოდებლები, დაგეგმვის ხელსაწყო…); one type-size down
+// keeps the signed-in link set fitting between the wordmark and the actions cluster.
+@include bp.respond-to(xl) {
+  :host-context([lang='ka']) .site-nav a {
+    font-size: 0.9375rem;
+    padding-inline: 6px; // admin carries 6 links; KA needs the extra slack at 1280
+
+    &::after {
+      left: 6px;
+      right: 6px;
+    }
+  }
+}
+
 // auth controls inside the mobile dropdown (hidden on desktop — shown in the bar instead)
 .site-nav__auth {
   display: flex;
@@ -181,7 +205,7 @@
     }
   }
 
-  @include bp.respond-to(lg) {
+  @include bp.respond-to(xl) {
     display: none;
   }
 }
@@ -192,7 +216,7 @@
   align-items: center;
   gap: var(--space-3);
 
-  @include bp.respond-to(lg) {
+  @include bp.respond-to(xl) {
     display: flex;
   }
 }
@@ -313,8 +337,8 @@
     background: var(--color-ink-100);
   }
 
-  @include bp.respond-to(lg) {
-    padding: var(--space-2) var(--space-3);
+  @include bp.respond-to(xl) {
+    padding: var(--space-2);
   }
 }
 
@@ -394,7 +418,7 @@
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  @include bp.respond-to(lg) {
+  @include bp.respond-to(xl) {
     display: none;
   }
 }

@@ -94,6 +94,9 @@
 }
 
 // ============================ BROWSE BY CATEGORY ============================
+// Uniform editorial photo grid: 8 identical full-bleed tiles, portrait crop,
+// title + tag bottom-left on a gradient scrim. 2 columns (4 rows) on mobile,
+// 4 columns (2 rows) from md — no 3-column step, it leaves a ragged last row.
 .cat-grid {
   list-style: none;
   margin: 0;
@@ -102,95 +105,35 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
 
-  // Staggered columns (Zola-style): odd columns sit lower, even columns ride
-  // higher. Transform-only, so pad the bottom to keep section spacing honest.
-  // Works at both breakpoints: in 2- and 4-column row-major grids, odd children
-  // always land in odd columns.
-  margin-bottom: var(--space-5);
-
-  > li:nth-child(odd) {
-    transform: translateY(var(--space-5));
-  }
-
-  // 8 curated tiles: 2 columns (4 rows) on mobile, 4 columns (2 rows) from md.
-  // No 3-column step — it leaves a ragged last row with 8 items.
   @include bp.respond-to(md) {
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-6);
-    margin-bottom: var(--space-8);
-
-    > li:nth-child(odd) {
-      transform: translateY(var(--space-8));
-    }
-  }
-
-  // Soft tinted grounds rotating on a 3-step cycle over a 4-column grid, so the
-  // colors drift diagonally instead of repeating per column.
-  > li:nth-child(3n + 1) .cat-tile {
-    background: var(--color-brand-50);
-  }
-  > li:nth-child(3n + 2) .cat-tile {
-    background: var(--color-gold-100);
-  }
-  > li:nth-child(3n) .cat-tile {
-    background: var(--color-sage-100);
+    gap: var(--space-4);
   }
 }
 
 .cat-tile {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: var(--space-5);
+  align-items: flex-end;
+  overflow: hidden;
+  aspect-ratio: 1 / 1; // one crop for every tile — the rows read as two calm bands
   border-radius: var(--radius-xl);
-  text-align: center;
-  color: var(--color-text);
   transition: transform var(--dur-base) var(--ease-out),
     box-shadow var(--dur-base) var(--ease-out);
-
-  &__title {
-    font-family: var(--font-display);
-    font-size: var(--fs-h4);
-    font-weight: var(--fw-semibold);
-    line-height: var(--lh-heading);
-  }
-
-  &__tag {
-    margin: var(--space-2) 0 var(--space-4);
-    font-size: var(--fs-caption);
-    color: var(--color-text-secondary);
-  }
-
-  &__media {
-    display: block;
-    margin-top: auto; // bottom-align photos when ka/en taglines wrap differently
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    aspect-ratio: 3 / 2;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform var(--dur-slow) var(--ease-out);
-    }
-  }
 
   &:hover {
     transform: translateY(calc(-1 * var(--space-1)));
     box-shadow: var(--shadow-md);
   }
-  &:hover &__media img {
+  &:hover .cat-tile__bg img,
+  &:hover .cat-tile__bg video {
     transform: scale(1.04);
   }
-}
-
-// ---- Full-bleed media tiles (photo or looping clip behind the text) ----
-.cat-tile--media {
-  position: relative;
-  overflow: hidden;
-  padding: 0;
-  justify-content: center;
+  // the nav's editorial underline, wiping in under the tile title
+  &:hover .cat-tile__title::after,
+  &:focus-visible .cat-tile__title::after {
+    transform: scaleX(1);
+  }
 }
 
 .cat-tile__bg {
@@ -244,13 +187,16 @@
   }
 }
 
+// Quiet on top, solid enough at the bottom that white type passes on the
+// brightest photos (chandeliered halls, sunlit roads).
 .cat-tile__scrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--color-ink-900) 12%, transparent) 0%,
-    color-mix(in srgb, var(--color-ink-900) 56%, transparent) 100%
+    color-mix(in srgb, var(--color-ink-900) 10%, transparent) 0%,
+    color-mix(in srgb, var(--color-ink-900) 16%, transparent) 45%,
+    color-mix(in srgb, var(--color-ink-900) 78%, transparent) 100%
   );
 }
 
@@ -258,18 +204,44 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: var(--space-6) var(--space-5);
+  gap: var(--space-1);
+  padding: var(--space-4);
+  text-align: left;
   color: var(--color-text-on-brand);
+}
 
-  .cat-tile__tag {
-    margin-bottom: 0;
-    color: color-mix(in srgb, var(--color-text-on-brand) 85%, transparent);
+.cat-tile__title {
+  position: relative;
+  align-self: flex-start;
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-brand-500);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur-base) var(--ease-out);
   }
 }
 
-.cat-tile--media:hover .cat-tile__bg img,
-.cat-tile--media:hover .cat-tile__bg video {
-  transform: scale(1.04);
+.cat-tile__tag {
+  // title-only on narrow tiles — three wrapped tag lines would swallow the photo
+  display: none;
+  font-size: var(--fs-caption);
+  color: color-mix(in srgb, var(--color-text-on-brand) 82%, transparent);
+
+  @include bp.respond-to(md) {
+    display: block;
+  }
 }
 
 // No autoplaying motion for reduced-motion users — a single still stands in.

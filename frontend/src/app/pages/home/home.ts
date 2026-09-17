@@ -24,16 +24,9 @@ const HOME_CATEGORY_SLUGS = [
   'kaba', 'makiaji', 'dekori', 'torti',
 ];
 
-// Zola-style mixed grid: most tiles are tinted cards; the most visual categories
-// go full-bleed photo, and videographers get a looping clip (naturally).
-type CardVariant = 'card' | 'photo' | 'video';
-
-const CARD_MEDIA: Partial<Record<string, Exclude<CardVariant, 'card'>>> = {
-  darbazi: 'photo',
-  kaba: 'photo',
-  dekori: 'photo',
-  videografi: 'video',
-};
+// Uniform editorial grid: every tile is a full-bleed photo with the title on a
+// scrim; videographers get a looping clip (naturally) inside the same chrome.
+type CardVariant = 'photo' | 'video';
 
 interface GuideCard {
   tagKey: string;
@@ -51,7 +44,7 @@ export class Home {
   protected readonly categories = HOME_CATEGORY_SLUGS.map((slug) => ({
     ...CATEGORIES.find((c) => c.slug === slug)!,
     tagKey: 'categoryTag.' + slug,
-    variant: (CARD_MEDIA[slug] ?? 'card') as CardVariant,
+    variant: (slug === 'videografi' ? 'video' : 'photo') as CardVariant,
   }));
 
   // Looping clip covering the videographers tile; the montage below runs
