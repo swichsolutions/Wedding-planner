@@ -137,6 +137,37 @@ cd backend && dotnet build WeddingPlanner.sln
 
 ---
 
+## Free demo deploy (Render + Neon)
+
+For showing the app to people, not a real launch. Two Render **free** web services
+(`backend/Dockerfile`, `frontend/Dockerfile`) + one Neon **free** Postgres. Render's free
+tier sleeps a service after 15 min idle (~1 min to wake on the next request) — warn people
+before a demo, or hit the URL yourself first.
+
+1. **Neon** ([neon.tech](https://neon.tech)) → new project → copy the pooled connection string.
+2. **Render backend service** → New Web Service → this repo → Root Directory `backend` →
+   Environment `Docker` (auto-detects `backend/Dockerfile`). Env vars:
+   - `ASPNETCORE_ENVIRONMENT` = `Development` — yes, in "prod". This is what makes the API
+     auto-run migrations, seed demo vendors, and create the admin account on startup (see
+     `Program.cs`); without it you'd need to run `dotnet ef database update` by hand against
+     Neon and the admin login wouldn't exist. Turns on Swagger too — harmless for a private demo.
+   - `ConnectionStrings__Default` = the Neon connection string
+   - `Jwt__Key` = any random string, 32+ characters
+   - `Seed__AdminEmail` / `Seed__AdminPassword` = your choice
+   - `Cors__AllowedOrigins__0` = the frontend service's URL (add after step 3, once known)
+3. **Render frontend service** → New Web Service → this repo → Root Directory `frontend` →
+   Environment `Docker`. Env vars:
+   - `API_BASE_URL` = the backend service's URL from step 2 (baked into the build — see the
+     Dockerfile comment; changing it requires a redeploy, not just a restart)
+   - `NG_ALLOWED_HOSTS` = the frontend service's own `*.onrender.com` URL (Angular 21 rejects
+     unknown Host headers and silently falls back to client-side rendering otherwise)
+4. Redeploy the backend once the frontend URL is known (step 2's CORS var), and the frontend
+   once the backend URL is known (step 3's build var) — first deploy of each won't have the
+   other's URL yet.
+5. Cloudinary/Google envs are optional (same names as `appsettings.Development.json.example`,
+   double-underscore nesting, e.g. `Cloudinary__CloudName`) — omit them and uploads fall back
+   to local disk (fine for a demo; photos vanish on restart) and the Google button just hides.
+
 ## ⚠️ Going to production (read before deploy)
 
 1. **`allowedHosts`** — set `frontend` → `architect.build.options.security.allowedHosts` in
