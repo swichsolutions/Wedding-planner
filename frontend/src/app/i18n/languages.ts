@@ -8,4 +8,4 @@ export const SUPPORTED_LANGS: { code: LangCode; label: string }[] = [
   { code: 'en', label: 'English' },
 ];
 
-export const LANG_STORAGE_KEY = 'ipsum.lang';
+export const LANG_STORAGE_KEY = 'weddingplanner.lang';

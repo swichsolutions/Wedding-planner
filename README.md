@@ -1,6 +1,6 @@
-# Ipsum — Georgian Wedding Platform
+# WeddingPlanner — Georgian Wedding Platform
 
-> **"Ipsum" is a placeholder brand name.** It lives as one i18n key (`brand.name`) in
+> **"WeddingPlanner" is a placeholder brand name.** It lives as one i18n key (`brand.name`) in
 > `frontend/src/app/i18n/{ka,en}.json` — change it in one place to rebrand.
 
 A Georgian-language, couple-first wedding-planning destination (discover, compare, and
@@ -16,7 +16,7 @@ Monorepo with two apps:
 ```
 Wedding planner/
   frontend/      Angular 21 (standalone) + SSR, SCSS, @ngx-translate
-  backend/       .NET 8 — Ipsum.Api / Ipsum.Domain / Ipsum.Infrastructure (EF Core + Npgsql)
+  backend/       .NET 8 — WeddingPlanner.Api / WeddingPlanner.Domain / WeddingPlanner.Infrastructure (EF Core + Npgsql)
   db/            00_setup_dev_db.sql (dev database + role)
   design-system/ MASTER.md (design spec) + pages/ (per-page overrides)
   CLAUDE.md      product brief / working rules
@@ -48,13 +48,13 @@ Create the dev database + low-privilege app role (run once, as the postgres supe
 ```
 
 This creates database `ipsum_dev` and role `ipsum_app`. The dev connection string (with the
-app password) lives in `backend/src/Ipsum.Api/appsettings.Development.json` (gitignored).
+app password) lives in `backend/src/WeddingPlanner.Api/appsettings.Development.json` (gitignored).
 
 ### 2. Backend
 
 ```bash
 cd backend
-ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/Ipsum.Api
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/WeddingPlanner.Api
 ```
 
 On dev startup it **auto-applies EF migrations and seeds** categories, style tags, and a
@@ -68,7 +68,7 @@ To apply migrations manually:
 ```bash
 cd backend
 ASPNETCORE_ENVIRONMENT=Development dotnet ef database update \
-  --project src/Ipsum.Infrastructure --startup-project src/Ipsum.Api
+  --project src/WeddingPlanner.Infrastructure --startup-project src/WeddingPlanner.Api
 ```
 
 ### 3. Frontend
@@ -128,7 +128,7 @@ npm test                              # vitest (watch)
 npx ng test --watch=false             # vitest, one-shot (CI)
 
 # backend
-cd backend && dotnet build Ipsum.sln
+cd backend && dotnet build WeddingPlanner.sln
 ```
 
 ---
@@ -143,7 +143,7 @@ cd backend && dotnet build Ipsum.sln
    degrades to mock data.
 3. **Secrets** — `appsettings.Development.json` (gitignored) holds the dev DB password; use a real
    secret store / env vars in production.
-4. **Brand name** — replace the `Ipsum` placeholder in `i18n/{ka,en}.json`.
+4. **Brand name** — replace the `WeddingPlanner` placeholder in `i18n/{ka,en}.json`.
 5. **Real data** — replace seeded/mock vendors and articles with real content.
 
 ## What's built / what's next
@@ -152,5 +152,5 @@ See **`STATE.md`**. In short: the couple-facing discovery MVP (landing, browse, 
 form, budget planner, guides, wishlist) **plus** auth (ASP.NET Identity + JWT), the vendor
 self-serve dashboard/inbox, and admin moderation are all built and SSR-ready. Auth + dashboard +
 admin are **not yet run against a live DB** (login/persistence unverified until `ipsum_dev` exists).
-Dev admin: `admin@ipsum.ge` / `Admin!2026_dev`. Remaining: couple accounts (optional — wishlist +
+Dev admin: `admin@weddingplanner.ge` / `Admin!2026_dev`. Remaining: couple accounts (optional — wishlist +
 messaging already work without them) and go-live. Set a real `Jwt:Key` secret before production.

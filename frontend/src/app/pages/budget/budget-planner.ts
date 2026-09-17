@@ -44,7 +44,7 @@ type DrawerKind = 'vendor' | 'details';
 type DetailsTrigger = 'bell' | 'note';
 type MoneyField = 'estimate' | 'actualCost' | 'paid';
 
-const DRAG_HINT_KEY = 'ipsum.budget.dragHintSeen';
+const DRAG_HINT_KEY = 'weddingplanner.budget.dragHintSeen';
 
 /**
  * Wedding budget planner. Two modes:

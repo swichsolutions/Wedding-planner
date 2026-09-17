@@ -1,25 +1,25 @@
-# STATE.md — Ipsum (Georgian Wedding Platform)
+# STATE.md — WeddingPlanner (Georgian Wedding Platform)
 
-> "Ipsum" is a **placeholder brand name** (to be replaced later). It lives as a single
+> "WeddingPlanner" is a **placeholder brand name** (to be replaced later). It lives as a single
 > i18n key `brand.name` in frontend/src/app/i18n/{ka,en}.json — change it in one place.
 
 ## Status: full MVP built AND VERIFIED end-to-end against the live DB ✅
 
 ## Done
 - **Repo layout:** monorepo — `/frontend` (Angular 21 + SSR) and `/backend` (.NET 8).
-- **Backend scaffold** (`backend/Ipsum.sln`):
-  - Projects: `Ipsum.Api` (web API), `Ipsum.Domain` (entities), `Ipsum.Infrastructure` (EF Core).
+- **Backend scaffold** (`backend/WeddingPlanner.sln`):
+  - Projects: `WeddingPlanner.Api` (web API), `WeddingPlanner.Domain` (entities), `WeddingPlanner.Infrastructure` (EF Core).
   - EF Core 8.0.10 + Npgsql 8.0.10 (pinned to 8.x — newest targets .NET 10, incompatible with net8.0).
   - **All 10 domain entities** from CLAUDE.md §7 implemented (Vendor, VendorPhoto, Category,
     StyleTag, VendorStyleTag, Couple, SavedVendor, Message, VendorStat, Availability, ContentPage).
   - `AppDbContext` with keys, unique indexes (incl. SEO slug uniqueness per category+city), relationships.
   - `Program.cs`: Npgsql DbContext, CORS for the Angular dev server, `/health` endpoint, Swagger.
-  - **InitialCreate migration generated** (`backend/src/Ipsum.Infrastructure/Data/Migrations`). Builds clean.
+  - **InitialCreate migration generated** (`backend/src/WeddingPlanner.Infrastructure/Data/Migrations`). Builds clean.
 - **Frontend scaffold** (`frontend/`):
   - Angular 21 standalone + SSR (`@angular/ssr`, Express server).
   - **i18n wired (Georgian default, English secondary)** via `@ngx-translate/core` v17 with a
     **static-import loader** (translations bundled, SSR-safe — no HTTP fetch).
-  - `LanguageService` persists choice + syncs `<html lang>`; brand key for "Ipsum".
+  - `LanguageService` persists choice + syncs `<html lang>`; brand key for "WeddingPlanner".
   - Environment files + `fileReplacements` (dev API = http://localhost:5119).
   - **SSR verified**: prerendered HTML contains Georgian content + `lang="ka"` (SEO requirement met).
   - Minimal unstyled app shell + home route (placeholder — real UI comes after the design system).
@@ -92,7 +92,7 @@
 
 ## ⚠️ To go live with real data (when ipsum_dev DB exists — other chat)
 1. User runs `db/00_setup_dev_db.sql` (creates ipsum_app role + ipsum_dev DB).
-2. Start API: `cd backend && ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/Ipsum.Api`
+2. Start API: `cd backend && ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/WeddingPlanner.Api`
    → auto-applies migration + seeds. (Or `dotnet ef database update` first.)
 3. `cd frontend && npm start` → dev uses apiBaseUrl http://localhost:5119 → real data; mock fallback gone.
 
@@ -135,7 +135,7 @@
   - **Backend**: `AppDbContext` → `IdentityDbContext<AppUser>` (AppUser has DisplayName + VendorId);
     JWT bearer + `TokenService`; `AuthController` (`POST /api/auth/register/vendor` creates an
     unapproved Vendor + Vendor-role user; `POST /api/auth/login`); `IdentitySeeder` (roles +
-    dev admin admin@ipsum.ge); `VendorDashboardController` (`GET/PUT /api/vendor/me`, inbox,
+    dev admin admin@weddingplanner.ge); `VendorDashboardController` (`GET/PUT /api/vendor/me`, inbox,
     mark-read, stats) `[Authorize(Vendor)]`; `AdminController` (`GET /api/admin/vendors`,
     approve, toggle-feature) `[Authorize(Admin)]`. **AddIdentity migration** generated.
     Added `AppDbContextFactory` (design-time) — EF migrations now run from the Infrastructure
@@ -145,7 +145,7 @@
     guarded `/dashboard` (stats + profile-edit form + inbox w/ mark-read) and `/admin` (moderation:
     approve + feature toggle). Header shows Dashboard/Admin/Logout vs Login by role. All SSR-verified
     (200s; private pages render a loading shell server-side, hydrate with data on the client).
-  - Dev admin: admin@ipsum.ge / Admin!2026_dev (config in appsettings.Development.json `Seed`).
+  - Dev admin: admin@weddingplanner.ge / Admin!2026_dev (config in appsettings.Development.json `Seed`).
   - ⚠️ **Not yet run against a live DB** — login/registration/persistence unverified until ipsum_dev
     exists; JWT key in appsettings is a dev placeholder (set a real secret in production).
   - Reviewed (a11y + anti-slop): `aria-required` across login/register/dashboard forms,
@@ -157,7 +157,7 @@
   zero-guard, venue largest), `wishlist.service.spec` (toggle/count/persist via TestBed),
   `vendor.service.spec` (mock fallback + categoryKey derivation via HttpTestingController).
   Run one-shot: `npx ng test --watch=false`. Refactored budget allocation into `core/budget.ts`.
-  NOTE: backend has no test project yet — the Windows App-Control block on loading Ipsum.Api.dll
+  NOTE: backend has no test project yet — the Windows App-Control block on loading WeddingPlanner.Api.dll
   may also affect a test host, so deferred (try an xUnit project + EF InMemory when DB/env allows).
 
 - **END-TO-END VERIFIED against live ipsum_dev** (2026-06-26): both migrations applied; seed loaded
@@ -229,7 +229,7 @@
     (was scoped to home → fixed cramped spacing). New btn `.btn--ghost-light` (white outline on photos).
 - **Navbar redesigned**: "Saved" removed from nav links → heart icon in header actions (`.icon-link`,
   count badge, fills pink when wishlist non-empty); nav links get an animated pink underline (hover +
-  active); pink signature dot after the "Ipsum" wordmark; scroll-condensing header (76px→58px, border +
+  active); pink signature dot after the "WeddingPlanner" wordmark; scroll-condensing header (76px→58px, border +
   shadow on `.is-scrolled` via `scrolled` signal + `@HostListener('window:scroll')`). Saved still in
   footer. Verified desktop top/scrolled + mobile (no overflow) via Playwright.
 - **Playwright** added as devDependency for in-session visual verification (screenshots/computed styles).
@@ -319,7 +319,7 @@
 - **Signup wizard given a photo panel** (Zola/Knot-style, from user-provided screenshots): a wedding
   photo + editorial caption now sits beside the form — a **side panel on desktop** (`.ob` becomes a
   2-col grid), a **slim banner above the card on mobile**. Photo + caption **change per step**
-  (6 verified Unsplash images; captions `signup.caption0..5` ka/en); "Ipsum" wordmark overlaid top,
+  (6 verified Unsplash images; captions `signup.caption0..5` ka/en); "WeddingPlanner" wordmark overlaid top,
   caption bottom, dark scrim for legibility. NOTE: fixed a CSS bug — `bottom: var(--space-7)` used an
   **undefined token** (the scale skips 7/9/11) which reset `bottom` to `auto` and pinned the caption
   to the top; switched to `--space-8`. Only `/signup` got this (the flow matching the references);
@@ -414,7 +414,7 @@
     already-reviewed login/register — aria-required/invalid/describedby, role=alert/status,
     focus-first-invalid, labels, aria-live checklist).
   - ⚠️ **Verification env note**: had to restart the API myself (the previously-running instance
-    was PID 24868; new build has the new controller). Ran it from `src/Ipsum.Api` so the content
+    was PID 24868; new build has the new controller). Ran it from `src/WeddingPlanner.Api` so the content
     root finds `appsettings.Development.json` (running the exe from the `backend/` dir gave an
     empty connection string → 500s). The verification API instance was started with an extra CORS
     origin (`Cors__AllowedOrigins__1=http://localhost:4300`) via env var for a throwaway :4300
@@ -652,8 +652,8 @@ color flow was also verified in a real browser via Playwright.
 - **Running dev servers will stop when this session exits.** To resume in a new chat:
   - Frontend: `cd frontend && npm start` (→ :4200).
   - API: run from the project dir so the connection string is found — see memory
-    [[api-startup-content-root]] (`cd backend/src/Ipsum.Api`, set ASPNETCORE_ENVIRONMENT=Development
-    + ASPNETCORE_URLS=http://localhost:5119, run the exe) — or `dotnet run --project src/Ipsum.Api`.
+    [[api-startup-content-root]] (`cd backend/src/WeddingPlanner.Api`, set ASPNETCORE_ENVIRONMENT=Development
+    + ASPNETCORE_URLS=http://localhost:5119, run the exe) — or `dotnet run --project src/WeddingPlanner.Api`.
     CORS defaults to allowing :4200; the extra :4300 origin used for verification was env-only.
 
 ## In progress
@@ -667,7 +667,7 @@ color flow was also verified in a real browser via Playwright.
 
 ## Next up
 - **[BLOCKED ON USER] Apply DB migration.** First run the setup script (see below), then:
-  `cd backend && ASPNETCORE_ENVIRONMENT=Development dotnet ef database update --project src/Ipsum.Infrastructure --startup-project src/Ipsum.Api`
+  `cd backend && ASPNETCORE_ENVIRONMENT=Development dotnet ef database update --project src/WeddingPlanner.Infrastructure --startup-project src/WeddingPlanner.Api`
 - **Generate the design system once** with `ui-ux-pro-max` → save tokens file. (CLAUDE.md design rules)
 - Then BUILD UI with `frontend-design`: landing page, vendor browse/profile, budget planner.
 - Vendor model → admin CRUD + couple-facing profile pages (SEO URLs).
@@ -680,10 +680,10 @@ color flow was also verified in a real browser via Playwright.
 - **i18n = @ngx-translate (runtime) with a static bundled loader**, NOT Angular compile-time
   @angular/localize. Reason: runtime language toggle + SSR renders translated HTML server-side
   (good for SEO) + simpler than per-locale builds. Revisit if per-locale URL builds become needed.
-- Dev DB password for `ipsum_app` is in `backend/src/Ipsum.Api/appsettings.Development.json` (gitignored).
+- Dev DB password for `ipsum_app` is in `backend/src/WeddingPlanner.Api/appsettings.Development.json` (gitignored).
 
 ## Open questions / blockers
 - **DB not yet created.** User must run (password stays with user):
   `& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -f "db\00_setup_dev_db.sql"`
 - Validating couple demand before over-investing (CLAUDE.md §3) — still open, strategic.
-- Real brand name TBD (using "Ipsum").
+- Real brand name TBD (using "WeddingPlanner").

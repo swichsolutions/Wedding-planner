@@ -1,4 +1,4 @@
--- Ipsum (Georgian Wedding Platform) — local dev database setup
+-- WeddingPlanner (Georgian Wedding Platform) — local dev database setup
 -- Run ONCE as the postgres superuser. Creates a dedicated low-privilege
 -- app login role and an owned database. Safe to re-run (guards included).
 

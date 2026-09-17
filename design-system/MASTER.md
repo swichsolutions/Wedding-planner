@@ -1,4 +1,4 @@
-# Ipsum — Design System (MASTER)
+# WeddingPlanner — Design System (MASTER)
 
 > **Source of truth for tokens:** `frontend/src/styles/_tokens.scss` (CSS custom properties)
 > and `frontend/src/styles/_breakpoints.scss` (Sass breakpoints + `respond-to` mixin).

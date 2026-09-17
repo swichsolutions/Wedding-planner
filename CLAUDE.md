@@ -198,7 +198,7 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
    reverse proxy — otherwise every client shares the proxy's IP and the per-IP rate
    limits (auth 10/min, messages 5/min, tracking/search 60/min) become site-wide.
 4. **Migrations do NOT auto-apply outside Development.** Run them explicitly on deploy
-   (e.g. `dotnet ef database update` from Ipsum.Infrastructure, or a migration bundle).
+   (e.g. `dotnet ef database update` from WeddingPlanner.Infrastructure, or a migration bundle).
    Roles (Couple/Vendor/Admin) DO seed automatically on every startup.
 5. **Admin account:** set `Seed:AdminEmail` + `Seed:AdminPassword` (no fallback exists,
    deliberately) or create the admin manually.

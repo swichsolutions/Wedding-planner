@@ -40,8 +40,8 @@ export interface RegisterCouplePayload {
   neededCategories?: string[];
 }
 
-const TOKEN_KEY = 'ipsum.auth.token';
-const USER_KEY = 'ipsum.auth.user';
+const TOKEN_KEY = 'weddingplanner.auth.token';
+const USER_KEY = 'weddingplanner.auth.user';
 
 /**
  * Routes that render session-owned data. A tab sitting on one of these is evicted

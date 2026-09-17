@@ -1,6 +1,6 @@
 {
   "brand": {
-    "name": "Ipsum"
+    "name": "WeddingPlanner"
   },
   "nav": {
     "vendors": "Vendors",
@@ -24,7 +24,7 @@
   "home": {
     "overline": "Wedding planning in Georgia",
     "tagline": "Wedding planning starts here",
-    "subtitle": "From venues and photographers to decor, makeup and even the cake — Ipsum is here for every step of the way.",
+    "subtitle": "From venues and photographers to decor, makeup and even the cake — WeddingPlanner is here for every step of the way.",
     "cta": "Let’s do this!",
     "ctaCouple": "Continue planning",
     "ctaVendor": "My profile",
@@ -175,8 +175,8 @@
   },
   "categories": {
     "overline": "Categories",
-    "title": "Vendors for every vibe",
-    "subtitle": "Discover the right pros for any budget, style and city.",
+    "title": "Everything you need to plan",
+    "subtitle": "Discover the pros for any budget, style and city.",
     "viewAll": "All categories"
   },
   "vip": {
@@ -500,7 +500,7 @@
   },
   "about": {
     "title": "About us",
-    "body1": "Ipsum is a Georgian wedding platform that helps couples find, compare, and choose the best vendors for their big day.",
+    "body1": "WeddingPlanner is a Georgian wedding platform that helps couples find, compare, and choose the best vendors for their big day.",
     "body2": "Our goal is to make wedding planning simple, transparent, and enjoyable — from the photographer to the venue, all in one place.",
     "body3": "The platform is Georgian-language and built for local couples."
   },
@@ -508,7 +508,7 @@
     "title": "Contact",
     "body": "Have a question or suggestion? Write to us and we’ll reply soon.",
     "emailLabel": "Email",
-    "email": "hello@ipsum.ge"
+    "email": "hello@weddingplanner.ge"
   },
   "notFound": {
     "title": "Page not found",
