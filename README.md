@@ -50,6 +50,10 @@ Create the dev database + low-privilege app role (run once, as the postgres supe
 This creates database `ipsum_dev` and role `ipsum_app`. The dev connection string (with the
 app password) lives in `backend/src/WeddingPlanner.Api/appsettings.Development.json` (gitignored).
 
+**First time on a new machine:** copy `appsettings.Development.json.example` (same folder) to
+`appsettings.Development.json` and fill in the values — the API refuses to start without
+`Jwt:Key`, and every DB request 500s without a connection string.
+
 ### 2. Backend
 
 ```bash

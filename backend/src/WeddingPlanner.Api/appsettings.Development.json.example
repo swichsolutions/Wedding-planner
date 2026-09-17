@@ -1,0 +1,43 @@
+// Copy this file to appsettings.Development.json (same folder) and fill in the
+// values. The real file is gitignored — never commit it. .NET's JSON config
+// reader accepts these // comments, so you can keep or delete them.
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    // Database + role are created by db/00_setup_dev_db.sql (run it once as the
+    // postgres superuser); use the password you set in that script.
+    "Default": "Host=localhost;Port=5432;Database=ipsum_dev;Username=ipsum_app;Password=YOUR_DB_PASSWORD"
+  },
+  "Cors": {
+    "AllowedOrigins": [ "http://localhost:4200" ]
+  },
+  "Jwt": {
+    // REQUIRED — the API refuses to start without a key of at least 32 chars.
+    // Any random string works for local dev.
+    "Key": "REPLACE-with-any-random-string-at-least-32-characters-long",
+    "Issuer": "weddingplanner-api",
+    "Audience": "weddingplanner-web",
+    "ExpireHours": "72"
+  },
+  "Seed": {
+    // First-run admin account (created automatically at startup).
+    "AdminEmail": "admin@weddingplanner.ge",
+    "AdminPassword": "CHOOSE_AN_ADMIN_PASSWORD"
+  },
+  "Cloudinary": {
+    // OPTIONAL — leave empty to store uploaded photos on local disk instead.
+    "CloudName": "",
+    "ApiKey": "",
+    "ApiSecret": ""
+  },
+  "Google": {
+    // OPTIONAL — empty just hides the Google sign-in button; password auth works.
+    "ClientId": ""
+  }
+}
