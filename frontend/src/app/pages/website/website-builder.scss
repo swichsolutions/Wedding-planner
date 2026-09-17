@@ -121,6 +121,13 @@
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
   }
+
+  // The live preview zooms inside the fixed frame (clipped by overflow:hidden),
+  // same idiom as the vendor-card photo zoom.
+  &:hover .wb-tease__thumb app-wedding-site,
+  &:focus-visible .wb-tease__thumb app-wedding-site {
+    transform: scale(1.06);
+  }
 }
 
 .wb-tease__thumb {
@@ -130,6 +137,10 @@
   overflow: hidden;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
+
+  app-wedding-site {
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
   transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 
   @include bp.respond-to(md) {
@@ -231,9 +242,15 @@
   text-align: center;
   font-family: var(--font-body);
 
-  &:hover .wb-card__thumb {
+  &:hover .wb-card__thumb,
+  &:focus-visible .wb-card__thumb {
     transform: translateY(-4px);
     box-shadow: var(--shadow-md);
+  }
+
+  &:hover .wb-card__thumb app-wedding-site,
+  &:focus-visible .wb-card__thumb app-wedding-site {
+    transform: scale(1.06);
   }
 }
 
@@ -244,6 +261,10 @@
   overflow: hidden;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-xs);
+
+  app-wedding-site {
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
   transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
