@@ -1,0 +1,752 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.guests {
+  padding-block: var(--space-12) var(--space-20);
+}
+
+.guests__head {
+  max-width: var(--measure);
+  margin-bottom: var(--space-8);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.guests__sub {
+  margin-top: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+}
+
+.guests__error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-100);
+  color: var(--color-danger-600);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+}
+
+.guests__skel {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+}
+
+.guests__skel-bar {
+  height: 3rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-surface-sunken) 50%, var(--color-ink-100) 75%);
+  background-size: 200% 100%;
+  animation: guests-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes guests-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+// ---- empty state (couple, no guests yet — and the guest/signed-out explainer) ----
+.guests__empty {
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+
+  p {
+    margin: 0 auto var(--space-6);
+    max-width: 40ch;
+    font-size: var(--fs-lead);
+    color: var(--color-text-secondary);
+  }
+}
+
+.guests__empty-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink-500);
+  box-shadow: var(--shadow-xs);
+}
+
+.guests__empty-plus {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+  color: #fff;
+}
+
+// ---- toolbar (count + "Add guests" once the list is non-empty) ----
+// ---- headcount summary cards ----
+.guests__stats {
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.guests__stat {
+  padding: var(--space-4);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.guests__stat-num {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+}
+
+.guests__stat-label {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.guests__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin-bottom: var(--space-4);
+}
+
+.guests__importing {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+.guests__import-link {
+  display: inline-block;
+  margin: calc(-1 * var(--space-4)) 0 var(--space-6);
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-700);
+  }
+}
+
+// Visually hidden but still clickable via .click() and reachable by screen readers.
+.guests__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ---- "how do you want to add guests" sidebar ----
+.guests__drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  justify-content: flex-end;
+  background: var(--color-overlay);
+}
+
+.guests__drawer {
+  position: relative;
+  width: min(22rem, 100vw);
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  animation: guests-drawer-in var(--dur-base) var(--ease-out);
+
+  // A fixed 22rem panel is fine on a phone but leaves the manual-entry form's
+  // two-column rows cramped on a real monitor — widen the panel as the viewport
+  // grows so those fields get room instead of wrapping to one column.
+  @include bp.respond-to(sm) {
+    width: min(26rem, 100vw);
+    padding: var(--space-8);
+  }
+
+  @include bp.respond-to(lg) {
+    width: 30rem;
+  }
+
+  @include bp.respond-to(xl) {
+    width: 34rem;
+    padding: var(--space-10);
+  }
+}
+
+@keyframes guests-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+
+.guests__drawer-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-text);
+  }
+}
+
+.guests__drawer-back {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-text);
+  }
+}
+
+.guests__drawer-title {
+  margin: 0 var(--space-8) var(--space-6) 0;
+  font-size: var(--fs-h4);
+
+  &--back {
+    margin-left: var(--space-8);
+  }
+}
+
+.guests__drawer-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  svg {
+    flex: none;
+    color: var(--color-brand-600);
+  }
+
+  strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    color: var(--color-text);
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-brand-500);
+    background: color-mix(in srgb, var(--color-brand-500) 5%, var(--color-surface));
+  }
+}
+
+.guests__count {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-medium);
+}
+
+// ---- guest table ----
+// Mirrors the budget page's .btable pattern: a stack of cards on mobile
+// (each <tr> becomes a grid "card", cells labelled via data-label), a real
+// table from md up.
+.ghidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.gtable-wrap {
+  @include bp.respond-to(md) {
+    overflow-x: auto;
+  }
+}
+
+.gtable {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    display: none;
+  }
+
+  tbody,
+  tr,
+  td,
+  th {
+    display: block;
+  }
+
+  @include bp.respond-to(md) {
+    thead {
+      display: table-header-group;
+    }
+
+    tbody {
+      display: table-row-group;
+    }
+
+    tr {
+      display: table-row;
+    }
+
+    td,
+    th {
+      display: table-cell;
+    }
+  }
+
+  th {
+    padding: var(--space-3);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    text-align: start;
+    border-bottom: 1px solid var(--color-border-strong);
+  }
+
+  .gtable__select {
+    width: 2.5rem;
+  }
+
+  .gtable__count {
+    width: 5rem;
+  }
+
+  .gtable__actions {
+    width: 6rem;
+  }
+}
+
+.grow {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: start;
+
+  @include bp.respond-to(md) {
+    display: table-row;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+
+    > td {
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+
+    &:hover > td {
+      background: color-mix(in srgb, var(--color-surface-sunken) 55%, transparent);
+    }
+  }
+}
+
+.grow__select {
+  grid-row: 1 / 3;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-brand-500);
+  }
+}
+
+// `.grow__name`/`.grow__contact` are <td>s: at md+, `.gtable td { display:
+// table-cell }` outranks a class-only selector's `display: grid/flex` on the
+// same element (an extra type selector beats a bare class on specificity), so
+// the multi-line layout has to live on an inner wrapper div instead.
+.grow__name {
+  grid-column: 2;
+}
+
+.grow__name-wrap {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.grow__fullname {
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+}
+
+.grow__sub {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.grow__count {
+  grid-column: 2;
+}
+
+.grow__contact {
+  grid-column: 2;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.grow__contact-wrap {
+  display: grid;
+  gap: 2px;
+  word-break: break-word;
+}
+
+.grow__contact-empty {
+  color: var(--color-text-muted);
+}
+
+.grow__invited {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.grow__radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--color-text);
+  cursor: pointer;
+  white-space: nowrap;
+
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-brand-500);
+  }
+}
+
+.grow__actions {
+  grid-column: 2;
+  display: flex;
+  gap: var(--space-2);
+}
+
+// Mobile card labels — hidden once the real table header takes over at md.
+@include bp.respond-to(md) {
+  .grow__select,
+  .grow__count,
+  .grow__contact,
+  .grow__invited,
+  .grow__actions {
+    grid-row: unset;
+    grid-column: unset;
+  }
+}
+
+.gicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink-500);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-ink-900);
+  }
+
+  &--danger:hover {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+// ---- manual guest form (second drawer view) ----
+.gform {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.gform__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+
+  // flex-basis (not a separate min-width) is what the wrap algorithm actually
+  // measures — a min-width floor on top of a small/auto basis let the browser
+  // decide two fields fit on one line, then refuse to shrink them enough to
+  // honor that decision, so they overflowed the row and visually overlapped
+  // the next control instead of wrapping. min-width: 0 lets a field shrink
+  // the rest of the way on genuinely narrow (mobile) drawers.
+  .gform__field {
+    flex: 1 1 7.5rem;
+    min-width: 0;
+  }
+
+  // The drawer itself widens with the viewport (see .guests__drawer) — let each
+  // field claim more of that extra room instead of the row just gaining margin.
+  @include bp.respond-to(sm) {
+    .gform__field {
+      flex-basis: 9rem;
+    }
+  }
+
+  @include bp.respond-to(lg) {
+    gap: var(--space-4);
+
+    .gform__field {
+      flex-basis: 11rem;
+    }
+  }
+}
+
+.gform__field {
+  display: grid;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+}
+
+.gform input[type='text'],
+.gform input[type='email'],
+.gform input[type='tel'],
+.gform select {
+  // A plain <input> has no intrinsic width of its own to speak of — without an
+  // explicit width it falls back to the browser's ancient size=20 default
+  // (~220px), which ignores the flex/grid track it sits in. That's what was
+  // letting these fields spill past their column and overlap the next one on
+  // any but the widest viewports; box-sizing: border-box (set globally) keeps
+  // the padding/border below included inside this 100%, not added on top.
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+
+  @include bp.respond-to(lg) {
+    height: 50px;
+    padding: 0 var(--space-4);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-focus);
+  }
+
+  &:disabled {
+    background: var(--color-surface-sunken);
+    color: var(--color-text-muted);
+  }
+
+  &.ng-invalid {
+    border-color: var(--color-danger-600);
+  }
+}
+
+.gform__err {
+  color: var(--color-danger-600);
+  font-size: var(--fs-caption);
+}
+
+.gform__extra {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.gform__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  padding: var(--space-2) var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  @include bp.respond-to(lg) {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--fs-body);
+  }
+
+  &:hover {
+    border-color: var(--color-brand-500);
+  }
+
+  &--on {
+    border-style: solid;
+    border-color: var(--color-brand-500);
+    background: color-mix(in srgb, var(--color-brand-500) 6%, var(--color-surface));
+  }
+}
+
+.gform__toggle-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+  color: #fff;
+  font-size: 0.85rem;
+  line-height: 1;
+
+  @include bp.respond-to(lg) {
+    width: 1.3rem;
+    height: 1.3rem;
+    font-size: 1rem;
+  }
+}
+
+.gform__subsection {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-top: calc(-1 * var(--space-2));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+
+  @include bp.respond-to(lg) {
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+}
+
+.gform__checkbox,
+.gform__radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--color-text);
+  cursor: pointer;
+
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-brand-500);
+  }
+
+  @include bp.respond-to(lg) {
+    font-size: var(--fs-body);
+    gap: var(--space-3);
+
+    input {
+      width: 19px;
+      height: 19px;
+    }
+  }
+}
+
+.gform__radios {
+  padding: 0;
+  border: none;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+
+  legend {
+    padding: 0 0 var(--space-2);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+}
+
+.gform__submit {
+  justify-self: start;
+}

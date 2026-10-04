@@ -1,0 +1,368 @@
+<section class="guests container">
+  <header class="guests__head">
+    <h1>{{ 'guestListPage.title' | translate }}</h1>
+    <p class="guests__sub">{{ 'guestListPage.subtitle' | translate }}</p>
+  </header>
+
+  @if (isCouple()) {
+    @if (loadError()) {
+      <p class="guests__error" role="alert">
+        {{ 'guestListPage.loadError' | translate }}
+        <button type="button" class="btn btn--ghost" (click)="retryLoad()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </p>
+    } @else if (!loaded()) {
+      <div class="guests__skel" aria-hidden="true">
+        @for (i of [1, 2, 3]; track i) {
+          <span class="guests__skel-bar"></span>
+        }
+      </div>
+    } @else if (guests().length === 0) {
+      <!-- ---- empty state: the very first thing a couple sees ---- -->
+      <div class="guests__empty">
+        <span class="guests__empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor"
+            stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="7" r="4" />
+            <path d="M2.5 21c0-4.14 3.36-7.5 7.5-7.5 1.42 0 2.75.4 3.88 1.08" />
+          </svg>
+          <svg class="guests__empty-plus" viewBox="0 0 24 24" width="13" height="13" fill="none"
+            stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+        <p>{{ 'guestListPage.emptyTitle' | translate }}</p>
+        <button type="button" class="btn btn--pink" (click)="openSidebar($event)">
+          {{ 'guestListPage.addGuests' | translate }}
+        </button>
+      </div>
+    } @else {
+      @if (importing()) {
+        <p class="guests__importing" role="status">{{ 'guestListPage.importing' | translate }}</p>
+      }
+
+      <ul class="guests__stats" role="list">
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ totalGuestsCount() }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.statsGuests' | translate }}</span>
+        </li>
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ adultsCount() }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.statsAdults' | translate }}</span>
+        </li>
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ childrenCount() }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.statsChildren' | translate }}</span>
+        </li>
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ definitelyCount() }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.invitedDefinitely' | translate }}</span>
+        </li>
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ maybeCount() }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.invitedMaybe' | translate }}</span>
+        </li>
+      </ul>
+
+      <div class="guests__toolbar">
+        <p class="guests__count">
+          <span class="num">{{ guests().length }}</span> {{ 'guestListPage.countLabel' | translate }}
+        </p>
+        <button type="button" class="btn btn--pink" (click)="openSidebar($event)">
+          {{ 'guestListPage.addGuests' | translate }}
+        </button>
+      </div>
+
+      <div class="gtable-wrap">
+        <table class="gtable">
+          <thead>
+            <tr>
+              <th scope="col" class="gtable__select">
+                <input type="checkbox" [checked]="allSelected()" [indeterminate]="someSelected()"
+                  (change)="toggleSelectAll()" [attr.aria-label]="'guestListPage.selectAll' | translate" />
+              </th>
+              <th scope="col" class="gtable__name">{{ 'guestListPage.columnName' | translate }}</th>
+              <th scope="col" class="gtable__count">{{ 'guestListPage.columnGuests' | translate }}</th>
+              <th scope="col" class="gtable__contact">{{ 'guestListPage.columnContact' | translate }}</th>
+              <th scope="col" class="gtable__invited">{{ 'guestListPage.columnInvited' | translate }}</th>
+              <th scope="col" class="gtable__actions"><span class="ghidden">{{ 'guestListPage.columnActions' | translate }}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (guest of guests(); track guest.id) {
+              <tr class="grow">
+                <td class="grow__select" [attr.data-label]="'guestListPage.selectAll' | translate">
+                  <input type="checkbox" [checked]="isSelected(guest.id)" (change)="toggleSelect(guest.id)"
+                    [attr.aria-label]="('guestListPage.selectGuest' | translate) + ' — ' + fullName(guest)" />
+                </td>
+                <td class="grow__name" [attr.data-label]="'guestListPage.columnName' | translate">
+                  <div class="grow__name-wrap">
+                    <span class="grow__fullname">{{ fullName(guest) }}</span>
+                    @if (guest.hasPlusOne) {
+                      <span class="grow__sub">
+                        @if (guest.plusOneNameUnknown) {
+                          {{ 'guestListPage.plusOneRow' | translate: { name: ('guestListPage.unknownNameBadge' | translate) } }}
+                        } @else {
+                          {{ 'guestListPage.plusOneRow' | translate: { name: (guest.plusOneFirstName + ' ' + (guest.plusOneLastName ?? '')).trim() } }}
+                        }
+                      </span>
+                    }
+                    @if (guest.hasChild) {
+                      <span class="grow__sub">
+                        @if (guest.childNameUnknown) {
+                          {{ 'guestListPage.childRow' | translate: { name: ('guestListPage.unknownNameBadge' | translate) } }}
+                        } @else {
+                          {{ 'guestListPage.childRow' | translate: { name: (guest.childFirstName + ' ' + (guest.childLastName ?? '')).trim() } }}
+                        }
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td class="grow__count" [attr.data-label]="'guestListPage.columnGuests' | translate">{{ partySize(guest) }}</td>
+                <td class="grow__contact" [attr.data-label]="'guestListPage.columnContact' | translate">
+                  <div class="grow__contact-wrap">
+                    @if (guest.email) { <span class="grow__contact-line">{{ guest.email }}</span> }
+                    @if (guest.phone) { <span class="grow__contact-line">{{ guest.phone }}</span> }
+                    @if (!guest.email && !guest.phone) { <span class="grow__contact-empty">—</span> }
+                  </div>
+                </td>
+                <td class="grow__invited" [attr.data-label]="'guestListPage.columnInvited' | translate">
+                  <label class="grow__radio">
+                    <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'definitely'"
+                      (change)="setInvited(guest, 'definitely')" />
+                    {{ 'guestListPage.invitedDefinitely' | translate }}
+                  </label>
+                  <label class="grow__radio">
+                    <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'maybe'"
+                      (change)="setInvited(guest, 'maybe')" />
+                    {{ 'guestListPage.invitedMaybe' | translate }}
+                  </label>
+                </td>
+                <td class="grow__actions" [attr.data-label]="'guestListPage.columnActions' | translate">
+                  <button type="button" class="gicon" (click)="startEdit(guest, $event)"
+                    [attr.aria-label]="('guestListPage.editGuest' | translate) + ' — ' + fullName(guest)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </button>
+                  <button type="button" class="gicon gicon--danger" (click)="askRemove(guest)"
+                    [attr.aria-label]="('guestListPage.delete' | translate) + ' — ' + fullName(guest)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 7h16" />
+                      <path d="M9 7V4h6v3" />
+                      <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
+                      <path d="M10 11v6M14 11v6" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Persistent (hidden) file picker — the sidebar's "Upload spreadsheet" option
+         forwards a click to this. -->
+    <input #fileInput type="file" accept=".csv,.txt" class="guests__file-input"
+      [attr.aria-label]="'guestListPage.uploadOption' | translate" (change)="onSpreadsheetFile($event)" />
+
+    <!-- ---- "how do you want to add guests" sidebar (same panel, two views) ---- -->
+    @if (sidebarOpen()) {
+      <div class="guests__drawer-backdrop" (click)="onDrawerBackdrop($event)" (keydown)="onDrawerKeydown($event)">
+        <div class="guests__drawer" role="dialog" aria-modal="true" aria-labelledby="guests-drawer-title">
+          @if (drawerView() === 'manual') {
+            <button type="button" class="guests__drawer-back" (click)="backToChoose()"
+              [attr.aria-label]="'guestListPage.back' | translate">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          }
+          <button type="button" class="guests__drawer-close" (click)="closeSidebar()"
+            [attr.aria-label]="'guestListPage.close' | translate">×</button>
+
+          @if (drawerView() === 'choose') {
+            <h2 id="guests-drawer-title" class="guests__drawer-title">{{ 'guestListPage.addTitle' | translate }}</h2>
+
+            <button type="button" class="guests__drawer-option" (click)="chooseManual()">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+                stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              <span>
+                <strong>{{ 'guestListPage.manualOption' | translate }}</strong>
+              </span>
+            </button>
+
+            <button type="button" class="guests__drawer-option" (click)="chooseUpload(fileInput)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+                stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 16V4M7 9l5-5 5 5" />
+                <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+              </svg>
+              <span>
+                <strong>{{ 'guestListPage.uploadOption' | translate }}</strong>
+              </span>
+            </button>
+          } @else {
+            <h2 id="guests-drawer-title" class="guests__drawer-title guests__drawer-title--back">
+              {{ (isEditing() ? 'guestListPage.editFormTitle' : 'guestListPage.manualFormTitle') | translate }}
+            </h2>
+
+            <form class="gform" (submit)="$event.preventDefault(); submitGuest(guestForm)" #guestForm>
+              <div class="gform__row">
+                <div class="gform__field">
+                  <label for="guest-first-name">{{ 'guestListPage.firstNamePlaceholder' | translate }} *</label>
+                  <input id="guest-first-name" name="firstName" type="text" maxlength="120" autocomplete="off"
+                    [class.ng-invalid]="guestFormAttempted() && fieldEmpty(guestForm, 'firstName')" />
+                  @if (guestFormAttempted() && fieldEmpty(guestForm, 'firstName')) {
+                    <small class="gform__err">{{ 'guestListPage.requiredField' | translate }}</small>
+                  }
+                </div>
+                <div class="gform__field">
+                  <label for="guest-last-name">{{ 'guestListPage.lastNamePlaceholder' | translate }} *</label>
+                  <input id="guest-last-name" name="lastName" type="text" maxlength="120" autocomplete="off"
+                    [class.ng-invalid]="guestFormAttempted() && fieldEmpty(guestForm, 'lastName')" />
+                  @if (guestFormAttempted() && fieldEmpty(guestForm, 'lastName')) {
+                    <small class="gform__err">{{ 'guestListPage.requiredField' | translate }}</small>
+                  }
+                </div>
+              </div>
+
+              <div class="gform__row">
+                <div class="gform__field">
+                  <label for="guest-email">{{ 'guestListPage.emailPlaceholder' | translate }}</label>
+                  <input id="guest-email" name="email" type="email" maxlength="256" autocomplete="off"
+                    [class.ng-invalid]="guestFormAttempted() && !emailValid(fieldValue(guestForm, 'email'))" />
+                  @if (guestFormAttempted() && !emailValid(fieldValue(guestForm, 'email'))) {
+                    <small class="gform__err">{{ 'guestListPage.emailInvalid' | translate }}</small>
+                  }
+                </div>
+                <div class="gform__field">
+                  <label for="guest-phone">{{ 'guestListPage.phonePlaceholder' | translate }}</label>
+                  <input id="guest-phone" name="phone" type="tel" inputmode="tel" maxlength="40" autocomplete="off"
+                    [class.ng-invalid]="guestFormAttempted() && !phoneValid(fieldValue(guestForm, 'phone'))" />
+                  @if (guestFormAttempted() && !phoneValid(fieldValue(guestForm, 'phone'))) {
+                    <small class="gform__err">{{ 'guestListPage.phoneInvalid' | translate }}</small>
+                  }
+                </div>
+              </div>
+
+              <div class="gform__extra">
+                <button type="button" class="gform__toggle" [class.gform__toggle--on]="hasPlusOne()" (click)="togglePlusOne()">
+                  <span class="gform__toggle-icon" aria-hidden="true">{{ hasPlusOne() ? '×' : '+' }}</span>
+                  {{ (hasPlusOne() ? 'guestListPage.removePlusOne' : 'guestListPage.addPlusOne') | translate }}
+                </button>
+
+                @if (hasPlusOne()) {
+                  <div class="gform__subsection">
+                    <div class="gform__row">
+                      <div class="gform__field">
+                        <input name="plusOneFirstName" type="text" maxlength="120" autocomplete="off"
+                          [disabled]="plusOneNameUnknown()"
+                          [attr.placeholder]="'guestListPage.firstNamePlaceholder' | translate"
+                          [attr.aria-label]="'guestListPage.plusOneFirstNamePlaceholder' | translate"
+                          [class.ng-invalid]="guestFormAttempted() && !plusOneNameUnknown() && fieldEmpty(guestForm, 'plusOneFirstName')" />
+                      </div>
+                      <div class="gform__field">
+                        <input name="plusOneLastName" type="text" maxlength="120" autocomplete="off"
+                          [disabled]="plusOneNameUnknown()"
+                          [attr.placeholder]="'guestListPage.lastNamePlaceholder' | translate"
+                          [attr.aria-label]="'guestListPage.plusOneLastNamePlaceholder' | translate"
+                          [class.ng-invalid]="guestFormAttempted() && !plusOneNameUnknown() && fieldEmpty(guestForm, 'plusOneLastName')" />
+                      </div>
+                    </div>
+                    <label class="gform__checkbox">
+                      <input type="checkbox" [checked]="plusOneNameUnknown()"
+                        (change)="plusOneNameUnknown.set($any($event.target).checked)" />
+                      {{ 'guestListPage.nameUnknown' | translate }}
+                    </label>
+                  </div>
+                }
+
+                <button type="button" class="gform__toggle" [class.gform__toggle--on]="hasChild()" (click)="toggleChild()">
+                  <span class="gform__toggle-icon" aria-hidden="true">{{ hasChild() ? '×' : '+' }}</span>
+                  {{ (hasChild() ? 'guestListPage.removeChild' : 'guestListPage.addChild') | translate }}
+                </button>
+
+                @if (hasChild()) {
+                  <div class="gform__subsection">
+                    <div class="gform__row">
+                      <div class="gform__field">
+                        <input name="childFirstName" type="text" maxlength="120" autocomplete="off"
+                          [disabled]="childNameUnknown()"
+                          [attr.placeholder]="'guestListPage.firstNamePlaceholder' | translate"
+                          [attr.aria-label]="'guestListPage.childFirstNamePlaceholder' | translate"
+                          [class.ng-invalid]="guestFormAttempted() && !childNameUnknown() && fieldEmpty(guestForm, 'childFirstName')" />
+                      </div>
+                      <div class="gform__field">
+                        <input name="childLastName" type="text" maxlength="120" autocomplete="off"
+                          [disabled]="childNameUnknown()"
+                          [attr.placeholder]="'guestListPage.lastNamePlaceholder' | translate"
+                          [attr.aria-label]="'guestListPage.childLastNamePlaceholder' | translate"
+                          [class.ng-invalid]="guestFormAttempted() && !childNameUnknown() && fieldEmpty(guestForm, 'childLastName')" />
+                      </div>
+                    </div>
+                    <label class="gform__checkbox">
+                      <input type="checkbox" [checked]="childNameUnknown()"
+                        (change)="childNameUnknown.set($any($event.target).checked)" />
+                      {{ 'guestListPage.nameUnknown' | translate }}
+                    </label>
+                  </div>
+                }
+              </div>
+
+              <div class="gform__field">
+                <label for="guest-relationship">{{ 'guestListPage.relationshipLabel' | translate }}</label>
+                <select id="guest-relationship" name="relationship">
+                  @for (opt of relationshipOptions(); track opt.value) {
+                    <option [value]="opt.value">{{ opt.key | translate: opt.params }}</option>
+                  }
+                </select>
+              </div>
+
+              <fieldset class="gform__radios">
+                <legend>{{ 'guestListPage.invitedLabel' | translate }}</legend>
+                <label class="gform__radio">
+                  <input type="radio" name="invitedStatus" value="definitely" checked />
+                  {{ 'guestListPage.invitedDefinitely' | translate }}
+                </label>
+                <label class="gform__radio">
+                  <input type="radio" name="invitedStatus" value="maybe" />
+                  {{ 'guestListPage.invitedMaybe' | translate }}
+                </label>
+              </fieldset>
+
+              <button type="submit" class="btn btn--pink gform__submit" [disabled]="savingGuest()">
+                {{ (isEditing() ? 'guestListPage.saveChanges' : 'guestListPage.saveGuest') | translate }}
+              </button>
+            </form>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="guests__empty">
+      <span class="guests__empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10" cy="7" r="4" />
+          <path d="M2.5 21c0-4.14 3.36-7.5 7.5-7.5 1.42 0 2.75.4 3.88 1.08" />
+        </svg>
+        <svg class="guests__empty-plus" viewBox="0 0 24 24" width="13" height="13" fill="none"
+          stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </span>
+      <p>{{ 'guestListPage.guestBody' | translate }}</p>
+      <a class="btn btn--pink" routerLink="/signup">{{ 'guestListPage.signUp' | translate }}</a>
+    </div>
+  }
+</section>
