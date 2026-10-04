@@ -1,0 +1,678 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.seat {
+  padding-block: var(--space-12) var(--space-20);
+}
+
+.seat__head {
+  max-width: var(--measure);
+  margin-bottom: var(--space-8);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.seat__sub {
+  margin-top: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+}
+
+.seat__error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-danger-100);
+  color: var(--color-danger-600);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+}
+
+.seat__skel {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+}
+
+.seat__skel-bar {
+  height: 3rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-surface-sunken) 50%, var(--color-ink-100) 75%);
+  background-size: 200% 100%;
+  animation: seat-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes seat-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.seat__empty-state {
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+
+  p {
+    margin: 0 auto var(--space-6);
+    max-width: 40ch;
+    font-size: var(--fs-lead);
+    color: var(--color-text-secondary);
+  }
+}
+
+.seat__empty {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+}
+
+// ---- empty canvas (no tables or venue items yet) ----
+.seat-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+  padding: var(--space-20) var(--space-6);
+  text-align: center;
+  background: var(--color-surface-sunken);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.seat-empty__text {
+  margin: 0;
+  max-width: 36ch;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-lead);
+}
+
+// ---- toolbar: single entry point for adding to the canvas ----
+.seat-toolbar {
+  margin-bottom: var(--space-6);
+}
+
+.seat__seated-count {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+// ---- layout: unassigned pool + canvas ----
+.seat-layout {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: 18rem 1fr;
+  }
+}
+
+// Same panel look as the add-drawer (surface background + shadow-lg elevation,
+// display-font title) — the two side panels should read as one visual language.
+.seat-pool {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+
+  @include bp.respond-to(lg) {
+    position: sticky;
+    top: var(--space-6);
+    max-height: calc(100vh - var(--space-12));
+    overflow-y: auto;
+  }
+}
+
+.seat-pool__title {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  line-height: var(--lh-tight);
+}
+
+.seat-pool__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 3rem;
+
+  @include bp.respond-to(lg) {
+    flex-direction: column;
+  }
+}
+
+.seat-pool__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-caption);
+}
+
+.seat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-caption);
+  color: var(--color-text);
+  cursor: grab;
+  user-select: none;
+  box-shadow: var(--shadow-xs);
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.cdk-drag-preview {
+  z-index: 1000;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+// ---- canvas ----
+.seat-canvas-wrap {
+  // auto (not scroll/hidden): the canvas below always matches this wrap's own
+  // width, so a horizontal bar only appears if a table gets dragged past the
+  // visible area — never just from the page's own width.
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  max-height: 70vh;
+}
+
+.seat-canvas {
+  position: relative;
+  // Fills whatever width the left sidebar leaves it — no fixed px width, so
+  // there's never a horizontal scrollbar from the canvas simply being wider
+  // than the viewport. Tall enough for a full floor plan; grows if needed.
+  width: 100%;
+  min-height: 900px;
+}
+
+.seat-table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+
+  &--rect {
+    border-radius: var(--radius-lg);
+  }
+
+  &--one-sided {
+    border-radius: var(--radius-md);
+    border-style: dashed;
+  }
+}
+
+.seat-table__grip {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--color-ink-100);
+  color: var(--color-ink-500);
+  cursor: grab;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.seat-table__surface {
+  padding: 0 var(--space-2);
+  text-align: center;
+}
+
+.seat-table__name {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-caption);
+  color: var(--color-text);
+  cursor: text;
+}
+
+.seat-table__name-input {
+  width: 6.5rem;
+  padding: 2px var(--space-1);
+  border: 1px solid var(--color-focus);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  text-align: center;
+}
+
+.seat-table__remove {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+// edit / copy / remove cluster on each table (venue objects keep the single × above)
+.seat-table__toolbar {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  gap: 4px;
+}
+
+.seat-table__icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-text);
+  }
+
+  &--danger:hover {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+.seat-dot-wrap {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+}
+
+.seat-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  border: 1.5px dashed var(--color-border-strong);
+  display: grid;
+  place-items: center;
+  background: var(--color-surface);
+}
+
+.seat-dot__num {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.seat-chip--seated {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+  color: #fff;
+  border-color: var(--color-brand-500);
+  display: grid;
+  place-items: center;
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+}
+
+.seat-chip__remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+}
+
+// ---- venue objects (dance floor, bar, entrance, …) ----
+.seat-object {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-100);
+  border: 1.5px dashed var(--color-border-strong);
+  text-align: center;
+
+  &--dance-floor {
+    background-image:
+      repeating-conic-gradient(var(--color-surface) 0% 25%, var(--color-ink-100) 0% 50%);
+    background-size: 28px 28px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+.seat-object__grip {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--color-ink-200);
+  color: var(--color-ink-600);
+  cursor: grab;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.seat-object__label {
+  font-family: var(--font-display);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+// ============================== add/edit side drawer ==============================
+// One entry point for everything that can go on the canvas (tables + venue items),
+// organized into labeled sections. Left-anchored (same side as the guest list it
+// sits over) rather than a centered modal: it reads as a persistent "palette", and
+// overlays the guest pool instead of shoving the layout around.
+.add-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: rgba(20, 12, 14, 0.5);
+  backdrop-filter: blur(1px);
+  animation: add-drawer-fade var(--dur-fast) var(--ease-out);
+}
+
+.add-drawer__panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 26rem;
+  max-width: 92vw;
+  overflow-y: auto;
+  padding: var(--space-8) var(--space-6) var(--space-8);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  animation: add-drawer-slide var(--dur-base) var(--ease-out);
+}
+
+.add-drawer__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-ink-100);
+  }
+}
+
+.add-drawer__title {
+  margin: 0 var(--space-8) var(--space-5) 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  line-height: var(--lh-tight);
+}
+
+@keyframes add-drawer-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes add-drawer-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+// ---- browse step: one section per logical group (tables, then each object kind) ----
+.drawer-section {
+  margin-bottom: var(--space-7);
+
+  &:not(:first-child) {
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+.drawer-section__title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: var(--space-3);
+}
+
+.preset-card {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-500);
+  }
+
+  &--custom {
+    border-style: dashed;
+  }
+}
+
+.preset-card__label {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  text-align: center;
+}
+
+.shape-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-text-secondary);
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  &--sm {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+// ---- custom form (step 2) ----
+.shape-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.shape-picker__btn {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-500);
+  }
+
+  &.is-selected {
+    border-color: var(--color-brand-500);
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-brand-500) 6%, var(--color-surface));
+  }
+}
+
+.table-form {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.table-form__label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+}
+
+.table-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+
+  .table-form__field {
+    flex: 1 1 9rem;
+  }
+}
+
+.table-form__field {
+  display: grid;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+
+  input,
+  select {
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    width: 100%;
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-focus);
+    }
+  }
+}
+
+.table-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}

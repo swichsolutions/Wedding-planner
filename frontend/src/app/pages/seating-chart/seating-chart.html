@@ -1,0 +1,422 @@
+<section class="seat container">
+  <header class="seat__head">
+    <h1>{{ 'seatingPage.title' | translate }}</h1>
+    <p class="seat__sub">{{ 'seatingPage.subtitle' | translate }}</p>
+  </header>
+
+  @if (isCouple()) {
+    @if (loadError()) {
+      <p class="seat__error" role="alert">
+        {{ 'seatingPage.loadError' | translate }}
+        <button type="button" class="btn btn--ghost" (click)="retryLoad()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </p>
+    } @else if (!loaded()) {
+      <div class="seat__skel" aria-hidden="true">
+        @for (i of [1, 2, 3]; track i) {
+          <span class="seat__skel-bar"></span>
+        }
+      </div>
+    } @else if (tables().length === 0 && objects().length === 0) {
+      <!-- ---- empty canvas: nothing added yet ---- -->
+      <div class="seat-empty">
+        <p class="seat-empty__text">{{ 'seatingPage.noTables' | translate }}</p>
+        <button type="button" class="btn btn--pink" (click)="openAddModal()">
+          {{ 'seatingPage.addItemCta' | translate }}
+        </button>
+      </div>
+    } @else {
+      <!-- ---- toolbar: one entry point for tables + venue items ---- -->
+      <div class="seat-toolbar">
+        <button type="button" class="btn btn--pink-outline" (click)="openAddModal()">
+          {{ 'seatingPage.addItemCta' | translate }}
+        </button>
+      </div>
+
+      <p class="seat__seated-count">
+        {{ 'seatingPage.seatedCount' | translate: { seated: totalSeated(), total: allAttendees().length } }}
+      </p>
+
+      <div class="seat-layout" cdkDropListGroup>
+        <!-- ---- unassigned guests pool ---- -->
+        <div class="seat-pool">
+          <h2 class="seat-pool__title">{{ 'seatingPage.unassignedTitle' | translate }}</h2>
+          <div class="seat-pool__list" cdkDropList id="unassigned" [cdkDropListData]="unassignedAttendees()"
+            (cdkDropListDropped)="onDrop($event)">
+            @if (unassignedAttendees().length === 0) {
+              <p class="seat-pool__empty">{{ 'seatingPage.allSeated' | translate }}</p>
+            }
+            @for (attendee of unassignedAttendees(); track (attendee.guestId + '-' + attendee.kind)) {
+              <div class="seat-chip" cdkDrag [cdkDragData]="attendee">
+                {{ attendee.name }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- ---- canvas ---- -->
+        <div class="seat-canvas-wrap">
+          <div class="seat-canvas">
+            @for (table of tables(); track table.id) {
+              <div class="seat-table"
+                [class.seat-table--rect]="table.shape === 'rectangular' || table.shape === 'four_sided'"
+                [class.seat-table--one-sided]="table.shape === 'one_sided'"
+                cdkDrag [cdkDragFreeDragPosition]="{ x: table.positionX, y: table.positionY }"
+                (cdkDragEnded)="onTableDragEnded(table, $event)"
+                [style.width.px]="tableSize(table).width" [style.height.px]="tableSize(table).height">
+                <span class="seat-table__grip" cdkDragHandle aria-hidden="true"
+                  [attr.title]="'seatingPage.dragTable' | translate">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+                    <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+                  </svg>
+                </span>
+
+                <div class="seat-table__surface">
+                  @if (renamingTableId() === table.id) {
+                    <input class="seat-table__name-input" type="text" [value]="table.name" maxlength="120"
+                      (blur)="commitRename(table, $event)" (keydown.enter)="commitRename(table, $event)" />
+                  } @else {
+                    <span class="seat-table__name" (click)="startRename(table)">{{ table.name }}</span>
+                  }
+                </div>
+
+                <div class="seat-table__toolbar">
+                  <button type="button" class="seat-table__icon-btn" (click)="openEditModal(table)"
+                    [attr.aria-label]="('seatingPage.editTable' | translate) + ' — ' + table.name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </button>
+                  <button type="button" class="seat-table__icon-btn" (click)="duplicateTable(table)"
+                    [attr.aria-label]="('seatingPage.duplicateTable' | translate) + ' — ' + table.name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="9" y="9" width="11" height="11" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <button type="button" class="seat-table__icon-btn seat-table__icon-btn--danger"
+                    (click)="askRemoveTable(table)"
+                    [attr.aria-label]="('seatingPage.removeTable' | translate) + ' — ' + table.name">×</button>
+                </div>
+
+                @for (seatIndex of seatIndexes(table); track seatIndex) {
+                  <div class="seat-dot-wrap"
+                    [style.left.px]="tableSize(table).width / 2 + seatOffset(table, seatIndex).x - 16"
+                    [style.top.px]="tableSize(table).height / 2 + seatOffset(table, seatIndex).y - 16">
+                    <div class="seat-dot" cdkDropList [id]="seatListId(table.id, seatIndex)"
+                      (cdkDropListDropped)="onDrop($event)">
+                      @if (seatOccupant(table.id, seatIndex); as occ) {
+                        <div class="seat-chip seat-chip--seated" cdkDrag [cdkDragData]="attendeeFor(occ)"
+                          [attr.title]="attendeeFor(occ)?.name">
+                          {{ (attendeeFor(occ)?.name ?? '')?.charAt(0) }}
+                          <button type="button" class="seat-chip__remove"
+                            (click)="$event.stopPropagation(); unassignSeat(table.id, seatIndex)"
+                            [attr.aria-label]="'seatingPage.unassignSeat' | translate">×</button>
+                        </div>
+                      } @else {
+                        <span class="seat-dot__num">{{ seatIndex + 1 }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            @for (obj of objects(); track obj.id) {
+              <div class="seat-object" [class.seat-object--dance-floor]="obj.type === 'dance_floor'"
+                cdkDrag [cdkDragFreeDragPosition]="{ x: obj.positionX, y: obj.positionY }"
+                (cdkDragEnded)="onObjectDragEnded(obj, $event)"
+                [style.width.px]="obj.width" [style.height.px]="obj.height">
+                <span class="seat-object__grip" cdkDragHandle aria-hidden="true"
+                  [attr.title]="'seatingPage.dragObject' | translate">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+                    <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+                  </svg>
+                </span>
+                <span class="seat-object__label">{{ ('seatingPage.objectType.' + objectKind(obj.type).i18nKey) | translate }}</span>
+                <button type="button" class="seat-table__remove" (click)="askRemoveObject(obj)"
+                  [attr.aria-label]="('seatingPage.removeObject' | translate) + ' — ' + (('seatingPage.objectType.' + objectKind(obj.type).i18nKey) | translate)">×</button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ---- add/edit side drawer: tables + venue items, one entry point ---- -->
+    @if (drawerOpen()) {
+      <div class="add-drawer" (click)="onModalBackdrop($event)" (keydown)="onModalKeydown($event)">
+        <div class="add-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="tm-title">
+          <button type="button" class="add-drawer__close" (click)="closeModal()"
+            [attr.aria-label]="'gallery.close' | translate">×</button>
+
+          @if (modalStep() === 'browse') {
+            <h2 id="tm-title" class="add-drawer__title">{{ 'seatingPage.addItemModalTitle' | translate }}</h2>
+
+            <section class="drawer-section">
+              <h3 class="drawer-section__title">{{ 'seatingPage.tablesSectionTitle' | translate }}</h3>
+              <div class="preset-grid">
+                @for (preset of presets; track preset.key) {
+                  <button type="button" class="preset-card" (click)="selectPreset(preset)">
+                    <span class="shape-icon" aria-hidden="true">
+                      @switch (preset.shape) {
+                        @case ('round') {
+                          <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                            <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="2" />
+                            <circle cx="20" cy="4" r="2.5" fill="currentColor" />
+                            <circle cx="36" cy="20" r="2.5" fill="currentColor" />
+                            <circle cx="20" cy="36" r="2.5" fill="currentColor" />
+                            <circle cx="4" cy="20" r="2.5" fill="currentColor" />
+                          </svg>
+                        }
+                        @case ('one_sided') {
+                          <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                            <rect x="6" y="14" width="28" height="10" rx="4" stroke="currentColor" stroke-width="2" />
+                            <circle cx="14" cy="32" r="2.5" fill="currentColor" />
+                            <circle cx="26" cy="32" r="2.5" fill="currentColor" />
+                          </svg>
+                        }
+                        @case ('rectangular') {
+                          <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                            <rect x="6" y="14" width="28" height="12" rx="3" stroke="currentColor" stroke-width="2" />
+                            <circle cx="14" cy="6" r="2.5" fill="currentColor" />
+                            <circle cx="26" cy="6" r="2.5" fill="currentColor" />
+                            <circle cx="14" cy="34" r="2.5" fill="currentColor" />
+                            <circle cx="26" cy="34" r="2.5" fill="currentColor" />
+                          </svg>
+                        }
+                        @case ('four_sided') {
+                          <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                            <rect x="8" y="8" width="24" height="24" rx="2" stroke="currentColor" stroke-width="2" />
+                            <circle cx="14" cy="2" r="2.2" fill="currentColor" /><circle cx="26" cy="2" r="2.2" fill="currentColor" />
+                            <circle cx="14" cy="38" r="2.2" fill="currentColor" /><circle cx="26" cy="38" r="2.2" fill="currentColor" />
+                            <circle cx="2" cy="14" r="2.2" fill="currentColor" /><circle cx="2" cy="26" r="2.2" fill="currentColor" />
+                            <circle cx="38" cy="14" r="2.2" fill="currentColor" /><circle cx="38" cy="26" r="2.2" fill="currentColor" />
+                          </svg>
+                        }
+                      }
+                    </span>
+                    <span class="preset-card__label">{{ ('seatingPage.preset.' + preset.key) | translate }}</span>
+                  </button>
+                }
+
+                <button type="button" class="preset-card preset-card--custom" (click)="openCustomForm()">
+                  <span class="shape-icon" aria-hidden="true">
+                    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                      <rect x="6" y="6" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3" />
+                      <path d="M20 13v14M13 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <span class="preset-card__label">{{ 'seatingPage.customTable' | translate }}</span>
+                </button>
+              </div>
+            </section>
+
+            @for (section of objectSections; track section.key) {
+              <section class="drawer-section">
+                <h3 class="drawer-section__title">{{ ('seatingPage.objectSection.' + section.key) | translate }}</h3>
+                <div class="preset-grid">
+                  @for (type of section.types; track type) {
+                    <button type="button" class="preset-card" (click)="selectObject(type)">
+                      <span class="shape-icon" aria-hidden="true">
+                        @switch (type) {
+                          @case ('dance_floor') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                              <rect x="3" y="3" width="18" height="18" rx="2" />
+                              <path d="M3 12h18M12 3v18" />
+                            </svg>
+                          }
+                          @case ('dj_booth') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                              <circle cx="12" cy="12" r="9" />
+                              <circle cx="12" cy="12" r="2.2" fill="currentColor" />
+                            </svg>
+                          }
+                          @case ('band') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <path d="M9 18V5l10-2v13" />
+                              <circle cx="6" cy="18" r="3" /><circle cx="16" cy="16" r="3" />
+                            </svg>
+                          }
+                          @case ('photo_booth') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <rect x="3" y="7" width="18" height="13" rx="2" />
+                              <path d="M8 7l1.5-3h5L16 7" />
+                              <circle cx="12" cy="13.5" r="3.5" />
+                            </svg>
+                          }
+                          @case ('stage') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                              <path d="M3 20h18" />
+                              <path d="M5 20V9a7 7 0 0 1 14 0v11" />
+                            </svg>
+                          }
+                          @case ('podium') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                              <rect x="9" y="2" width="6" height="10" rx="3" />
+                              <path d="M5 10a7 7 0 0 0 14 0" />
+                              <path d="M12 17v5M9 22h6" />
+                            </svg>
+                          }
+                          @case ('cake_table') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7" />
+                              <path d="M4 17h16" />
+                              <path d="M8 12V9M12 12V6M16 12V9" />
+                            </svg>
+                          }
+                          @case ('gift_table') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <rect x="4" y="9" width="16" height="11" rx="1" />
+                              <path d="M4 13h16M12 9v11" />
+                              <path d="M12 9c-1.5-4-6-4-6 0M12 9c1.5-4 6-4 6 0" />
+                            </svg>
+                          }
+                          @case ('buffet_table') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                              <circle cx="12" cy="12" r="7" />
+                              <circle cx="12" cy="12" r="2.4" />
+                            </svg>
+                          }
+                          @case ('bar') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <path d="M5 4h14l-7 8z" />
+                              <path d="M12 12v8M8 20h8" />
+                            </svg>
+                          }
+                          @case ('entrance') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <rect x="7" y="3" width="10" height="18" rx="1" />
+                              <path d="M3 12h6M6 9l-3 3 3 3" />
+                            </svg>
+                          }
+                          @case ('door') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                              <rect x="6" y="3" width="12" height="18" rx="1" />
+                              <circle cx="15" cy="12" r="1" fill="currentColor" />
+                            </svg>
+                          }
+                        }
+                      </span>
+                      <span class="preset-card__label">{{ ('seatingPage.objectType.' + objectKind(type).i18nKey) | translate }}</span>
+                    </button>
+                  }
+                </div>
+              </section>
+            }
+          } @else {
+            <h2 id="tm-title" class="add-drawer__title">
+              {{ (editingTable() ? 'seatingPage.editTableModalTitle' : 'seatingPage.customTable') | translate }}
+            </h2>
+
+            <form class="table-form" (submit)="$event.preventDefault(); submitCustomForm(tableForm)" #tableForm>
+              <div class="table-form__field">
+                <span class="table-form__label">{{ 'seatingPage.shapeLabel' | translate }}</span>
+                <div class="shape-picker">
+                  @for (shape of shapes; track shape) {
+                    <button type="button" class="shape-picker__btn" [class.is-selected]="customShape() === shape"
+                      (click)="customShape.set(shape)">
+                      <span class="shape-icon shape-icon--sm" aria-hidden="true">
+                        @switch (shape) {
+                          @case ('round') {
+                            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                              <circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="2" />
+                              <circle cx="20" cy="4" r="2.5" fill="currentColor" />
+                              <circle cx="36" cy="20" r="2.5" fill="currentColor" />
+                              <circle cx="20" cy="36" r="2.5" fill="currentColor" />
+                              <circle cx="4" cy="20" r="2.5" fill="currentColor" />
+                            </svg>
+                          }
+                          @case ('one_sided') {
+                            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                              <rect x="6" y="14" width="28" height="10" rx="4" stroke="currentColor" stroke-width="2" />
+                              <circle cx="14" cy="32" r="2.5" fill="currentColor" />
+                              <circle cx="26" cy="32" r="2.5" fill="currentColor" />
+                            </svg>
+                          }
+                          @case ('rectangular') {
+                            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                              <rect x="6" y="14" width="28" height="12" rx="3" stroke="currentColor" stroke-width="2" />
+                              <circle cx="14" cy="6" r="2.5" fill="currentColor" />
+                              <circle cx="26" cy="6" r="2.5" fill="currentColor" />
+                              <circle cx="14" cy="34" r="2.5" fill="currentColor" />
+                              <circle cx="26" cy="34" r="2.5" fill="currentColor" />
+                            </svg>
+                          }
+                          @case ('four_sided') {
+                            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                              <rect x="8" y="8" width="24" height="24" rx="2" stroke="currentColor" stroke-width="2" />
+                              <circle cx="14" cy="2" r="2.2" fill="currentColor" /><circle cx="26" cy="2" r="2.2" fill="currentColor" />
+                              <circle cx="14" cy="38" r="2.2" fill="currentColor" /><circle cx="26" cy="38" r="2.2" fill="currentColor" />
+                              <circle cx="2" cy="14" r="2.2" fill="currentColor" /><circle cx="2" cy="26" r="2.2" fill="currentColor" />
+                              <circle cx="38" cy="14" r="2.2" fill="currentColor" /><circle cx="38" cy="26" r="2.2" fill="currentColor" />
+                            </svg>
+                          }
+                        }
+                      </span>
+                      <span>{{ shapeLabelKey(shape) | translate }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              @if (customShape() === 'four_sided') {
+                <div class="table-form__row">
+                  <div class="table-form__field">
+                    <label for="tm-short">{{ 'seatingPage.shortSideLabel' | translate }}</label>
+                    <select id="tm-short" name="shortSeats">
+                      @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                        <option [value]="n" [selected]="n === editingShortSeats()">{{ n }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="table-form__field">
+                    <label for="tm-long">{{ 'seatingPage.longSideLabel' | translate }}</label>
+                    <select id="tm-long" name="longSeats">
+                      @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                        <option [value]="n" [selected]="n === editingLongSeats()">{{ n }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+              } @else {
+                <div class="table-form__field">
+                  <label for="tm-seats">{{ 'seatingPage.seatCountLabel' | translate }}</label>
+                  <input id="tm-seats" name="seatCount" type="number" min="1" max="40" [value]="editingSeatCount()" />
+                </div>
+              }
+
+              <div class="table-form__field">
+                <label for="tm-name">{{ 'seatingPage.tableNameLabel' | translate }}</label>
+                <input id="tm-name" name="tableName" type="text" maxlength="120" [value]="editingName()"
+                  [attr.placeholder]="'seatingPage.tableNamePlaceholder' | translate" />
+              </div>
+
+              <div class="table-form__actions">
+                @if (!editingTable()) {
+                  <button type="button" class="btn btn--ghost" (click)="backToBrowse()">
+                    {{ 'seatingPage.backToPresets' | translate }}
+                  </button>
+                }
+                <button type="submit" class="btn btn--pink">
+                  {{ (editingTable() ? 'seatingPage.saveChanges' : 'seatingPage.addTableCta') | translate }}
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="seat__empty-state">
+      <p>{{ 'seatingPage.guestBody' | translate }}</p>
+      <a class="btn btn--pink" routerLink="/signup">{{ 'guestListPage.signUp' | translate }}</a>
+    </div>
+  }
+</section>
