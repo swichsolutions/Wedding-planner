@@ -60,11 +60,13 @@ export class NotificationService {
 
   /** Set the count from an authoritative source (e.g. the dashboard's loaded message list). */
   setUnread(count: number): void {
+    this.loadSeq++; // invalidate any in-flight refresh() so it can't clobber this with a stale count
     this.unread.set(Math.max(0, count));
   }
 
   /** Decrement as the vendor reads a message, so the badge updates immediately. */
   markOneRead(): void {
+    this.loadSeq++; // invalidate any in-flight refresh() so it can't clobber this with a stale count
     this.unread.update((n) => Math.max(0, n - 1));
   }
 }

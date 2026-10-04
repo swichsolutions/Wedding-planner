@@ -373,12 +373,19 @@ export class Dashboard {
   }
 
   protected markRead(id: number): void {
+    const msg = this.messages().find((m) => m.id === id);
+    if (!msg || msg.isRead) return; // already read, or a prior click already has this in flight
+
+    // Optimistic: flip isRead now so the button disappears immediately and a
+    // double-click can't fire the request (and decrement the badge) twice.
+    this.messages.update((list) => list.map((m) => (m.id === id ? { ...m, isRead: true } : m)));
+    this.notif.markOneRead();
+
     this.dashboard.markRead(id).subscribe({
-      next: () => {
-        this.messages.update((list) => list.map((m) => (m.id === id ? { ...m, isRead: true } : m)));
-        this.notif.markOneRead(); // update the navbar badge immediately
+      error: () => {
+        this.messages.update((list) => list.map((m) => (m.id === id ? { ...m, isRead: false } : m)));
+        this.notif.refresh();
       },
-      error: () => {},
     });
   }
 
