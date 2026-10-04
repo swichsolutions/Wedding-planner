@@ -64,10 +64,21 @@ public class BudgetController : ControllerBase
 
             if (!await _db.BudgetItems.AnyAsync(i => i.UserId == uid))
             {
+                // Seed only what the couple said they'll need at sign-up (plus the
+                // categoryless "invitations and other" catch-all) — a couple who skipped
+                // that step (empty list) still gets the full comprehensive default.
+                var neededCategories = await _db.Couples.AsNoTracking()
+                    .Where(c => c.UserId == uid)
+                    .Select(c => c.NeededCategories)
+                    .FirstOrDefaultAsync();
+                var toSeed = neededCategories is { Count: > 0 }
+                    ? DefaultItems.Where(d => d.CategorySlug is null || neededCategories.Contains(d.CategorySlug)).ToArray()
+                    : DefaultItems;
+
                 var now = DateTimeOffset.UtcNow;
-                for (var i = 0; i < DefaultItems.Length; i++)
+                for (var i = 0; i < toSeed.Length; i++)
                 {
-                    var (name, slug, pct) = DefaultItems[i];
+                    var (name, slug, pct) = toSeed[i];
                     _db.BudgetItems.Add(new BudgetItem
                     {
                         UserId = uid,
@@ -172,6 +183,9 @@ public class BudgetController : ControllerBase
         if (categorySlug is not null && !await _db.Categories.AnyAsync(c => c.Slug == categorySlug))
             return BadRequest("Unknown category.");
 
+        if (dto.VendorId is int vendorId && !await _db.Vendors.AnyAsync(v => v.Id == vendorId && v.IsApproved))
+            return BadRequest("Unknown vendor.");
+
         var maxSort = await _db.BudgetItems
             .Where(i => i.UserId == uid)
             .Select(i => (int?)i.SortOrder)
@@ -183,11 +197,15 @@ public class BudgetController : ControllerBase
             Name = dto.Name.Trim(),
             CategorySlug = categorySlug,
             Estimate = dto.Estimate,
+            VendorId = dto.VendorId,
             SortOrder = maxSort + 1,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         _db.BudgetItems.Add(item);
         await _db.SaveChangesAsync();
+
+        if (item.VendorId is not null)
+            await _db.Entry(item).Reference(i => i.Vendor).Query().Include(v => v.Category).LoadAsync();
 
         return Ok(MapItem(item));
     }
@@ -266,6 +284,55 @@ public class BudgetController : ControllerBase
         if (item is null) return NotFound();
 
         _db.BudgetItems.Remove(item);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // ---- per-category target budgets (guided planner's scoped calculator) ----
+
+    [HttpGet("category-budgets")]
+    public async Task<ActionResult<IEnumerable<CategoryBudgetDto>>> GetCategoryBudgets()
+    {
+        if (UserId is not string uid) return Forbid();
+        var list = await _db.CategoryBudgets
+            .AsNoTracking()
+            .Where(c => c.UserId == uid)
+            .Select(c => new CategoryBudgetDto(c.CategorySlug, c.Amount))
+            .ToListAsync();
+        return Ok(list);
+    }
+
+    [HttpPut("category-budgets/{categorySlug}")]
+    public async Task<ActionResult<CategoryBudgetDto>> SetCategoryBudget(
+        string categorySlug, [FromBody] CategoryBudgetUpsertDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        if (UserId is not string uid) return Forbid();
+
+        var row = await _db.CategoryBudgets
+            .FirstOrDefaultAsync(c => c.UserId == uid && c.CategorySlug == categorySlug);
+        if (row is null)
+        {
+            row = new CategoryBudget { UserId = uid, CategorySlug = categorySlug, Amount = dto.Amount };
+            _db.CategoryBudgets.Add(row);
+        }
+        else
+        {
+            row.Amount = dto.Amount;
+        }
+        await _db.SaveChangesAsync();
+        return Ok(new CategoryBudgetDto(row.CategorySlug, row.Amount));
+    }
+
+    [HttpDelete("category-budgets/{categorySlug}")]
+    public async Task<IActionResult> ClearCategoryBudget(string categorySlug)
+    {
+        if (UserId is not string uid) return Forbid();
+        var row = await _db.CategoryBudgets
+            .FirstOrDefaultAsync(c => c.UserId == uid && c.CategorySlug == categorySlug);
+        if (row is null) return NotFound();
+
+        _db.CategoryBudgets.Remove(row);
         await _db.SaveChangesAsync();
         return NoContent();
     }

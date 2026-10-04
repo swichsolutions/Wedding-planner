@@ -31,6 +31,27 @@
     transform: scale(1.045);
   }
 
+  &__inlist {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px var(--space-3) 5px var(--space-2);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-success-600);
+    font-size: 0.7rem;
+    font-weight: var(--fw-semibold);
+    box-shadow: var(--shadow-xs);
+
+    svg {
+      flex: none;
+    }
+  }
+
   &__save {
     position: absolute;
     top: var(--space-3);

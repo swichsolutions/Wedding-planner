@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import {
   CdkDrag,
@@ -30,10 +30,13 @@ import {
   BudgetService,
   BudgetVendorRef,
   reminderStatus,
+  saveGuestBudgetDraft,
 } from '../../core/budget.service';
 import { trapTabKey } from '../../core/a11y';
-import { CATEGORIES } from '../../core/catalog';
+import { CATEGORIES, CategoryRef } from '../../core/catalog';
+import { BudgetVendorsService } from '../../core/budget-vendors.service';
 import { ConfirmService } from '../../core/confirm.service';
+import { CoupleService } from '../../core/couple.service';
 import { ToastService } from '../../core/toast.service';
 import { Vendor } from '../../core/vendor.models';
 import { VendorService } from '../../core/vendor.service';
@@ -70,6 +73,8 @@ const DRAG_HINT_KEY = 'weddingplanner.budget.dragHintSeen';
 export class BudgetPlanner {
   private readonly auth = inject(AuthService);
   private readonly budgetSvc = inject(BudgetService);
+  private readonly coupleSvc = inject(CoupleService);
+  private readonly budgetVendors = inject(BudgetVendorsService);
   private readonly confirmSvc = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly vendorSvc = inject(VendorService);
@@ -77,10 +82,182 @@ export class BudgetPlanner {
   private readonly lang = inject(LanguageService);
   private readonly translate = inject(TranslateService);
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
   private coupleLoadStarted = false;
+
+  // ---- guided / overview toggle ----
+  // A distinct, shareable URL (?view=overview) is the "separate page" the full ledger
+  // moved to; the default ('guided') is the step-by-step per-category flow.
+  protected readonly mainView = signal<'guided' | 'overview'>(
+    this.route.snapshot.queryParamMap.get('view') === 'overview' ? 'overview' : 'guided',
+  );
+
+  protected setView(view: 'guided' | 'overview'): void {
+    this.mainView.set(view);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: view === 'overview' ? 'overview' : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  // ---- category tabs (guided view) ----
+  private readonly OTHER = '__other__';
+  protected readonly categoryList: CategoryRef[] = CATEGORIES;
+
+  /** Categories picked at signup — only these (plus any category the couple already has
+   *  items in) show as tabs, until "+ Add service" brings in another one. */
+  protected readonly neededCategories = signal<string[]>([]);
+  /** Categories added via "+ Add service" this session that have no item yet — an empty
+   *  tab exists purely so the couple can start adding to it; it's not persisted itself. */
+  protected readonly extraCategories = signal<Set<string>>(new Set());
+
+  protected readonly visibleCategorySlugs = computed(() => {
+    const fromItems = new Set(this.items().map((i) => i.categorySlug).filter((s): s is string => !!s));
+    const wanted = new Set([...this.neededCategories(), ...fromItems, ...this.extraCategories()]);
+    return this.categoryList.map((c) => c.slug).filter((slug) => wanted.has(slug));
+  });
+
+  protected readonly hasOtherItems = computed(() => this.items().some((i) => !i.categorySlug));
+
+  /** Tab order for the guided view, including the trailing "Other" bucket when it's needed. */
+  protected readonly categoryTabs = computed<string[]>(() => {
+    const tabs = this.visibleCategorySlugs();
+    return this.hasOtherItems() ? [...tabs, this.OTHER] : tabs;
+  });
+
+  protected readonly availableToAdd = computed(() =>
+    this.categoryList.filter((c) => !this.visibleCategorySlugs().includes(c.slug)),
+  );
+
+  protected readonly activeCategory = signal<string | null>(null);
+
+  protected categoryLabel(slug: string): string {
+    if (slug === this.OTHER) return 'budgetPage.otherCategory';
+    return this.categoryList.find((c) => c.slug === slug)?.key ?? slug;
+  }
+
+  protected categoryCount(slug: string): number {
+    return this.items().filter((i) => (i.categorySlug ?? this.OTHER) === slug).length;
+  }
+
+  protected readonly categoryItems = computed<BudgetItem[]>(() => {
+    const cat = this.activeCategory();
+    if (cat === null) return [];
+    return this.items()
+      .filter((i) => (i.categorySlug ?? this.OTHER) === cat)
+      .slice()
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  });
+
+  /** Estimate/actual/paid totals for just the active category — a per-service
+   *  budget check as the couple works step by step, not only the grand total. */
+  protected readonly categorySum = computed(() => {
+    const items = this.categoryItems();
+    const sum = (field: MoneyField) => items.reduce((acc, i) => acc + (i[field] ?? 0), 0);
+    return { estimate: sum('estimate'), actual: sum('actualCost'), paid: sum('paid') };
+  });
+
+  // ---- per-service budget calculator (guided view only — separate from the
+  // plan-wide total on the Overview page) ----
+  protected readonly categoryBudgets = signal<Record<string, number>>({});
+  protected readonly activeCategoryTarget = computed<number | null>(() => {
+    const cat = this.activeCategory();
+    return cat !== null ? (this.categoryBudgets()[cat] ?? null) : null;
+  });
+  protected readonly categoryRemaining = computed<number | null>(() => {
+    const target = this.activeCategoryTarget();
+    return target === null ? null : target - this.categorySum().estimate;
+  });
+
+  private categoryBudgetSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  protected onCategoryBudgetInput(event: Event): void {
+    const cat = this.activeCategory();
+    if (cat === null) return;
+    const raw = (event.target as HTMLInputElement).value;
+    const value = raw === '' ? null : Math.max(0, Number(raw) || 0);
+    // Live: update the local map immediately so Allocated/Remaining react per keystroke.
+    this.categoryBudgets.update((map) => {
+      const next = { ...map };
+      if (value === null) delete next[cat];
+      else next[cat] = value;
+      return next;
+    });
+    if (this.categoryBudgetSaveTimer) clearTimeout(this.categoryBudgetSaveTimer);
+    this.categoryBudgetSaveTimer = setTimeout(() => this.persistCategoryBudget(cat, value), 700);
+  }
+
+  private persistCategoryBudget(cat: string, value: number | null): void {
+    this.categoryBudgetSaveTimer = null;
+    const onError = () => this.toast.error('budgetPage.saveError');
+    if (value === null) this.budgetSvc.clearCategoryBudget(cat).subscribe({ error: onError });
+    else this.budgetSvc.setCategoryBudget(cat, value).subscribe({ error: onError });
+  }
+
+  protected readonly stepIndex = computed(() => this.categoryTabs().indexOf(this.activeCategory() ?? ''));
+
+  protected selectCategory(slug: string): void {
+    this.activeCategory.set(slug);
+  }
+
+  protected addService(slug: string): void {
+    if (!slug) return;
+    this.extraCategories.update((set) => new Set(set).add(slug));
+    this.activeCategory.set(slug);
+  }
+
+  // ---- guided "add item to this category" ----
+  protected readonly guidedAddBusy = signal(false);
+
+  protected addGuidedItem(name: HTMLInputElement): void {
+    const title = name.value.trim();
+    const cat = this.activeCategory();
+    if (!title || cat === null || this.guidedAddBusy()) return;
+    this.guidedAddBusy.set(true);
+    this.budgetSvc
+      .addItem({ name: title, categorySlug: cat === this.OTHER ? null : cat, estimate: null })
+      .subscribe({
+        next: (item) => {
+          this.insertGroupedAndPersist(item);
+          name.value = '';
+          this.guidedAddBusy.set(false);
+        },
+        error: () => {
+          this.guidedAddBusy.set(false);
+          this.toast.error('budgetPage.saveError');
+        },
+      });
+  }
+
+  /**
+   * "Add vendor" on an empty category: create the row (named after the category,
+   * same convention as adding a vendor from its own profile page) and open its
+   * vendor picker immediately — no intermediate "type a name first" step.
+   */
+  protected addFirstVendor(cat: string): void {
+    if (this.guidedAddBusy()) return;
+    this.guidedAddBusy.set(true);
+    const name = this.translate.instant(this.categoryLabel(cat));
+    this.budgetSvc
+      .addItem({ name, categorySlug: cat === this.OTHER ? null : cat, estimate: null })
+      .subscribe({
+        next: (item) => {
+          this.insertGroupedAndPersist(item);
+          this.guidedAddBusy.set(false);
+          this.toggleDrawer(item, 'vendor');
+        },
+        error: () => {
+          this.guidedAddBusy.set(false);
+          this.toast.error('budgetPage.saveError');
+        },
+      });
+  }
 
   // ---- tracker state (couple) ----
   protected readonly total = signal<number | null>(null);
@@ -126,7 +303,16 @@ export class BudgetPlanner {
   protected readonly pickerResults = computed(() => {
     const q = this.pickerQuery().trim().toLowerCase();
     const saved = this.wishlist.ids();
+    // Never offer a vendor that's already linked to another row — the same
+    // photographer twice in the budget is always a mistake, not a real choice.
+    const openId = this.drawer()?.id ?? null;
+    const usedElsewhere = new Set(
+      this.items()
+        .filter((i) => i.id !== openId && i.vendor)
+        .map((i) => i.vendor!.id),
+    );
     return this.pickerVendors()
+      .filter((v) => !usedElsewhere.has(v.id))
       .filter((v) => !q || v.name.toLowerCase().includes(q))
       .slice()
       .sort((a, b) => {
@@ -172,6 +358,29 @@ export class BudgetPlanner {
       // After the load is underway, and via the throw-safe wrapper: a blocked
       // localStorage must never take the tracker down with it.
       this.dragHintDismissed.set(safeStorageGet(DRAG_HINT_KEY) === '1');
+      this.coupleSvc.me().subscribe({
+        next: (c) => this.neededCategories.set(c.neededCategories ?? []),
+        error: () => {},
+      });
+      this.budgetSvc.categoryBudgets().subscribe({
+        next: (list) => {
+          const map: Record<string, number> = {};
+          for (const row of list) map[row.categorySlug] = row.amount;
+          this.categoryBudgets.set(map);
+        },
+        error: () => {},
+      });
+    });
+
+    // Land the guided view on a sensible first tab once we know what to show, and
+    // follow along if the couple's very last tab disappears (its one item deleted).
+    effect(() => {
+      const tabs = this.categoryTabs();
+      if (tabs.length === 0) {
+        this.activeCategory.set(null);
+      } else if (this.activeCategory() === null || !tabs.includes(this.activeCategory()!)) {
+        this.activeCategory.set(tabs[0]);
+      }
     });
 
     // Modal dialog contract, driven by presence (not just closeModal()) so every
@@ -329,6 +538,9 @@ export class BudgetPlanner {
       ...(vendorRef !== undefined ? { vendor: vendorRef } : {}),
     } as BudgetItem;
     this.items.update((list) => list.map((i) => (i.id === id ? optimistic : i)));
+    // A vendor link changed (linked, unlinked, or swapped) — the shared "already
+    // in your list" state (vendor cards, profile "Add to my list") is now stale.
+    if (vendorRef !== undefined) this.budgetVendors.reload();
 
     this.pendingSaves.set(id, (this.pendingSaves.get(id) ?? 0) + 1);
     this.budgetSvc.updateItem(id, payload).subscribe({
@@ -410,6 +622,7 @@ export class BudgetPlanner {
             if (this.drawer()?.id === item.id) this.drawer.set(null);
             if (this.modalId() === item.id) this.closeModal();
             this.toast.success('budgetPage.deletedToast');
+            if (item.vendor) this.budgetVendors.reload();
           },
           error: () => this.toast.error('budgetPage.saveError'),
         });
@@ -465,7 +678,7 @@ export class BudgetPlanner {
       })
       .subscribe({
         next: (item) => {
-          this.items.update((list) => [...list, item]);
+          this.insertGroupedAndPersist(item);
           name.value = '';
           category.value = '';
           estimate.value = '';
@@ -506,6 +719,25 @@ export class BudgetPlanner {
     if (from === to) return;
     const list = this.items().slice();
     moveItemInArray(list, from, to);
+    this.items.set(list);
+    this.queueReorder(list.map((i) => i.id));
+  }
+
+  /**
+   * A freshly-added row lands at the end of the ledger by default — but a second
+   * photographer belongs right next to the first, not at the bottom under "Cake".
+   * Slot it in after the last existing row of the same category (or at the end for
+   * an uncategorized row) and persist that placement, same as a manual drag would.
+   */
+  private insertGroupedAndPersist(item: BudgetItem): void {
+    const rest = this.items().filter((i) => i.id !== item.id);
+    let insertAt = rest.length;
+    if (item.categorySlug) {
+      const lastIdx = rest.map((i) => i.categorySlug).lastIndexOf(item.categorySlug);
+      if (lastIdx !== -1) insertAt = lastIdx + 1;
+    }
+    const list = rest.slice();
+    list.splice(insertAt, 0, item);
     this.items.set(list);
     this.queueReorder(list.map((i) => i.id));
   }
@@ -613,7 +845,14 @@ export class BudgetPlanner {
       citySlug: vendor.citySlug,
       slug: vendor.slug,
     };
-    this.patch(item, { vendorId: vendor.id, merchantName: null }, ref);
+    // The vendor's own name replaces whatever the row was called (its own name, a
+    // placeholder category name, "Second photographer", …) — once a vendor is
+    // linked, that's what the row is now.
+    const changes: Partial<BudgetItemUpdate> = { vendorId: vendor.id, merchantName: null, name: vendor.name };
+    // Only fill a blank estimate — an amount the couple already typed (or that came
+    // from the percentage split) is theirs to keep; picking a vendor shouldn't erase it.
+    if (item.estimate === null) changes.estimate = vendor.priceFrom;
+    this.patch(item, changes, ref);
     this.drawer.set(null);
   }
 
@@ -694,6 +933,12 @@ export class BudgetPlanner {
 
   protected estSharePct(i: number): number {
     return Math.round(this.estShare(i));
+  }
+
+  /** Guest → signup handoff: the total they've already entered must survive registration. */
+  protected goSignupWithDraft(): void {
+    saveGuestBudgetDraft(this.estTotal());
+    void this.router.navigateByUrl('/signup');
   }
 
   // =============================== shared ===============================

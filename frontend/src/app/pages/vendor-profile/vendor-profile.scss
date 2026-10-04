@@ -233,6 +233,24 @@
   width: 100%;
 }
 
+.info__add-budget {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+
+  &.is-added {
+    color: var(--color-success-600);
+    border-color: var(--color-success-600);
+    cursor: default;
+  }
+
+  &:disabled {
+    opacity: 1; // the checkmark + green IS the disabled state — don't also fade it
+  }
+}
+
 .contact-phone {
   display: inline-flex;
   align-items: center;

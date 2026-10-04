@@ -28,6 +28,9 @@ import { VendorService } from '../../core/vendor.service';
 import { Vendor } from '../../core/vendor.models';
 import { Review, ReviewService } from '../../core/review.service';
 import { ContactForm } from '../../components/contact-form/contact-form';
+import { BudgetVendorsService } from '../../core/budget-vendors.service';
+import { ConfirmService } from '../../core/confirm.service';
+import { ToastService } from '../../core/toast.service';
 
 const JSON_LD_ID = 'vendor-jsonld';
 
@@ -46,6 +49,9 @@ export class VendorProfile implements OnDestroy {
   private readonly vendorService = inject(VendorService);
   private readonly reviewSvc = inject(ReviewService);
   protected readonly auth = inject(AuthService);
+  protected readonly budgetVendors = inject(BudgetVendorsService);
+  private readonly confirmSvc = inject(ConfirmService);
+  private readonly toast = inject(ToastService);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly translate = inject(TranslateService);
@@ -178,6 +184,67 @@ export class VendorProfile implements OnDestroy {
     return this.lang.current() === 'en'
       ? `${plural} in ${cityDisplayEn(v.citySlug)}`
       : `${plural} ${cityLocativeKa(v.city)}`;
+  }
+
+  // ---- "add to my budget list" ----
+
+  /** Guests see it (it routes to sign-up); a signed-in vendor/admin gets nothing. */
+  protected readonly showAddToBudget = computed(() => !this.auth.user() || this.auth.isCouple());
+
+  protected readonly inBudget = computed(() => {
+    const v = this.vendor();
+    return !!v && this.budgetVendors.hasVendor(v.id);
+  });
+
+  /** Guards the whole confirm→add round trip — a double-click (or a double-click on
+   *  the confirm dialog's button) must add the vendor once, not twice. */
+  protected readonly addingToBudget = signal(false);
+
+  protected addToBudget(): void {
+    const v = this.vendor();
+    if (!v || this.addingToBudget()) return;
+
+    if (!this.auth.isCouple()) {
+      this.router.navigate(['/signup'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    if (this.budgetVendors.hasVendor(v.id)) return; // already added — button shows that state
+
+    // A different vendor already occupies this category (e.g. another photographer) —
+    // confirm before adding a second one, rather than silently duplicating the slot.
+    const existing = this.budgetVendors.itemsInCategory(v.categorySlug);
+    if (existing.length > 0) {
+      this.addingToBudget.set(true); // held through the confirm dialog too, not just the request
+      void this.confirmSvc
+        .confirm({
+          title: 'profile.addToListConfirmTitle',
+          body: 'profile.addToListConfirmBody',
+          detail: this.translate.instant(v.categoryKey),
+          confirmLabel: 'profile.addToListConfirmBtn',
+        })
+        .then((ok) => {
+          if (ok) this.doAddToBudget(v);
+          else this.addingToBudget.set(false);
+        });
+      return;
+    }
+    this.addingToBudget.set(true);
+    this.doAddToBudget(v);
+  }
+
+  private doAddToBudget(v: Vendor): void {
+    this.budgetVendors
+      .addVendor({ id: v.id, name: v.name, categorySlug: v.categorySlug, priceFrom: v.priceFrom })
+      .subscribe({
+        next: () => {
+          this.addingToBudget.set(false);
+          this.toast.success('profile.addToListDone');
+        },
+        error: () => {
+          this.addingToBudget.set(false);
+          this.toast.error('budgetPage.saveError');
+        },
+      });
   }
 
   /** Called from every contact affordance (call/WhatsApp/social/map/message). */

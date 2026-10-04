@@ -5,6 +5,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageService } from '../../i18n/language.service';
 import { Vendor } from '../../core/vendor.models';
 import { WishlistService } from '../../core/wishlist.service';
+import { BudgetVendorsService } from '../../core/budget-vendors.service';
 import { AuthService } from '../../core/auth.service';
 
 /** Photo-forward vendor card — the workhorse pattern reused on home + browse. */
@@ -21,6 +22,12 @@ export class VendorCard {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   protected readonly wishlist = inject(WishlistService);
+  protected readonly budgetVendors = inject(BudgetVendorsService);
+
+  /** Couples only — the badge means nothing to a guest or a vendor/admin browsing. */
+  protected readonly inBudget = computed(
+    () => this.auth.isCouple() && this.budgetVendors.hasVendor(this.vendor().id),
+  );
 
   /**
    * Guests see the heart (it routes to couple sign-up); couples use it. A

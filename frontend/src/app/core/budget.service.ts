@@ -3,6 +3,30 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import { safeSessionGet, safeSessionRemove, safeSessionSet } from './auth.service';
+
+const GUEST_DRAFT_KEY = 'weddingplanner.budget.guestDraft';
+
+/**
+ * The guest estimator's total budget, saved right before a guest is sent to /signup
+ * (from the budget page's CTA) so it isn't silently lost. Signup applies it to the
+ * couple's freshly-seeded tracker right after the account is created, then clears it.
+ */
+export function saveGuestBudgetDraft(total: number): void {
+  safeSessionSet(GUEST_DRAFT_KEY, JSON.stringify({ total }));
+}
+
+export function takeGuestBudgetDraft(): { total: number } | null {
+  const raw = safeSessionGet(GUEST_DRAFT_KEY);
+  if (!raw) return null;
+  safeSessionRemove(GUEST_DRAFT_KEY);
+  try {
+    const parsed = JSON.parse(raw) as { total?: number };
+    return typeof parsed.total === 'number' && parsed.total > 0 ? { total: parsed.total } : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Directory vendor linked to a budget row — enough to build the profile link. */
 export interface BudgetVendorRef {
@@ -96,6 +120,7 @@ export class BudgetService {
     name: string;
     categorySlug?: string | null;
     estimate?: number | null;
+    vendorId?: number | null;
   }): Observable<BudgetItem> {
     return this.http.post<BudgetItem>(`${this.base}/api/planning/budget/items`, payload);
   }
@@ -116,5 +141,26 @@ export class BudgetService {
   /** Persist a new display order; itemIds must contain every item exactly once. */
   reorder(itemIds: number[]): Observable<void> {
     return this.http.put<void>(`${this.base}/api/planning/budget/items/order`, { itemIds });
+  }
+
+  // ---- per-category target budgets (guided planner's scoped calculator) ----
+
+  categoryBudgets(): Observable<{ categorySlug: string; amount: number }[]> {
+    return this.http.get<{ categorySlug: string; amount: number }[]>(
+      `${this.base}/api/planning/budget/category-budgets`,
+    );
+  }
+
+  setCategoryBudget(categorySlug: string, amount: number): Observable<{ categorySlug: string; amount: number }> {
+    return this.http.put<{ categorySlug: string; amount: number }>(
+      `${this.base}/api/planning/budget/category-budgets/${encodeURIComponent(categorySlug)}`,
+      { amount },
+    );
+  }
+
+  clearCategoryBudget(categorySlug: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/api/planning/budget/category-budgets/${encodeURIComponent(categorySlug)}`,
+    );
   }
 }

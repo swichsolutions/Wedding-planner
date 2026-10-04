@@ -74,6 +74,238 @@
         </dl>
       </div>
 
+      <!-- ---- guided / overview switch ---- -->
+      <div class="bviews" role="tablist" [attr.aria-label]="'budgetPage.viewSwitchLabel' | translate">
+        <button role="tab" type="button" [attr.aria-selected]="mainView() === 'guided'"
+          [class.is-active]="mainView() === 'guided'" (click)="setView('guided')">
+          {{ 'budgetPage.guidedTab' | translate }}
+        </button>
+        <button role="tab" type="button" [attr.aria-selected]="mainView() === 'overview'"
+          [class.is-active]="mainView() === 'overview'" (click)="setView('overview')">
+          {{ 'budgetPage.overviewTab' | translate }}
+        </button>
+      </div>
+
+      @if (mainView() === 'guided') {
+        <!-- ================= guided per-category flow ================= -->
+        <div class="bguide">
+          @if (categoryTabs().length === 0) {
+            <p class="budget__note">{{ 'budgetPage.noServicesYet' | translate }}</p>
+          } @else {
+            <div class="bguide__tabs" role="tablist" [attr.aria-label]="'budgetPage.categoryTabsLabel' | translate">
+              @for (slug of categoryTabs(); track slug) {
+                <button role="tab" type="button" class="bguide__tab"
+                  [attr.aria-selected]="activeCategory() === slug"
+                  [class.is-active]="activeCategory() === slug"
+                  (click)="selectCategory(slug)">
+                  {{ categoryLabel(slug) | translate }}
+                  @if (categoryCount(slug) > 0) {
+                    <span class="bguide__count">{{ categoryCount(slug) }}</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+
+          @if (availableToAdd().length > 0) {
+            <div class="bguide__addservice">
+              <label class="bhidden" for="bguide-addsvc">{{ 'budgetPage.addService' | translate }}</label>
+              <select id="bguide-addsvc" #addSvc class="bguide__addsvc-select"
+                (change)="addService(addSvc.value); addSvc.value = ''">
+                <option value="">{{ 'budgetPage.addServicePlaceholder' | translate }}</option>
+                @for (c of availableToAdd(); track c.slug) {
+                  <option [value]="c.slug">{{ c.key | translate }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          @if (activeCategory(); as cat) {
+            <div class="bguide__step">
+              <p class="bguide__stepLabel">
+                {{ 'budgetPage.stepOf' | translate: { step: stepIndex() + 1, total: categoryTabs().length } }}
+                — <strong>{{ categoryLabel(cat) | translate }}</strong>
+              </p>
+            </div>
+
+            <!-- Per-service calculator: a budget target scoped to THIS category alone —
+                 separate from the plan-wide total on the Overview page. -->
+            <div class="bguide__calc">
+              <div class="bguide__calc-field">
+                <label for="bguide-target">
+                  {{ 'budgetPage.serviceBudgetLabel' | translate: { category: categoryLabel(cat) | translate } }}
+                </label>
+                <div class="bguide__calc-amount">
+                  <input id="bguide-target" type="number" min="0" step="100" inputmode="numeric" autocomplete="off"
+                    [value]="activeCategoryTarget() ?? ''" (input)="onCategoryBudgetInput($event)"
+                    [attr.placeholder]="'budgetPage.serviceBudgetPlaceholder' | translate" />
+                  <span aria-hidden="true">₾</span>
+                </div>
+              </div>
+
+              <dl class="bguide__sum">
+                <div class="bguide__sum-stat">
+                  <dt>{{ 'budgetPage.allocated' | translate }}</dt>
+                  <dd class="num">{{ format(categorySum().estimate) }}</dd>
+                </div>
+                @if (activeCategoryTarget() !== null) {
+                  <div class="bguide__sum-stat" [class.is-over]="categoryRemaining()! < 0">
+                    <dt>{{ (categoryRemaining()! < 0 ? 'budgetPage.over' : 'budgetPage.remaining') | translate }}</dt>
+                    <dd class="num">{{ format(abs(categoryRemaining()!)) }}</dd>
+                  </div>
+                }
+                <div class="bguide__sum-stat">
+                  <dt>{{ 'budgetPage.actualCol' | translate }}</dt>
+                  <dd class="num">{{ format(categorySum().actual) }}</dd>
+                </div>
+                <div class="bguide__sum-stat">
+                  <dt>{{ 'budgetPage.paidCol' | translate }}</dt>
+                  <dd class="num">{{ format(categorySum().paid) }}</dd>
+                </div>
+              </dl>
+            </div>
+
+            @if (categoryItems().length === 0) {
+              <div class="bguide__empty">
+                <p>{{ 'budgetPage.noItemsInCategory' | translate }}</p>
+                <button type="button" class="btn btn--pink" [disabled]="guidedAddBusy()"
+                  (click)="addFirstVendor(cat)">
+                  {{ 'budgetPage.addFirstVendor' | translate }}
+                </button>
+              </div>
+            }
+
+            <div class="bguide__cards">
+              @for (item of categoryItems(); track item.id) {
+                <div class="bcard">
+                  <div class="bcard__head">
+                    <input class="bcard__name" type="text" maxlength="200" autocomplete="off"
+                      [value]="item.name" (change)="commitName(item, $event)"
+                      [attr.aria-label]="'budgetPage.itemName' | translate" />
+                    <button type="button" class="bicon bicon--danger" (click)="askRemove(item)"
+                      [attr.title]="'budgetPage.deleteItem' | translate"
+                      [attr.aria-label]="('budgetPage.deleteItem' | translate) + ' — ' + item.name">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 6h18" />
+                        <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (!item.vendor) {
+                    <!-- Linked vendors already show as the card's top name — repeating
+                         it here would just be the same name twice. -->
+                    <div class="bcard__vendor">
+                      <ng-container *ngTemplateOutlet="vendorState; context: { $implicit: item }" />
+                    </div>
+                  }
+                  @if (isDrawerOpen(item, 'vendor')) {
+                    <ng-container *ngTemplateOutlet="vendorPicker; context: { $implicit: item }" />
+                  }
+
+                  <div class="bcard__money">
+                    <div class="bmodal__field">
+                      <label for="bg-est-{{ item.id }}">{{ 'budgetPage.estimateCol' | translate }}</label>
+                      <div class="bmodal__amount">
+                        <input id="bg-est-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
+                          autocomplete="off" placeholder="—" [value]="item.estimate ?? ''"
+                          (change)="commitMoney(item, 'estimate', $event)" />
+                        <span aria-hidden="true">₾</span>
+                      </div>
+                    </div>
+                    <div class="bmodal__field" [class.is-over]="isOverEstimate(item)">
+                      <label for="bg-act-{{ item.id }}">{{ 'budgetPage.actualCol' | translate }}</label>
+                      <div class="bmodal__amount">
+                        <input id="bg-act-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
+                          autocomplete="off" placeholder="—" [value]="item.actualCost ?? ''"
+                          (change)="commitMoney(item, 'actualCost', $event)" />
+                        <span aria-hidden="true">₾</span>
+                      </div>
+                    </div>
+                    <div class="bmodal__field" [class.is-paid-up]="isPaidUp(item)">
+                      <label for="bg-paid-{{ item.id }}">{{ 'budgetPage.paidCol' | translate }}</label>
+                      <div class="bmodal__amount">
+                        <input id="bg-paid-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
+                          autocomplete="off" placeholder="—" [value]="item.paid ?? ''"
+                          (change)="commitMoney(item, 'paid', $event)" />
+                        <span aria-hidden="true">₾</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bcard__actions">
+                    <button type="button" class="bicon" [class.is-on]="item.reminderDate"
+                      [class.is-overdue]="reminderState(item) === 'overdue'"
+                      [class.is-soon]="reminderState(item) === 'soon'"
+                      (click)="toggleDetails(item, 'bell')"
+                      [attr.title]="'budgetPage.reminderLabel' | translate"
+                      [attr.aria-label]="'budgetPage.reminderLabel' | translate">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                      </svg>
+                    </button>
+                    <button type="button" class="bicon" [class.is-on]="item.note"
+                      (click)="toggleDetails(item, 'note')"
+                      [attr.title]="'budgetPage.noteLabel' | translate"
+                      [attr.aria-label]="'budgetPage.noteLabel' | translate">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <path d="M14 3v6h6" />
+                        <path d="M9 14h6M9 17h4" />
+                      </svg>
+                    </button>
+                    @if (canPayFull(item)) {
+                      <button type="button" class="brow__payfull" (click)="markPaidFull(item)">
+                        {{ 'budgetPage.payFull' | translate }}
+                      </button>
+                    }
+                  </div>
+
+                  @if (isDrawerOpen(item, 'details')) {
+                    <div class="bdetails">
+                      <div class="bdetails__field">
+                        <label for="bg-reminder-{{ item.id }}">{{ 'budgetPage.reminderLabel' | translate }}</label>
+                        <input id="bg-reminder-{{ item.id }}" type="date" [value]="item.reminderDate ?? ''"
+                          (change)="commitReminder(item, $event)" />
+                        @if (reminderState(item) === 'overdue') {
+                          <span class="bdetails__badge is-overdue">{{ 'budgetPage.overdue' | translate }}</span>
+                        } @else if (reminderState(item) === 'soon') {
+                          <span class="bdetails__badge is-soon">{{ 'budgetPage.soon' | translate }}</span>
+                        }
+                      </div>
+                      <div class="bdetails__field bdetails__field--note">
+                        <label for="bg-note-{{ item.id }}">{{ 'budgetPage.noteLabel' | translate }}</label>
+                        <textarea id="bg-note-{{ item.id }}" #gNoteBox rows="2" maxlength="1000"
+                          [value]="item.note ?? ''" (change)="commitNote(item, gNoteBox)"
+                          [attr.placeholder]="'budgetPage.notePlaceholder' | translate"></textarea>
+                        <button type="button" class="btn btn--ghost" (click)="commitNote(item, gNoteBox)">
+                          {{ 'budgetPage.noteSave' | translate }}
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <form class="bguide__add" (submit)="$event.preventDefault(); addGuidedItem(gName); gName.value = ''">
+              <input #gName type="text" maxlength="200" autocomplete="off"
+                [attr.placeholder]="'budgetPage.addAnotherPlaceholder' | translate: { category: categoryLabel(cat) | translate }" />
+              <button type="submit" class="btn btn--pink" [disabled]="guidedAddBusy()">
+                {{ 'budgetPage.addAnother' | translate }}
+              </button>
+            </form>
+          }
+        </div>
+      }
+
+      @if (mainView() === 'overview') {
       <!-- ---- toolbar ---- -->
       <div class="btool">
         <button type="button" class="btn btn--primary btool__add" (click)="showAdd.set(!showAdd())">
@@ -298,6 +530,7 @@
       </div>
 
       <p class="budget__note">{{ 'budgetPage.note' | translate }}</p>
+      }
     }
   } @else {
     <!-- ================= guest estimator + signup CTA ================= -->
@@ -354,7 +587,9 @@
         <h2>{{ 'budgetPage.guestCtaTitle' | translate }}</h2>
         <p>{{ 'budgetPage.guestCtaBody' | translate }}</p>
       </div>
-      <a class="btn btn--pink" routerLink="/signup">{{ 'budgetPage.guestCtaBtn' | translate }}</a>
+      <button type="button" class="btn btn--pink" (click)="goSignupWithDraft()">
+        {{ 'budgetPage.guestCtaBtn' | translate }}
+      </button>
     </aside>
   }
 </section>

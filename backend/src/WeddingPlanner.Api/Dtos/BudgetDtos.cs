@@ -25,6 +25,8 @@ public class BudgetItemCreateDto
     [Required, MaxLength(200)] public string Name { get; set; } = string.Empty;
     [MaxLength(120)] public string? CategorySlug { get; set; }
     [Range(0, 999_999_999)] public decimal? Estimate { get; set; }
+    /// <summary>Link a directory vendor at creation (e.g. "add to my budget" from its profile).</summary>
+    public int? VendorId { get; set; }
 }
 
 /// <summary>Full-row replace — the client always sends the complete editable state.</summary>
@@ -64,4 +66,12 @@ public class BudgetReorderDto
 {
     /// <summary>Every item id of the couple's budget, in the new display order.</summary>
     [Required] public List<int> ItemIds { get; set; } = new();
+}
+
+/// <summary>The couple's self-set target budget for one vendor category (guided planner).</summary>
+public record CategoryBudgetDto(string CategorySlug, decimal Amount);
+
+public class CategoryBudgetUpsertDto
+{
+    [Range(0, 999_999_999)] public decimal Amount { get; set; }
 }
