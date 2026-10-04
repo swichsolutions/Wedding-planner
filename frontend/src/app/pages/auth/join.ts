@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
+import { takeGuestBudgetDraft, BudgetService } from '../../core/budget.service';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 
 @Component({
@@ -68,6 +69,7 @@ import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core
 export class Join {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly budgetSvc = inject(BudgetService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -122,7 +124,13 @@ export class Join {
     this.auth
       .registerCouple({ email: v.email!, password: v.password!, firstName: v.name || undefined })
       .subscribe({
-        next: () => this.router.navigateByUrl(this.returnUrl || '/planning'),
+        next: () => {
+          const draft = takeGuestBudgetDraft();
+          if (draft) {
+            this.budgetSvc.updateTotal(draft.total, true).subscribe({ error: () => {} });
+          }
+          this.router.navigateByUrl(this.returnUrl || '/planning');
+        },
         error: () => {
           this.error.set(true);
           this.loading.set(false);

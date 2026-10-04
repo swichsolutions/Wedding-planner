@@ -5,8 +5,10 @@ import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
+import { takeGuestBudgetDraft, BudgetService } from '../../core/budget.service';
 import { CATEGORIES, img } from '../../core/catalog';
 import { focusFirstInvalid, nameValidator, passwordChecks, passwordValidator } from '../../core/forms';
+import { GUEST_RANGES, PLANNING_STAGES } from '../../core/onboarding';
 
 /**
  * Couple onboarding — a multi-step, fun-first wizard (names → wedding date → planning stage →
@@ -23,6 +25,7 @@ import { focusFirstInvalid, nameValidator, passwordChecks, passwordValidator } f
 export class Signup {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly budgetSvc = inject(BudgetService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -47,8 +50,8 @@ export class Signup {
   protected readonly attempted = signal(false);
 
   protected readonly categories = CATEGORIES;
-  protected readonly stages = ['notEngaged', 'engaged', 'planningNoVenue', 'venueBooked', 'almostDone'];
-  protected readonly guestRanges = ['0-50', '51-100', '101-150', '151-200', '201-300', '300plus', 'notSure'];
+  protected readonly stages = PLANNING_STAGES;
+  protected readonly guestRanges = GUEST_RANGES;
 
   // One editorial photo per step (Zola/Knot-style side panel). All verified to load.
   private readonly stepPhotos = [
@@ -229,7 +232,15 @@ export class Signup {
         neededCategories: this.needed(),
       })
       .subscribe({
-        next: () => this.router.navigateByUrl(this.returnUrl || '/planning'),
+        next: () => {
+          // A guest who entered a total on the public budget estimator before signing
+          // up must not lose it — apply it to the freshly-seeded tracker now.
+          const draft = takeGuestBudgetDraft();
+          if (draft) {
+            this.budgetSvc.updateTotal(draft.total, true).subscribe({ error: () => {} });
+          }
+          this.router.navigateByUrl(this.returnUrl || '/planning');
+        },
         error: () => {
           this.error.set(true);
           this.loading.set(false);

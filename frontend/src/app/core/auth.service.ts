@@ -81,6 +81,31 @@ export function safeStorageRemove(key: string): void {
   }
 }
 
+/** Same guarded pattern as above, for sessionStorage (short-lived cross-page drafts). */
+export function safeSessionGet(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function safeSessionSet(key: string, value: string): void {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // storage blocked — draft simply won't survive the navigation
+  }
+}
+
+export function safeSessionRemove(key: string): void {
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // storage blocked — nothing was persisted anyway
+  }
+}
+
 /** Post-sign-in landing page by role: workspace for admins/vendors, planning hub for couples. */
 export function defaultRouteFor(user: AuthUser | null): string {
   const roles = user?.roles ?? [];
