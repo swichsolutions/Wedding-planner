@@ -429,10 +429,33 @@
   }
 }
 
+.planning__head-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 .planning__progress {
   margin: 0;
   color: var(--color-text-secondary);
   font-weight: var(--fw-medium);
+}
+
+.planning__restart {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
 }
 
 .checklist-add {
@@ -508,4 +531,232 @@
 
 .planning__empty {
   color: var(--color-text-secondary);
+}
+
+// =============================================================================
+// Restart planning — a mini re-run of the onboarding wizard (names → date →
+// stage → needs → guests), reusing the same visual language as /signup's
+// step components (.ob__*) but scoped here since Angular styles don't cross
+// components. Modal chrome mirrors the vendor-profile contact dialog (.cmodal).
+// =============================================================================
+.rmodal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-12) var(--space-4) var(--space-8);
+  overflow-y: auto;
+  background: rgba(20, 12, 14, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.rmodal__card {
+  position: relative;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-7) var(--space-7);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+
+  @include bp.respond-to(sm) {
+    padding: var(--space-8) var(--space-10) var(--space-10);
+  }
+}
+
+.rmodal__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-ink-100);
+    color: var(--color-text);
+  }
+}
+
+.rmodal__progress {
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  overflow: hidden;
+  margin-bottom: var(--space-6);
+}
+
+.rmodal__progress-fill {
+  height: 100%;
+  background: var(--color-brand-500);
+  border-radius: inherit;
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.rmodal__title {
+  margin: 0 var(--space-6) var(--space-2) 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+}
+
+.rmodal__sub {
+  margin: 0 0 var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+// ---- shared step-wizard bits (mirrors /signup's .ob__*) ----
+.ob__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 var(--space-4);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ob__amp {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  color: var(--color-text-secondary);
+}
+
+.ob__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-brand-500);
+  }
+}
+
+.ob__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ob__options--grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ob__option {
+  padding: var(--space-4);
+  text-align: left;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-400);
+  }
+
+  &.is-on {
+    border-color: var(--color-brand-500);
+    background: color-mix(in srgb, var(--color-brand-500) 8%, var(--color-surface));
+    box-shadow: inset 0 0 0 1px var(--color-brand-500);
+  }
+}
+
+.ob__options--grid .ob__option {
+  text-align: center;
+}
+
+.ob__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ob__chip {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--color-brand-500);
+  }
+
+  &.is-on {
+    border-color: var(--color-brand-500);
+    background: var(--color-brand-500);
+    color: #fff;
+  }
+}
+
+.ob__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.ob__spacer {
+  flex: 1;
+}
+
+.ob__back,
+.ob__skip {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  padding: var(--space-2);
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.ob__skip {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ob__err {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-danger-600);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+}
+
+.ob__err--step {
+  margin-top: var(--space-5);
 }

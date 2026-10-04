@@ -44,10 +44,15 @@
 
     <header class="planning__head">
       <h1>{{ 'planning.checklistTitle' | translate }}</h1>
-      <p class="planning__progress">
-        <span class="num">{{ doneCount() }}</span> / <span class="num">{{ items().length }}</span>
-        {{ 'planning.completed' | translate }}
-      </p>
+      <div class="planning__head-meta">
+        <p class="planning__progress">
+          <span class="num">{{ doneCount() }}</span> / <span class="num">{{ items().length }}</span>
+          {{ 'planning.completed' | translate }}
+        </p>
+        <button type="button" class="planning__restart" (click)="confirmRestart($event)">
+          {{ 'planning.restartBtn' | translate }}
+        </button>
+      </div>
     </header>
 
     <form class="checklist-add" (submit)="$event.preventDefault(); addItem(newTask)">
@@ -82,6 +87,132 @@
       </ul>
     }
   </section>
+
+  <!-- ============ restart planning (redo onboarding) ============ -->
+  @if (restartOpen()) {
+    <div class="rmodal" (click)="onRestartBackdrop($event)" (keydown)="onRestartOverlayKeydown($event)">
+      <form class="rmodal__card" role="dialog" aria-modal="true" aria-labelledby="rmodal-title"
+        [formGroup]="restartForm" (ngSubmit)="restartPrimary()" novalidate>
+        <button type="button" class="rmodal__close" (click)="closeRestart()"
+          [attr.aria-label]="'planning.restartClose' | translate">×</button>
+
+        <div class="rmodal__progress" role="progressbar" [attr.aria-valuenow]="restartStep() + 1"
+          aria-valuemin="1" [attr.aria-valuemax]="restartTotalSteps">
+          <div class="rmodal__progress-fill" [style.width.%]="restartProgress()"></div>
+        </div>
+
+        <h2 id="rmodal-title" class="rmodal__title">{{ 'planning.restartTitle' | translate }}</h2>
+
+        @switch (restartStep()) {
+          <!-- 0 — names -->
+          @case (0) {
+            <p class="rmodal__sub">{{ 'signup.namesSub' | translate }}</p>
+            <div class="ob__grid">
+              <div class="auth__field">
+                <label for="r-fn">{{ 'signup.firstName' | translate }}</label>
+                <input id="r-fn" type="text" formControlName="firstName" autocomplete="given-name" />
+              </div>
+              <div class="auth__field">
+                <label for="r-ln">{{ 'signup.lastName' | translate }}</label>
+                <input id="r-ln" type="text" formControlName="lastName" autocomplete="family-name" />
+              </div>
+            </div>
+            <p class="ob__amp" aria-hidden="true">&amp;</p>
+            <div class="ob__grid">
+              <div class="auth__field">
+                <label for="r-pfn">{{ 'signup.partnerFirstName' | translate }}</label>
+                <input id="r-pfn" type="text" formControlName="partnerFirstName" />
+              </div>
+              <div class="auth__field">
+                <label for="r-pln">{{ 'signup.partnerLastName' | translate }}</label>
+                <input id="r-pln" type="text" formControlName="partnerLastName" />
+              </div>
+            </div>
+          }
+
+          <!-- 1 — wedding date -->
+          @case (1) {
+            <p class="rmodal__sub">{{ 'signup.dateSub' | translate }}</p>
+            <div class="auth__field">
+              <label for="r-date">{{ 'signup.weddingDate' | translate }}</label>
+              <input id="r-date" type="date" formControlName="weddingDate" />
+            </div>
+            <label class="ob__check">
+              <input type="checkbox" [checked]="restartStillDeciding()"
+                (change)="setRestartStillDeciding($any($event.target).checked)" />
+              <span>{{ 'signup.stillDeciding' | translate }}</span>
+            </label>
+          }
+
+          <!-- 2 — planning stage -->
+          @case (2) {
+            <p class="rmodal__sub">{{ 'signup.stageSub' | translate }}</p>
+            <div class="ob__options">
+              @for (s of restartStages; track s) {
+                <button type="button" class="ob__option" [class.is-on]="restartStage() === s"
+                  [attr.aria-pressed]="restartStage() === s" (click)="restartStage.set(s)">
+                  {{ ('signup.stage_' + s) | translate }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- 3 — needed services -->
+          @case (3) {
+            <p class="rmodal__sub">{{ 'signup.needsSub' | translate }}</p>
+            <div class="ob__chips">
+              @for (c of restartCategories; track c.slug) {
+                <button type="button" class="ob__chip" [class.is-on]="restartIsNeeded(c.slug)"
+                  [attr.aria-pressed]="restartIsNeeded(c.slug)" (click)="toggleRestartNeeded(c.slug)">
+                  {{ c.key | translate }}
+                </button>
+              }
+            </div>
+          }
+
+          <!-- 4 — guest count -->
+          @case (4) {
+            <p class="rmodal__sub">{{ 'signup.guestsSub' | translate }}</p>
+            <div class="ob__options ob__options--grid">
+              @for (g of restartGuestRanges; track g) {
+                <button type="button" class="ob__option" [class.is-on]="restartGuestRange() === g"
+                  [attr.aria-pressed]="restartGuestRange() === g" (click)="restartGuestRange.set(g)">
+                  @if (g === 'notSure') {
+                    {{ 'signup.guestNotSure' | translate }}
+                  } @else if (g === '300plus') {
+                    300+
+                  } @else {
+                    {{ g }}
+                  }
+                </button>
+              }
+            </div>
+          }
+        }
+
+        @if (restartAttempted() && restartStepErrorKey() && !restartStepValid()) {
+          <p class="ob__err ob__err--step" role="alert">{{ restartStepErrorKey() | translate }}</p>
+        }
+
+        <div class="ob__nav">
+          @if (restartStep() > 0) {
+            <button type="button" class="ob__back" (click)="restartBack()">{{ 'signup.back' | translate }}</button>
+          }
+          <span class="ob__spacer"></span>
+          @if (restartStep() === 3) {
+            <button type="button" class="ob__skip" (click)="restartSkipNeeds()">{{ 'signup.skip' | translate }}</button>
+          }
+          @if (restartStep() < restartTotalSteps - 1) {
+            <button type="submit" class="btn btn--pink">{{ 'signup.continue' | translate }}</button>
+          } @else {
+            <button type="submit" class="btn btn--pink" [disabled]="restartLoading()">
+              {{ 'planning.restartSubmit' | translate }}
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+  }
 } @else {
   <!-- ============ explainer (guest) ============ -->
 

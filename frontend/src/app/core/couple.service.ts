@@ -25,4 +25,9 @@ export class CoupleService {
   me(): Observable<CoupleProfile> {
     return this.http.get<CoupleProfile>(`${this.base}/api/planning/couple`);
   }
+
+  /** Re-run onboarding with new answers — wipes and reseeds the checklist + budget. */
+  restart(payload: CoupleProfile): Observable<CoupleProfile> {
+    return this.http.put<CoupleProfile>(`${this.base}/api/planning/couple/restart`, payload);
+  }
 }

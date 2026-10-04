@@ -27,6 +27,20 @@ public class RegisterCoupleDto
     public List<string>? NeededCategories { get; set; }
 }
 
+/// <summary>Re-run the onboarding wizard for an existing couple — same shape as
+/// registration minus credentials. Wipes and reseeds the checklist + budget.</summary>
+public class CoupleRestartDto
+{
+    [MaxLength(120)] public string? FirstName { get; set; }
+    [MaxLength(120)] public string? LastName { get; set; }
+    [MaxLength(120)] public string? PartnerFirstName { get; set; }
+    [MaxLength(120)] public string? PartnerLastName { get; set; }
+    public DateOnly? WeddingDate { get; set; }
+    [MaxLength(60)] public string? PlanningStage { get; set; }
+    [MaxLength(30)] public string? GuestCountRange { get; set; }
+    public List<string>? NeededCategories { get; set; }
+}
+
 public record CoupleProfileDto(
     string? FirstName,
     string? LastName,
