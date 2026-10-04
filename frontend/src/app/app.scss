@@ -77,6 +77,12 @@
   gap: var(--space-3);
   min-height: 76px;
   transition: min-height var(--dur-fast) var(--ease-out);
+  // Wider than the page's own 1200px content cap: with every nav link signed-in
+  // couples now see (incl. Seating) plus the lang toggle + sign-out button, the
+  // Georgian labels need up to ~1400px of row width to lay out on one line
+  // without pushing the sign-out button past the viewport edge (horizontal
+  // scrollbar). 1440 matches the 'xxl' breakpoint the nav switches on below.
+  max-width: 90rem;
 
   .is-scrolled & {
     min-height: 58px;
@@ -121,10 +127,11 @@
     display: flex;
   }
 
-  // Desktop nav from xl, not lg: Georgian labels are wide, and a signed-in user
-  // gains a Dashboard link — below 1280px the full set doesn't fit and flexbox
-  // squeezes links into two-line wraps. The hamburger is the honest tablet layout.
-  @include bp.respond-to(xl) {
+  // Desktop nav from xxl, not xl: Georgian labels are wide, and a signed-in couple
+  // sees 7 links (incl. Seating) — below 1440px the full set doesn't fit even at
+  // the widened header max-width and flexbox pushes the row past the viewport
+  // edge (horizontal scrollbar). The hamburger is the honest layout below that.
+  @include bp.respond-to(xxl) {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -173,7 +180,7 @@
 
 // Georgian labels run wide (მომწოდებლები, დაგეგმვის ხელსაწყო…); one type-size down
 // keeps the signed-in link set fitting between the wordmark and the actions cluster.
-@include bp.respond-to(xl) {
+@include bp.respond-to(xxl) {
   :host-context([lang='ka']) .site-nav a {
     font-size: 0.9375rem;
     padding-inline: 6px; // admin carries 6 links; KA needs the extra slack at 1280
@@ -205,7 +212,7 @@
     }
   }
 
-  @include bp.respond-to(xl) {
+  @include bp.respond-to(xxl) {
     display: none;
   }
 }
@@ -216,7 +223,7 @@
   align-items: center;
   gap: var(--space-3);
 
-  @include bp.respond-to(xl) {
+  @include bp.respond-to(xxl) {
     display: flex;
   }
 }
@@ -418,7 +425,7 @@
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  @include bp.respond-to(xl) {
+  @include bp.respond-to(xxl) {
     display: none;
   }
 }

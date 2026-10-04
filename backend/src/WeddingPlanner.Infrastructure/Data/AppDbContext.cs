@@ -20,8 +20,13 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Availability> Availabilities => Set<Availability>();
     public DbSet<ContentPage> ContentPages => Set<ContentPage>();
     public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
+    public DbSet<Guest> Guests => Set<Guest>();
     public DbSet<BudgetItem> BudgetItems => Set<BudgetItem>();
+    public DbSet<CategoryBudget> CategoryBudgets => Set<CategoryBudget>();
     public DbSet<WeddingSite> WeddingSites => Set<WeddingSite>();
+    public DbSet<SeatingTable> SeatingTables => Set<SeatingTable>();
+    public DbSet<SeatAssignment> SeatAssignments => Set<SeatAssignment>();
+    public DbSet<SeatingObject> SeatingObjects => Set<SeatingObject>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -159,6 +164,49 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => new { x.UserId, x.SortOrder });
         });
 
+        // ---- Guest ----
+        b.Entity<Guest>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.FirstName).HasMaxLength(120).IsRequired();
+            e.Property(x => x.LastName).HasMaxLength(120);
+            e.Property(x => x.Email).HasMaxLength(256);
+            e.Property(x => x.Phone).HasMaxLength(40);
+            e.Property(x => x.Relationship).HasMaxLength(40).IsRequired();
+            e.Property(x => x.InvitedStatus).HasMaxLength(20).IsRequired();
+            e.Property(x => x.PlusOneFirstName).HasMaxLength(120);
+            e.Property(x => x.PlusOneLastName).HasMaxLength(120);
+            e.Property(x => x.ChildFirstName).HasMaxLength(120);
+            e.Property(x => x.ChildLastName).HasMaxLength(120);
+            e.HasIndex(x => new { x.UserId, x.SortOrder });
+        });
+
+        // ---- SeatingTable / SeatAssignment ----
+        b.Entity<SeatingTable>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.Name).HasMaxLength(120).IsRequired();
+            e.Property(x => x.Shape).HasMaxLength(20).IsRequired();
+            e.HasIndex(x => x.UserId);
+        });
+
+        b.Entity<SeatAssignment>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.AttendeeKind).HasMaxLength(20).IsRequired();
+            e.HasIndex(x => new { x.TableId, x.SeatIndex }).IsUnique();
+            e.HasIndex(x => new { x.GuestId, x.AttendeeKind }).IsUnique();
+            e.HasOne(x => x.Table).WithMany().HasForeignKey(x => x.TableId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Guest).WithMany().HasForeignKey(x => x.GuestId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<SeatingObject>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.Type).HasMaxLength(30).IsRequired();
+            e.HasIndex(x => x.UserId);
+        });
+
         // ---- BudgetItem ----
         b.Entity<BudgetItem>(e =>
         {
@@ -175,6 +223,15 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .WithMany()
                 .HasForeignKey(x => x.VendorId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ---- CategoryBudget (guided planner's per-service target) ----
+        b.Entity<CategoryBudget>(e =>
+        {
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.CategorySlug).HasMaxLength(120).IsRequired();
+            e.Property(x => x.Amount).HasPrecision(12, 2);
+            e.HasIndex(x => new { x.UserId, x.CategorySlug }).IsUnique();
         });
 
         // ---- WeddingSite ----

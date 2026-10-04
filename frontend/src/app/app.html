@@ -9,6 +9,8 @@
       <a routerLink="/vendors" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.vendors' | translate }}</a>
       <a routerLink="/planning" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.planning' | translate }}</a>
       <a routerLink="/budget" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.budget' | translate }}</a>
+      <a routerLink="/guests" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.guestList' | translate }}</a>
+      <a routerLink="/seating" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.seating' | translate }}</a>
       <a routerLink="/website" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.website' | translate }}</a>
 
       @if (auth.isAuthenticated()) {
@@ -103,6 +105,7 @@
       <a routerLink="/vendors">{{ 'nav.vendors' | translate }}</a>
       <a routerLink="/guides">{{ 'nav.guides' | translate }}</a>
       <a routerLink="/budget">{{ 'nav.budget' | translate }}</a>
+      <a routerLink="/guests">{{ 'nav.guestList' | translate }}</a>
       @if (auth.isCouple()) {
         <a routerLink="/saved">{{ 'nav.saved' | translate }}</a>
       }

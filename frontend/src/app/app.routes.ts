@@ -16,6 +16,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/budget/budget-planner').then((m) => m.BudgetPlanner),
   },
   {
+    path: 'guests',
+    loadComponent: () => import('./pages/guest-list/guest-list').then((m) => m.GuestList),
+  },
+  {
+    path: 'seating',
+    loadComponent: () => import('./pages/seating-chart/seating-chart').then((m) => m.SeatingChart),
+  },
+  {
     path: 'website',
     loadComponent: () => import('./pages/website/website-builder').then((m) => m.WebsiteBuilder),
   },
