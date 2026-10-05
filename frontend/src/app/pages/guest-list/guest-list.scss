@@ -750,3 +750,194 @@
 .gform__submit {
   justify-self: start;
 }
+
+// =============================================================================
+// Public landing (not signed in): page-level bits + the hero's table preview.
+// The explainer layout itself is the shared FeatureLanding component; the host
+// clips the full-bleed bands' stray scrollbar width.
+// =============================================================================
+:host {
+  overflow-x: clip;
+}
+
+.guests--landing {
+  padding-block: 0;
+}
+
+// preview: a table card with a headcount tally overlapping its lower-left corner
+.gl-preview {
+  position: relative;
+  // room for the tally: it overlaps only the card's bottom edge, never a row
+  padding-bottom: var(--space-24);
+
+  @include bp.respond-to(md) {
+    padding-left: var(--space-6);
+  }
+}
+
+.gl-table {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.gl-table__head,
+.gl-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.5rem auto;
+  align-items: center;
+  column-gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.gl-table__head {
+  padding-block: var(--space-3);
+  background: var(--color-ink-100);
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+
+  span:nth-child(2) {
+    text-align: center;
+  }
+}
+
+.gl-table__row {
+  border-top: 1px solid var(--color-border);
+  animation: gl-rise var(--dur-slow) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+
+.gl-table__name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.gl-table__avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+}
+
+.gl-table__who {
+  display: grid;
+  min-width: 0;
+
+  strong {
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-tight);
+  }
+  small {
+    font-size: var(--fs-caption);
+    color: var(--color-text-muted);
+  }
+}
+
+.gl-table__count {
+  text-align: center;
+  font-weight: var(--fw-semibold);
+}
+
+.gl-pill {
+  justify-self: start;
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-900);
+  color: #fff;
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+
+  &--maybe {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px dashed var(--color-border-strong);
+  }
+}
+
+// phones: the invited column has no room next to a long Georgian name
+@media (max-width: 599px) {
+  .gl-table__head,
+  .gl-table__row {
+    grid-template-columns: minmax(0, 1fr) 3rem;
+  }
+  .gl-table__head span:last-child,
+  .gl-pill {
+    display: none;
+  }
+}
+
+.gl-tally {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-ink-900);
+  color: #f3ece2;
+  box-shadow: var(--shadow-md);
+  animation: gl-rise var(--dur-slow) var(--ease-out) both;
+  animation-delay: 560ms;
+
+  @include bp.respond-to(md) {
+    left: calc(-1 * var(--space-6));
+  }
+}
+
+.gl-tally__big {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: 1;
+  color: var(--color-brand-400);
+}
+
+.gl-tally__label {
+  font-size: var(--fs-caption);
+  color: rgba(243, 236, 226, 0.75);
+}
+
+.gl-tally__split {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--fs-caption);
+  color: rgba(243, 236, 226, 0.8);
+
+  b {
+    color: #fff;
+    font-weight: var(--fw-semibold);
+  }
+}
+
+@keyframes gl-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-table__row,
+  .gl-tally {
+    animation: none;
+  }
+}

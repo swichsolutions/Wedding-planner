@@ -1,0 +1,118 @@
+@let p = prefix();
+@let act = signupAction();
+
+<div class="fl">
+
+  <!-- signed-in vendor / admin: the tools need a couple account -->
+  @if (otherRole()) {
+    <aside class="fl-role" role="note">
+      <div>
+        <h2>{{ 'featureLanding.signedInTitle' | translate }}</h2>
+        <p>{{ roleNoticeKey() | translate }}</p>
+      </div>
+      <button type="button" class="btn btn--ghost" (click)="logout()">
+        {{ 'featureLanding.logout' | translate }}
+      </button>
+    </aside>
+  }
+
+  <!-- hero: copy + (optional) projected product preview -->
+  @if (hero()) {
+    <section class="fl-hero">
+      <div class="fl-hero__copy">
+        <p class="fl-eyebrow">{{ p + '.eyebrow' | translate }}</p>
+        <h1>{{ p + '.heroTitle' | translate }}</h1>
+        <p class="fl-hero__sub">{{ p + '.heroSubtitle' | translate }}</p>
+        @if (!otherRole()) {
+          <div class="fl-hero__cta">
+            @if (act) {
+              <button type="button" class="btn btn--pink btn--pill" (click)="act()">
+                {{ 'featureLanding.signupFree' | translate }}
+              </button>
+            } @else {
+              <a class="btn btn--pink btn--pill" routerLink="/signup">{{ 'featureLanding.signupFree' | translate }}</a>
+            }
+            <a class="btn btn--ghost btn--pill" routerLink="/login">{{ 'featureLanding.login' | translate }}</a>
+          </div>
+          <p class="fl-hero__note">{{ p + '.heroNote' | translate }}</p>
+        }
+      </div>
+      <ng-content select="[landingPreview]" />
+    </section>
+  }
+
+  <!-- what the tool does: numbered editorial list on the cream band -->
+  <section class="fl-band">
+    <h2 class="fl-h2">{{ p + '.featuresTitle' | translate }}</h2>
+    <ol class="fl-steps">
+      @for (n of range(steps()); track n) {
+        <li class="fl-step">
+          <span class="fl-step__num" aria-hidden="true">0{{ n }}</span>
+          <h3>{{ p + '.feature' + n + 'Title' | translate }}</h3>
+          <p>{{ p + '.feature' + n + 'Text' | translate }}</p>
+        </li>
+      }
+    </ol>
+  </section>
+
+  <!-- tips: the long-form text search engines read -->
+  <section class="fl-tips">
+    <header class="fl-sec-head">
+      <h2 class="fl-h2">{{ p + '.tipsTitle' | translate }}</h2>
+      <p>{{ p + '.tipsText' | translate }}</p>
+    </header>
+    <div class="fl-tips__grid">
+      @for (n of range(tips()); track n) {
+        <article class="fl-tip">
+          <h3>{{ p + '.tip' + n + 'Title' | translate }}</h3>
+          <p>{{ p + '.tip' + n + 'Text' | translate }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- the tools this one feeds into -->
+  @if (next().length) {
+    <section class="fl-next">
+      @for (card of next(); track card.key) {
+        <a class="fl-next__card" [routerLink]="card.link">
+          <span class="fl-next__kicker">{{ 'featureLanding.nextKicker' | translate }}</span>
+          <span class="fl-next__title">{{ p + '.' + card.key + 'Title' | translate }}</span>
+          <span class="fl-next__text">{{ p + '.' + card.key + 'Text' | translate }}</span>
+          <span class="link-arrow">{{ p + '.' + card.key + 'Cta' | translate }}</span>
+        </a>
+      }
+    </section>
+  }
+
+  <!-- FAQ -->
+  <section class="fl-faq">
+    <h2 class="fl-h2">{{ p + '.faqTitle' | translate }}</h2>
+    @for (n of range(faqs()); track n) {
+      <details class="fl-faq__item" [open]="n === 1">
+        <summary>{{ p + '.faq' + n + 'q' | translate }}</summary>
+        <p>{{ p + '.faq' + n + 'a' | translate }}</p>
+      </details>
+    }
+  </section>
+
+  <!-- final CTA: ink band (not for signed-in vendors/admins) -->
+  @if (!otherRole()) {
+    <section class="fl-final">
+      <div class="fl-final__inner">
+        <div>
+          <h2>{{ p + '.finalTitle' | translate }}</h2>
+          <p>{{ p + '.finalText' | translate }}</p>
+        </div>
+        @if (act) {
+          <button type="button" class="btn btn--pink btn--pill" (click)="act()">
+            {{ 'featureLanding.signupFree' | translate }}
+          </button>
+        } @else {
+          <a class="btn btn--pink btn--pill" routerLink="/signup">{{ 'featureLanding.signupFree' | translate }}</a>
+        }
+      </div>
+    </section>
+  }
+
+</div>

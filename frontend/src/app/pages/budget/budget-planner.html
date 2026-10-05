@@ -1,4 +1,4 @@
-<section class="budget container">
+<section class="budget container" [class.budget--landing]="!isCouple()">
   <header class="budget__head">
     <h1>{{ 'budgetPage.title' | translate }}</h1>
     @if (!isCouple()) {
@@ -582,15 +582,22 @@
 
     <p class="budget__note">{{ 'budgetPage.note' | translate }}</p>
 
-    <aside class="bcta">
-      <div class="bcta__copy">
-        <h2>{{ 'budgetPage.guestCtaTitle' | translate }}</h2>
-        <p>{{ 'budgetPage.guestCtaBody' | translate }}</p>
-      </div>
-      <button type="button" class="btn btn--pink" (click)="goSignupWithDraft()">
-        {{ 'budgetPage.guestCtaBtn' | translate }}
-      </button>
-    </aside>
+    @if (!otherRole()) {
+      <aside class="bcta">
+        <div class="bcta__copy">
+          <h2>{{ 'budgetPage.guestCtaTitle' | translate }}</h2>
+          <p>{{ 'budgetPage.guestCtaBody' | translate }}</p>
+        </div>
+        <button type="button" class="btn btn--pink" (click)="goSignupWithDraft()">
+          {{ 'budgetPage.guestCtaBtn' | translate }}
+        </button>
+      </aside>
+    }
+
+    <!-- the rest of the public landing (features, tips, FAQ, final CTA). The sign-up
+         CTAs go through goSignupWithDraft() so the estimate above carries over. -->
+    <app-feature-landing prefix="budgetPage.landing" [hero]="false" [next]="landingNext"
+      [signupAction]="signupWithDraft" />
   }
 </section>
 

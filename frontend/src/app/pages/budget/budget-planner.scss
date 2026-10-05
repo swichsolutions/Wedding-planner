@@ -1798,3 +1798,20 @@
     font-size: var(--fs-body);
   }
 }
+
+// =============================================================================
+// Public landing (not signed in): the shared FeatureLanding renders below the
+// estimator; the host clips its full-bleed bands' stray scrollbar width.
+// =============================================================================
+:host {
+  overflow-x: clip;
+}
+
+.budget--landing {
+  padding-bottom: 0;
+
+  // the sign-up aside and the landing's first band are both cream: keep them apart
+  .bcta {
+    margin-bottom: var(--space-16);
+  }
+}

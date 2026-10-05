@@ -51,20 +51,6 @@
   to { background-position: -200% 0; }
 }
 
-.seat__empty-state {
-  padding: var(--space-16) var(--space-6);
-  text-align: center;
-  background: var(--color-surface-sunken);
-  border-radius: var(--radius-lg);
-
-  p {
-    margin: 0 auto var(--space-6);
-    max-width: 40ch;
-    font-size: var(--fs-lead);
-    color: var(--color-text-secondary);
-  }
-}
-
 .seat__empty {
   padding: var(--space-8);
   text-align: center;
@@ -675,4 +661,191 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
+}
+
+// =============================================================================
+// Public landing (not signed in): page-level bits + the hero's canvas preview.
+// The explainer layout itself is the shared FeatureLanding component; the host
+// clips the full-bleed bands' stray scrollbar width.
+// =============================================================================
+:host {
+  overflow-x: clip;
+}
+
+.seat--landing {
+  padding-block: 0;
+}
+
+.sp {
+  position: relative;
+  // room for the tally: it overlaps only the canvas edge, never a table
+  padding-bottom: var(--space-12);
+
+  @include bp.respond-to(md) {
+    padding-left: var(--space-6);
+  }
+}
+
+// dotted "graph paper" canvas, like the real editor
+.sp-canvas {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-surface);
+  background-image: radial-gradient(var(--color-ink-200) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.sp-headtable {
+  position: absolute;
+  left: 10%;
+  top: 9%;
+  width: 56%;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-100);
+  border: 1px solid var(--color-border-strong);
+  text-align: center;
+  animation: sp-rise var(--dur-slow) var(--ease-out) both;
+
+  &__label {
+    display: block;
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+  }
+  &__seats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+}
+
+.sp-table {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  width: 6.25rem;
+  height: 6.25rem;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-strong);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  animation: sp-rise var(--dur-slow) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 120ms + 150ms);
+
+  &__label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-tight);
+  }
+  &__count {
+    font-size: var(--fs-caption);
+    color: var(--color-text-muted);
+  }
+
+  &--active {
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 4px var(--color-brand-50);
+
+    .sp-table__label {
+      color: var(--color-brand-700);
+    }
+  }
+}
+
+// a chair: a dot, filled once a guest sits there
+.sp-seat {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-strong);
+
+  &--filled {
+    background: var(--color-ink-900);
+    border-color: var(--color-ink-900);
+  }
+
+  // chairs around a round table: rotate each by its share of the circle, then push out
+  &--round {
+    position: absolute;
+    left: calc(50% - 0.4rem);
+    top: calc(50% - 0.4rem);
+    transform: rotate(calc(var(--k) * 360deg / var(--n))) translateY(-3.85rem);
+  }
+}
+
+.sp-tally {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-ink-900);
+  color: #f3ece2;
+  box-shadow: var(--shadow-md);
+  animation: sp-rise var(--dur-slow) var(--ease-out) both;
+  animation-delay: 560ms;
+
+  @include bp.respond-to(md) {
+    right: calc(-1 * var(--space-6));
+  }
+
+  &__big {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    line-height: 1;
+    color: var(--color-brand-400);
+
+    small {
+      font-size: 0.5em;
+      color: rgba(243, 236, 226, 0.7);
+    }
+  }
+  &__label {
+    font-size: var(--fs-caption);
+    color: rgba(243, 236, 226, 0.75);
+  }
+}
+
+// phones: smaller tables, nudged down so three still fit under the head table
+@media (max-width: 599px) {
+  .sp-headtable {
+    top: 6%;
+  }
+  .sp-table {
+    width: 5rem;
+    height: 5rem;
+    top: calc(var(--y) * 1% + 6%);
+  }
+  .sp-seat--round {
+    transform: rotate(calc(var(--k) * 360deg / var(--n))) translateY(-3.1rem);
+  }
+}
+
+@keyframes sp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-headtable,
+  .sp-table,
+  .sp-tally {
+    animation: none;
+  }
 }

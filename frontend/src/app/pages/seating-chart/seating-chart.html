@@ -1,10 +1,10 @@
-<section class="seat container">
-  <header class="seat__head">
-    <h1>{{ 'seatingPage.title' | translate }}</h1>
-    <p class="seat__sub">{{ 'seatingPage.subtitle' | translate }}</p>
-  </header>
-
+<section class="seat container" [class.seat--landing]="!isCouple()">
   @if (isCouple()) {
+    <header class="seat__head">
+      <h1>{{ 'seatingPage.title' | translate }}</h1>
+      <p class="seat__sub">{{ 'seatingPage.subtitle' | translate }}</p>
+    </header>
+
     @if (loadError()) {
       <p class="seat__error" role="alert">
         {{ 'seatingPage.loadError' | translate }}
@@ -414,9 +414,36 @@
       </div>
     }
   } @else {
-    <div class="seat__empty-state">
-      <p>{{ 'seatingPage.guestBody' | translate }}</p>
-      <a class="btn btn--pink" routerLink="/signup">{{ 'guestListPage.signUp' | translate }}</a>
-    </div>
+    <!-- Public landing (not signed in): see FeatureLanding. The hero preview is a
+         static mock of the canvas — a head table plus three round tables. -->
+    <app-feature-landing prefix="seatingPage.landing" [next]="landingNext">
+      <div landingPreview class="sp" aria-hidden="true">
+        <div class="sp-canvas">
+          <div class="sp-headtable">
+            <span class="sp-headtable__label">{{ 'seatingPage.landing.previewHeadTable' | translate }}</span>
+            <span class="sp-headtable__seats">
+              @for (k of seatIdx(6); track k) {
+                <span class="sp-seat sp-seat--filled"></span>
+              }
+            </span>
+          </div>
+          @for (t of previewTables; track t.n; let i = $index) {
+            <div class="sp-table" [class.sp-table--active]="t.active"
+              [style.--x]="t.x" [style.--y]="t.y" [style.--i]="i">
+              <span class="sp-table__label">{{ 'seatingPage.landing.previewTable' | translate: { n: t.n } }}</span>
+              <span class="sp-table__count num">{{ t.seated }}/{{ t.seats }}</span>
+              @for (k of seatIdx(t.seats); track k) {
+                <span class="sp-seat sp-seat--round" [class.sp-seat--filled]="k < t.seated"
+                  [style.--k]="k" [style.--n]="t.seats"></span>
+              }
+            </div>
+          }
+        </div>
+        <div class="sp-tally">
+          <span class="sp-tally__big num">48<small>/62</small></span>
+          <span class="sp-tally__label">{{ 'seatingPage.landing.previewSeated' | translate }}</span>
+        </div>
+      </div>
+    </app-feature-landing>
   }
 </section>

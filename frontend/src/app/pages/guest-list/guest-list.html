@@ -1,10 +1,10 @@
-<section class="guests container">
-  <header class="guests__head">
-    <h1>{{ 'guestListPage.title' | translate }}</h1>
-    <p class="guests__sub">{{ 'guestListPage.subtitle' | translate }}</p>
-  </header>
-
+<section class="guests container" [class.guests--landing]="!isCouple()">
   @if (isCouple()) {
+    <header class="guests__head">
+      <h1>{{ 'guestListPage.title' | translate }}</h1>
+      <p class="guests__sub">{{ 'guestListPage.subtitle' | translate }}</p>
+    </header>
+
     @if (loadError()) {
       <p class="guests__error" role="alert">
         {{ 'guestListPage.loadError' | translate }}
@@ -349,20 +349,42 @@
       </div>
     }
   } @else {
-    <div class="guests__empty">
-      <span class="guests__empty-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor"
-          stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="10" cy="7" r="4" />
-          <path d="M2.5 21c0-4.14 3.36-7.5 7.5-7.5 1.42 0 2.75.4 3.88 1.08" />
-        </svg>
-        <svg class="guests__empty-plus" viewBox="0 0 24 24" width="13" height="13" fill="none"
-          stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </span>
-      <p>{{ 'guestListPage.guestBody' | translate }}</p>
-      <a class="btn btn--pink" routerLink="/signup">{{ 'guestListPage.signUp' | translate }}</a>
-    </div>
+    <!-- Public landing (not signed in). Same URL serves the tool to couples and this
+         explainer to everyone else, so this is the version search engines index.
+         The hero preview is a static mock of the real table, not a stock photo. -->
+    <app-feature-landing prefix="guestListPage.landing" [next]="landingNext">
+      <div landingPreview class="gl-preview" aria-hidden="true">
+        <div class="gl-table">
+          <div class="gl-table__head">
+            <span>{{ 'guestListPage.columnName' | translate }}</span>
+            <span>{{ 'guestListPage.columnGuests' | translate }}</span>
+            <span>{{ 'guestListPage.columnInvited' | translate }}</span>
+          </div>
+          @for (row of previewRows; track row.name; let i = $index) {
+            <div class="gl-table__row" [style.--i]="i">
+              <span class="gl-table__name">
+                <span class="gl-table__avatar">{{ (row.name | translate).charAt(0) }}</span>
+                <span class="gl-table__who">
+                  <strong>{{ row.name | translate }}</strong>
+                  @if (row.sub) { <small>{{ row.sub | translate }}</small> }
+                </span>
+              </span>
+              <span class="gl-table__count num">{{ row.count }}</span>
+              <span class="gl-pill" [class.gl-pill--maybe]="row.maybe">
+                {{ (row.maybe ? 'guestListPage.landing.previewMaybe' : 'guestListPage.landing.previewDefinitely') | translate }}
+              </span>
+            </div>
+          }
+        </div>
+        <div class="gl-tally">
+          <span class="gl-tally__big num">62</span>
+          <span class="gl-tally__label">{{ 'guestListPage.statsGuests' | translate }}</span>
+          <span class="gl-tally__split">
+            <span><b class="num">54</b> {{ 'guestListPage.statsAdults' | translate }}</span>
+            <span><b class="num">8</b> {{ 'guestListPage.statsChildren' | translate }}</span>
+          </span>
+        </div>
+      </div>
+    </app-feature-landing>
   }
 </section>

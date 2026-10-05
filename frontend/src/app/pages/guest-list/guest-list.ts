@@ -1,6 +1,5 @@
 import { Component, ElementRef, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, concatMap, from, of } from 'rxjs';
@@ -11,6 +10,7 @@ import { CoupleProfile, CoupleService } from '../../core/couple.service';
 import { Guest, GuestInvitedStatus, GuestPayload, GuestRelationship, GuestService } from '../../core/guest.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
+import { FeatureLanding } from '../../components/feature-landing/feature-landing';
 
 interface RelationshipOption {
   value: GuestRelationship;
@@ -32,7 +32,7 @@ const PHONE_RE = /^\+?\d+$/;
  */
 @Component({
   selector: 'app-guest-list',
-  imports: [RouterLink, TranslatePipe],
+  imports: [TranslatePipe, FeatureLanding],
   templateUrl: './guest-list.html',
   styleUrl: './guest-list.scss',
   host: { '(document:keydown.escape)': 'closeSidebar()' },
@@ -49,6 +49,25 @@ export class GuestList {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
+
+  /** "Next step" cards on the public landing. */
+  protected readonly landingNext = [
+    { key: 'nextSeating', link: '/seating' },
+    { key: 'nextBudget', link: '/budget' },
+  ];
+
+  /** Static rows for the public landing's table preview (i18n keys, not data). */
+  protected readonly previewRows: ReadonlyArray<{
+    name: string;
+    sub?: string;
+    count: number;
+    maybe?: boolean;
+  }> = [
+    { name: 'guestListPage.landing.preview1Name', sub: 'guestListPage.landing.preview1Sub', count: 2 },
+    { name: 'guestListPage.landing.preview2Name', sub: 'guestListPage.landing.preview2Sub', count: 4 },
+    { name: 'guestListPage.landing.preview3Name', sub: 'guestListPage.landing.preview3Sub', count: 1, maybe: true },
+    { name: 'guestListPage.landing.preview4Name', sub: 'guestListPage.landing.preview4Sub', count: 2 },
+  ];
   private coupleLoadStarted = false;
 
   protected readonly guests = signal<Guest[]>([]);

@@ -1,6 +1,5 @@
 import { Component, ElementRef, HostListener, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
@@ -28,6 +27,7 @@ import {
 } from '../../core/seating.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
+import { FeatureLanding } from '../../components/feature-landing/feature-landing';
 
 interface Attendee {
   guestId: number;
@@ -93,7 +93,7 @@ function parseSeatListId(id: string): { tableId: number; seatIndex: number } | n
  */
 @Component({
   selector: 'app-seating-chart',
-  imports: [RouterLink, TranslatePipe, CdkDropListGroup, CdkDropList, CdkDrag, CdkDragHandle],
+  imports: [TranslatePipe, CdkDropListGroup, CdkDropList, CdkDrag, CdkDragHandle, FeatureLanding],
   templateUrl: './seating-chart.html',
   styleUrl: './seating-chart.scss',
 })
@@ -108,6 +108,21 @@ export class SeatingChart {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
+
+  // ---- public landing (not signed in) ----
+  protected readonly landingNext = [
+    { key: 'nextGuests', link: '/guests' },
+    { key: 'nextBudget', link: '/budget' },
+  ];
+  /** Static tables for the landing's canvas preview: % position, seats, how many taken. */
+  protected readonly previewTables = [
+    { n: 1, x: 6, y: 44, seats: 8, seated: 8 },
+    { n: 2, x: 36, y: 36, seats: 10, seated: 7, active: true },
+    { n: 3, x: 66, y: 34, seats: 8, seated: 5 },
+  ];
+  protected seatIdx(n: number): number[] {
+    return Array.from({ length: n }, (_, i) => i);
+  }
   private loadStarted = false;
 
   protected readonly loaded = signal(false);

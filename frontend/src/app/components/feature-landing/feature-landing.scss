@@ -1,0 +1,315 @@
+@use 'breakpoints' as bp;
+
+// =============================================================================
+// Public explainer for a couple-only tool. Prefix `fl-`. Same tokens as the
+// rest of the site; the page projects its own product preview into the hero.
+// Sits inside the page's `.container`, so full-bleed bands break out of it; the
+// PAGE host must set `overflow-x: clip` to swallow the stray scrollbar width.
+// =============================================================================
+
+:host {
+  display: block;
+}
+
+%fl-bleed {
+  margin-inline: calc(50% - 50vw);
+  padding-inline: calc(50vw - 50%);
+}
+
+// ---- signed-in vendor / admin notice ----
+.fl-role {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-top: var(--space-10);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-strong);
+  border-left: 4px solid var(--color-brand-500);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--fs-h5);
+  }
+  p {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--color-text-secondary);
+  }
+}
+
+// ---- hero: copy + product preview ----
+.fl-hero {
+  display: grid;
+  gap: var(--space-12);
+  align-items: center;
+  padding-block: var(--space-12) var(--space-16);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
+    gap: var(--space-16);
+    padding-block: var(--space-16) var(--space-20);
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 20ch;
+    text-wrap: balance;
+  }
+}
+
+.fl-eyebrow {
+  margin: 0 0 var(--space-4);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-overline);
+  color: var(--color-brand-700);
+}
+
+.fl-hero__sub {
+  margin: var(--space-5) 0 0;
+  max-width: 46ch;
+  font-size: var(--fs-lead);
+  color: var(--color-text-secondary);
+}
+
+.fl-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.fl-hero__note {
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+}
+
+// ---- shared bits ----
+.fl-h2 {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.fl-sec-head {
+  max-width: var(--measure);
+  margin-bottom: var(--space-10);
+
+  p {
+    margin: var(--space-3) 0 0;
+    font-size: var(--fs-lead);
+    color: var(--color-text-secondary);
+  }
+}
+
+// ---- features: numbered editorial list on the cream band ----
+.fl-band {
+  @extend %fl-bleed;
+  background: var(--color-surface-sunken);
+  padding-block: var(--space-16);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-20);
+  }
+}
+
+.fl-steps {
+  list-style: none;
+  margin: var(--space-10) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-8);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-10);
+  }
+}
+
+.fl-step {
+  border-top: 2px solid var(--color-ink-900);
+  padding-top: var(--space-5);
+
+  &__num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    line-height: 1;
+    color: var(--color-brand-600);
+  }
+  h3 {
+    margin: var(--space-4) 0 var(--space-2);
+    font-size: var(--fs-h5);
+  }
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+// ---- tips ----
+.fl-tips {
+  padding-block: var(--space-16);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-20);
+  }
+}
+
+.fl-tips__grid {
+  display: grid;
+  gap: var(--space-6);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.fl-tip {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  &::before {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 3px;
+    margin-bottom: var(--space-5);
+    background: var(--color-brand-500);
+  }
+  h3 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--fs-h5);
+  }
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+// ---- next steps ----
+.fl-next {
+  display: grid;
+  gap: var(--space-5);
+  padding-bottom: var(--space-16);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.fl-next__card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color var(--dur-base) var(--ease-out);
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-ink-900);
+  }
+}
+
+.fl-next__kicker {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-overline);
+  color: var(--color-brand-700);
+}
+
+.fl-next__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading);
+}
+
+.fl-next__text {
+  color: var(--color-text-secondary);
+}
+
+.fl-next__card .link-arrow {
+  margin-top: var(--space-2);
+}
+
+// ---- FAQ ----
+.fl-faq {
+  max-width: 52rem;
+  padding-block: var(--space-4) var(--space-20);
+
+  .fl-h2 {
+    margin-bottom: var(--space-8);
+  }
+}
+
+.fl-faq__item {
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) 0;
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-h5);
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+    &::after {
+      content: '+';
+      color: var(--color-brand-600);
+    }
+  }
+  &[open] summary::after {
+    content: '–';
+  }
+  p {
+    margin: var(--space-3) 0 0;
+    max-width: var(--measure);
+    color: var(--color-text-secondary);
+  }
+}
+
+// ---- final CTA: ink band ----
+.fl-final {
+  @extend %fl-bleed;
+  background: var(--color-ink-900);
+  color: #f3ece2;
+  padding-block: var(--space-16);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-20);
+  }
+}
+
+.fl-final__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    color: #fff;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+    max-width: 48ch;
+    color: rgba(243, 236, 226, 0.8);
+  }
+}

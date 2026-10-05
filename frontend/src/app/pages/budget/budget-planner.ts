@@ -41,6 +41,7 @@ import { ToastService } from '../../core/toast.service';
 import { Vendor } from '../../core/vendor.models';
 import { VendorService } from '../../core/vendor.service';
 import { WishlistService } from '../../core/wishlist.service';
+import { FeatureLanding } from '../../components/feature-landing/feature-landing';
 import { LanguageService } from '../../i18n/language.service';
 
 type DrawerKind = 'vendor' | 'details';
@@ -65,6 +66,7 @@ const DRAG_HINT_KEY = 'weddingplanner.budget.dragHintSeen';
     CdkDrag,
     CdkDragHandle,
     CdkDragPreview,
+  FeatureLanding,
   ],
   templateUrl: './budget-planner.html',
   styleUrl: './budget-planner.scss',
@@ -87,6 +89,16 @@ export class BudgetPlanner {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
+  /** Signed in, but not as a couple (vendor / admin): no sign-up CTAs. */
+  protected readonly otherRole = computed(() => !!this.auth.user() && !this.auth.isCouple());
+
+  // ---- public landing (not signed in) ----
+  protected readonly landingNext = [
+    { key: 'nextGuests', link: '/guests' },
+    { key: 'nextSeating', link: '/seating' },
+  ];
+  /** Bound for the landing's CTAs: sign up, keeping the visitor's estimate. */
+  protected readonly signupWithDraft = (): void => this.goSignupWithDraft();
   private coupleLoadStarted = false;
 
   // ---- guided / overview toggle ----
