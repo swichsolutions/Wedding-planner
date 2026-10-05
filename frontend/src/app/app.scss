@@ -507,3 +507,52 @@
   color: #8c8174;
   font-size: var(--fs-caption);
 }
+
+// ============================== HEADER (phones) ==============================
+// Phones: the header bar must hold wordmark + (saved/notifications icon) + lang
+// toggle + hamburger inside 360–375px. Measured at 375px before this block:
+// wordmark 211 + actions 207 = 418px of a 343px row, so the hamburger sat off
+// the right edge and every page scrolled sideways. Tighten each piece a notch
+// and, as a last resort, let the wordmark trim rather than push the hamburger
+// off-screen — an unreachable menu is worse than a clipped logo.
+@media (max-width: 599px) {
+  .site-header__bar {
+    gap: var(--space-2);
+    min-height: 64px;
+  }
+
+  .site-header .brand {
+    font-size: 1.125rem;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .site-header__actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .site-header .lang {
+    padding: 2px;
+  }
+
+  .site-header .lang__btn {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0 6px;
+    font-size: 0.75rem;
+  }
+
+  .icon-link {
+    width: 34px;
+    height: 34px;
+  }
+
+  .menu-toggle {
+    width: 40px;
+    height: 40px;
+    padding: 0 9px;
+  }
+}
