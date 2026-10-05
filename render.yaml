@@ -1,0 +1,90 @@
+# Render Blueprint — free demo deploy (README → "Free demo deploy (Render + Neon)").
+#
+# Dashboard: New + → Blueprint → pick this repo. Render creates both web services and
+# prompts for every `sync: false` value. Postgres is NOT defined here on purpose: Render's
+# free Postgres expires after 30 days; use a free Neon database instead (persistent).
+#
+# Two-pass start (service URLs aren't known until Render creates them):
+#   1st pass: enter placeholders for the URL variables and let both services deploy.
+#   2nd pass: copy the two *.onrender.com URLs into API_BASE_URL, Cors__AllowedOrigins__0,
+#             Site__PublicOrigin, LocalUploads__PublicBase → "Manual deploy" on both services.
+#   (API_BASE_URL is baked into the frontend bundle at build time, so it needs a redeploy.)
+
+services:
+  # ---------------------------------------------------------------- .NET 8 API
+  - type: web
+    name: weddingplanner-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    buildFilter:
+      paths:
+        - backend/**
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # "Development" on purpose for the demo: auto-migrates, seeds demo vendors and the
+      # admin account on startup, and turns on Swagger (see Program.cs + README).
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Development
+      # Neon → Connection details → ".NET" format (Host=...;Username=...;Password=...;SSL Mode=Require)
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: Jwt__Key
+        generateValue: true
+      - key: Jwt__Issuer
+        value: weddingplanner-api
+      - key: Jwt__Audience
+        value: weddingplanner-web
+      - key: Jwt__ExpireHours
+        value: "72"
+      - key: Seed__AdminEmail
+        value: admin@weddingplanner.ge
+      - key: Seed__AdminPassword
+        sync: false
+      # Render's proxy is the only thing that can reach the container, so trust its
+      # X-Forwarded-* headers; otherwise every visitor shares one IP for rate limiting.
+      - key: ForwardedHeaders__TrustAll
+        value: "true"
+      # ---- fill these with the real URLs after the first deploy (2nd pass) ----
+      - key: Cors__AllowedOrigins__0
+        sync: false # https://weddingplanner-web-xxxx.onrender.com
+      - key: Site__PublicOrigin
+        sync: false # same frontend URL (canonical origin for sitemap.xml)
+      - key: LocalUploads__PublicBase
+        sync: false # https://weddingplanner-api-xxxx.onrender.com/uploads
+
+  # ------------------------------------------------------ Angular 21 SSR frontend
+  - type: web
+    name: weddingplanner-web
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    buildFilter:
+      paths:
+        - frontend/**
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      # Build arg (Render passes env vars to Docker builds): the API origin compiled into
+      # the bundle. Change → "Manual deploy → Clear build cache & deploy".
+      - key: API_BASE_URL
+        sync: false # https://weddingplanner-api-xxxx.onrender.com
+      # Angular SSR host allowlist (runtime, comma-separated, wildcards allowed). Without a
+      # match the server silently falls back to client-side rendering.
+      - key: NG_ALLOWED_HOSTS
+        value: "*.onrender.com"
+      # @angular/ssr drops to client-side rendering on ANY x-forwarded-* header it wasn't told
+      # to trust, so list the whole set Render's proxy may send.
+      - key: NG_TRUST_PROXY_HEADERS
+        value: "x-forwarded-for,x-forwarded-host,x-forwarded-port,x-forwarded-proto,x-forwarded-prefix"
+      # Google sign-in button: leave empty to hide it; set a client id whose authorized
+      # origins include the frontend URL to enable it (also set Google__ClientId on the API).
+      - key: GOOGLE_CLIENT_ID
+        value: ""
+      - key: NODE_ENV
+        value: production

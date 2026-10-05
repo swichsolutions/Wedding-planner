@@ -1,4 +1,4 @@
-# Build context = frontend/ (Render "Root Directory" setting).
+# Build context = frontend/ (render.yaml `dockerContext`, or the dashboard's Root Directory).
 # Multi-stage: Node image builds the Angular SSR bundle, then a lean Node
 # image runs the compiled Express server (dist/frontend/server/server.mjs).
 
@@ -10,12 +10,29 @@ RUN npm ci
 
 COPY . .
 
-# The API origin is compiled into the bundle at build time (Angular environment
-# files aren't runtime-configurable). Render turns a dashboard env var named
-# API_BASE_URL into this build ARG automatically — set it on the frontend
-# service to the backend service's public URL, e.g. https://weddingplanner-api.onrender.com
+# Values compiled into the bundle at build time (Angular environment files aren't
+# runtime-configurable). Render turns the service's env vars into Docker build ARGs
+# automatically — see render.yaml.
+#   API_BASE_URL      the API's public origin, e.g. https://weddingplanner-api-xxxx.onrender.com
+#   GOOGLE_CLIENT_ID  Google sign-in client id; empty hides the button (default)
+#   NG_ALLOWED_HOSTS  extra SSR allowed hosts baked into angular.json (comma-separated,
+#                     "*.onrender.com" by default). The same-named env var is also read at
+#                     runtime by @angular/ssr, so either place works.
 ARG API_BASE_URL=""
-RUN sed -i "s#apiBaseUrl: ''#apiBaseUrl: '${API_BASE_URL}'#" src/environments/environment.ts
+ARG GOOGLE_CLIENT_ID=""
+ARG NG_ALLOWED_HOSTS="*.onrender.com"
+RUN sed -i "s#apiBaseUrl: ''#apiBaseUrl: '${API_BASE_URL}'#" src/environments/environment.ts \
+ && sed -i "s#googleClientId: '[^']*'#googleClientId: '${GOOGLE_CLIENT_ID}'#" src/environments/environment.ts \
+ && node -e " \
+    const fs = require('fs'); \
+    const cfg = JSON.parse(fs.readFileSync('angular.json', 'utf8')); \
+    const opts = cfg.projects.frontend.architect.build.options; \
+    opts.security = opts.security || {}; \
+    const extra = (process.env.NG_ALLOWED_HOSTS || '').split(',').map(s => s.trim()).filter(Boolean); \
+    opts.security.allowedHosts = [...new Set([...(opts.security.allowedHosts || []), ...extra])]; \
+    fs.writeFileSync('angular.json', JSON.stringify(cfg, null, 2)); \
+    console.log('allowedHosts:', opts.security.allowedHosts.join(', '));" \
+ && grep -E "apiBaseUrl|googleClientId" src/environments/environment.ts
 
 RUN npm run build
 

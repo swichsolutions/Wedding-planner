@@ -142,16 +142,24 @@ var app = builder.Build();
 // partition key, so the header is trusted only from proxies named in config.
 // Must run before UseRateLimiter (and anything else reading the client IP).
 var trustedProxies = builder.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>();
-if (trustedProxies is { Length: > 0 })
+// ForwardedHeaders:TrustAll=true accepts X-Forwarded-* from ANY upstream. Only for PaaS
+// hosts (Render, Fly, Heroku) where the container is reachable solely through the
+// platform's own proxy, whose IPs aren't published — never behind a reachable port.
+var trustAllProxies = builder.Configuration.GetValue<bool>("ForwardedHeaders:TrustAll");
+if (trustAllProxies || trustedProxies is { Length: > 0 })
 {
     var fwd = new ForwardedHeadersOptions
     {
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
     };
+    // Empty known lists = trust every upstream (TrustAll); otherwise only the listed IPs.
     fwd.KnownNetworks.Clear();
     fwd.KnownProxies.Clear();
-    foreach (var ip in trustedProxies)
-        fwd.KnownProxies.Add(IPAddress.Parse(ip));
+    if (!trustAllProxies)
+    {
+        foreach (var ip in trustedProxies!)
+            fwd.KnownProxies.Add(IPAddress.Parse(ip));
+    }
     app.UseForwardedHeaders(fwd);
 }
 

@@ -139,34 +139,69 @@ cd backend && dotnet build WeddingPlanner.sln
 
 ## Free demo deploy (Render + Neon)
 
-For showing the app to people, not a real launch. Two Render **free** web services
-(`backend/Dockerfile`, `frontend/Dockerfile`) + one Neon **free** Postgres. Render's free
-tier sleeps a service after 15 min idle (~1 min to wake on the next request) — warn people
-before a demo, or hit the URL yourself first.
+For showing the app to people, not a real launch. Two Render **free** web services (built from
+`backend/Dockerfile` and `frontend/Dockerfile`) + one Neon **free** Postgres. `render.yaml` at the
+repo root is a Render **Blueprint** that creates both services with the right env var names.
 
-1. **Neon** ([neon.tech](https://neon.tech)) → new project → copy the pooled connection string.
-2. **Render backend service** → New Web Service → this repo → Root Directory `backend` →
-   Environment `Docker` (auto-detects `backend/Dockerfile`). Env vars:
-   - `ASPNETCORE_ENVIRONMENT` = `Development` — yes, in "prod". This is what makes the API
-     auto-run migrations, seed demo vendors, and create the admin account on startup (see
-     `Program.cs`); without it you'd need to run `dotnet ef database update` by hand against
-     Neon and the admin login wouldn't exist. Turns on Swagger too — harmless for a private demo.
-   - `ConnectionStrings__Default` = the Neon connection string
-   - `Jwt__Key` = any random string, 32+ characters
-   - `Seed__AdminEmail` / `Seed__AdminPassword` = your choice
-   - `Cors__AllowedOrigins__0` = the frontend service's URL (add after step 3, once known)
-3. **Render frontend service** → New Web Service → this repo → Root Directory `frontend` →
-   Environment `Docker`. Env vars:
-   - `API_BASE_URL` = the backend service's URL from step 2 (baked into the build — see the
-     Dockerfile comment; changing it requires a redeploy, not just a restart)
-   - `NG_ALLOWED_HOSTS` = the frontend service's own `*.onrender.com` URL (Angular 21 rejects
-     unknown Host headers and silently falls back to client-side rendering otherwise)
-4. Redeploy the backend once the frontend URL is known (step 2's CORS var), and the frontend
-   once the backend URL is known (step 3's build var) — first deploy of each won't have the
-   other's URL yet.
-5. Cloudinary/Google envs are optional (same names as `appsettings.Development.json.example`,
-   double-underscore nesting, e.g. `Cloudinary__CloudName`) — omit them and uploads fall back
-   to local disk (fine for a demo; photos vanish on restart) and the Google button just hides.
+Render's free tier sleeps a service after 15 min idle (~1 min to wake on the next request) —
+open the URL yourself a minute before a demo. Render's own free Postgres expires after 30 days,
+which is why the database lives on Neon.
+
+### 1. Database (Neon, once)
+
+[neon.tech](https://neon.tech) → New project (region: Frankfurt) → **Connection details** →
+switch the format to **.NET** and copy the string. It must be `Host=…;Username=…;Password=…;
+Database=…;SSL Mode=Require` form (Npgsql does not accept `postgres://` URLs).
+
+### 2. Services (Render Blueprint)
+
+Render dashboard → **New +** → **Blueprint** → connect `swichsolutions/Wedding-planner` → Render
+reads `render.yaml` and asks for the `sync: false` values:
+
+| Variable | Service | First pass | Second pass |
+|---|---|---|---|
+| `ConnectionStrings__Default` | api | Neon string from step 1 | — |
+| `Seed__AdminPassword` | api | choose one (admin login = `admin@weddingplanner.ge`) | — |
+| `Cors__AllowedOrigins__0` | api | `https://placeholder` | frontend URL |
+| `Site__PublicOrigin` | api | `https://placeholder` | frontend URL |
+| `LocalUploads__PublicBase` | api | `https://placeholder` | API URL + `/uploads` |
+| `API_BASE_URL` | web | `https://placeholder` | API URL |
+
+Service URLs look like `https://weddingplanner-api-xxxx.onrender.com` and are only known after
+Render creates the services — hence the two passes.
+
+### 3. Second pass
+
+Once both services exist, open each service → **Environment** → replace the placeholders with
+the real URLs (table above). Then:
+
+- API: **Manual Deploy → Deploy latest commit** (env vars are read at runtime).
+- Frontend: **Manual Deploy → Clear build cache & deploy** (`API_BASE_URL` is compiled into the
+  bundle by the Dockerfile, so a plain restart is not enough).
+
+### 4. Check
+
+- `https://<api>/health` → `{"status":"ok"}`; `https://<api>/swagger` opens (Development mode).
+- `https://<web>/` renders with vendors from the API (not mock data). View source: the HTML
+  already contains the Georgian page text (SSR working). If it doesn't, check the frontend logs
+  for an `allowedHosts` or `x-forwarded-*` warning — `NG_ALLOWED_HOSTS` / `NG_TRUST_PROXY_HEADERS`
+  in `render.yaml` cover Render's defaults.
+- Log in as the admin, and sign up a couple to try the planning tools.
+
+### Notes
+
+- `ASPNETCORE_ENVIRONMENT=Development` on the API is deliberate for the demo: it auto-runs
+  migrations, seeds demo vendors, creates the admin account, and enables Swagger.
+- `ForwardedHeaders__TrustAll=true` makes the API read the real client IP from Render's proxy
+  (rate limits are per IP). Don't use it anywhere the container is reachable directly.
+- Photo uploads fall back to the container's disk and vanish on every deploy. For a demo that's
+  fine; set the `Cloudinary__*` vars for persistent uploads.
+- Google sign-in is hidden unless `GOOGLE_CLIENT_ID` (web, build arg) and `Google__ClientId`
+  (api) are set to a client whose authorized origins include the frontend URL.
+- A custom domain works on the free tier: add it in Render, then add the hostname to
+  `NG_ALLOWED_HOSTS`, `Cors__AllowedOrigins__0` and `Site__PublicOrigin`.
+
+---
 
 ## ⚠️ Going to production (read before deploy)
 
