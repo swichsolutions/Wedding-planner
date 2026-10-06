@@ -3,8 +3,8 @@
     "name": "WeddingPlanner"
   },
   "nav": {
+    "home": "Home",
     "vendors": "Vendors",
-    "guides": "Guides",
     "planning": "Planning Tool",
     "budget": "Budget",
     "guestList": "Guest List",
@@ -30,7 +30,49 @@
     "cta": "Let’s do this!",
     "ctaCouple": "Continue planning",
     "ctaVendor": "My profile",
-    "ctaAdmin": "Admin panel"
+    "ctaAdmin": "Admin panel",
+    "ov": {
+      "heroEyebrow": "Your wedding",
+      "countdownLabel": "Until your wedding",
+      "heroEdit": "Edit your details",
+      "uploadPhoto": "Upload photo",
+      "nextLabel": "Next up",
+      "nextBudget": "Set your wedding budget",
+      "nextGuests": "Add your guest list",
+      "nextChecklist": "Start checking off your checklist",
+      "nextWebsite": "Create your wedding website",
+      "nextSeating": "Plan your seating chart",
+      "paymentDue": "Payment due",
+      "checklist": "Checklist",
+      "checklistCta": "Open checklist",
+      "budget": "Budget",
+      "budgetCta": "Manage budget",
+      "budgetEmpty": "Not set up yet",
+      "budgetStartCta": "Set your budget",
+      "guests": "Guest list",
+      "guestsCta": "Manage guests",
+      "guestsEmpty": "No guests yet",
+      "guestsStartCta": "Add your guests",
+      "seating": "Seating chart",
+      "seatingCta": "Open seating chart",
+      "seatingEmpty": "Not started yet",
+      "seatingStartCta": "Plan your seating",
+      "seatingDone": "All seated",
+      "seatingInProgress": "In progress",
+      "website": "Wedding website",
+      "websiteStatus": {
+        "none": "Not started",
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "websiteStartCta": "Create your site",
+      "websiteCta": "Edit your site",
+      "saved": "Saved vendors",
+      "savedCta": "View shortlist"
+    },
+    "cat": {
+      "explore": "Explore"
+    }
   },
   "homeWebsite": {
     "overline": "Wedding website",
@@ -334,9 +376,6 @@
     "estimateCardTitle": "Plan your budget",
     "estimateCardText": "See a recommended split across categories based on Georgian wedding norms.",
     "estimateCardCta": "Budget planner",
-    "tipsTitle": "Free wedding planning tips",
-    "tipsText": "What should you tackle first? How do you split your budget? We have answers.",
-    "seeAllTips": "See all articles",
     "faqTitle": "Frequently asked questions",
     "faq1q": "What are the basics of wedding planning?",
     "faq1a": "Wedding planning is different for every couple. Our free checklist offers detailed month-by-month suggestions and is fully customizable to your own timeline.",
@@ -525,11 +564,6 @@
     "title": "Page not found",
     "body": "The link may be outdated or the page no longer exists.",
     "home": "Back to home"
-  },
-  "contentType": {
-    "guide": "Guide",
-    "checklist": "Checklist",
-    "realWedding": "Real wedding"
   },
   "vendors": {
     "title": "Vendors",
@@ -973,20 +1007,6 @@
     "cta": "Start planning",
     "sample": "How a {{amount}} budget splits",
     "more": "…and 5 more categories"
-  },
-  "guides": {
-    "overline": "The journal",
-    "title": "Real weddings & guides",
-    "subtitle": "Inspiration and practical advice for your day.",
-    "readMore": "Read",
-    "published": "Published",
-    "backToGuides": "All articles",
-    "notFoundTitle": "Article not found",
-    "notFoundBody": "The link may be outdated.",
-    "metaDescription": "Wedding planning guides, checklists and real Georgian weddings — practical advice on venues, budgets and vendors for every step of the way.",
-    "item1": { "tag": "Guide", "title": "How to choose your photographer" },
-    "item2": { "tag": "Real wedding", "title": "Nino & Giorgi — a Kakheti wedding" },
-    "item3": { "tag": "Checklist", "title": "The 12-month wedding plan" }
   },
   "footer": {
     "tagline": "Everything for your wedding — in one place.",

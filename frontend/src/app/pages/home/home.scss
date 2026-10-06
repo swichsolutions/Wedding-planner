@@ -93,6 +93,457 @@
   margin-top: var(--space-8);
 }
 
+// ============================ OVERVIEW (signed-in couple) ============================
+.overview {
+  padding-block: var(--space-12) var(--space-16);
+}
+
+// The couple's own hero card — a real full-bleed photo (their wedding-site
+// upload once they have one, an editorial stock shot until then — never an
+// empty placeholder box), with names/date/countdown overlaid like the
+// guest-facing hero. Photo-forward, matching the rest of the site.
+.overview__hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  min-height: 15rem;
+  margin-bottom: var(--space-8);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+
+  @include bp.respond-to(md) {
+    min-height: 18rem;
+  }
+}
+
+.overview__hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overview__hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(28, 23, 20, 0.15) 0%,
+    rgba(28, 23, 20, 0.2) 40%,
+    rgba(28, 23, 20, 0.72) 100%
+  );
+}
+
+.overview__hero-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  color: #fff;
+}
+
+.overview__hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+  color: var(--color-brand-200);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.overview__hero-names {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  color: #fff;
+}
+
+.overview__hero-heart {
+  color: var(--color-brand-400);
+  font-size: 0.8em;
+}
+
+.overview__hero-date {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.overview__hero-countdown {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: none;
+  margin-left: auto;
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.overview__hero-countdown-num {
+  color: var(--color-brand-600);
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.overview__hero-countdown-label {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+}
+
+.overview__hero-actions {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.overview__hero-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgba(28, 23, 20, 0.4);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  transition: background var(--dur-base) var(--ease-out);
+
+  &:hover {
+    background: rgba(28, 23, 20, 0.55);
+  }
+}
+
+.overview__hero-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-pill);
+  background: rgba(28, 23, 20, 0.4);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  transition: background var(--dur-base) var(--ease-out);
+
+  &:hover {
+    background: rgba(28, 23, 20, 0.55);
+  }
+}
+
+// The single highest-priority unfinished action (budget → guests → checklist →
+// website → seating) — one dynamic, real-data-driven prompt instead of a wall
+// of equally-weighted stat tiles telling the couple what to do FIRST.
+.overview__next {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-brand-50);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background var(--dur-base) var(--ease-out);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-brand-50) 80%, var(--color-brand-100) 20%);
+  }
+  &:hover .overview__next-arrow {
+    transform: translateX(4px);
+  }
+}
+
+.overview__next-eyebrow {
+  flex: none;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+  color: #fff;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.overview__next-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-700);
+}
+
+.overview__next-arrow {
+  flex: none;
+  color: var(--color-brand-600);
+  font-size: var(--fs-h4);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.overview__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-8);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-warning-100);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background var(--dur-base) var(--ease-out);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-warning-100) 80%, var(--color-ink-900) 6%);
+  }
+
+  &.is-overdue {
+    background: var(--color-danger-100);
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-danger-100) 80%, var(--color-ink-900) 6%);
+    }
+  }
+}
+
+.overview__banner-badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-warning-600);
+  color: #fff;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+
+  .overview__banner.is-overdue & {
+    background: var(--color-danger-600);
+  }
+}
+
+.overview__banner-name {
+  flex: 1;
+  min-width: 10rem;
+  font-weight: var(--fw-medium);
+}
+
+.overview__banner-date,
+.overview__banner-amount {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.overview__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ov-card__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: transparent;
+  }
+}
+
+// One accent color per card, so the grid reads at a glance instead of as a
+// wall of identical white tiles — a distinct hue per planning area.
+.ov-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-1);
+
+  &--checklist {
+    background: var(--color-sage-100);
+    color: var(--color-sage-600);
+  }
+  &--budget {
+    background: var(--color-gold-100);
+    color: var(--color-gold-600);
+  }
+  &--guests {
+    background: var(--color-info-100);
+    color: var(--color-info-600);
+  }
+  &--seating {
+    background: var(--color-ink-100);
+    color: var(--color-ink-600);
+  }
+  &--website {
+    background: var(--color-danger-100);
+    color: var(--color-danger-600);
+  }
+  &--saved {
+    background: var(--color-brand-100);
+    color: var(--color-brand-600);
+  }
+}
+
+.ov-card__label {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ov-card__value {
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-bold);
+}
+
+.ov-card__empty {
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+}
+
+.ov-card__track {
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  overflow: hidden;
+}
+
+.ov-card__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-500);
+}
+
+.ov-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-100);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+
+  &.is-live {
+    background: var(--color-sage-100);
+    color: var(--color-sage-700);
+  }
+}
+
+.ov-card__cta {
+  margin-top: auto;
+  font-size: var(--fs-caption);
+}
+
+// The one ticket that isn't a status card — a dedicated, full-width countdown
+// banner in the brand color, set apart from the uniform white tiles around it.
+.ov-card--countdown {
+  grid-column: 1 / -1;
+}
+
+.ov-card__link--countdown {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-700));
+  border: none;
+  color: #fff;
+  text-align: left;
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.ov-countdown__icon {
+  flex: none;
+  opacity: 0.85;
+}
+
+.ov-countdown__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ov-countdown__label {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ov-countdown__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.ov-countdown__num {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.ov-countdown__unit {
+  font-size: var(--fs-body);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ov-countdown__today {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+}
+
 // ============================ BROWSE BY CATEGORY ============================
 // Uniform editorial photo grid: 8 identical full-bleed tiles, portrait crop,
 // title + tag bottom-left on a gradient scrim. 2 columns (4 rows) on mobile,
@@ -120,10 +571,26 @@
   border-radius: var(--radius-xl);
   transition: transform var(--dur-base) var(--ease-out),
     box-shadow var(--dur-base) var(--ease-out);
+  // Staggered arrival on first paint — a quiet cue (mostly for first-time
+  // guests) that the grid is a set of tappable things, not a static banner.
+  // `backwards` holds the 0%-keyframe state through the delay, so tiles don't
+  // flash at full opacity before their turn; settles to opaque either way, so
+  // SSR/no-JS/crawler output is unaffected.
+  animation: cat-tile-in 0.6s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+
+  // Already-added tiles (signed-in couple) carry a quiet brand-colored ring —
+  // a progress cue, not a celebration.
+  &.cat-tile--added {
+    box-shadow: 0 0 0 2px var(--color-brand-400);
+  }
 
   &:hover {
     transform: translateY(calc(-1 * var(--space-1)));
     box-shadow: var(--shadow-md);
+  }
+  &.cat-tile--added:hover {
+    box-shadow: var(--shadow-md), 0 0 0 2px var(--color-brand-400);
   }
   &:hover .cat-tile__bg img,
   &:hover .cat-tile__bg video {
@@ -133,6 +600,23 @@
   &:hover .cat-tile__title::after,
   &:focus-visible .cat-tile__title::after {
     transform: scaleX(1);
+  }
+}
+
+@keyframes cat-tile-in {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-tile {
+    animation: none;
   }
 }
 
@@ -234,13 +718,64 @@
 }
 
 .cat-tile__tag {
-  // title-only on narrow tiles — three wrapped tag lines would swallow the photo
-  display: none;
+  // Short service detail — visible on every tile, every breakpoint; clamped
+  // to 2 lines so a long translation can't swallow the photo on narrow tiles.
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: var(--fs-caption);
+  line-height: 1.3;
   color: color-mix(in srgb, var(--color-text-on-brand) 82%, transparent);
+}
 
-  @include bp.respond-to(md) {
-    display: block;
+// Signed-in couple, category already has a budget item: swap the marketing
+// tagline for what they actually picked — real data, not a prompt to browse.
+.cat-tile__added {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-on-brand);
+
+  svg {
+    flex: none;
+    color: var(--color-brand-200);
+  }
+}
+
+// Guests: a quiet nudge that the tile is tappable — a short label with an
+// arrow that drifts a couple pixels right and back, looping softly.
+.cat-tile__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--color-brand-200);
+}
+
+.cat-tile__hint-arrow {
+  display: inline-block;
+  animation: cat-hint-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes cat-hint-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-tile__hint-arrow {
+    animation: none;
   }
 }
 
@@ -550,70 +1085,5 @@
   app-wedding-site {
     display: block;
     height: 100%;
-  }
-}
-
-
-// ============================ GUIDES / REAL WEDDINGS ============================
-.guide-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-8);
-
-  @include bp.respond-to(sm) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @include bp.respond-to(lg) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.guide-card {
-  display: block;
-  color: var(--color-text);
-
-  &__media {
-    display: block;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    aspect-ratio: 7 / 5;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform var(--dur-slow) var(--ease-out);
-    }
-  }
-
-  &__tag {
-    display: inline-block;
-    margin-top: var(--space-4);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-pill);
-    background: var(--color-sage-100);
-    color: var(--color-sage-700);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-medium);
-  }
-
-  &__title {
-    margin: var(--space-3) 0 var(--space-4);
-    font-size: var(--fs-h4);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  &:hover &__media img {
-    transform: scale(1.04);
-  }
-  &:hover &__title {
-    color: var(--color-action);
   }
 }

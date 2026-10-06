@@ -1,7 +1,6 @@
 import { Component, ElementRef, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -12,20 +11,11 @@ import { ChecklistItem, ChecklistService } from '../../core/checklist.service';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CoupleProfile, CoupleService } from '../../core/couple.service';
-import { ContentService } from '../../core/content.service';
-import { ContentArticle } from '../../core/content.models';
 import { CATEGORIES } from '../../core/catalog';
 import { GUEST_RANGES, PLANNING_STAGES } from '../../core/onboarding';
 import { nameValidator } from '../../core/forms';
 import { trapTabKey } from '../../core/a11y';
 import { LanguageService } from '../../i18n/language.service';
-
-interface TipCard {
-  slug: string;
-  title: string;
-  image: string;
-  imageAlt: string;
-}
 
 @Component({
   selector: 'app-planning',
@@ -69,21 +59,6 @@ export class Planning {
     return Math.round((wedding - today.getTime()) / 86_400_000);
   });
 
-  // Guide cards on the explainer (pulled from real content; top 3).
-  private readonly articles = toSignal(inject(ContentService).list(), {
-    initialValue: [] as ContentArticle[],
-  });
-  protected readonly tips = computed<TipCard[]>(() => {
-    const ka = this.lang.current() === 'ka';
-    return this.articles()
-      .slice(0, 3)
-      .map((a) => ({
-        slug: a.slug,
-        title: ka ? a.titleKa : a.titleEn,
-        image: a.image,
-        imageAlt: a.imageAlt,
-      }));
-  });
   protected readonly items = signal<ChecklistItem[]>([]);
   protected readonly loaded = signal(false);
   protected readonly loadError = signal(false);

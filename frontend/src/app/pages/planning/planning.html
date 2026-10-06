@@ -275,29 +275,6 @@
     </div>
   </section>
 
-  <!-- planning tips (guide cards) -->
-  @if (tips().length) {
-    <section class="section container">
-      <header class="pl-sec-head">
-        <h2>{{ 'planning.tipsTitle' | translate }}</h2>
-        <p>{{ 'planning.tipsText' | translate }}</p>
-      </header>
-      <ul class="pl-tips" role="list">
-        @for (t of tips(); track t.slug) {
-          <li>
-            <a class="pl-tip" [routerLink]="['/guides', t.slug]">
-              <span class="pl-tip__media">
-                <img [src]="t.image" [alt]="t.imageAlt" loading="lazy" width="700" height="470" />
-              </span>
-              <h3 class="pl-tip__title">{{ t.title }}</h3>
-            </a>
-          </li>
-        }
-      </ul>
-      <a class="link-arrow pl-tips__all" routerLink="/guides">{{ 'planning.seeAllTips' | translate }}</a>
-    </section>
-  }
-
   <!-- FAQ -->
   <section class="section container pl-faq">
     <h2>{{ 'planning.faqTitle' | translate }}</h2>

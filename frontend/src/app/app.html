@@ -6,6 +6,7 @@
     <a routerLink="/" class="brand" translate="no" (click)="closeMenu()">{{ 'brand.name' | translate }}</a>
 
     <nav id="site-nav" class="site-nav" [attr.aria-label]="'nav.menu' | translate">
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">{{ 'nav.home' | translate }}</a>
       <a routerLink="/vendors" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.vendors' | translate }}</a>
       <a routerLink="/planning" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.planning' | translate }}</a>
       <a routerLink="/budget" routerLinkActive="is-active" (click)="closeMenu()">{{ 'nav.budget' | translate }}</a>
@@ -103,7 +104,6 @@
     <nav class="site-footer__col" [attr.aria-label]="'footer.explore' | translate">
       <h2 class="site-footer__heading">{{ 'footer.explore' | translate }}</h2>
       <a routerLink="/vendors">{{ 'nav.vendors' | translate }}</a>
-      <a routerLink="/guides">{{ 'nav.guides' | translate }}</a>
       <a routerLink="/budget">{{ 'nav.budget' | translate }}</a>
       <a routerLink="/guests">{{ 'nav.guestList' | translate }}</a>
       @if (auth.isCouple()) {

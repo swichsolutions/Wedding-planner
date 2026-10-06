@@ -9,10 +9,9 @@ namespace WeddingPlanner.Api.Controllers;
 /// sitemap.xml generated from REAL data: the home page, the browse page, one URL per
 /// category×city pairing that actually has approved vendors, and one per approved
 /// vendor profile. Served at the site root, so production must proxy /sitemap.xml to
-/// the API alongside /api and /uploads (CLAUDE.md §10). Guides/budget/website URLs
-/// are deliberately absent — guide content is still frontend mock data and joins the
-/// sitemap when it moves to the ContentPage table. No lastmod: vendors don't carry an
-/// UpdatedAt, and a fabricated timestamp is worse than none.
+/// the API alongside /api and /uploads (CLAUDE.md §10). Budget/website tool URLs are
+/// deliberately absent — they're couple utilities, not indexable content. No lastmod:
+/// vendors don't carry an UpdatedAt, and a fabricated timestamp is worse than none.
 /// </summary>
 [ApiController]
 public class SitemapController : ControllerBase

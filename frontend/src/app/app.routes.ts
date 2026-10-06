@@ -91,15 +91,6 @@ export const routes: Routes = [
     canActivate: [roleGuard('Admin')],
     loadComponent: () => import('./pages/admin/admin').then((m) => m.Admin),
   },
-  {
-    path: 'guides',
-    loadComponent: () => import('./pages/guides/guide-list').then((m) => m.GuideList),
-  },
-  {
-    path: 'guides/:slug',
-    loadComponent: () => import('./pages/guides/guide-article').then((m) => m.GuideArticle),
-  },
-
   // Vendor profile — SEO URL shape /{category}/{city}/{slug}. Three segments, so it
   // doesn't collide with the single-segment routes above.
   {
@@ -109,8 +100,8 @@ export const routes: Routes = [
   },
 
   // Category×city landing — SEO URL shape /{category}/{city} (e.g. /fotografi/tbilisi).
-  // Two segments, so every static two-segment route above (website/find, w/:slug,
-  // guides/:slug) still wins; unknown category slugs 404 inside the component.
+  // Two segments, so every static two-segment route above (website/find, w/:slug)
+  // still wins; unknown category slugs 404 inside the component.
   {
     path: ':category/:city',
     loadComponent: () =>

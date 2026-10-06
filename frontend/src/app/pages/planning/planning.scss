@@ -282,55 +282,6 @@
   }
 }
 
-// tips (guide cards)
-.pl-tips {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-8);
-
-  @include bp.respond-to(sm) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.pl-tip {
-  display: block;
-  color: var(--color-text);
-
-  &__media {
-    display: block;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    aspect-ratio: 3 / 2;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform var(--dur-slow) var(--ease-out);
-    }
-  }
-
-  &__title {
-    margin: var(--space-3) 0 0;
-    font-size: var(--fs-h5);
-  }
-
-  &:hover &__media img {
-    transform: scale(1.04);
-  }
-  &:hover &__title {
-    color: var(--color-action);
-  }
-}
-
-.pl-tips__all {
-  display: inline-flex;
-  margin-top: var(--space-8);
-}
-
 // FAQ
 .pl-faq {
   max-width: 52rem;

@@ -78,11 +78,11 @@
   min-height: 76px;
   transition: min-height var(--dur-fast) var(--ease-out);
   // Wider than the page's own 1200px content cap: with every nav link signed-in
-  // couples now see (incl. Seating) plus the lang toggle + sign-out button, the
-  // Georgian labels need up to ~1400px of row width to lay out on one line
-  // without pushing the sign-out button past the viewport edge (horizontal
-  // scrollbar). 1440 matches the 'xxl' breakpoint the nav switches on below.
-  max-width: 90rem;
+  // couples now see (incl. Guests + Seating) plus the lang toggle + sign-out
+  // button, the Georgian labels need more than the 'xxl' breakpoint's 1440px to
+  // lay out on one line without pushing the sign-out button past the viewport
+  // edge (horizontal scrollbar) — measured: ~1480px needed at 7 nav links.
+  max-width: 100rem;
 
   .is-scrolled & {
     min-height: 58px;

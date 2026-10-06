@@ -1,18 +1,266 @@
-<!-- ========================= HERO ========================= -->
-<!-- Full-bleed photo hero: image behind, scrim for legibility, white text on top.
-     PLACEHOLDER image — swap for a wide image or <video> later. -->
-<section class="hero">
-  <img class="hero__img"
-    src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80"
-    alt="" aria-hidden="true" width="2000" height="1100" fetchpriority="high" />
-  <div class="hero__scrim" aria-hidden="true"></div>
+@if (isCouple()) {
+  <!-- ===================== OVERVIEW (signed-in couple) ===================== -->
+  <!-- Replaces the marketing hero: a snapshot of what THEY'VE actually done so
+       far, not a pitch for a product they already bought into. -->
+  <section class="overview container">
+    <div class="overview__hero">
+      <img class="overview__hero-bg" [src]="heroPhoto()" alt="" aria-hidden="true" width="1200" height="500" />
+      <div class="overview__hero-scrim" aria-hidden="true"></div>
 
-  <div class="hero__intro container">
-    <h1 class="hero__title">{{ 'home.tagline' | translate }}</h1>
-    <p class="hero__subtitle">{{ 'home.subtitle' | translate }}</p>
-    <a class="btn btn--pink hero__cta" [routerLink]="heroCta().link">{{ heroCta().key | translate }}</a>
-  </div>
-</section>
+      <div class="overview__hero-content">
+        @if (greetingNames()) {
+          <span class="overview__hero-eyebrow">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+              <path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4z" />
+            </svg>
+            {{ 'home.ov.heroEyebrow' | translate }}
+          </span>
+          <h2 class="overview__hero-names">
+            {{ couple()?.firstName }} <span class="overview__hero-heart">♥</span> {{ couple()?.partnerFirstName }}
+          </h2>
+        }
+        @if (couple()?.weddingDate; as date) {
+          <p class="overview__hero-date">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M8 3v4M16 3v4M3 10h18" />
+            </svg>
+            {{ formatFullDate(date) }}
+          </p>
+        }
+      </div>
+
+      @if (daysToWedding() !== null && daysToWedding()! > 0) {
+        <div class="overview__hero-countdown">
+          <span class="overview__hero-countdown-num num">{{ daysToWedding() }}</span>
+          <span class="overview__hero-countdown-label">{{ 'planning.countdown' | translate }}</span>
+        </div>
+      } @else if (daysToWedding() === 0) {
+        <div class="overview__hero-countdown">
+          <span class="overview__hero-countdown-label">{{ 'planning.countdownToday' | translate }}</span>
+        </div>
+      }
+
+      <div class="overview__hero-actions">
+        @if (!site()?.photoUrl) {
+          <a class="overview__hero-upload" routerLink="/website">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 16V4M12 4l-4 4M12 4l4 4" />
+              <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+            </svg>
+            {{ 'home.ov.uploadPhoto' | translate }}
+          </a>
+        }
+        <a class="overview__hero-edit" routerLink="/planning" [attr.aria-label]="'home.ov.heroEdit' | translate">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    @if (nextStep(); as step) {
+      <a class="overview__next" [routerLink]="step.link">
+        <span class="overview__next-eyebrow">{{ 'home.ov.nextLabel' | translate }}</span>
+        <span class="overview__next-title">{{ step.key | translate }}</span>
+        <span class="overview__next-arrow" aria-hidden="true">→</span>
+      </a>
+    }
+
+    @if (nextReminder(); as r) {
+      <a class="overview__banner" [class.is-overdue]="nextReminderStatus() === 'overdue'" routerLink="/budget">
+        <span class="overview__banner-badge">
+          {{ (nextReminderStatus() === 'overdue' ? 'budgetPage.overdue' : 'home.ov.paymentDue') | translate }}
+        </span>
+        <span class="overview__banner-name">{{ r.name }}</span>
+        <span class="overview__banner-date num">{{ formatDate(r.reminderDate) }}</span>
+        @if (outstanding(r) > 0) {
+          <span class="overview__banner-amount num">{{ formatGel(outstanding(r)) }}</span>
+        }
+      </a>
+    }
+
+    <ul class="overview__grid" role="list">
+      @if (daysToWedding() !== null) {
+        <li class="ov-card ov-card--countdown">
+          <a class="ov-card__link ov-card__link--countdown" routerLink="/planning">
+            <svg class="ov-countdown__icon" viewBox="0 0 24 24" width="28" height="28" fill="none"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M8 3v4M16 3v4M3 10h18" />
+            </svg>
+            <span class="ov-countdown__text">
+              <span class="ov-countdown__label">{{ 'home.ov.countdownLabel' | translate }}</span>
+              @if (daysToWedding()! > 0) {
+                <span class="ov-countdown__value">
+                  <span class="ov-countdown__num num">{{ daysToWedding() }}</span>
+                  <span class="ov-countdown__unit">{{ 'planning.countdown' | translate }}</span>
+                </span>
+              } @else {
+                <span class="ov-countdown__today">{{ 'planning.countdownToday' | translate }}</span>
+              }
+            </span>
+          </a>
+        </li>
+      }
+
+      <li class="ov-card">
+        <a class="ov-card__link" routerLink="/planning">
+          <span class="ov-card__icon ov-card__icon--checklist" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="4" width="14" height="17" rx="2" />
+              <path d="M9 11.5l2 2 4-4.5" />
+            </svg>
+          </span>
+          <span class="ov-card__label">{{ 'home.ov.checklist' | translate }}</span>
+          <span class="ov-card__value num">{{ checklistDone() }} / {{ checklistItems().length }}</span>
+          <span class="ov-card__track" aria-hidden="true">
+            <span class="ov-card__fill"
+              [style.width.%]="checklistItems().length ? (checklistDone() / checklistItems().length) * 100 : 0"></span>
+          </span>
+          <span class="link-arrow ov-card__cta">{{ 'home.ov.checklistCta' | translate }}</span>
+        </a>
+      </li>
+
+      <li class="ov-card">
+        <a class="ov-card__link" routerLink="/budget">
+          <span class="ov-card__icon ov-card__icon--budget" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="7" width="18" height="12" rx="2" />
+              <path d="M3 10h18" />
+              <circle cx="15.5" cy="14.5" r="1.5" />
+            </svg>
+          </span>
+          <span class="ov-card__label">{{ 'home.ov.budget' | translate }}</span>
+          @if (budgetStarted()) {
+            <span class="ov-card__value num">{{ formatGel(budgetPaid()) }} / {{ formatGel(overviewBudget()!.totalBudget!) }}</span>
+            <span class="ov-card__track" aria-hidden="true">
+              <span class="ov-card__fill" [style.width.%]="budgetScale()"></span>
+            </span>
+            <span class="link-arrow ov-card__cta">{{ 'home.ov.budgetCta' | translate }}</span>
+          } @else {
+            <span class="ov-card__empty">{{ 'home.ov.budgetEmpty' | translate }}</span>
+            <span class="link-arrow ov-card__cta">{{ 'home.ov.budgetStartCta' | translate }}</span>
+          }
+        </a>
+      </li>
+
+      <li class="ov-card">
+        <a class="ov-card__link" routerLink="/guests">
+          <span class="ov-card__icon ov-card__icon--guests" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="8" r="3" />
+              <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+              <path d="M16 4.3a3 3 0 0 1 0 5.8" />
+              <path d="M21 20c0-2.8-1.9-5.2-4.5-5.9" />
+            </svg>
+          </span>
+          <span class="ov-card__label">{{ 'home.ov.guests' | translate }}</span>
+          @if (guestCount() > 0) {
+            <span class="ov-card__value num">{{ guestCount() }}</span>
+            <span class="link-arrow ov-card__cta">{{ 'home.ov.guestsCta' | translate }}</span>
+          } @else {
+            <span class="ov-card__empty">{{ 'home.ov.guestsEmpty' | translate }}</span>
+            <span class="link-arrow ov-card__cta">{{ 'home.ov.guestsStartCta' | translate }}</span>
+          }
+        </a>
+      </li>
+
+      <li class="ov-card">
+        <a class="ov-card__link" routerLink="/seating">
+          <span class="ov-card__icon ov-card__icon--seating" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="9" rx="8" ry="4" />
+              <path d="M4 9v4c0 2.2 3.6 4 8 4s8-1.8 8-4V9" />
+              <path d="M12 13v6" />
+            </svg>
+          </span>
+          <span class="ov-card__label">{{ 'home.ov.seating' | translate }}</span>
+          @if (seatingStarted()) {
+            <span class="ov-card__status" [class.is-live]="seatingComplete()">
+              @if (seatingComplete()) {
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                  stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 10.5l4 4 8-9" />
+                </svg>
+                {{ 'home.ov.seatingDone' | translate }}
+              } @else {
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                  stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                {{ 'home.ov.seatingInProgress' | translate }}
+              }
+            </span>
+            <span class="link-arrow ov-card__cta">{{ 'home.ov.seatingCta' | translate }}</span>
+          } @else {
+            <span class="ov-card__empty">{{ 'home.ov.seatingEmpty' | translate }}</span>
+            <span class="link-arrow ov-card__cta">{{ 'home.ov.seatingStartCta' | translate }}</span>
+          }
+        </a>
+      </li>
+
+      <li class="ov-card">
+        <a class="ov-card__link" routerLink="/website">
+          <span class="ov-card__icon ov-card__icon--website" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+            </svg>
+          </span>
+          <span class="ov-card__label">{{ 'home.ov.website' | translate }}</span>
+          <span class="ov-card__status" [class.is-live]="siteStatus() === 'published'">
+            {{ 'home.ov.websiteStatus.' + siteStatus() | translate }}
+          </span>
+          <span class="link-arrow ov-card__cta">
+            {{ (siteStatus() === 'none' ? 'home.ov.websiteStartCta' : 'home.ov.websiteCta') | translate }}
+          </span>
+        </a>
+      </li>
+
+      <li class="ov-card">
+        <a class="ov-card__link" routerLink="/saved">
+          <span class="ov-card__icon ov-card__icon--saved" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7Z" />
+            </svg>
+          </span>
+          <span class="ov-card__label">{{ 'home.ov.saved' | translate }}</span>
+          <span class="ov-card__value num">{{ wishlist.count() }}</span>
+          <span class="link-arrow ov-card__cta">{{ 'home.ov.savedCta' | translate }}</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+} @else {
+  <!-- ========================= HERO (guest) ========================= -->
+  <!-- Full-bleed photo hero: image behind, scrim for legibility, white text on top.
+       PLACEHOLDER image — swap for a wide image or <video> later. -->
+  <section class="hero">
+    <img class="hero__img"
+      src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80"
+      alt="" aria-hidden="true" width="2000" height="1100" fetchpriority="high" />
+    <div class="hero__scrim" aria-hidden="true"></div>
+
+    <div class="hero__intro container">
+      <h1 class="hero__title">{{ 'home.tagline' | translate }}</h1>
+      <p class="hero__subtitle">{{ 'home.subtitle' | translate }}</p>
+      <a class="btn btn--pink hero__cta" [routerLink]="heroCta().link">{{ heroCta().key | translate }}</a>
+    </div>
+  </section>
+}
 
 <!-- ===================== BROWSE BY CATEGORY ===================== -->
 <section class="section categories">
@@ -26,11 +274,15 @@
     </header>
 
     <ul class="cat-grid" role="list">
-      @for (c of categories; track c.slug) {
+      @for (c of categories; track c.slug; let i = $index) {
         <li>
-          <!-- Full-bleed photo tile: the image covers the card, title + tag sit
-               bottom-left on a gradient scrim. One chrome for every category. -->
-          <a class="cat-tile" [class.cat-tile--video]="c.variant === 'video'"
+          <!-- Full-bleed photo tile: the image covers the card, title + a short
+               detail line sit bottom-left on a gradient scrim. Signed-in couples
+               see what they've already added for this category (real budget
+               data); everyone else sees the category's one-line pitch — guests
+               additionally get a staggered entrance + a nudge to tap in. -->
+          <a class="cat-tile" [style.--i]="i" [class.cat-tile--video]="c.variant === 'video'"
+            [class.cat-tile--added]="isCouple() && addedByCategory().has(c.slug)"
             [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
             <span class="cat-tile__bg" aria-hidden="true">
               @if (c.variant === 'video') {
@@ -48,7 +300,22 @@
             <span class="cat-tile__scrim" aria-hidden="true"></span>
             <span class="cat-tile__overlay">
               <span class="cat-tile__title">{{ c.key | translate }}</span>
-              <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
+              @if (isCouple() && addedByCategory().get(c.slug); as item) {
+                <span class="cat-tile__added">
+                  <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor"
+                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 10.5l4 4 8-9" />
+                  </svg>
+                  {{ addedLabel(item) }}
+                </span>
+              } @else {
+                <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
+                @if (!isCouple()) {
+                  <span class="cat-tile__hint" aria-hidden="true">
+                    {{ 'home.cat.explore' | translate }}<span class="cat-tile__hint-arrow">→</span>
+                  </span>
+                }
+              }
             </span>
           </a>
         </li>
@@ -115,7 +382,8 @@
   </section>
 }
 
-<!-- ===================== BUDGET PLANNER BAND ===================== -->
+@if (!isCouple()) {
+<!-- ===================== BUDGET PLANNER BAND (guest teaser) ===================== -->
 <section class="budget-band">
   <div class="container budget-band__inner">
     <div class="budget-band__copy">
@@ -144,8 +412,10 @@
     </div>
   </div>
 </section>
+}
 
-<!-- ===================== WEDDING WEBSITE PROMO ===================== -->
+@if (!isCouple()) {
+<!-- ===================== WEDDING WEBSITE PROMO (guest teaser) ===================== -->
 <!-- Mirror of the budget band: preview LEFT, copy RIGHT, white ground — the two
      tool promos zigzag. The stage is a CSS-only mock of a published couple site
      (decorative — aria-hidden), fanned like the design picker. -->
@@ -174,32 +444,4 @@
     </div>
   </div>
 </section>
-
-<!-- ===================== GUIDES / REAL WEDDINGS ===================== -->
-<section class="section guides">
-  <div class="container">
-    <header class="section__head section__head--row">
-      <div>
-        <p class="overline">{{ 'guides.overline' | translate }}</p>
-        <h2>{{ 'guides.title' | translate }}</h2>
-        <p class="section__sub">{{ 'guides.subtitle' | translate }}</p>
-      </div>
-      <a class="link-arrow" [routerLink]="['/guides']">{{ 'nav.guides' | translate }}</a>
-    </header>
-
-    <ul class="guide-grid" role="list">
-      @for (g of guides; track g.titleKey) {
-        <li>
-          <a class="guide-card" [routerLink]="['/guides']">
-            <span class="guide-card__media">
-              <img [src]="g.img" [alt]="g.titleKey | translate" loading="lazy" width="700" height="500" />
-            </span>
-            <span class="guide-card__tag">{{ g.tagKey | translate }}</span>
-            <h3 class="guide-card__title">{{ g.titleKey | translate }}</h3>
-            <span class="link-arrow guide-card__more">{{ 'guides.readMore' | translate }}</span>
-          </a>
-        </li>
-      }
-    </ul>
-  </div>
-</section>
+}
