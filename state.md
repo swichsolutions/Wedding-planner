@@ -687,3 +687,12 @@ color flow was also verified in a real browser via Playwright.
   `& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -f "db\00_setup_dev_db.sql"`
 - Validating couple demand before over-investing (CLAUDE.md §3) — still open, strategic.
 - Real brand name TBD (using "WeddingPlanner").
+
+## 2026-10-07 — Redesign started (sitemap-driven). Landing page done, uncommitted.
+- Source: `Wedding_Planner_Sitemap_GE_Updated.docx` (user's Desktop/OneDrive). Plan + page order:
+  `design-system/REDESIGN-PLAN.md`. New spec: `design-system/MASTER.md` v2 "Program on Paper".
+- Done: tokens v2 (+ legacy aliases so old pages still build), new header/footer per sitemap,
+  home page rewritten (6 chapters, example wedding Nino & Giorgi), ka/en copy, scroll-reveal
+  directive. `ng build` clean; SSR renders Georgian; no horizontal overflow at 375/768/1280.
+- Temporary links until the next pages exist: დაგეგმე ქორწილი → /planning, footer terms/privacy → 404.
+- Next: `/plan` page, then catalog rebuild (see REDESIGN-PLAN.md §3).

@@ -1,3 +1,21 @@
+// ---- FiraGO (self-hosted, OFL) — trial face for the Revolut-style statement text.
+// Full multi-script build: covers Georgian Mkhedruli + Mtavruli and Latin.
+@font-face {
+  font-family: 'FiraGO';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/FiraGO-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'FiraGO';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/FiraGO-Medium.woff2') format('woff2');
+}
+
 // Base layer — minimal reset + element defaults wired to design tokens.
 // Keep this lean; component styles live with their components.
 
@@ -31,7 +49,8 @@ body {
 h1, h2, h3, h4, h5 {
   margin: 0 0 var(--space-4);
   font-family: var(--font-display);
-  font-weight: var(--fw-semibold);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--fw-bold);
   line-height: var(--lh-heading);
   letter-spacing: var(--tracking-tight);
   color: var(--color-text);
@@ -72,7 +91,7 @@ input,
 textarea,
 [role='button'] {
   touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(28, 23, 20, 0.08);
+  -webkit-tap-highlight-color: rgba(21, 23, 26, 0.08);
 }
 
 // ---- Accessible, visible focus everywhere ----
@@ -91,8 +110,10 @@ textarea,
   }
 }
 
-// ---- Eyebrow / overline helper (editorial small-caps label) ----
+// ---- Eyebrow / overline helper (small program label; Mtavruli caps in ka) ----
 .overline {
+  font-family: var(--font-ui);
+  font-stretch: var(--stretch-ui);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-overline);
@@ -100,12 +121,18 @@ textarea,
   color: var(--color-text-muted);
 }
 
+// Form controls and buttons speak the UI sans, not the serif body.
+button, input, select, textarea {
+  font-family: var(--font-ui);
+  font-stretch: var(--stretch-ui);
+}
+
 // ---- Layout helpers ----
 .container {
   width: 100%;
   max-width: var(--container-max);
   margin-inline: auto;
-  padding-inline: var(--space-4);
+  padding-inline: var(--gutter);
 }
 
 // ---- Respect reduced motion ----
@@ -118,4 +145,23 @@ textarea,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+// ---- Scroll reveal (see core/reveal.directive.ts) ----
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity var(--dur-reveal) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out);
+
+  &.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---- Mobile menu sheet open: lock the page ----
+body.menu-open {
+  overflow: hidden;
 }

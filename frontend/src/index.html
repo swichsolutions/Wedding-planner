@@ -2,11 +2,11 @@
 <html lang="ka">
 <head>
   <meta charset="utf-8">
-  <title>WeddingPlanner — საქორწინო პლატფორმა</title>
-  <meta name="description" content="იპოვე და შეადარე საქორწინო მომწოდებლები საქართველოში — ფოტოგრაფები, დარბაზები, დეკორატორები და სხვა.">
+  <title>WeddingPlanner — დაგეგმე საკუთარი ქორწილი</title>
+  <meta name="description" content="დაგეგმე საკუთარი ქორწილი მკაფიო გეგმით, საჭირო ადამიანებთან ერთად და ერთ სივრცეში თავმოყრილი ინფორმაციით — სივრცეები, მომსახურებები და ქორწილის დღის განრიგი.">
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fbf7f1">
+  <meta name="theme-color" content="#ffffff">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
   <!-- Georgian-capable type: Noto Serif Georgian (display) + Noto Sans Georgian (body).
@@ -17,6 +17,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Imagery CDN (placeholder photography) — preconnect to speed up LCP. -->
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+  <!-- Landing hero: preload the orientation-specific render (same files as the <picture> in home.html). -->
+  <link rel="preload" as="image" href="/media/hero-wide.webp" type="image/webp" media="(orientation: landscape)">
+  <link rel="preload" as="image" href="/media/hero-tall.webp" type="image/webp" media="(orientation: portrait)">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wdth,wght@62.5..100,100..900&family=Noto+Serif+Georgian:wght@100..900&display=swap">
 </head>

@@ -1,205 +1,473 @@
-<!-- ========================= HERO ========================= -->
-<!-- Full-bleed photo hero: image behind, scrim for legibility, white text on top.
-     PLACEHOLDER image — swap for a wide image or <video> later. -->
-<section class="hero">
-  <img class="hero__img"
-    src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80"
-    alt="" aria-hidden="true" width="2000" height="1100" fetchpriority="high" />
-  <div class="hero__scrim" aria-hidden="true"></div>
+<!-- ============================ 01 / PROMISE ============================ -->
+<!-- "შევძლებ თავად ორგანიზებას?" — the promise, one strong visual, the first plan
+     of the example wedding that the rest of the page follows. -->
+<section id="promise" class="hero" appScrollStage>
+  <!-- Scroll stage (Revolut-style): the runway is 2 screens tall; the stage inside is
+       sticky. As the page scrolls through the runway, --p goes 0 → 1: the full-screen
+       photo clips down into the centre card, two more cards slide in beside it and a
+       heading fades in above. Without JS / with reduced motion: a plain full-screen hero. -->
+  <div class="stage">
+    <div class="stage__photo">
+      <!-- Same scene rendered twice: tall for portrait screens (phones), wide for everything else. -->
+      <picture>
+        <source media="(orientation: portrait)" type="image/webp" srcset="/media/hero-tall.webp" />
+        <source media="(orientation: portrait)" srcset="/media/hero-tall.jpg" />
+        <source type="image/webp" srcset="/media/hero-wide.webp" />
+        <img class="hero__img" src="/media/hero-wide.jpg" [alt]="'home.hero.photoAlt' | translate"
+          width="1536" height="1024" fetchpriority="high" />
+      </picture>
+      <div class="hero__scrim" aria-hidden="true"></div>
+      <!-- Product preview (Revolut's "Personal · £6,012 · Accounts" slot): the centre card's
+           text — "where do I start?" → plan your wedding (sitemap §2, the section that
+           follows the banner). -->
+      <div class="chip chip--center" aria-hidden="true">
+        <span class="chip__label">{{ 'home.stage.center.label' | translate }}</span>
+        <span class="chip__value">{{ 'home.stage.center.value' | translate }}</span>
+        <span class="chip__sub">{{ 'home.stage.center.sub' | translate }}</span>
+      </div>
+    </div>
 
-  <div class="hero__intro container">
-    <h1 class="hero__title">{{ 'home.tagline' | translate }}</h1>
-    <p class="hero__subtitle">{{ 'home.subtitle' | translate }}</p>
-    <a class="btn btn--pink hero__cta" [routerLink]="heroCta().link">{{ heroCta().key | translate }}</a>
+    <!-- The frame (Revolut's hero outline, the step card's hairline): at rest a tall
+         white-bordered box in the middle of the photo with the chip inside; as the
+         stage runs it contracts until it sits exactly on the centre card's edge. -->
+    <div class="stage__frame" aria-hidden="true"></div>
+
+    <div class="container hero__copy">
+      <h1 class="hero__title">
+        {{ 'home.hero.title' | translate }}
+        <em>{{ 'home.hero.titleEm' | translate }}</em>
+      </h1>
+      <p class="hero__lead">{{ 'home.hero.lead' | translate }}</p>
+      <a class="pill-cta" [routerLink]="heroCta().link">
+        <span>{{ heroCta().key | translate }}</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <!-- heading that appears above the three cards -->
+    <div class="stage__head" aria-hidden="true">
+      <p class="stage__title">{{ 'home.stage.title' | translate }}</p>
+      <p class="stage__lead">{{ 'home.stage.lead' | translate }}</p>
+    </div>
+
+    <!-- phones: the three cards as a swipeable strip under the photo band (Revolut's
+         mobile hero). The photo above stays put; the active card sits full size, its
+         neighbours shrink and dim. Decorative, like the desktop cards. -->
+    <div class="strip" aria-hidden="true">
+      <div class="strip__track" #stripTrack (scroll)="onStripScroll(stripTrack)">
+        <div class="strip__card" [class.is-active]="stripActive() === 0">
+          <img [src]="venueImg" alt="" loading="lazy" width="600" height="800" />
+          <div class="stage__card-scrim"></div>
+          <div class="chip">
+            <span class="chip__label">{{ 'home.stage.left.label' | translate }}</span>
+            <span class="chip__value">{{ 'home.stage.left.value' | translate }}</span>
+            <span class="chip__sub">{{ 'home.stage.left.sub' | translate }}</span>
+          </div>
+        </div>
+        <div class="strip__card" [class.is-active]="stripActive() === 1">
+          <img src="/media/hero-tall.webp" alt="" loading="lazy" width="1024" height="1536" />
+          <div class="stage__card-scrim"></div>
+          <div class="chip">
+            <span class="chip__label">{{ 'home.stage.center.label' | translate }}</span>
+            <span class="chip__value">{{ 'home.stage.center.value' | translate }}</span>
+            <span class="chip__sub">{{ 'home.stage.center.sub' | translate }}</span>
+          </div>
+        </div>
+        <div class="strip__card strip__card--sheet" [class.is-active]="stripActive() === 2">
+          <p class="stage__sheet-h">{{ 'home.stage.right.title' | translate }}</p>
+          <ol class="stage__sheet-list">
+            @for (r of ['1', '2', '3', '4']; track r) {
+              <li>
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>
+                <span>{{ 'home.stage.right.r' + r | translate }}</span>
+              </li>
+            }
+          </ol>
+        </div>
+      </div>
+      <div class="strip__dots">
+        @for (i of [0, 1, 2]; track i) {
+          <span class="strip__dot" [class.is-active]="stripActive() === i"></span>
+        }
+      </div>
+    </div>
+
+    <!-- left card: venues & services (sitemap §3); the centre card is planning (§2) -->
+    <div class="stage__card stage__card--l" aria-hidden="true">
+      <img [src]="venueImg" alt="" loading="lazy" width="600" height="800" />
+      <div class="stage__card-scrim"></div>
+      <div class="chip">
+        <span class="chip__label">{{ 'home.stage.left.label' | translate }}</span>
+        <span class="chip__value">{{ 'home.stage.left.value' | translate }}</span>
+        <span class="chip__sub">{{ 'home.stage.left.sub' | translate }}</span>
+      </div>
+    </div>
+
+    <!-- right card: the personal organizer (sitemap: "help me organize everything") -->
+    <div class="stage__card stage__card--r stage__card--sheet" aria-hidden="true">
+      <p class="stage__sheet-h">{{ 'home.stage.right.title' | translate }}</p>
+      <ol class="stage__sheet-list">
+        @for (r of ['1', '2', '3', '4']; track r) {
+          <li>
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>
+            <span>{{ 'home.stage.right.r' + r | translate }}</span>
+          </li>
+        }
+      </ol>
+      <!-- same pill as the photo cards, pinned to the card's bottom edge -->
+      <div class="stage__sheet-foot">
+        <span class="stage__sheet-label">{{ 'home.stage.right.chipLabel' | translate }}</span>
+        <span class="chip__sub">{{ 'home.stage.right.chipValue' | translate }}</span>
+      </div>
+    </div>
+
+    <a class="hero__down" href="#start" [attr.aria-label]="'home.hero.scroll' | translate">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6 6-6"/></svg>
+    </a>
   </div>
 </section>
 
-<!-- ===================== BROWSE BY CATEGORY ===================== -->
-<section class="section categories">
-  <div class="container">
-    <header class="section__head section__head--row">
-      <div>
-        <h2>{{ 'categories.title' | translate }}</h2>
-        <p class="section__sub">{{ 'categories.subtitle' | translate }}</p>
+<!-- Everything below the stage. -->
+<div class="after-hero">
+<!-- ============================ 02 / START ============================ -->
+<!-- Full-screen "slides": the background photo and the floating card rotate on their
+     own through the three planning steps of the example wedding. One heading, one
+     line, one button. Labels at the bottom only show which step is on screen. -->
+<section id="start" class="start" [attr.aria-label]="'home.start.title' | translate">
+  @for (s of startSlides; track s.key; let i = $index) {
+    <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" alt="" loading="lazy"
+      width="2000" height="1333" />
+  }
+  <div class="start__scrim" aria-hidden="true"></div>
+
+  <div class="container start__copy">
+    <h2 class="start__title">{{ 'home.start.title' | translate }}</h2>
+    <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
+    <a class="pill-cta pill-cta--white" routerLink="/planning">
+      <span>{{ 'home.start.cta' | translate }}</span>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </a>
+  </div>
+
+  <!-- the example couple's card for the current step -->
+  <div class="start__card" aria-live="polite">
+    @for (s of startSlides; track s.key; let i = $index) {
+      @if (slide() === i) {
+        <div class="start__card-inner">
+          <!-- the step/value block sits in the exact middle of the frame;
+               the detail pill sits on its own near the bottom edge -->
+          <div class="start__card-main">
+            <span class="start__card-label">{{ 'home.start.' + s.key + '.title' | translate }}</span>
+            <span class="start__card-value">{{ 'home.start.' + s.key + '.value' | translate }}</span>
+          </div>
+          <span class="start__card-sub">{{ 'home.start.' + s.key + '.sub' | translate }}</span>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- step labels: show which step is on screen and switch to it on click -->
+  <ol class="start__dots" [attr.aria-label]="'home.start.title' | translate">
+    @for (s of startSlides; track s.key; let i = $index) {
+      <li>
+        <button type="button" class="start__dot" [class.is-active]="slide() === i"
+          [attr.aria-pressed]="slide() === i" (click)="goToSlide(i)">
+          {{ 'home.start.' + s.key + '.label' | translate }}
+        </button>
+      </li>
+    }
+  </ol>
+</section>
+
+<!-- ======================== 03 / PEOPLE & PLACE ======================== -->
+<!-- Full-bleed stage: the ring film fills the whole section (its poster photo until the
+     clip exists), the copy sits at the top, the eight categories run along the bottom
+     as large tiles, and the middle is left clear for the ring. `reelDark` in home.ts
+     flips the block between a black stage and a white one. -->
+<section id="find" class="chap chap--reel" [class.chap--reel-dark]="reelDark">
+  <!-- the film: muted, looping, inline; the poster stands in when there is no clip
+       yet or the visitor prefers reduced motion -->
+  <div class="reel-bg" aria-hidden="true">
+    @if (reelVideo && reelPlays()) {
+      <video class="reel-bg__media" [poster]="reelPoster" [src]="reelVideo" autoplay muted loop playsinline
+        preload="metadata"></video>
+    } @else {
+      <img class="reel-bg__media" [src]="reelPoster" alt="" loading="lazy" width="2400" height="1600" />
+    }
+  </div>
+
+  <div class="container reel-wrap">
+    <div class="reel" appReveal>
+      <div class="reel__copy">
+        <p class="reel__overline">{{ 'home.find.overline' | translate }}</p>
+        <h2 class="reel__title">{{ 'home.find.title' | translate }}</h2>
+        <p class="reel__lead">{{ 'home.find.leadShort' | translate }}</p>
+        <a class="pill-cta" [class.pill-cta--white]="reelDark" routerLink="/vendors">
+          <span>{{ 'home.find.cta' | translate }}</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
       </div>
-      <a class="link-arrow" [routerLink]="['/vendors']">{{ 'categories.viewAll' | translate }}</a>
+
+      <!-- categories as large tiles, each a link into that category -->
+      <ul class="reel__cats" role="list">
+        @for (g of categoryRows(); track g.key) {
+          <li>
+            <a class="reel__tile" routerLink="/vendors" [queryParams]="{ category: g.slugs[0] }">
+              <img class="reel__tile-img" [src]="g.thumb" alt="" loading="lazy" width="56" height="56" />
+              <span class="reel__tile-text">
+                <span class="reel__tile-name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
+                <span class="reel__tile-meta">
+                  @if (g.count > 0) {
+                    {{ g.count }} {{ 'home.find.count' | translate }}
+                  } @else {
+                    {{ 'home.find.soon' | translate }}
+                  }
+                </span>
+              </span>
+              <svg class="reel__tile-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- ---- previous version: the editorial index (kept in case the cloud is dropped) ----
+    <header class="chap__head chap__head--row" appReveal>
+      <div>
+        <h2 class="chap__title">{{ 'home.find.title' | translate }}</h2>
+      </div>
+      <p class="chap__lead">{{ 'home.find.lead' | translate }}</p>
     </header>
 
-    <ul class="cat-grid" role="list">
-      @for (c of categories; track c.slug) {
-        <li>
-          <!-- Full-bleed photo tile: the image covers the card, title + tag sit
-               bottom-left on a gradient scrim. One chrome for every category. -->
-          <a class="cat-tile" [class.cat-tile--video]="c.variant === 'video'"
-            [routerLink]="['/vendors']" [queryParams]="{ category: c.slug }">
-            <span class="cat-tile__bg" aria-hidden="true">
-              @if (c.variant === 'video') {
-                <!-- Crossfade montage underneath (fallback while the clip loads and
-                     for reduced-motion users); the looping clip covers it. -->
-                @for (shot of videoMontage; track shot) {
-                  <img [src]="shot" alt="" loading="lazy" width="600" height="750" />
+    <!~~ Editorial index: eight numbered rows on the left, one stage photo on the right
+         that follows the hovered/focused row. Each row carries live inventory (count,
+         starting price, cities); rows with nothing approved yet show their blurb. ~~>
+    <div class="index" appReveal>
+      <ol class="index__list" role="list">
+        @for (g of categoryRows(); track g.key; let i = $index) {
+          <li class="index__row" [class.is-active]="activeRow() === i">
+            <a class="index__link" routerLink="/vendors" [queryParams]="{ category: g.slugs[0] }"
+              (mouseenter)="activeRow.set(i)" (focus)="activeRow.set(i)">
+              <span class="index__num" aria-hidden="true">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
+              <img class="index__thumb" [src]="g.img" alt="" loading="lazy" width="112" height="140" />
+              <span class="index__body">
+                <span class="index__name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
+                <span class="index__meta">{{ 'home.find.cat.' + g.key + '.sub' | translate }}</span>
+              </span>
+              <!~~ the figure column: approved profiles in this group, or "soon" when empty ~~>
+              <span class="index__count" [class.index__count--empty]="g.count === 0">
+                @if (g.count > 0) {
+                  <span class="index__count-n">{{ g.count }}</span>
+                  <span class="index__count-l">{{ 'home.find.count' | translate }}</span>
+                } @else {
+                  <span class="index__count-l">{{ 'home.find.soon' | translate }}</span>
                 }
-                <video class="cat-tile__clip" [src]="categoryClip" [muted]="true"
-                  autoplay loop playsinline preload="metadata" tabindex="-1"></video>
+              </span>
+              <span class="index__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </span>
+              <span class="index__sr">{{ 'home.find.open' | translate }}</span>
+            </a>
+          </li>
+        }
+      </ol>
+
+      <!~~ the stage: all eight photos stacked, the active one fades in ~~>
+      <div class="index__stage" aria-hidden="true">
+        <div class="index__frame">
+          @for (g of categoryRows(); track g.key; let i = $index) {
+            <img class="index__photo" [class.is-active]="activeRow() === i" [src]="g.img" alt=""
+              loading="lazy" width="900" height="1125" />
+          }
+        </div>
+      </div>
+    </div>
+
+    <p class="chap__cta" appReveal>
+      <a class="btn btn--ink" routerLink="/vendors">{{ 'home.find.cta' | translate }}</a>
+    </p>
+  
+    ---- end of previous version ---- -->
+  </div>
+</section>
+
+<!-- ============================ 04 / ORGANIZE ============================ -->
+<section id="organize" class="chap chap--spruce">
+  <div class="container">
+    <header class="chap__head chap__head--row" appReveal>
+      <div>
+        <h2 class="chap__title">{{ 'home.organize.title' | translate }}</h2>
+      </div>
+      <p class="chap__lead">{{ 'home.organize.lead' | translate }}</p>
+    </header>
+
+    <!-- One organizer, one glance: tasks · budget · saved vendors -->
+    <div class="sheet" appReveal>
+      <div class="sheet__top">
+        <div>
+          <p class="sheet__names">{{ 'home.organize.sheet.names' | translate }}</p>
+          <p class="sheet__meta">{{ 'home.organize.sheet.date' | translate }} · {{ 'home.organize.sheet.daysLeft' | translate }}</p>
+        </div>
+        <div class="sheet__progress">
+          <span class="sheet__progress-label">{{ 'home.organize.sheet.progress' | translate }}</span>
+          <span class="sheet__progress-bar" aria-hidden="true"><span style="width: 38%"></span></span>
+          <span class="sheet__progress-v num">38%</span>
+        </div>
+      </div>
+
+      <div class="sheet__cols">
+        <section class="sheet__col">
+          <h3 class="sheet__h">{{ 'home.organize.tasks.title' | translate }}</h3>
+          <ul class="tasks" role="list">
+            @for (t of tasks; track t.key) {
+              <li class="task" [class.is-done]="t.done">
+                <span class="task__box" aria-hidden="true">
+                  @if (t.done) {
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>
+                  }
+                </span>
+                <span class="task__text">{{ 'home.organize.tasks.t' + t.key + '.text' | translate }}</span>
+                <span class="task__due num">{{ 'home.organize.tasks.t' + t.key + '.due' | translate }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section class="sheet__col">
+          <h3 class="sheet__h">{{ 'home.organize.budget.title' | translate }}</h3>
+          <dl class="leaders leaders--sheet">
+            @for (b of budgetRows; track b) {
+              <div class="leaders__row">
+                <dt>{{ 'home.organize.budget.r' + b + '.name' | translate }}</dt>
+                <dd class="num">{{ 'home.organize.budget.r' + b + '.amount' | translate }}</dd>
+              </div>
+            }
+            <div class="leaders__row leaders__row--total">
+              <dt>{{ 'home.organize.budget.total' | translate }}</dt>
+              <dd class="num">{{ 'home.organize.budget.totalV' | translate }}</dd>
+            </div>
+            <div class="leaders__row leaders__row--muted">
+              <dt>{{ 'home.organize.budget.paid' | translate }}</dt>
+              <dd class="num">{{ 'home.organize.budget.paidV' | translate }}</dd>
+            </div>
+            <div class="leaders__row leaders__row--next">
+              <dt>{{ 'home.organize.budget.next' | translate }}</dt>
+              <dd class="num">{{ 'home.organize.budget.nextV' | translate }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="sheet__col">
+          <h3 class="sheet__h">{{ 'home.organize.vendors.title' | translate }}</h3>
+          <ul class="saved" role="list">
+            @for (v of savedVendors; track v.key) {
+              <li class="saved__row">
+                <span class="saved__name">{{ 'home.organize.vendors.v' + v.key | translate }}</span>
+                <span class="saved__status" [class.is-chosen]="v.chosen">
+                  {{ (v.chosen ? 'home.organize.vendors.chosen' : 'home.organize.vendors.saved') | translate }}
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <p class="chap__cta" appReveal>
+      <a class="btn btn--paper btn--lg" routerLink="/signup">{{ 'home.organize.cta' | translate }}</a>
+    </p>
+  </div>
+</section>
+
+<!-- ============================== 05 / DAY ============================== -->
+<section id="day" class="chap chap--paper">
+  <div class="container chap__split">
+    <header class="chap__head chap__head--sticky" appReveal>
+      <h2 class="chap__title">{{ 'home.day.title' | translate }}</h2>
+      <p class="chap__lead">{{ 'home.day.lead' | translate }}</p>
+      <p class="chap__cta chap__cta--left">
+        <a class="btn btn--outline-ink" routerLink="/planning">{{ 'home.day.cta' | translate }}</a>
+      </p>
+    </header>
+
+    <!-- The printed program: time ...... event. One row shows an edit in progress. -->
+    <div class="program" appReveal>
+      <p class="program__template">{{ 'home.day.templateLabel' | translate }}</p>
+      <ol class="program__list">
+        @for (s of schedule; track s.key) {
+          <li class="program__row" [class.is-edited]="!!s.edited">
+            <span class="program__time num">
+              @if (s.edited) {
+                <s>{{ s.time }}</s> {{ s.edited }}
               } @else {
-                <img [src]="c.img" alt="" loading="lazy" width="600" height="750" />
+                {{ s.time }}
               }
             </span>
-            <span class="cat-tile__scrim" aria-hidden="true"></span>
-            <span class="cat-tile__overlay">
-              <span class="cat-tile__title">{{ c.key | translate }}</span>
-              <span class="cat-tile__tag">{{ c.tagKey | translate }}</span>
+            <span class="program__body">
+              <span class="program__title">
+                {{ 'home.day.item' + s.key + '.title' | translate }}
+                @if (s.optional) {
+                  <span class="program__flag">{{ 'home.day.optional' | translate }}</span>
+                }
+                @if (s.edited) {
+                  <span class="program__flag program__flag--edit">{{ 'home.day.editedLabel' | translate }}</span>
+                }
+              </span>
+              <span class="program__note">{{ 'home.day.item' + s.key + '.note' | translate }}</span>
             </span>
-          </a>
-        </li>
-      }
-    </ul>
-  </div>
-</section>
-
-<!-- ===================== POPULAR (most-viewed) ===================== -->
-<!-- Hidden entirely when the row is empty (e.g. the API is unreachable). -->
-@if (popular().length) {
-<section class="section featured">
-  <div class="container">
-    <header class="section__head section__head--row">
-      <div>
-        <h2>{{ 'featured.title' | translate }}</h2>
-        <p class="section__sub">{{ 'featured.subtitle' | translate }}</p>
-      </div>
-      <a class="link-arrow" [routerLink]="['/vendors']">{{ 'featured.viewAll' | translate }}</a>
-    </header>
-
-    <!-- Auto-drifting marquee: the set renders twice (clones aria-hidden) so the
-         -50% translate loops seamlessly. Pauses on hover/focus. -->
-    <div class="vendor-marquee">
-      <ul class="vendor-marquee__track" role="list">
-        @for (v of popularTrack(); track $index; let i = $index) {
-          <!-- inert: the clones' links/buttons must leave the tab order too —
-               aria-hidden alone leaves focusable elements screen readers can't see. -->
-          <li class="vendor-marquee__item" [attr.aria-hidden]="i >= popular().length ? true : null"
-            [attr.inert]="i >= popular().length ? '' : null">
-            <app-vendor-card [vendor]="v" />
+            <svg class="program__pen" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </li>
         }
-      </ul>
+      </ol>
     </div>
   </div>
 </section>
-}
 
-<!-- ===================== VIP (paid placement) ===================== -->
-<!-- Drifts the opposite way. Hidden entirely while no vendor carries the flag. -->
-@if (vip().length) {
-  <section class="section section--flush-top featured">
-    <div class="container">
-      <header class="section__head section__head--row">
-        <div>
-          <h2>{{ 'vip.title' | translate }}</h2>
-          <p class="section__sub">{{ 'vip.subtitle' | translate }}</p>
-        </div>
-        <a class="link-arrow" [routerLink]="['/vendors']" [queryParams]="{ vip: 1 }">{{ 'featured.viewAll' | translate }}</a>
-      </header>
+<!-- ============================= 06 / TRUST ============================= -->
+<section id="trust" class="chap chap--deep">
+  <div class="container">
+    <header class="chap__head" appReveal>
+      <h2 class="chap__title">{{ 'home.trust.title' | translate }}</h2>
+      <p class="chap__lead">{{ 'home.trust.lead' | translate }}</p>
+    </header>
 
-      <div class="vendor-marquee vendor-marquee--reverse">
-        <ul class="vendor-marquee__track" role="list">
-          @for (v of vipTrack(); track $index; let i = $index) {
-            <li class="vendor-marquee__item" [attr.aria-hidden]="i >= vip().length ? true : null"
-              [attr.inert]="i >= vip().length ? '' : null">
-              <app-vendor-card [vendor]="v" />
+    <div class="trust" appReveal>
+      <section class="trust__get">
+        <h3 class="trust__h">{{ 'home.trust.getTitle' | translate }}</h3>
+        <ol class="gets">
+          @for (g of gets; track g; let i = $index) {
+            <li class="get">
+              <p>{{ 'home.trust.get' + g | translate }}</p>
             </li>
           }
-        </ul>
-      </div>
-    </div>
-  </section>
-}
+        </ol>
+        <!-- Real weddings / testimonials slot: add here once real content exists (sitemap §03/06). -->
+      </section>
 
-<!-- ===================== BUDGET PLANNER BAND ===================== -->
-<section class="budget-band">
-  <div class="container budget-band__inner">
-    <div class="budget-band__copy">
-      <h2 class="budget-band__title">{{ 'budgetTeaser.title' | translate }}</h2>
-      <p class="budget-band__body">{{ 'budgetTeaser.body' | translate }}</p>
-      <a class="btn btn--pink" [routerLink]="['/budget']">{{ 'budgetTeaser.cta' | translate }}</a>
-    </div>
-
-    <!-- Real allocation preview: actual Georgian-norm percentages from core/budget.ts -->
-    <div class="budget-preview">
-      <p class="budget-preview__head">{{ 'budgetTeaser.sample' | translate: { amount: sampleTotal() } }}</p>
-      <ul class="budget-preview__list" role="list">
-        @for (row of budgetRows(); track row.key) {
-          <li class="budget-preview__row">
-            <span class="budget-preview__top">
-              <span class="budget-preview__label">{{ row.key | translate }}</span>
-              <span class="budget-preview__amt num">{{ row.amount }}</span>
-            </span>
-            <span class="budget-preview__track" aria-hidden="true">
-              <span class="budget-preview__fill" [style.width.%]="row.scale"></span>
-            </span>
-          </li>
-        }
-      </ul>
-      <p class="budget-preview__more">{{ 'budgetTeaser.more' | translate }}</p>
+      <section class="trust__faq">
+        <h3 class="trust__h">{{ 'home.trust.faqTitle' | translate }}</h3>
+        <div class="faq">
+          @for (q of faq; track q) {
+            <details class="faq__item" [open]="q === '1'">
+              <summary class="faq__q">
+                {{ 'home.trust.faq.q' + q | translate }}
+                <svg class="faq__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="faq__a">{{ 'home.trust.faq.a' + q | translate }}</p>
+            </details>
+          }
+        </div>
+      </section>
     </div>
   </div>
-</section>
 
-<!-- ===================== WEDDING WEBSITE PROMO ===================== -->
-<!-- Mirror of the budget band: preview LEFT, copy RIGHT, white ground — the two
-     tool promos zigzag. The stage is a CSS-only mock of a published couple site
-     (decorative — aria-hidden), fanned like the design picker. -->
-<section class="section wsite-band">
-  <div class="container wsite-band__inner">
-    <div class="wsite-band__copy">
-      <p class="overline">{{ 'homeWebsite.overline' | translate }}</p>
-      <h2 class="wsite-band__title">{{ 'homeWebsite.title' | translate }}</h2>
-      <p class="wsite-band__body">{{ 'homeWebsite.body' | translate }}</p>
-      <a class="btn btn--pink" [routerLink]="['/website']">{{ 'homeWebsite.cta' | translate }}</a>
-    </div>
-
-    <!-- Real product shot: the actual wedding-site component (seaside design,
-         thumb mode — same as the builder's design gallery) inside a mini browser
-         frame, so the promo shows literally what you get. Decorative. -->
-    <div class="wsite-band__stage" aria-hidden="true">
-      <div class="wsite-shot">
-        <span class="wsite-shot__chrome">
-          <span class="wsite-shot__dots"><i></i><i></i><i></i></span>
-          <span class="wsite-shot__url" translate="no">weddingplanner.ge/w/Anastasia-Beka</span>
-        </span>
-        <span class="wsite-shot__page">
-          <app-wedding-site [data]="siteSample()" template="seaside" [thumb]="true" />
-        </span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== GUIDES / REAL WEDDINGS ===================== -->
-<section class="section guides">
+  <!-- Final call -->
   <div class="container">
-    <header class="section__head section__head--row">
-      <div>
-        <p class="overline">{{ 'guides.overline' | translate }}</p>
-        <h2>{{ 'guides.title' | translate }}</h2>
-        <p class="section__sub">{{ 'guides.subtitle' | translate }}</p>
-      </div>
-      <a class="link-arrow" [routerLink]="['/guides']">{{ 'nav.guides' | translate }}</a>
-    </header>
-
-    <ul class="guide-grid" role="list">
-      @for (g of guides; track g.titleKey) {
-        <li>
-          <a class="guide-card" [routerLink]="['/guides']">
-            <span class="guide-card__media">
-              <img [src]="g.img" [alt]="g.titleKey | translate" loading="lazy" width="700" height="500" />
-            </span>
-            <span class="guide-card__tag">{{ g.tagKey | translate }}</span>
-            <h3 class="guide-card__title">{{ g.titleKey | translate }}</h3>
-            <span class="link-arrow guide-card__more">{{ 'guides.readMore' | translate }}</span>
-          </a>
-        </li>
-      }
-    </ul>
+    <div class="final" appReveal>
+      <h2 class="final__title">{{ 'home.trust.finalTitle' | translate }}</h2>
+      <p class="final__note">{{ 'home.trust.finalNote' | translate }}</p>
+      <a class="btn btn--clay btn--lg" [routerLink]="heroCta().link">{{ heroCta().key | translate }}</a>
+    </div>
   </div>
 </section>
+</div>

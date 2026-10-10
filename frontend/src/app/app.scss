@@ -11,7 +11,7 @@
   top: -100px;
   z-index: var(--z-toast);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-surface);
+  background: var(--paper-white);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   transition: top var(--dur-fast) var(--ease-out);
@@ -21,538 +21,724 @@
   }
 }
 
-// ---- brand wordmark ----
-.brand {
+// =============================================================================
+// Wordmark — condensed display face, clay full stop. Placeholder brand name.
+// =============================================================================
+.wordmark {
   font-family: var(--font-display);
-  font-size: var(--fs-h4);
-  font-weight: var(--fw-bold);
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--fw-black);
+  font-size: 1.45rem;
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+  color: var(--ink);
   text-decoration: none;
-  white-space: nowrap; // the wordmark (and its dot) must never break
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--ink);
+  }
+
+  &__dot {
+    color: var(--clay);
+  }
 
   &--light {
-    color: #fff;
+    color: var(--on-spruce);
+
+    &:hover {
+      color: var(--on-spruce);
+    }
+
+    .wordmark__dot {
+      color: var(--clay-300);
+    }
   }
 }
 
-// the wordmark never yields width to the nav — it's the logo
-.site-header .brand {
-  flex-shrink: 0;
-}
-
-// pink signature dot after the wordmark in the header
-.site-header .brand::after {
-  content: '';
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-left: 4px;
-  border-radius: 50%;
-  background: var(--color-brand-500);
-}
-
-// ============================== HEADER ==============================
-.site-header {
+// =============================================================================
+// Header — a hairline bar on paper. Sticky, condenses on scroll.
+// =============================================================================
+.hdr {
   position: sticky;
   top: 0;
   z-index: var(--z-header);
-  background: color-mix(in srgb, var(--color-canvas) 85%, transparent);
-  backdrop-filter: saturate(1.1) blur(10px);
-  border-bottom: 1px solid transparent;
-  transition: background var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--paper-line);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
 
-  &.is-scrolled {
-    background: color-mix(in srgb, var(--color-canvas) 95%, transparent);
-    border-bottom-color: var(--color-border);
-    box-shadow: 0 8px 28px -18px rgba(20, 12, 14, 0.45);
+  // hide-on-scroll: slides up out of view (the extra 2px hides the hairline too)
+  &.is-hidden {
+    transform: translateY(calc(-100% - 2px));
   }
-}
 
-.site-header__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-height: 76px;
-  transition: min-height var(--dur-fast) var(--ease-out);
-  // Wider than the page's own 1200px content cap: with every nav link signed-in
-  // couples now see (incl. Seating) plus the lang toggle + sign-out button, the
-  // Georgian labels need up to ~1400px of row width to lay out on one line
-  // without pushing the sign-out button past the viewport edge (horizontal
-  // scrollbar). 1440 matches the 'xxl' breakpoint the nav switches on below.
-  max-width: 90rem;
+  // Over the landing hero (not scrolled): transparent bar, paper-colored text.
+  &.is-overlay {
+    background: transparent;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 
-  .is-scrolled & {
-    min-height: 58px;
-  }
-}
-
-.site-header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-// nav: dropdown on mobile, inline on desktop
-.site-nav {
-  display: none;
-  flex-direction: column;
-  gap: var(--space-1);
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  padding: var(--space-3) var(--space-4) var(--space-5);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-md);
-
-  a {
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    font-weight: var(--fw-medium);
-
-    &:hover {
-      background: var(--color-ink-100);
+    .wordmark,
+    .hdr__group,
+    .hdr__text-btn,
+    .lang__btn,
+    .icon-link {
+      color: var(--on-spruce);
     }
-    &.is-active {
-      color: var(--color-action);
+
+
+    .hdr__group:hover,
+    .hdr__item.is-open .hdr__group {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
     }
-  }
 
-  .is-open & {
-    display: flex;
-  }
+    .lang__btn[aria-pressed='true'],
+    .lang__btn:hover {
+      color: var(--ink);
+      background: var(--paper);
+    }
 
-  // Desktop nav from xxl, not xl: Georgian labels are wide, and a signed-in couple
-  // sees 7 links (incl. Seating) — below 1440px the full set doesn't fit even at
-  // the widened header max-width and flexbox pushes the row past the viewport
-  // edge (horizontal scrollbar). The hamburger is the honest layout below that.
-  @include bp.respond-to(xxl) {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--space-1);
-    position: static;
-    padding: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
-
-    a {
-      position: relative;
-      padding: var(--space-2);
-      letter-spacing: 0.01em;
-      white-space: nowrap; // a nav label never folds into two lines
-
-      // editorial underline that wipes in on hover / marks the active page
-      &::after {
-        content: '';
-        position: absolute;
-        left: var(--space-2);
-        right: var(--space-2);
-        bottom: 4px;
-        height: 2px;
-        border-radius: 2px;
-        background: var(--color-action);
-        transform: scaleX(0);
-        transform-origin: left center;
-        transition: transform var(--dur-base, 220ms) var(--ease-out);
-      }
+    .hdr__lang {
+      border-color: rgba(255, 255, 255, 0.45);
 
       &:hover {
-        background: none;
-        color: var(--color-text);
-      }
-      &:hover::after,
-      &.is-active::after {
-        transform: scaleX(1);
-      }
-      &.is-active {
-        color: var(--color-text);
+        color: #fff;
+        border-color: #fff;
       }
     }
-  }
-}
 
-// Georgian labels run wide (მომწოდებლები, დაგეგმვის ხელსაწყო…); one type-size down
-// keeps the signed-in link set fitting between the wordmark and the actions cluster.
-@include bp.respond-to(xxl) {
-  :host-context([lang='ka']) .site-nav a {
-    font-size: 0.9375rem;
-    padding-inline: 6px; // admin carries 6 links; KA needs the extra slack at 1280
-
-    &::after {
-      left: 6px;
-      right: 6px;
+    .wordmark__dot {
+      color: var(--clay-300);
     }
-  }
-}
 
-// auth controls inside the mobile dropdown (hidden on desktop — shown in the bar instead)
-.site-nav__auth {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
+    .hdr__cta {
+      background: var(--paper);
+      color: var(--ink);
 
-  a:not(.btn) {
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    font-weight: var(--fw-medium);
-
-    &:hover {
-      background: var(--color-ink-100);
+      &:hover {
+        background: #fff;
+      }
     }
-  }
 
-  @include bp.respond-to(xxl) {
-    display: none;
-  }
-}
-
-// auth controls in the header bar, to the right of the language toggle (desktop)
-.site-header__auth {
-  display: none;
-  align-items: center;
-  gap: var(--space-3);
-
-  @include bp.respond-to(xxl) {
-    display: flex;
-  }
-}
-
-.site-header__login {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-  color: var(--color-text);
-  font-weight: var(--fw-medium);
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--color-action);
-  }
-}
-
-// small, de-emphasized vendor entry point — couples are the priority, so this
-// sits quietly to the left of the Log in link + primary Sign up button
-.site-header__vendor {
-  color: var(--color-text-secondary);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-medium);
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--color-text);
-  }
-}
-
-.site-header__cta {
-  min-height: 40px;
-  padding: 0 var(--space-4);
-  white-space: nowrap;
-}
-
-.site-header__logout {
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface);
-  cursor: pointer;
-  font: inherit;
-  font-weight: var(--fw-medium);
-  color: var(--color-text);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  white-space: nowrap;
-
-  &:hover {
-    background: var(--color-ink-100);
-  }
-}
-
-// saved heart icon in the header actions
-.icon-link {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-pill);
-  color: var(--color-text);
-  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
-
-  svg {
-    display: block;
-  }
-
-  &:hover {
-    color: var(--color-brand-600);
-    background: var(--color-ink-100);
-  }
-
-  // filled heart once the wishlist has items
-  &.is-filled svg {
-    fill: var(--color-brand-500);
-    stroke: var(--color-brand-500);
-  }
-
-  // notification bell turns pink (outline only) when there are unread messages
-  &.is-alert {
-    color: var(--color-brand-600);
-  }
-}
-
-.icon-link__badge {
-  position: absolute;
-  top: 1px;
-  right: 1px;
-  display: inline-grid;
-  place-items: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: var(--radius-pill);
-  background: var(--color-brand-500);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: var(--fw-semibold);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  border: 2px solid var(--color-canvas);
-}
-
-// logout looks like a nav link
-.site-nav__logout {
-  text-align: left;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font: inherit;
-  color: var(--color-text);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-
-  &:hover {
-    background: var(--color-ink-100);
-  }
-
-  @include bp.respond-to(xl) {
-    padding: var(--space-2);
-  }
-}
-
-// language switch
-.lang {
-  display: inline-flex;
-  gap: var(--space-1);
-  padding: 3px;
-  background: var(--color-ink-100);
-  border-radius: var(--radius-pill);
-}
-
-.lang__btn {
-  min-width: 40px;
-  min-height: 32px;
-  padding: 0 var(--space-3);
-  border: none;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-
-  &:hover {
-    color: var(--color-text);
-  }
-
-  &[aria-pressed='true'] {
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--shadow-xs);
-  }
-}
-
-.site-header .lang__btn {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-// mobile hamburger
-.menu-toggle {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 44px;
-  height: 44px;
-  padding: 0 10px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out);
-
-  &:hover {
-    background: var(--color-ink-100);
+    .menu-toggle__bar {
+      background: var(--paper);
+    }
   }
 
   &__bar {
-    height: 2px;
-    width: 100%;
-    background: var(--color-text);
-    border-radius: 2px;
-    transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 68px;
+    transition: min-height var(--dur-base) var(--ease-out);
   }
 
-  .is-open &__bar:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+  &.is-scrolled &__bar {
+    min-height: 56px;
   }
-  .is-open &__bar:nth-child(2) {
+
+  // ---- primary groups (dropdown triggers) ----
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    position: relative;
+  }
+
+  &__group {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 40px;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-family: var(--font-statement);
+    font-stretch: var(--stretch-ui);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    color: var(--ink-700);
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+    &:hover,
+    &.is-active {
+      color: var(--ink);
+      background: var(--paper-deep);
+    }
+  }
+
+  &__item.is-open &__group {
+    color: var(--ink);
+    background: var(--paper-deep);
+  }
+
+  &__chev {
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  &__item.is-open &__chev {
+    transform: rotate(180deg);
+  }
+
+  // ---- dropdown panel (Revolut-style white sheet) ----
+  &__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: var(--z-dropdown);
+    min-width: 19rem;
+    padding: var(--space-2);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(31, 31, 31, 0.18), 0 0 0 1px var(--paper-line);
+    visibility: hidden;
     opacity: 0;
-  }
-  .is-open &__bar:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+    transform: translateY(6px);
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out),
+      visibility 0s linear var(--dur-base);
+
+    &--cols {
+      min-width: 36rem;
+
+      .hdr__panel-list {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   }
 
-  @include bp.respond-to(xxl) {
+  // the last two groups open to the left so the panel stays inside the viewport
+  &__item:nth-last-child(-n + 2) &__panel {
+    left: auto;
+    right: 0;
+  }
+
+  &__item.is-open &__panel {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  &__panel-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__panel-link {
+    display: grid;
+    gap: 2px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: 10px;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--ink);
+      background: var(--paper-deep);
+    }
+  }
+
+  &__panel-t {
+    font-family: var(--font-statement);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    line-height: 1.3;
+  }
+
+  &__panel-d {
+    font-family: var(--font-statement);
+    font-size: var(--fs-caption);
+    line-height: 1.35;
+    color: var(--ink-500);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &__auth {
+    display: none;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  &__text-btn {
+    background: none;
+    border: 0;
+    white-space: nowrap;
+    padding: var(--space-2) var(--space-1);
+    min-height: 44px;
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    color: var(--ink-700);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--ink);
+    }
+  }
+
+  &__cta {
+    min-height: 42px;
+    padding-inline: var(--space-5);
+    font-size: var(--fs-small);
+    white-space: nowrap;
+  }
+
+  // language switch: a compact outlined pill showing the *other* language's code,
+  // sized to sit on the same line as the login text and the CTA
+  &__lang {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: var(--fw-semibold);
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-700);
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
+  }
+
+  // ---- mobile sheet ----
+  // NOTE: the header's backdrop-filter makes it the containing block for this
+  // fixed sheet, so inset:0 would resolve against the 68px bar (zero height).
+  // Size the sheet explicitly from the bar's bottom edge to the viewport bottom.
+  &__nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 68px;
+    height: calc(100dvh - 68px);
+    z-index: var(--z-overlay);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-6) var(--gutter) max(var(--space-6), env(safe-area-inset-bottom));
+    background: var(--paper);
+    overflow-y: auto;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out),
+      visibility 0s linear var(--dur-base);
+  }
+
+  &.is-scrolled &__nav {
+    top: 56px;
+    height: calc(100dvh - 56px);
+  }
+
+  &.is-open &__nav {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  // in the sheet the groups become an accordion
+  &__nav &__links {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+
+    li.hdr__item {
+      border-bottom: 1px solid var(--paper-line);
+    }
+  }
+
+  &__nav &__group {
+    width: 100%;
+    justify-content: space-between;
+    min-height: 0;
+    padding: var(--space-5) 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: 1.375rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: normal;
+    text-align: left;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+
+  &__nav &__chev {
+    width: 22px;
+    height: 22px;
+  }
+
+  &__nav &__panel {
+    display: none;
+    position: static;
+    min-width: 0;
+    padding: 0 0 var(--space-4);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition: none;
+
+    .hdr__panel-list {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__nav &__item.is-open &__panel {
+    display: block;
+  }
+
+  &__sheet-foot {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-8);
+
+    .btn {
+      width: 100%;
+    }
+
+    .lang {
+      justify-content: center;
+      margin-top: var(--space-2);
+    }
+  }
+}
+
+// Desktop: links in the bar, sheet machinery off.
+// Desktop bar (four dropdown groups + controls) needs ≥1280px; below that the
+// hamburger sheet stays, because four Georgian titles do not fit a 1024px bar.
+@include bp.respond-to(xl) {
+  .hdr {
+    // Match the specificity of the sheet's .is-scrolled / .is-open rules so the
+    // desktop reset always wins (otherwise scrolling re-applied the sheet height).
+    &__nav,
+    &.is-scrolled &__nav,
+    &.is-open &__nav {
+      position: static;
+      top: auto;
+      height: auto;
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+      display: block;
+      padding: 0;
+      background: transparent;
+      overflow: visible;
+      transition: none;
+    }
+
+    &__sheet-foot {
+      display: none;
+    }
+
+    &__auth,
+    &__lang {
+      display: flex;
+    }
+
+    // desktop: groups back in a row, panels float
+    &__nav &__links {
+      flex-direction: row;
+      align-items: center;
+      gap: 0;
+
+      li.hdr__item {
+        border-bottom: 0;
+      }
+    }
+
+    &__nav &__group {
+      width: auto;
+      justify-content: flex-start;
+      min-height: 40px;
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-pill);
+      font-size: 0.875rem; // four Georgian titles + controls must fit the 1248px container
+      letter-spacing: 0;
+      color: var(--ink-700);
+      white-space: nowrap;
+
+      &:hover {
+        color: var(--ink);
+        background: var(--paper-deep);
+      }
+    }
+
+    &__nav &__item.is-open &__group {
+      color: var(--ink);
+      background: var(--paper-deep);
+    }
+
+    // Revolut: plain titles, no chevrons (the panel itself is the affordance)
+    &__nav &__chev {
+      display: none;
+    }
+
+    &__nav &__panel {
+      display: block;
+      position: absolute;
+      min-width: 19rem;
+      padding: var(--space-2);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(31, 31, 31, 0.18), 0 0 0 1px var(--paper-line);
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity var(--dur-base) var(--ease-out),
+        transform var(--dur-base) var(--ease-out),
+        visibility 0s linear var(--dur-base);
+
+      &--cols {
+        min-width: 36rem;
+
+        .hdr__panel-list {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    }
+
+    &__nav &__item.is-open &__panel {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+      transition-delay: 0s;
+    }
+  }
+
+  .menu-toggle {
     display: none;
   }
 }
 
-// ============================== FOOTER ==============================
-.site-footer {
-  margin-top: var(--space-24);
-  background: var(--color-ink-900);
-  color: #d9cfc3;
-}
 
-.site-footer__inner {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-10);
-  padding-block: var(--space-16);
+// ---- hamburger (two bars → X) ----
+.menu-toggle {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin-right: calc(var(--space-2) * -1);
+  background: none;
+  border: 0;
+  cursor: pointer;
 
-  @include bp.respond-to(sm) {
-    grid-template-columns: repeat(2, 1fr);
+  &__bar {
+    position: absolute;
+    left: 11px;
+    width: 22px;
+    height: 2px;
+    background: var(--ink);
+    transition: transform var(--dur-base) var(--ease-out);
+
+    &:nth-child(1) { top: 17px; }
+    &:nth-child(2) { top: 25px; }
   }
-  @include bp.respond-to(lg) {
-    grid-template-columns: 1.6fr repeat(3, 1fr);
-    gap: var(--space-12);
+
+  .hdr.is-open & &__bar:nth-child(1) { transform: translateY(4px) rotate(45deg); }
+  .hdr.is-open & &__bar:nth-child(2) { transform: translateY(-4px) rotate(-45deg); }
+}
+
+// ---- vendor notification bell ----
+.icon-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--ink-700);
+  border-radius: var(--radius-pill);
+
+  &:hover {
+    color: var(--ink);
+    background: var(--paper-deep);
+  }
+
+  &.is-alert {
+    color: var(--clay);
+  }
+
+  &__badge {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-pill);
+    background: var(--clay);
+    color: #fff;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: var(--fw-bold);
+    line-height: 18px;
+    text-align: center;
   }
 }
 
-.site-footer__tagline {
-  margin-top: var(--space-4);
-  color: #a89e91;
-  max-width: 38ch;
-}
-
-.site-footer__col {
+// ---- language toggle (sheet + footer) ----
+.lang {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-1);
 
-  a {
-    color: #d9cfc3;
+  &__btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 
     &:hover {
-      color: #fff;
+      color: var(--ink);
+      background: var(--paper-deep);
     }
-  }
-}
-
-.site-footer__heading {
-  margin: 0 0 var(--space-1);
-  font-family: var(--font-body);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
-  color: #8c8174;
-}
-
-.lang--footer {
-  align-self: flex-start;
-  background: rgba(255, 255, 255, 0.06);
-
-  .lang__btn {
-    color: #d9cfc3;
 
     &[aria-pressed='true'] {
-      background: rgba(255, 255, 255, 0.14);
-      color: #fff;
-      box-shadow: none;
+      color: var(--ink);
+      background: var(--paper-deep);
+    }
+  }
+
+  &--footer .lang__btn {
+    color: var(--on-spruce-muted);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--fs-small);
+
+    &:hover,
+    &[aria-pressed='true'] {
+      color: var(--on-spruce);
+      background: var(--spruce-400);
     }
   }
 }
 
-.site-footer__legal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-6);
-  justify-content: space-between;
-  padding-block: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #8c8174;
-  font-size: var(--fs-caption);
-}
+// =============================================================================
+// Footer — spruce band, five links, one promise.
+// =============================================================================
+.ftr {
+  background: var(--spruce);
+  color: var(--on-spruce);
+  padding-top: var(--space-16);
 
-// ============================== HEADER (phones) ==============================
-// Phones: the header bar must hold wordmark + (saved/notifications icon) + lang
-// toggle + hamburger inside 360–375px. Measured at 375px before this block:
-// wordmark 211 + actions 207 = 418px of a 343px row, so the hamburger sat off
-// the right edge and every page scrolled sideways. Tighten each piece a notch
-// and, as a last resort, let the wordmark trim rather than push the hamburger
-// off-screen — an unreachable menu is worse than a clipped logo.
-@media (max-width: 599px) {
-  .site-header__bar {
-    gap: var(--space-2);
-    min-height: 64px;
+  a {
+    color: var(--on-spruce);
   }
 
-  .site-header .brand {
-    font-size: 1.125rem;
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &__top {
+    display: grid;
+    gap: var(--space-10);
+    padding-bottom: var(--space-12);
+    border-bottom: 1px solid var(--spruce-line);
   }
 
-  .site-header__actions {
-    gap: 6px;
-    flex-shrink: 0;
+  &__brand {
+    max-width: 30rem;
   }
 
-  .site-header .lang {
-    padding: 2px;
+  &__promise {
+    margin: var(--space-4) 0 0;
+    font-size: var(--fs-lead);
+    line-height: 1.45;
+    color: var(--on-spruce-muted);
   }
 
-  .site-header .lang__btn {
-    min-width: 28px;
-    min-height: 28px;
-    padding: 0 6px;
-    font-size: 0.75rem;
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+
+    a {
+      font-family: var(--font-ui);
+      font-size: var(--fs-small);
+      font-weight: var(--fw-medium);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid transparent;
+      transition: border-color var(--dur-fast) var(--ease-out);
+
+      &:hover {
+        color: var(--on-spruce);
+        border-bottom-color: var(--clay-300);
+      }
+    }
   }
 
-  .icon-link {
-    width: 34px;
-    height: 34px;
+  &__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-block: var(--space-6);
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    color: var(--on-spruce-muted);
   }
 
-  .menu-toggle {
-    width: 40px;
-    height: 40px;
-    padding: 0 9px;
+  @include bp.respond-to(md) {
+    &__top {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: end;
+    }
+
+    &__links {
+      justify-content: flex-end;
+    }
   }
 }

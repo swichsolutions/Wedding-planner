@@ -30,7 +30,7 @@ export const CATEGORIES: CategoryRef[] = [
   { slug: 'musika', key: 'category.music', img: img('photo-1511671782779-c97d3d27a1d4', 600) },
   { slug: 'kaba', key: 'category.dress', img: img('photo-1594552072238-b8a33785b261', 600) },
   { slug: 'kostiumi', key: 'category.suit', img: img('photo-1507679799987-c73779587ccf', 600) },
-  { slug: 'bechdebi', key: 'category.rings', img: img('photo-1515377905703-c4788e51af15', 600) },
+  { slug: 'bechdebi', key: 'category.rings', img: img('photo-1515934751635-c81c6bc9a2d8', 600) },
   { slug: 'transporti', key: 'category.transport', img: img('photo-1533473359331-0135ef1b58bf', 600) },
 ];
 

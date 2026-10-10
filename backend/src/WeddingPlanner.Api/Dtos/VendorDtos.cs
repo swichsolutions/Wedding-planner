@@ -9,6 +9,12 @@ public record VendorPhotoDto(string Url, string? Alt, bool IsRealWedding);
 /// pages' cross-links and the sitemap.</summary>
 public record VendorPairingDto(string CategorySlug, string CitySlug, string City, int Count);
 
+/// <summary>Per-category inventory for the home-page index: approved count, cheapest
+/// starting price (null when no vendor lists one) and the cities served, busiest first.</summary>
+public record CategoryStatDto(string CategorySlug, int Count, decimal? PriceMin, IReadOnlyList<CategoryCityDto> Cities);
+
+public record CategoryCityDto(string CitySlug, string City, int Count);
+
 public record VendorDto(
     int Id,
     string Name,

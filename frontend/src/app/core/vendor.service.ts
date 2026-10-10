@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of, throwError } from 'rxjs';
+import { Observable, catchError, map, of, throwError, timeout } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { categoryKey } from './catalog';
@@ -16,6 +16,16 @@ export interface Pairing {
   /** Georgian display name as stored on the vendors (e.g. "თბილისი"). */
   city: string;
   count: number;
+}
+
+/** Per-category inventory (approved vendors only) — the home-page category index. */
+export interface CategoryStat {
+  categorySlug: string;
+  count: number;
+  /** Lowest listed starting price in GEL; null when no vendor in the category lists one. */
+  priceMin: number | null;
+  /** Cities served, busiest first. */
+  cities: { citySlug: string; city: string; count: number }[];
 }
 
 /**
@@ -84,6 +94,18 @@ export class VendorService {
    */
   pairings(): Observable<Pairing[]> {
     return this.http.get<Pairing[]>(`${this.base}/api/vendors/pairings`);
+  }
+
+  /**
+   * Per-category counts, starting prices and cities for the home-page index.
+   * Decorative: degrades to an empty list (rows fall back to their static blurbs) on
+   * error or when the API is slow, so a cold API never holds up the SSR home page.
+   */
+  categoryStats(): Observable<CategoryStat[]> {
+    return this.http.get<CategoryStat[]>(`${this.base}/api/vendors/categories`).pipe(
+      timeout(4000),
+      catchError(() => of([] as CategoryStat[])),
+    );
   }
 
   /** Emits undefined when the vendor doesn't exist (404); other errors propagate. */

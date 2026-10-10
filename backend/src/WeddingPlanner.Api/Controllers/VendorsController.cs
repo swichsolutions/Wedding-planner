@@ -130,6 +130,57 @@ public class VendorsController : ControllerBase
         return Ok(rows.Select(x => new VendorPairingDto(x.CategorySlug, x.CitySlug, x.City ?? string.Empty, x.Count)));
     }
 
+    /// <summary>
+    /// Per-category inventory for the home-page index: approved-vendor count, the
+    /// lowest listed starting price and the cities served (busiest first). Two grouped
+    /// reads, both computed in Postgres; categories with no approved vendors are absent
+    /// (the client treats a missing slug as "nothing yet").
+    /// </summary>
+    [HttpGet("categories")]
+    public async Task<ActionResult<IEnumerable<CategoryStatDto>>> Categories()
+    {
+        var approved = _db.Vendors.AsNoTracking().Where(v => v.IsApproved);
+
+        var cats = await approved
+            .GroupBy(v => v.Category.Slug)
+            .Select(g => new
+            {
+                Slug = g.Key,
+                Count = g.Count(),
+                // Min over listed prices only; SQL MIN of an empty set is NULL → no price shown.
+                PriceMin = g.Where(v => v.PriceMin > 0).Min(v => v.PriceMin),
+            })
+            .ToListAsync();
+
+        var cities = await approved
+            .Where(v => v.CitySlug != "" && v.City != "")
+            .GroupBy(v => new { CategorySlug = v.Category.Slug, v.CitySlug })
+            .Select(g => new
+            {
+                g.Key.CategorySlug,
+                g.Key.CitySlug,
+                City = g.Max(v => v.City),
+                Count = g.Count(),
+            })
+            .ToListAsync();
+
+        var result = cats
+            .OrderByDescending(c => c.Count)
+            .ThenBy(c => c.Slug)
+            .Select(c => new CategoryStatDto(
+                c.Slug,
+                c.Count,
+                c.PriceMin,
+                cities
+                    .Where(x => x.CategorySlug == c.Slug)
+                    .OrderByDescending(x => x.Count)
+                    .ThenBy(x => x.CitySlug)
+                    .Select(x => new CategoryCityDto(x.CitySlug, x.City ?? string.Empty, x.Count))
+                    .ToList()));
+
+        return Ok(result);
+    }
+
     /// <summary>Single vendor by its SEO URL parts.</summary>
     [HttpGet("{category}/{city}/{slug}")]
     public async Task<ActionResult<VendorDto>> GetBySlug(string category, string city, string slug)

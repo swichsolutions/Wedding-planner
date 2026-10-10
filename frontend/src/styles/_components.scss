@@ -11,8 +11,9 @@
   padding: 0 var(--space-6);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--fs-body);
+  font-family: var(--font-ui);
+  font-stretch: var(--stretch-ui);
+  font-size: var(--fs-ui);
   font-weight: var(--fw-semibold);
   line-height: 1;
   cursor: pointer;
@@ -105,6 +106,50 @@
   &:hover {
     background: var(--color-ink-100);
   }
+}
+
+// ---- v2 variants (Program on Paper) ----
+.btn--ink {
+  background: var(--ink);
+  color: var(--paper);
+
+  &:hover { background: #000; color: var(--paper); }
+}
+
+.btn--clay {
+  background: var(--clay);
+  color: #fff;
+
+  &:hover { background: var(--clay-700); color: #fff; }
+}
+
+.btn--paper {
+  background: var(--paper);
+  color: var(--ink);
+
+  &:hover { background: #fff; color: var(--ink); }
+}
+
+.btn--outline-ink {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+
+  &:hover { background: var(--ink); color: var(--paper); }
+}
+
+.btn--outline-paper {
+  background: transparent;
+  color: var(--on-spruce);
+  border-color: var(--spruce-line);
+
+  &:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+}
+
+.btn--lg {
+  min-height: 52px;
+  padding-inline: var(--space-8);
+  font-size: var(--fs-lead);
 }
 
 // ---- Inline "more →" link with animated arrow ----

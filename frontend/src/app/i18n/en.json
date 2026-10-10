@@ -3,18 +3,125 @@
     "name": "WeddingPlanner"
   },
   "nav": {
-    "vendors": "Vendors",
-    "guides": "Guides",
-    "planning": "Planning Tool",
-    "budget": "Budget",
-    "guestList": "Guest List",
-    "seating": "Seating",
-    "website": "Website",
-    "saved": "Saved",
+    "plan": "Plan your wedding",
+    "vendors": "Venues & services",
+    "guides": "Tips & ideas",
+    "login": "Sign in",
+    "start": "Start planning",
+    "myWedding": "My wedding",
+    "myProfile": "My profile",
     "menu": "Menu",
-    "listBusiness": "List your business",
-    "signUp": "Sign up",
-    "notifications": "Messages"
+    "notifications": "Messages",
+    "g": {
+      "plan": {
+        "title": "Plan your wedding",
+        "i": {
+          "start": {
+            "t": "Where to start",
+            "d": "Three steps and your first plan"
+          },
+          "stages": {
+            "t": "Planning stages",
+            "d": "What to do when — a step-by-step guide"
+          },
+          "templates": {
+            "t": "Wedding-day templates",
+            "d": "Editable schedules for different formats"
+          },
+          "organizer": {
+            "t": "Meet the organizer",
+            "d": "How My wedding works"
+          }
+        }
+      },
+      "vendors": {
+        "title": "Venues & services",
+        "i": {
+          "venues": {
+            "t": "Venues & catering",
+            "d": "Restaurants, event venues, catering"
+          },
+          "photo": {
+            "t": "Photo & video",
+            "d": "Photographers, videographers"
+          },
+          "decor": {
+            "t": "Decor & flowers",
+            "d": "Decorators, florists, rentals"
+          },
+          "music": {
+            "t": "Music & entertainment",
+            "d": "Bands, DJs, toastmaster, program"
+          },
+          "cake": {
+            "t": "Cake & sweets",
+            "d": "Wedding cakes, desserts"
+          },
+          "attire": {
+            "t": "Attire & accessories",
+            "d": "Dresses, suits, shoes, rings"
+          },
+          "beauty": {
+            "t": "Beauty & prep",
+            "d": "Salons, hair, makeup"
+          },
+          "other": {
+            "t": "Other services",
+            "d": "Invitations, transport, accommodation"
+          },
+          "all": {
+            "t": "All categories",
+            "d": "The full catalog with filters"
+          }
+        }
+      },
+      "guides": {
+        "title": "Tips & ideas",
+        "i": {
+          "tips": {
+            "t": "Practical tips",
+            "d": "Budget, guest list, what to ask a venue"
+          },
+          "inspiration": {
+            "t": "Inspiration",
+            "d": "Decor styles, colors, flowers, lighting"
+          },
+          "real": {
+            "t": "Real weddings",
+            "d": "Couples' stories and their vendors"
+          }
+        }
+      },
+      "mine": {
+        "title": "My wedding",
+        "i": {
+          "overview": {
+            "t": "Overview",
+            "d": "Progress, next tasks and payments"
+          },
+          "tasks": {
+            "t": "Tasks",
+            "d": "To-dos, deadlines and who's responsible"
+          },
+          "budget": {
+            "t": "Budget",
+            "d": "Costs, deposits and payment dates"
+          },
+          "guests": {
+            "t": "Guests",
+            "d": "List, RSVPs and table assignment"
+          },
+          "seating": {
+            "t": "Seating plan",
+            "d": "Table layout and guests' seats"
+          },
+          "website": {
+            "t": "Wedding website",
+            "d": "An invitation page for your guests"
+          }
+        }
+      }
+    }
   },
   "common": {
     "language": "Language",
@@ -24,13 +131,226 @@
     "dismiss": "Dismiss"
   },
   "home": {
-    "overline": "Wedding planning in Georgia",
-    "tagline": "Wedding planning starts here",
-    "subtitle": "From venues and photographers to decor, makeup and even the cake — WeddingPlanner is here for every step of the way.",
-    "cta": "Let’s do this!",
-    "ctaCouple": "Continue planning",
-    "ctaVendor": "My profile",
-    "ctaAdmin": "Admin panel"
+    "hero": {
+      "title": "Your dream",
+      "titleEm": "wedding",
+      "lead": "A clear plan, the vendors you need and everything in one place.",
+      "cta": "Start planning",
+      "ctaCouple": "My wedding",
+      "ctaVendor": "My profile",
+      "ctaAdmin": "Admin panel",
+      "secondary": "Venues & services",
+      "photoAlt": "A couple on their wedding day, outdoors",
+      "scroll": "Scroll to the program"
+    },
+    "start": {
+      "title": "Where do I start?",
+      "lead": "Three steps and the plan is yours. It adapts to your date, guest count and budget.",
+      "cta": "See how planning works",
+      "s1": {
+        "label": "Define",
+        "title": "Define your wedding",
+        "value": "Date, guests, budget",
+        "sub": "The plan adapts to your numbers"
+      },
+      "s2": {
+        "label": "Choose",
+        "title": "Choose the essentials",
+        "value": "Venue, photo, music",
+        "sub": "Compare and save favourites"
+      },
+      "s3": {
+        "label": "Plan",
+        "title": "Plan the details",
+        "value": "Tasks and payments",
+        "sub": "Day schedule from a template"
+      }
+    },
+    "find": {
+      "overline": "Categories",
+      "leadShort": "Every vendor in one place — with photos and starting prices.",
+      "title": "Where do I find everything?",
+      "lead": "Vendors by category — with photos, location and starting price. No account needed to browse.",
+      "count": "vendors",
+      "soon": "soon",
+      "open": "Open category",
+      "cat": {
+        "venues": {
+          "name": "Venues & catering",
+          "sub": "Restaurants, event venues, outdoor spaces, catering"
+        },
+        "photo": {
+          "name": "Photo & video",
+          "sub": "Photographers, videographers"
+        },
+        "decor": {
+          "name": "Decor & flowers",
+          "sub": "Decorators, florists, furniture rental"
+        },
+        "music": {
+          "name": "Music & entertainment",
+          "sub": "Bands, DJs, toastmaster, program"
+        },
+        "cake": {
+          "name": "Cake & sweets",
+          "sub": "Wedding cakes, desserts, sweet table"
+        },
+        "attire": {
+          "name": "Attire & rings",
+          "sub": "Wedding dresses, suits, rings"
+        },
+        "beauty": {
+          "name": "Beauty",
+          "sub": "Makeup, hair stylists, nails"
+        },
+        "transport": {
+          "name": "Transport",
+          "sub": "Wedding cars, convertibles, guest transfers"
+        }
+      },
+      "cta": "See all categories"
+    },
+    "organize": {
+      "title": "How do I keep everything under control?",
+      "lead": "The personal organizer turns tasks, budget and saved vendors into one plan. You see the next step — not everything at once.",
+      "sheet": {
+        "names": "Nino & Giorgi",
+        "date": "12 September 2027",
+        "daysLeft": "340 days to go",
+        "progress": "Progress"
+      },
+      "tasks": {
+        "title": "Tasks",
+        "t1": {
+          "text": "Reserve the venue",
+          "due": "Done"
+        },
+        "t2": {
+          "text": "Choose the photographer",
+          "due": "Done"
+        },
+        "t3": {
+          "text": "Choose the band",
+          "due": "15 Oct"
+        },
+        "t4": {
+          "text": "Order invitations",
+          "due": "1 Nov"
+        }
+      },
+      "budget": {
+        "title": "Budget",
+        "r1": {
+          "name": "Venue & catering",
+          "amount": "10,800 ₾"
+        },
+        "r2": {
+          "name": "Photo & video",
+          "amount": "3,500 ₾"
+        },
+        "r3": {
+          "name": "Decor & flowers",
+          "amount": "2,400 ₾"
+        },
+        "r4": {
+          "name": "Music",
+          "amount": "2,000 ₾"
+        },
+        "total": "Planned",
+        "totalV": "28,000 ₾",
+        "paid": "Deposits paid",
+        "paidV": "4,300 ₾",
+        "next": "Next payment",
+        "nextV": "1 Nov · 2,000 ₾"
+      },
+      "vendors": {
+        "title": "My vendors",
+        "v1": "Courtyard in Sighnaghi",
+        "v2": "Photo studio",
+        "v3": "Band — 3 options",
+        "chosen": "Chosen",
+        "saved": "Saved"
+      },
+      "cta": "Create your wedding plan"
+    },
+    "day": {
+      "title": "What happens after what?",
+      "lead": "The wedding-day schedule starts from a template and bends to your day — times, order and who's responsible are all editable.",
+      "templateLabel": "Template: classic supra · 120 guests",
+      "optional": "Optional",
+      "editedLabel": "Edited",
+      "item1": {
+        "title": "Guests arrive",
+        "note": "Welcome and light drinks in the courtyard"
+      },
+      "item2": {
+        "title": "Ceremony",
+        "note": "In the courtyard or the hall — as the couple wishes"
+      },
+      "item3": {
+        "title": "Supra",
+        "note": "Dinner, toastmaster, first toasts"
+      },
+      "item4": {
+        "title": "Speeches",
+        "note": "Parents, best man and maid of honour"
+      },
+      "item5": {
+        "title": "First dance & dancing",
+        "note": "Band, then DJ"
+      },
+      "item6": {
+        "title": "Cake & farewell",
+        "note": "Photos with every guest"
+      },
+      "cta": "See wedding-day plans"
+    },
+    "trust": {
+      "title": "Will it really help?",
+      "lead": "The platform doesn't promise a miracle — it promises order: what to do, who you need and what comes after what.",
+      "getTitle": "What you get with an account",
+      "get1": "A personal plan that adapts to your date, guests and budget.",
+      "get2": "Saved and chosen vendors in one list — with contacts and prices.",
+      "get3": "An editable day schedule and seating plan you can share with your partner.",
+      "faqTitle": "Frequently asked questions",
+      "faq": {
+        "q1": "Do I need an account to browse?",
+        "a1": "No. Vendors, tips and schedule examples are open without registration. You only need an account when you want to save a vendor or create your own plan.",
+        "q2": "We don't have a date yet — can I still start?",
+        "a2": "Yes. Date, city and budget can be skipped — “not decided yet” is a complete answer. The plan adapts once you fill in the details later.",
+        "q3": "How do I contact a vendor?",
+        "a3": "From the vendor's profile — see packages, starting price and portfolio, then check date availability. A saved vendor is not automatically booked.",
+        "q4": "Can I plan together with my partner?",
+        "a4": "Yes. Grant your partner access from settings and you both work on the same plan.",
+        "q5": "I already found a photographer elsewhere.",
+        "a5": "Add them manually under “My vendors” — with price and payment dates. Not every vendor has to be on the platform."
+      },
+      "finalTitle": "Start your wedding plan",
+      "finalNote": "Browse without registering. An account only when you want to save or create a plan."
+    },
+    "stage": {
+      "title": "Everything in one place",
+      "lead": "Start, find the right people and organize it all — the three things a wedding needs.",
+      "left": {
+        "label": "Where do I find everything?",
+        "value": "Venues & services",
+        "sub": "Photo · Decor · Music"
+      },
+      "center": {
+        "label": "Where do I start?",
+        "value": "Plan your wedding",
+        "sub": "Wedding-day schedule"
+      },
+      "right": {
+        "title": "How do I keep control?",
+        "r1": "Tasks and deadlines",
+        "r2": "Budget and payments",
+        "r3": "Guests and seating",
+        "r4": "Wedding-day schedule",
+        "chipLabel": "Personal organizer",
+        "chipValue": "My wedding"
+      }
+    }
   },
   "homeWebsite": {
     "overline": "Wedding website",
@@ -984,17 +1304,27 @@
     "notFoundTitle": "Article not found",
     "notFoundBody": "The link may be outdated.",
     "metaDescription": "Wedding planning guides, checklists and real Georgian weddings — practical advice on venues, budgets and vendors for every step of the way.",
-    "item1": { "tag": "Guide", "title": "How to choose your photographer" },
-    "item2": { "tag": "Real wedding", "title": "Nino & Giorgi — a Kakheti wedding" },
-    "item3": { "tag": "Checklist", "title": "The 12-month wedding plan" }
+    "item1": {
+      "tag": "Guide",
+      "title": "How to choose your photographer"
+    },
+    "item2": {
+      "tag": "Real wedding",
+      "title": "Nino & Giorgi — a Kakheti wedding"
+    },
+    "item3": {
+      "tag": "Checklist",
+      "title": "The 12-month wedding plan"
+    }
   },
   "footer": {
-    "tagline": "Everything for your wedding — in one place.",
-    "explore": "Explore",
-    "company": "Company",
+    "promise": "Plan your own wedding — with a clear plan, the right people, in one place.",
+    "links": "More links",
     "about": "About",
-    "contact": "Contact",
-    "forVendors": "For vendors",
+    "help": "Help & contact",
+    "vendors": "For vendors",
+    "terms": "Terms & conditions",
+    "privacy": "Privacy",
     "rights": "All rights reserved."
   },
   "featureLanding": {

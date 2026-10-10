@@ -4,616 +4,2100 @@
   display: block;
 }
 
-// ============================ shared section scaffolding ============================
-.section {
-  padding-block: var(--space-16);
+// =============================================================================
+// Shared chapter furniture
+// =============================================================================
+
+.chap {
+  padding-block: var(--space-20);
+  border-top: 1px solid var(--paper-line);
+
+  &--paper {
+    background: var(--paper);
+  }
+
+  &--deep {
+    background: var(--paper-deep);
+  }
+
+  &--spruce {
+    background: var(--spruce);
+    color: var(--on-spruce);
+    border-top-color: var(--spruce-700);
+
+    .chap__title {
+      color: var(--on-spruce);
+    }
+
+    .chap__lead {
+      color: var(--on-spruce-muted);
+    }
+  }
+
+  &__head {
+    margin-bottom: var(--space-10);
+    max-width: 44rem;
+
+    &--row {
+      max-width: none;
+    }
+  }
+
+  &__title {
+    margin: 0 0 var(--space-5);
+    font-size: var(--fs-h2);
+    line-height: var(--lh-heading);
+  }
+
+  &__lead {
+    margin: 0;
+    max-width: 36rem;
+    font-size: var(--fs-lead);
+    line-height: 1.5;
+    color: var(--ink-700);
+  }
+
+  &__cta {
+    margin: var(--space-10) 0 0;
+    text-align: center;
+
+    &--left {
+      text-align: left;
+      margin-top: var(--space-6);
+    }
+  }
 
   @include bp.respond-to(md) {
-    padding-block: var(--space-20);
+    padding-block: var(--space-24);
+
+    &__head--row {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      align-items: end;
+      gap: var(--space-10);
+
+      .chap__lead {
+        margin-bottom: var(--space-2);
+      }
+    }
+  }
+
+  @include bp.respond-to(lg) {
+    padding-block: var(--space-32);
   }
 }
 
-.section__head {
-  margin-bottom: var(--space-10);
+// Dotted leaders: `label ........ value` — the program/menu idiom.
+.leaders {
+  margin: 0;
 
-  h2 {
-    margin: var(--space-2) 0 0;
+  &__row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    font-family: var(--font-ui);
+    font-stretch: var(--stretch-ui);
+    font-size: var(--fs-small);
+
+    dt {
+      color: var(--ink-700);
+      white-space: nowrap;
+    }
+
+    &::after {
+      content: '';
+      flex: 1;
+      order: 2;
+      min-width: var(--space-4);
+      border-bottom: 1px dotted var(--paper-line-strong);
+      transform: translateY(-5px);
+    }
+
+    dd {
+      order: 3;
+      margin: 0;
+      font-weight: var(--fw-semibold);
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    &--total {
+      margin-top: var(--space-2);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--paper-line);
+
+      dt {
+        color: var(--ink);
+        font-weight: var(--fw-semibold);
+      }
+    }
+
+    &--muted dd {
+      color: var(--ink-700);
+      font-weight: var(--fw-medium);
+    }
+
+    &--next dd {
+      color: var(--clay);
+    }
   }
 }
 
-.section__sub {
-  margin-top: var(--space-3);
-  color: var(--color-text-secondary);
-  font-size: var(--fs-lead);
-  max-width: var(--measure);
-}
-
-.section__head--row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-6);
-  flex-wrap: wrap;
-}
-
-// ================================== HERO ==================================
-// Full-bleed photo hero: image + scrim behind, white editorial text on top.
+// =============================================================================
+// 01 — Hero + scroll stage. One screen tall. --p (0…1, animated by ScrollStage on the
+// first scroll) drives every transition below.
+// =============================================================================
 .hero {
   position: relative;
-  display: grid;
-  align-items: center;
-  justify-items: center;
-  min-height: clamp(28rem, 74svh, 46rem);
-  padding-block: var(--space-20);
-  overflow: hidden;
-}
+  margin-top: calc(var(--hdr-h) * -1 - 1px); // pull up under the transparent header (+ its hairline)
+  --p: 0;
+  --stage-w: 100vw;
+  --stage-h: 100vh;
+  --card-w: min(20rem, 66vw);
+  --card-h: min(26rem, 50vh);
+  --card-gap: var(--space-3);
+  --cards-y: 14vh; // the card row sits below centre to leave room for the heading
+  --frame-w: min(36rem, 40vw); // the hero frame at rest; the chip wraps inside it
+  --mid: 1.08; // the centre card is a touch larger than the side cards (Revolut)
+  --mid-w: calc(var(--card-w) * var(--mid));
+  --mid-h: calc(var(--card-h) * var(--mid));
+  --slide: clamp(0, (var(--p) - 0.3) / 0.6, 1); // side cards: 0.3 → 0.9
+  --card-scale: 0.6; // set by ScrollStage: how far the photo zooms out inside the card
 
-.hero__img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+  // The first small scroll triggers a timed run of the transform (see ScrollStage).
+  // Meanwhile the stage stays pinned for --hold of extra scrolling, so the three
+  // cards are on screen alone; only after that does the next section slide in.
+  --hold: 55vh;
 
-// bottom-weighted scrim keeps Georgian display text legible over any photo
-.hero__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(28, 23, 20, 0.55),
-    rgba(28, 23, 20, 0.3) 45%,
-    rgba(28, 23, 20, 0.55)
-  );
-}
-
-.hero__intro {
-  position: relative;
-  max-width: 50rem;
-  text-align: center;
-}
-
-.hero__title {
-  margin: 0;
-  font-size: var(--fs-display);
-  line-height: var(--lh-display);
-  letter-spacing: var(--tracking-display);
-  color: #fff;
-}
-
-.hero__subtitle {
-  margin: var(--space-5) auto 0;
-  max-width: 56ch;
-  font-size: var(--fs-lead);
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.hero__cta {
-  margin-top: var(--space-8);
-}
-
-// ============================ BROWSE BY CATEGORY ============================
-// Uniform editorial photo grid: 8 identical full-bleed tiles, portrait crop,
-// title + tag bottom-left on a gradient scrim. 2 columns (4 rows) on mobile,
-// 4 columns (2 rows) from md — no 3-column step, it leaves a ragged last row.
-.cat-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
+  &.is-staged {
+    height: calc(100dvh + var(--hold));
+  }
 
   @include bp.respond-to(md) {
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-4);
+    --card-w: min(21rem, 30vw);
+    --card-h: min(28rem, 58vh);
+    --card-gap: var(--space-2); // cards sit close together, like Revolut's
+    --cards-y: 14vh;
+  }
+
+  @include bp.respond-to(lg) {
+    --card-w: min(24rem, 30vw);
+    --card-h: min(32rem, 58vh);
+  }
+
+  // Short desktop viewports (a 1080p laptop at 125% scaling leaves ~750px): smaller
+  // cards pushed further down, so the heading block above them never touches the row.
+  @media (min-width: 768px) and (max-height: 900px) {
+    --card-w: min(19rem, 26vw);
+    --card-h: min(24rem, 48vh);
+    --cards-y: 17vh;
+
+    // the organizer card is shorter too: tighter rows so the list and the pill fit
+    .stage__card--sheet {
+      padding: var(--space-4);
+    }
+
+    .stage__sheet-list li {
+      padding: var(--space-2) 0;
+      font-size: var(--fs-small);
+    }
   }
 }
 
-.cat-tile {
+.stage {
   position: relative;
-  display: flex;
-  align-items: flex-end;
+  min-height: 100dvh;
   overflow: hidden;
-  aspect-ratio: 1 / 1; // one crop for every tile — the rows read as two calm bands
-  border-radius: var(--radius-xl);
-  transition: transform var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out);
+  background: var(--paper);
+  color: var(--on-spruce);
 
-  &:hover {
-    transform: translateY(calc(-1 * var(--space-1)));
-    box-shadow: var(--shadow-md);
+  .hero.is-staged & {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    min-height: 0;
   }
-  &:hover .cat-tile__bg img,
-  &:hover .cat-tile__bg video {
-    transform: scale(1.04);
+
+  // ---- the photo: full screen → clipped to the centre card ----
+  &__photo {
+    position: absolute;
+    inset: 0;
+    z-index: 2; // above the side cards, so they emerge from behind the photo
+    background: var(--spruce);
+    clip-path: inset(
+      calc(var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 + var(--cards-y)))
+      calc(var(--p) * ((var(--stage-w) - var(--mid-w)) / 2))
+      calc(var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y)))
+      round calc(var(--p) * 18px)
+    );
   }
-  // the nav's editorial underline, wiping in under the tile title
-  &:hover .cat-tile__title::after,
-  &:focus-visible .cat-tile__title::after {
-    transform: scaleX(1);
+
+  // ---- the frame: rest box → centre card edge, driven by --p ----
+  // Rest geometry follows Revolut's hero (a quarter of the screen wide, top at 30% of
+  // the viewport, running off the bottom). End geometry is the centre card's clip.
+  &__frame {
+    --f-w-rest: var(--frame-w);
+    --f-top-rest: 30vh;
+    --f-bottom-rest: 11vh; // the whole box is on screen, above the scroll arrow
+    --f-side-rest: calc((var(--stage-w) - var(--f-w-rest)) / 2);
+    --f-top-end: calc((var(--stage-h) - var(--mid-h)) / 2 + var(--cards-y));
+    --f-bottom-end: calc((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y));
+    --f-side-end: calc((var(--stage-w) - var(--mid-w)) / 2);
+    position: absolute;
+    z-index: 3;
+    top: calc((1 - var(--p)) * var(--f-top-rest) + var(--p) * var(--f-top-end));
+    bottom: calc((1 - var(--p)) * var(--f-bottom-rest) + var(--p) * var(--f-bottom-end));
+    left: calc((1 - var(--p)) * var(--f-side-rest) + var(--p) * var(--f-side-end));
+    right: calc((1 - var(--p)) * var(--f-side-rest) + var(--p) * var(--f-side-end));
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: calc(24px - var(--p) * 6px); // 24px at rest → the card's 18px
+    pointer-events: none;
+    animation: chip-in var(--dur-reveal) var(--ease-out) 300ms both;
+  }
+
+  // ---- heading above the cards ----
+  &__head {
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(var(--hdr-h) + 9vh);
+    z-index: 3; // the text is never covered by the cards, whatever the viewport
+    text-align: center;
+    color: var(--ink);
+    opacity: clamp(0, (var(--p) - 0.55) * 2.5, 1);
+    transform: translateY(calc((1 - var(--p)) * 28px));
+
+    // short desktop viewports: tighter heading, higher up, smaller type
+    @media (min-width: 768px) and (max-height: 900px) {
+      top: calc(var(--hdr-h) + 5vh);
+
+      .stage__title {
+        font-size: clamp(2rem, 1rem + 2.6vw, 3.25rem);
+      }
+
+      .stage__lead {
+        max-width: 44rem;
+        font-size: 1.125rem;
+        line-height: 1.35;
+      }
+    }
+  }
+
+  // Revolut-style statement: regular-width sans at medium weight, tight, centred.
+  &__title {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-statement);
+    font-stretch: var(--stretch-ui);
+    font-size: clamp(2.25rem, 1.2rem + 3.6vw, 5rem);
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  &__lead {
+    margin: 0 auto;
+    max-width: 52rem;
+    font-family: var(--font-statement);
+    font-stretch: var(--stretch-ui);
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-regular);
+    line-height: 1.4;
+    color: var(--ink);
+
+    @include bp.respond-to(md) {
+      font-size: 1.5rem;
+      line-height: 1.35;
+    }
+  }
+
+  // ---- the two cards that join the photo ----
+  &__card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--card-w);
+    height: var(--card-h);
+    margin: calc(var(--card-h) / -2 + var(--cards-y)) 0 0 calc(var(--card-w) / -2);
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 18px;
+    background: var(--spruce);
+    box-shadow: var(--shadow-lg);
+    opacity: var(--slide);
+    // full size: the side cards match the centre card exactly (no scale-down)
+    transform: translateX(calc(var(--dir) * ((var(--mid-w) + var(--card-w)) / 2 + var(--card-gap)) * var(--slide)));
+
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.85);
+    }
+
+    &--l { --dir: -1; }
+    &--r { --dir: 1; }
+
+    &--sheet {
+      background: var(--paper-white);
+      color: var(--ink);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  &__card-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(21, 23, 26, 0.7), rgba(21, 23, 26, 0.1) 60%);
+  }
+
+  &__sheet-h {
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--ink);
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+
+  &__sheet-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex: 1;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px dotted var(--paper-line-strong);
+      font-family: var(--font-statement);
+      font-size: var(--fs-ui);
+      font-weight: var(--fw-medium);
+
+      svg {
+        flex: none;
+        width: 22px;
+        height: 22px;
+        padding: 4px;
+        border-radius: var(--radius-pill);
+        background: var(--spruce);
+        color: #fff;
+      }
+    }
   }
 }
 
-.cat-tile__bg {
+// "Personal · £6,012 · Accounts" style chips inside the cards
+.chip {
   position: absolute;
-  inset: 0;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: grid;
+  gap: 2px;
+  text-align: center;
+  color: #fff;
+  // light text over bright photo areas (the white flowers in the centre card)
+  text-shadow: 0 1px 14px rgba(21, 23, 26, 0.55);
+  opacity: clamp(0, (var(--p) - 0.6) * 3, 1);
 
-  img,
-  video {
+  &__label {
+    font-family: var(--font-statement);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.01em;
+  }
+
+  &__value {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-black);
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  // The pill: one size on all three cards (Revolut's "Accounts" pills are identical).
+  // Fixed height and width, one line; the texts are kept short enough to fit.
+  &__sub {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: min(100%, 14.5rem);
+    height: 40px;
+    margin-top: var(--space-2);
+    justify-self: center;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: var(--fw-semibold);
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // The centre chip is visible at rest too (Revolut's "Personal · £6,012 · Accounts"):
+  // it fills the lower half of the hero as a product preview, then rides into the
+  // centre card. At rest it sits at 62% of the screen height; by p=1 it is pinned
+  // to the bottom of the card.
+  &--center {
+    opacity: 1;
+    // width follows the photo: full viewport at rest → the card's inner width at p=1,
+    // so a long title wraps inside the card instead of being clipped by it
+    // centred arithmetically (no transform: the entrance animation's final keyframe
+    // would reset a transform-based centring)
+    // the chip is as wide as the frame at rest and as the card at p=1, so the title
+    // wraps inside whichever box it is in
+    --chip-w: calc((1 - var(--p)) * var(--frame-w) + var(--p) * var(--mid-w));
+    left: calc((var(--stage-w) - var(--chip-w)) / 2 + var(--space-4));
+    right: auto;
+    width: calc(var(--chip-w) - 2 * var(--space-4));
+    bottom: calc(
+      (1 - var(--p)) * (var(--stage-h) * 0.38) +
+      var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y) + var(--space-4))
+    );
+    animation: chip-in var(--dur-reveal) var(--ease-out) 420ms both;
+
+    // Text is bigger while the photo is full-screen and eases down to card size with --p.
+    --rest-value: clamp(1.75rem, 1.1rem + 1.8vw, 2.75rem);
+    --card-value: clamp(1.5rem, 1.1rem + 1.4vw, 2.125rem);
+
+    .chip__label {
+      font-size: calc(1.25rem - var(--p) * 0.3125rem); // 20px → 15px
+    }
+
+    .chip__value {
+      font-size: calc(var(--rest-value) - var(--p) * (var(--rest-value) - var(--card-value)));
+      text-wrap: balance; // long section names wrap to two lines in the card
+    }
+
+    .chip__sub {
+      // larger while the photo is full screen; the shared pill size once in the card
+      font-size: calc(1.0625rem - var(--p) * 0.1875rem); // 17px → 14px
+      height: calc(46px - var(--p) * 6px); // 46px → 40px
+      margin-top: calc(20px - var(--p) * 12px); // a little more air at rest → the cards' 8px
+    }
+  }
+
+  // Phones: the hero copy runs long, so grow the text less and keep the chip lower at
+  // rest, so it fits between the button and the scroll arrow.
+  @media (max-width: 767px) {
+    &--center {
+      --rest-value: 1.75rem;
+      bottom: calc(
+        (1 - var(--p)) * (var(--stage-h) * 0.08) +
+        var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y) + var(--space-4))
+      );
+
+      .chip__label {
+        font-size: calc(1.125rem - var(--p) * 0.1875rem); // 18px → 15px
+      }
+    }
+  }
+
+  // Short phone screens (≤ 700px tall): the hero copy already fills the screen, so the
+  // chip only fades in with the transform and lives in the centre card.
+  @media (max-width: 767px) and (max-height: 700px) {
+    &--center {
+      opacity: var(--p);
+      animation: none;
+    }
+  }
+
+}
+
+// the organizer card's foot: a small label and the same pill as the photo cards
+.stage__sheet-foot {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-3);
+  text-align: center;
+
+  .chip__sub {
+    margin-top: 0;
+    background: var(--paper-deep); // a white pill would vanish on the white card
+  }
+}
+
+.stage__sheet-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--ink-500);
+}
+
+// ---- hero copy on the photo (fades up and out as the stage starts) ----
+.hero {
+  &__img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--dur-slow) var(--ease-out);
+    object-position: 50% 55%; // the arch sits just below centre in both renders
+    filter: saturate(0.95);
+    // zoom out as the frame shrinks: scale about the viewport centre, then shift the
+    // image down into the card, so the card shows the whole arch rather than a
+    // viewport-scale crop of the middle
+    transform-origin: 50% 50%;
+    transform: translateY(calc(var(--p) * var(--cards-y))) scale(calc(1 - var(--p) * (1 - var(--card-scale))));
   }
-}
 
-// The videographers tile: an animated gif clip on top; underneath, a crossfade
-// montage (three shots, slow zoom, 15s cycle) covers loading + reduced motion.
-.cat-tile--video .cat-tile__bg img:not(.cat-tile__clip) {
-  opacity: 0;
-  animation: cat-montage 15s linear infinite;
+  &__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(21, 23, 26, 0.5) 0%, rgba(21, 23, 26, 0.22) 45%, rgba(21, 23, 26, 0.45) 100%);
+    opacity: calc(1 - var(--p) * 1.5);
+  }
 
-  &:nth-child(2) {
-    animation-delay: 5s;
-  }
-  &:nth-child(3) {
-    animation-delay: 10s;
-  }
-}
-
-@keyframes cat-montage {
-  0% {
-    opacity: 0;
-    transform: scale(1.02);
-  }
-  7% {
-    opacity: 1;
-  }
-  33% {
-    opacity: 1;
-    transform: scale(1.13);
-  }
-  40% {
-    opacity: 0;
-    transform: scale(1.16);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.02);
-  }
-}
-
-// Quiet on top, solid enough at the bottom that white type passes on the
-// brightest photos (chandeliered halls, sunlit roads).
-.cat-tile__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-ink-900) 10%, transparent) 0%,
-    color-mix(in srgb, var(--color-ink-900) 16%, transparent) 45%,
-    color-mix(in srgb, var(--color-ink-900) 78%, transparent) 100%
-  );
-}
-
-.cat-tile__overlay {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  text-align: left;
-  color: var(--color-text-on-brand);
-}
-
-.cat-tile__title {
-  position: relative;
-  align-self: flex-start;
-  font-family: var(--font-display);
-  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
-  font-weight: var(--fw-semibold);
-  line-height: var(--lh-heading);
-
-  &::after {
-    content: '';
+  // Revolut placement: top-left under the header, left-aligned, one colour.
+  &__copy {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -4px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--color-brand-500);
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform var(--dur-base) var(--ease-out);
+    top: calc(var(--hdr-h) + 48px);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    // lifts away as the stage begins
+    transform: translateY(calc(var(--p) * -120px));
+    opacity: clamp(0, 1 - var(--p) * 3, 1);
+
+    > * {
+      animation: hero-in var(--dur-reveal) var(--ease-out) both;
+    }
+
+    > :nth-child(2) { animation-delay: 120ms; }
+    > :nth-child(3) { animation-delay: 260ms; }
+  }
+
+  &.is-past &__copy,
+  &.is-past &__down {
+    pointer-events: none;
+  }
+
+  // Measured from revolut.com's hero: 88.7px / 500 / lh 1 / ls -0.024em at 1504px wide,
+  // paragraph 18/24 in a 400px column with 18px margins, black pill button below.
+  &__title {
+    margin: 0;
+    max-width: none;
+    white-space: nowrap; // "შენი ოცნების ქორწილი" stays on one line; size follows the viewport
+    font-family: var(--font-statement);
+    font-stretch: var(--stretch-ui);
+    // ~8.1vw at phone widths (20 Georgian glyphs fit inside the 16px gutters), 4.6vw on
+    // desktop, capped at 72px
+    font-size: clamp(1.75rem, min(7.7vw, 2.2rem + 2.6vw), 4.5rem);
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    letter-spacing: -0.024em;
+    color: #fff;
+
+    em {
+      font-style: normal;
+      color: inherit;
+    }
+
+  }
+
+  &__lead {
+    margin: 28px 0 36px; // more air between headline → paragraph → button
+    max-width: 400px;
+
+    @include bp.respond-to(md) {
+      margin-left: var(--space-2); // a touch in from the headline's left edge
+    }
+    font-family: var(--font-statement);
+    font-stretch: var(--stretch-ui);
+    font-size: 18px;
+    font-weight: var(--fw-regular);
+    line-height: 24px;
+    color: #fff;
+  }
+
+  &__down {
+    position: absolute;
+    left: 50%;
+    bottom: max(var(--space-2), env(safe-area-inset-bottom));
+    z-index: 3;
+
+    @include bp.respond-to(md) {
+      bottom: max(var(--space-6), env(safe-area-inset-bottom));
+    }
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    color: var(--on-spruce);
+    transform: translateX(-50%);
+    opacity: clamp(0, 1 - var(--p) * 6, 1);
+    animation: hero-down 2.2s var(--ease-in-out) 1.2s infinite;
+
+    &:hover {
+      color: var(--paper-white);
+      background: rgba(241, 237, 228, 0.14);
+    }
+  }
+
+  // Not staged (no JS yet, or reduced motion): plain full-screen hero, no cards.
+  &:not(.is-staged) {
+    .stage__card,
+    .stage__head,
+    .chip--center {
+      display: none;
+    }
   }
 }
 
-.cat-tile__tag {
-  // title-only on narrow tiles — three wrapped tag lines would swallow the photo
-  display: none;
-  font-size: var(--fs-caption);
-  color: color-mix(in srgb, var(--color-text-on-brand) 82%, transparent);
+// Primary call on photos — Revolut's black pill: #1F1F1F, white 16px medium,
+// 10×24 padding, 42px tall, no icon, no shadow.
+.pill-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 42px;
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-statement);
+  font-stretch: var(--stretch-ui);
+  font-size: 1rem;
+  font-weight: var(--fw-medium);
+  line-height: 22px;
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 
-  @include bp.respond-to(md) {
-    display: block;
-  }
-}
-
-// No autoplaying motion for reduced-motion users — a single still stands in.
-// (A gif can't be paused with CSS, so it gets hidden outright.)
-@media (prefers-reduced-motion: reduce) {
-  .cat-tile--video .cat-tile__bg img {
-    animation: none;
-    opacity: 1;
-  }
-  .cat-tile__bg .cat-tile__clip {
+  svg {
     display: none;
   }
-}
 
-// ==================== VENDOR MARQUEES (Popular / VIP) ====================
-// Continuous slow drift; the duplicated (aria-hidden) set makes the -50% loop
-// seamless. Pauses on hover/focus; reduced motion gets a swipeable static row.
-
-// Both strips are secondary discovery rows — compact: modest headings,
-// tight padding, small cards. Deliberately quieter than the primary sections.
-.featured {
-  padding-block: var(--space-6);
-
-  @include bp.respond-to(md) {
-    padding-block: var(--space-8);
+  &:hover {
+    color: #fff;
+    background: #333;
   }
 
-  .section__head {
-    margin-bottom: var(--space-4);
+  &:active {
+    transform: scale(0.98);
+  }
 
-    h2 {
-      font-size: var(--fs-h3);
+  // on photo sections: white pill, ink text
+  &--white {
+    background: #fff;
+    color: var(--ink);
+
+    &:hover {
+      color: var(--ink);
+      background: var(--paper-deep);
     }
   }
+}
 
-  .section__sub {
-    margin-top: var(--space-1);
-    font-size: var(--fs-body);
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
   }
-}
 
-.section--flush-top {
-  padding-top: 0; // VIP row sits directly under Popular — one shared breath
-}
-
-.vendor-marquee {
-  overflow: hidden;
-  padding-block: var(--space-2); // room for card hover shadows inside the clip
-  mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
-}
-
-.vendor-marquee__track {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  width: max-content;
-  animation: vendor-marquee 45s linear infinite;
-
-  &:hover,
-  &:focus-within {
-    animation-play-state: paused;
-  }
-}
-
-.vendor-marquee--reverse .vendor-marquee__track {
-  animation-direction: reverse;
-}
-
-.vendor-marquee__item {
-  flex: 0 0 11rem;
-  // Trailing gap lives on each item (not the flex gap) so the track's total
-  // width is exactly 2× one set and the -50% loop has no seam.
-  margin-inline-end: var(--space-4);
-
-  @include bp.respond-to(md) {
-    flex-basis: 13rem;
-  }
-}
-
-@keyframes vendor-marquee {
   to {
-    transform: translateX(-50%);
+    opacity: 1;
+    transform: none;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .vendor-marquee {
-    overflow-x: auto;
-    mask-image: none;
+@keyframes chip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hero-down {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 6px); }
+}
+
+// ---- phones: Revolut's mobile hero. The photo does not shrink into a card; it
+// becomes a full-width band at the top, the heading sits under it, and the three
+// cards become a swipeable strip beneath. The band shows whichever card is centred
+// (crossfade), the active card sits full size and its neighbours shrink and dim. ----
+.strip {
+  display: none; // md+ keeps the three-card stage
+}
+
+@media (max-width: 767px) {
+  .hero {
+    --band-h: 50dvh; // the photo band at p=1
+    --strip-card-h: clamp(10.5rem, 29dvh, 15rem);
   }
-  .vendor-marquee__track {
-    width: auto;
+
+  // the photo: full screen → the top band, rounded at the bottom
+  .stage__photo {
+    clip-path: inset(
+      0 0 calc(var(--p) * (var(--stage-h) - var(--band-h))) 0
+      round 0 0 calc(var(--p) * 22px) calc(var(--p) * 22px)
+    );
+  }
+
+  // no zoom-out on phones (the band is full width); drift up so the arch, which sits
+  // just below the middle of the tall render, ends up inside the band
+  .hero__img {
+    transform: translateY(calc(var(--p) * -16vh));
+  }
+
+  // the frame at rest spans the gutters under the copy; on phones the photo ends as a
+  // full-width band, which needs no outline, so the frame fades out with the stage
+  .hero {
+    --frame-w: calc(100% - 2 * var(--gutter));
+  }
+
+  .stage__frame {
+    --f-top-rest: 52vh;
+    --f-bottom-rest: 4vh; // just under the chip, which rests at 8% on phones
+    opacity: calc(1 - var(--p));
+  }
+
+  // desktop cards and the big riding chip are off; the strip's own chips take over
+  .stage__card {
+    display: none;
+  }
+
+  .chip--center {
     animation: none;
+    opacity: clamp(0, 1 - var(--p) * 2, 1);
   }
-  .vendor-marquee__item[aria-hidden='true'] {
-    display: none; // no visible duplicates in the static row
+
+  // the heading moves under the band, title only
+  .stage__head {
+    top: calc(var(--band-h) + var(--space-4));
   }
-}
 
-// ============================ BUDGET BAND (light, real data) ============================
-.budget-band {
-  background: var(--color-surface-sunken);
-}
-
-.budget-band__inner {
-  padding-block: var(--space-16);
-  display: grid;
-  gap: var(--space-10);
-  align-items: center;
-
-  @include bp.respond-to(md) {
-    grid-template-columns: 1.1fr 0.9fr;
-    padding-block: var(--space-20);
-    gap: var(--space-16);
+  .stage__title {
+    margin-bottom: 0;
+    font-size: clamp(1.625rem, 6.4vw, 2rem);
   }
-}
 
-.budget-band__title {
-  margin: 0;
-}
-
-.budget-band__body {
-  margin: var(--space-5) 0 var(--space-8);
-  color: var(--color-text-secondary);
-  font-size: var(--fs-lead);
-  max-width: 50ch;
-}
-
-// real allocation preview — Georgian-norm percentages on a sample total
-.budget-preview {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-6);
-}
-
-.budget-preview__head {
-  margin: 0 0 var(--space-5);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  color: var(--color-text-secondary);
-}
-
-.budget-preview__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-4);
-}
-
-.budget-preview__top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-1);
-}
-
-.budget-preview__label {
-  font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
-}
-
-.budget-preview__amt {
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-}
-
-.budget-preview__track {
-  display: block;
-  height: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
-  overflow: hidden;
-}
-
-.budget-preview__fill {
-  display: block;
-  height: 100%;
-  border-radius: var(--radius-pill);
-  background: var(--color-brand-500);
-}
-
-.budget-preview__more {
-  margin: var(--space-5) 0 0;
-  font-size: var(--fs-caption);
-  color: var(--color-text-muted);
-}
-
-// ============================ WEDDING WEBSITE PROMO ============================
-// Preview left / copy right on desktop — mirrors the budget band's split so the
-// two tool promos zigzag down the page. White ground between two tinted bands.
-.wsite-band {
-  background: var(--color-surface);
-  overflow: hidden; // rotated card corners must not spawn horizontal scroll
-}
-
-.wsite-band__inner {
-  display: grid;
-  gap: var(--space-12);
-  align-items: center;
-
-  @include bp.respond-to(md) {
-    grid-template-columns: 0.9fr 1.1fr;
-    gap: var(--space-16);
-
-    // Copy is first in DOM (it's the content); stage moves left visually.
-    .wsite-band__copy {
-      order: 2;
-    }
-    .wsite-band__stage {
-      order: 1;
-    }
+  .stage__lead {
+    display: none;
   }
-}
 
-.wsite-band__title {
-  margin: var(--space-2) 0 0;
-}
-
-.wsite-band__body {
-  margin: var(--space-5) 0 var(--space-8);
-  color: var(--color-text-secondary);
-  font-size: var(--fs-lead);
-  max-width: 50ch;
-}
-
-// Real product shot: <app-wedding-site> (seaside, thumb mode) in a mini browser
-// frame. The URL pill + published badge tell the story: one link, already live.
-.wsite-band__stage {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  padding-block: var(--space-4);
-
-  // soft tilted backdrop so the shot doesn't float on bare white
-  &::before {
-    content: '';
+  // ---- the strip ----
+  .strip {
+    display: block;
     position: absolute;
-    top: 6%;
-    width: min(24rem, 94%);
-    height: 90%;
-    border-radius: var(--radius-xl);
-    background: var(--color-brand-50);
-    transform: rotate(-4deg);
+    left: 0;
+    right: 0;
+    bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    z-index: 3;
+    opacity: var(--slide);
+    transform: translateY(calc((1 - var(--slide)) * 48px));
   }
-}
 
-.wsite-shot {
-  position: relative;
-  width: min(23rem, 100%);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  transform: rotate(1.25deg);
-  transition: transform var(--dur-base) var(--ease-out);
+  .strip__track {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-2) 14vw; // room for the first and last card to sit centred
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 14vw;
+    scrollbar-width: none;
 
-  .wsite-band__stage:hover & {
-    transform: rotate(0deg) translateY(calc(-1 * var(--space-1)));
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
-}
 
-.wsite-shot__chrome {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-ink-100);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.wsite-shot__dots {
-  display: inline-flex;
-  gap: var(--space-1);
-
-  i {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: var(--radius-pill);
-    background: var(--color-ink-300);
-  }
-}
-
-.wsite-shot__url {
-  flex: 1;
-  min-width: 0;
-  padding: var(--space-1) var(--space-3);
-  background: var(--color-surface);
-  border-radius: var(--radius-pill);
-  font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.wsite-shot__page {
-  display: block;
-  height: 24rem;
-
-  app-wedding-site {
-    display: block;
-    height: 100%;
-  }
-}
-
-
-// ============================ GUIDES / REAL WEDDINGS ============================
-.guide-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-8);
-
-  @include bp.respond-to(sm) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @include bp.respond-to(lg) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.guide-card {
-  display: block;
-  color: var(--color-text);
-
-  &__media {
-    display: block;
+  .strip__card {
+    position: relative;
+    flex: none;
+    width: 72vw;
+    height: var(--strip-card-h);
     overflow: hidden;
-    border-radius: var(--radius-lg);
-    aspect-ratio: 7 / 5;
+    border-radius: 18px;
+    background: var(--spruce);
+    color: var(--on-spruce);
+    box-shadow: var(--shadow-lg);
+    scroll-snap-align: center;
+    // the slide: neighbours sit smaller and dimmer, the centred card swells to full size
+    transform: scale(0.9);
+    opacity: 0.55;
+    transition:
+      transform 420ms var(--ease-out),
+      opacity 420ms var(--ease-out);
+
+    &.is-active {
+      transform: none;
+      opacity: 1;
+    }
 
     img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform var(--dur-slow) var(--ease-out);
+      filter: saturate(0.85);
+    }
+
+    // chips in the strip are always on (the stage's --p fade is for the desktop cards)
+    .chip {
+      opacity: 1;
+      left: var(--space-3);
+      right: var(--space-3);
+      bottom: var(--space-3);
+    }
+
+    .chip__label {
+      font-size: var(--fs-caption);
+    }
+
+    .chip__value {
+      font-size: 1.25rem;
+      text-wrap: balance;
+    }
+
+    .chip__sub {
+      margin-top: var(--space-1);
+      padding: 3px var(--space-2);
+      font-size: 11px;
+    }
+
+    &--sheet {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-3) var(--space-4);
+      background: var(--paper-white);
+      color: var(--ink);
+
+      .stage__sheet-h {
+        margin-bottom: var(--space-2);
+        padding-bottom: var(--space-2);
+      }
+
+      .stage__sheet-list li {
+        padding: var(--space-2) 0;
+        font-size: var(--fs-small);
+      }
     }
   }
 
-  &__tag {
-    display: inline-block;
-    margin-top: var(--space-4);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-pill);
-    background: var(--color-sage-100);
-    color: var(--color-sage-700);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-medium);
+  .strip__dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: var(--space-2);
+  }
+
+  .strip__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(21, 23, 26, 0.25);
+    transition:
+      width 300ms var(--ease-out),
+      background 300ms var(--ease-out);
+
+    &.is-active {
+      width: 18px;
+      background: var(--ink);
+    }
+  }
+}
+
+// Everything after the stage.
+.after-hero {
+  position: relative;
+  z-index: 1;
+  background: var(--paper);
+}
+
+// =============================================================================
+// 02 — Start: full-screen auto-rotating slides (photo + the example couple's card)
+// =============================================================================
+.start {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--space-16) 0 var(--space-12);
+  overflow: hidden;
+  background: var(--spruce);
+  color: var(--on-spruce);
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85);
+    opacity: 0;
+    transition: opacity 1400ms var(--ease-in-out); // plain crossfade, no zoom
+
+    &.is-active {
+      opacity: 1;
+    }
+  }
+
+  &__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(21, 23, 26, 0.6) 0%, rgba(21, 23, 26, 0.2) 40%, rgba(21, 23, 26, 0.55) 100%);
+  }
+
+  &__copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   &__title {
-    margin: var(--space-3) 0 var(--space-4);
-    font-size: var(--fs-h4);
+    margin: 0 0 var(--space-4);
+    font-size: var(--fs-h2);
+    color: var(--paper-white);
+    text-shadow: 0 2px 24px rgba(21, 23, 26, 0.25);
+  }
+
+  &__lead {
+    margin: 0 0 var(--space-6);
+    max-width: 30rem;
+    font-family: var(--font-statement);
+    font-size: var(--fs-lead);
+    line-height: 1.5;
+    color: #fff;
+  }
+
+  // the floating card, centred in the remaining space
+  &__card {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    width: min(22rem, calc(100% - 2 * var(--gutter)));
+    min-height: 15rem;
+    margin-block: var(--space-6);
+  }
+
+  // Revolut-style frame (their "Life, meets savings" box): a tall portrait
+  // rectangle, 4:5, with a crisp 1px solid white border and nothing inside it but
+  // the photo. Three rows — empty / main block / empty — keep the name, step and
+  // value in the exact middle; the detail pill sits on its own near the bottom edge.
+  &__card-inner {
+    display: grid;
+    grid-template-rows: 1fr auto 1fr;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    padding: var(--space-5);
+    border-radius: 14px;
+    background: transparent;
+    border: 1px solid #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    text-align: center;
+    text-shadow: 0 1px 12px rgba(21, 23, 26, 0.6); // keeps the text legible on the bare photo
+    animation: card-in 700ms var(--ease-out) both;
+  }
+
+  &__card-main {
+    grid-row: 2;
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  &__card-label {
+    font-family: var(--font-ui);
+    font-size: var(--fs-lead);
+    font-weight: var(--fw-medium);
+    color: var(--paper-white);
+  }
+
+  &__card-value {
+    margin-top: var(--space-1);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    // phrases now, not short numbers — a notch under h3 so they hold one or two lines
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+    text-wrap: balance;
+    font-weight: var(--fw-black);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tight);
+    color: var(--paper-white);
+  }
+
+  &__card-sub {
+    grid-row: 3;
+    align-self: end;
+    justify-self: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+  }
+
+  // labels at the bottom: which step is on screen (not controls)
+  &__dots {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__dot {
+    appearance: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(241, 237, 228, 0.35);
+    background: transparent;
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    line-height: inherit;
+    color: var(--on-spruce);
+    cursor: pointer;
+    transition:
+      background var(--dur-slow) var(--ease-out),
+      border-color var(--dur-slow) var(--ease-out),
+      color var(--dur-slow) var(--ease-out);
+
+    &:hover {
+      border-color: rgba(241, 237, 228, 0.8);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--paper-white);
+      outline-offset: 2px;
+    }
+
+    &.is-active {
+      background: var(--paper-white);
+      border-color: var(--paper-white);
+      color: var(--ink);
+    }
+  }
+
+  @include bp.respond-to(md) {
+    padding-top: var(--space-20);
+
+    &__card {
+      width: 24rem;
+    }
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// =============================================================================
+// 03 — People & place: an editorial index. Eight numbered rows, one stage photo that
+// follows the hovered row (md+); on phones each row carries its own thumbnail.
+// =============================================================================
+.index {
+  display: grid;
+  gap: var(--space-8);
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--paper-line-strong);
+  }
+
+  &__row {
+    border-bottom: 1px solid var(--paper-line-strong);
+  }
+
+  &__link {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    color: var(--ink);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--ink);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--clay);
+      border-radius: var(--radius-sm);
+    }
+  }
+
+  // the index numeral: statement face, clay when the row is live
+  &__num {
+    font-family: var(--font-statement);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-overline);
+    color: var(--ink-500);
+    transition: color var(--dur-base) var(--ease-out);
+  }
+
+  &__thumb {
+    width: 56px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    filter: saturate(0.85);
+    background: var(--paper-deep);
+  }
+
+  &__body {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: var(--fs-h5);
+    font-weight: var(--fw-bold);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tight);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  // the blurb under the name: what the group contains
+  &__meta {
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    color: var(--ink-500);
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  &:hover &__media img {
-    transform: scale(1.04);
+  // the figure column: a tabular display numeral with a tiny overline label beneath,
+  // right-aligned so the eight counts stack into one column
+  &__count {
+    display: grid;
+    justify-items: end;
+    gap: 2px;
+    min-width: 3rem;
+    text-align: right;
   }
-  &:hover &__title {
-    color: var(--color-action);
+
+  &__count-n {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: var(--fs-h5);
+    font-weight: var(--fw-bold);
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  &__count-l {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+
+  &__count--empty &__count-l {
+    padding: 3px var(--space-2);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--paper-line-strong);
+    color: var(--ink-500);
+  }
+
+  &__arrow {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--paper-line-strong);
+    color: var(--ink-500);
+    transition:
+      background var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  // screen-reader-only action label on each row
+  &__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  &__row.is-active &__num,
+  &__link:hover &__num {
+    color: var(--clay);
+  }
+
+  &__link:hover &__arrow,
+  &__row.is-active &__arrow {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper-white);
+    transform: translateX(2px);
+  }
+
+  // the stage: hidden on phones (rows carry thumbnails), sticky on md+
+  &__stage {
+    display: none;
+  }
+
+  &__frame {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--spruce);
+  }
+
+  &__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85);
+    opacity: 0;
+    transform: scale(1.03);
+    transition:
+      opacity var(--dur-slow) var(--ease-out),
+      transform 1200ms var(--ease-out);
+
+    &.is-active {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @include bp.respond-to(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+    gap: var(--space-12);
+    align-items: start;
+
+    &__link {
+      grid-template-columns: auto 1fr auto auto;
+      gap: var(--space-6);
+      padding: var(--space-5) 0;
+    }
+
+    &__count {
+      min-width: 4.5rem;
+    }
+
+    &__count-n {
+      font-size: var(--fs-h4);
+    }
+
+    &__thumb {
+      display: none;
+    }
+
+    &__name {
+      font-size: var(--fs-h4);
+    }
+
+    &__row.is-active &__name,
+    &__link:hover &__name {
+      transform: translateX(var(--space-2));
+    }
+
+    &__stage {
+      display: block;
+      position: sticky;
+      top: calc(var(--hdr-h) + var(--space-6));
+    }
+  }
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 28rem);
+    gap: var(--space-16);
+
+    &__name {
+      font-size: var(--fs-h3);
+    }
+  }
+}
+
+// =============================================================================
+// 03b — Reel: a full-bleed stage. The ring film covers the whole section, the copy
+// (Revolut's product-block type) sits at the top, the eight categories run along the
+// bottom as large tiles, and the middle stays clear for the ring. Black stage by
+// default (`.chap--reel-dark`), white without the modifier — same markup.
+// The editorial index above stays available (commented out in the template).
+// =============================================================================
+.chap--reel {
+  --reel-bg: #fff;
+  --reel-fg: #1f1f1f;
+  --reel-muted: rgba(31, 31, 31, 0.6);
+  --reel-tile-bg: rgba(255, 255, 255, 0.55);
+  --reel-tile-line: rgba(31, 31, 31, 0.2);
+  --reel-tile-hover-bg: #1f1f1f;
+  --reel-tile-hover-fg: #fff;
+  // fades the film toward the copy (top) and the tiles (bottom), clear in the middle
+  --reel-scrim: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.2) 34%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.25) 66%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: 0; // the stage sets its own height
+  background: var(--reel-bg);
+  color: var(--reel-fg);
+  border-top-color: transparent;
+
+  &-dark {
+    --reel-bg: #000;
+    --reel-fg: #fff;
+    --reel-muted: rgba(255, 255, 255, 0.62);
+    --reel-tile-bg: rgba(0, 0, 0, 0.32);
+    --reel-tile-line: rgba(255, 255, 255, 0.32);
+    --reel-tile-hover-bg: #fff;
+    --reel-tile-hover-fg: #0c0c0d;
+    --reel-scrim: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.2) 34%,
+      rgba(0, 0, 0, 0) 50%,
+      rgba(0, 0, 0, 0.3) 66%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+  }
+}
+
+// the film layer, behind everything
+.reel-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--reel-bg);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--reel-scrim);
+  }
+
+  &__media {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.reel-wrap {
+  display: flex;
+  min-height: max(100dvh, 44rem);
+  padding-top: calc(var(--hdr-h) + var(--space-10));
+  padding-bottom: var(--space-10);
+}
+
+.reel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  // the clear band in the middle, where the ring shows: reserved outright on phones
+  // (the copy and four rows of tiles would otherwise squeeze it out), and a minimum
+  // on larger screens where the full-height stage already leaves plenty of room
+  gap: 15rem;
+
+  @include bp.respond-to(md) {
+    gap: var(--space-16);
+  }
+
+  // The copy follows Revolut's product blocks ("Your salary, reimagined"): one
+  // grotesk at medium weight, headline set solid (line-height 1) with slightly
+  // tightened tracking, an 18/24 lead in the same colour as the headline, centred.
+  &__copy {
+    display: grid;
+    justify-items: center;
+    max-width: 40rem;
+    text-align: center;
+  }
+
+  &__overline {
+    margin: 0 0 var(--space-5);
+    font-family: var(--font-statement);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    color: var(--reel-muted);
+  }
+
+  &__title {
+    margin: 0 0 var(--space-5);
+    font-family: var(--font-statement);
+    font-stretch: normal;
+    font-size: clamp(2.5rem, 1.9rem + 2.6vw, 3.4rem); // 40→54
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    letter-spacing: -0.011em;
+    color: var(--reel-fg);
+    text-wrap: balance;
+  }
+
+  &__lead {
+    margin: 0 0 var(--space-6);
+    max-width: 37.5rem;
+    font-family: var(--font-statement);
+    font-size: 1.125rem;
+    font-weight: var(--fw-regular);
+    line-height: 1.5rem;
+    color: var(--reel-fg);
+    text-wrap: balance;
+  }
+
+  // ---- categories: large tiles, 2 columns on phones, 4 × 2 from tablets up ----
+  &__cats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    width: 100%;
+    max-width: 72rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    > li {
+      display: grid;
+    }
+  }
+
+  &__tile {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 64px;
+    padding: var(--space-2);
+    border-radius: 14px;
+    border: 1px solid var(--reel-tile-line);
+    background: var(--reel-tile-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--reel-fg);
+    text-decoration: none;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+
+    &:hover,
+    &:focus-visible {
+      background: var(--reel-tile-hover-bg);
+      border-color: var(--reel-tile-hover-bg);
+      color: var(--reel-tile-hover-fg);
+
+      .reel__tile-meta {
+        color: inherit;
+        opacity: 0.6;
+      }
+
+      .reel__tile-arrow {
+        opacity: 1;
+        transform: translateX(3px);
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--clay);
+      outline-offset: 3px;
+    }
+  }
+
+  &__tile-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: rgba(127, 127, 127, 0.25);
+  }
+
+  &__tile-text {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  &__tile-name {
+    font-family: var(--font-statement);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  &__tile-meta {
+    font-family: var(--font-statement);
+    font-size: var(--fs-caption);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    color: var(--reel-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  // the arrow only shows from tablets up (no room on phones)
+  &__tile-arrow {
+    display: none;
+    opacity: 0.55;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  @include bp.respond-to(md) {
+    &__cats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+
+    &__tile {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: var(--space-4);
+      min-height: 84px;
+      padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
+      border-radius: 18px;
+    }
+
+    &__tile-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+    }
+
+    &__tile-name {
+      font-size: 1.0625rem;
+    }
+
+    &__tile-arrow {
+      display: block;
+    }
+  }
+}
+
+// =============================================================================
+// 04 — Organizer sheet on spruce
+// =============================================================================
+.sheet {
+  background: var(--paper-white);
+  color: var(--ink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+
+  &__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-8);
+    padding: var(--space-6);
+    background: var(--paper);
+    border-bottom: 1px solid var(--paper-line);
+  }
+
+  &__names {
+    margin: 0;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-black);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
+  }
+
+  &__meta {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-700);
+  }
+
+  &__progress {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: min(100%, 18rem);
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-700);
+  }
+
+  &__progress-bar {
+    display: block;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--paper-deep);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      background: var(--clay);
+      border-radius: inherit;
+    }
+  }
+
+  &__progress-v {
+    color: var(--ink);
+  }
+
+  &__cols {
+    display: grid;
+  }
+
+  &__col {
+    padding: var(--space-6);
+    border-top: 1px solid var(--paper-line);
+  }
+
+  &__h {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-ui);
+    font-stretch: var(--stretch-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+
+  // tablets: tasks + budget side by side, vendors full width below;
+  // desktop: the three columns of the organizer in one row.
+  @include bp.respond-to(md) {
+    &__cols {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &__col {
+      border-top: 0;
+
+      &:nth-child(2) {
+        border-left: 1px solid var(--paper-line);
+      }
+
+      &:nth-child(3) {
+        grid-column: span 2;
+        border-top: 1px solid var(--paper-line);
+      }
+    }
+  }
+
+  @include bp.respond-to(lg) {
+    &__cols {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    &__col:nth-child(3) {
+      grid-column: auto;
+      border-top: 0;
+      border-left: 1px solid var(--paper-line);
+    }
+  }
+}
+
+.tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--paper-line);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &__box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--paper-line-strong);
+    border-radius: var(--radius-sm);
+    color: #fff;
+  }
+
+  &.is-done &__box {
+    background: var(--spruce);
+    border-color: var(--spruce);
+  }
+
+  &.is-done &__text {
+    color: var(--ink-500);
+    text-decoration: line-through;
+    text-decoration-color: var(--paper-line-strong);
+  }
+
+  &__due {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-700);
+  }
+
+  &:not(.is-done) &__due {
+    color: var(--clay);
+  }
+}
+
+.saved {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--paper-line);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  &__status {
+    flex: none;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    background: var(--paper-deep);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-700);
+
+    &.is-chosen {
+      background: var(--success-100);
+      color: var(--success-600);
+    }
+  }
+}
+
+// =============================================================================
+// 05 — Day program
+// =============================================================================
+.chap__split {
+  display: grid;
+  gap: var(--space-10);
+
+  .chap__head {
+    margin-bottom: 0;
+  }
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: 5fr 7fr;
+    gap: var(--space-16);
+    align-items: start;
+
+    .chap__head--sticky {
+      position: sticky;
+      top: 88px;
+    }
+  }
+}
+
+.program {
+  background: var(--paper-white);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-5) var(--space-2);
+
+  &__template {
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--ink);
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr auto;
+    align-items: start;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    border-bottom: 1px dotted var(--paper-line-strong);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &.is-edited {
+      background: linear-gradient(to right, var(--clay-100), transparent 70%);
+      margin-inline: calc(var(--space-3) * -1);
+      padding-inline: var(--space-3);
+      border-radius: var(--radius-sm);
+    }
+  }
+
+  &__time {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: var(--fs-h4);
+    font-weight: var(--fw-bold);
+    line-height: 1.1;
+    letter-spacing: var(--tracking-tight);
+
+    s {
+      font-size: var(--fs-small);
+      font-weight: var(--fw-medium);
+      color: var(--ink-500);
+      margin-right: var(--space-1);
+    }
+  }
+
+  &__body {
+    display: grid;
+    gap: 2px;
+  }
+
+  &__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-semibold);
+    line-height: 1.3;
+  }
+
+  &__note {
+    font-size: var(--fs-small);
+    line-height: 1.45;
+    color: var(--ink-700);
+  }
+
+  &__flag {
+    padding: 1px var(--space-2);
+    border-radius: var(--radius-sm);
+    background: var(--paper-deep);
+    font-size: 11px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-700);
+
+    &--edit {
+      background: var(--clay);
+      color: #fff;
+    }
+  }
+
+  &__pen {
+    margin-top: var(--space-1);
+    color: var(--ink-300);
+  }
+
+  .is-edited &__pen {
+    color: var(--clay);
+  }
+}
+
+// =============================================================================
+// 06 — Trust: what you get + FAQ, then the final call
+// =============================================================================
+.trust {
+  display: grid;
+  gap: var(--space-12);
+
+  &__h {
+    margin: 0 0 var(--space-5);
+    font-family: var(--font-ui);
+    font-stretch: var(--stretch-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: 5fr 7fr;
+    gap: var(--space-16);
+  }
+}
+
+.gets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+
+.get {
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--paper-line-strong);
+
+  p {
+    margin: 0;
+    font-size: var(--fs-lead);
+    line-height: 1.45;
+  }
+}
+
+.faq {
+  border-top: 1px solid var(--ink);
+
+  &__item {
+    border-bottom: 1px solid var(--paper-line-strong);
+  }
+
+  &__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    min-height: 44px;
+    font-family: var(--font-ui);
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-semibold);
+    line-height: 1.35;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      color: var(--clay-700);
+    }
+  }
+
+  &__chev {
+    flex: none;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  &__item[open] &__chev {
+    transform: rotate(180deg);
+  }
+
+  &__a {
+    margin: 0;
+    padding: 0 0 var(--space-5);
+    max-width: 40rem;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-700);
+  }
+}
+
+.final {
+  margin-top: var(--space-20);
+  padding: var(--space-12) var(--space-6);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  text-align: center;
+
+  &__title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--fs-h2);
+  }
+
+  &__note {
+    margin: 0 auto var(--space-8);
+    max-width: 34rem;
+    font-size: var(--fs-lead);
+    line-height: 1.5;
+    color: var(--ink-700);
+  }
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-16);
   }
 }
