@@ -1,20 +1,9 @@
 @if (isCouple()) {
-  <!-- ============ checklist (logged-in couple) ============ -->
+  <!-- ============ organizer (logged-in couple): overview, payments, checklist ============ -->
   <section class="planning container">
-    @if (greetingNames() || daysToWedding() !== null) {
-      <div class="planning__welcome">
-        @if (greetingNames()) {
-          <p class="planning__hello">{{ 'planning.greeting' | translate: { names: greetingNames() } }}</p>
-        }
-        @if (daysToWedding() !== null && daysToWedding()! > 0) {
-          <p class="planning__countdown">
-            <span class="num">{{ daysToWedding() }}</span> {{ 'planning.countdown' | translate }}
-          </p>
-        } @else if (daysToWedding() === 0) {
-          <p class="planning__countdown">{{ 'planning.countdownToday' | translate }}</p>
-        }
-      </div>
-    }
+    <app-couple-overview [couple]="couple()" [checklistItems]="items()"
+      (editDetails)="confirmRestart($event)" />
+
     @if (visibleReminders().length) {
       <aside class="preminders">
         <div class="preminders__head">
@@ -42,7 +31,7 @@
       </aside>
     }
 
-    <header class="planning__head">
+    <header class="planning__head" id="checklist">
       <h1>{{ 'planning.checklistTitle' | translate }}</h1>
       <div class="planning__head-meta">
         <p class="planning__progress">

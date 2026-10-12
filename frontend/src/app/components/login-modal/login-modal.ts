@@ -173,11 +173,16 @@ export class LoginModal {
     });
   }
 
-  /** Vendors/admins go to their workspace; couples stay on the current page. */
+  /** Vendors/admins go to their workspace. Couples who sign in on the landing page go
+   * to their organizer (/planning); anywhere else they stay put, so a couple signing
+   * in on a vendor profile to save or message that vendor isn't pulled away from it. */
   private redirect(): void {
     const roles = this.auth.user()?.roles ?? [];
     if (roles.includes('Admin')) this.router.navigateByUrl('/admin');
     else if (roles.includes('Vendor')) this.router.navigateByUrl('/dashboard');
+    else if (roles.includes('Couple') && this.router.url.split(/[?#]/)[0] === '/') {
+      this.router.navigateByUrl('/planning');
+    }
   }
 
   /** Load the GIS library (once), initialise it, and draw Google's button into the modal. */

@@ -19,6 +19,7 @@ import { GUEST_RANGES, PLANNING_STAGES } from '../../core/onboarding';
 import { nameValidator } from '../../core/forms';
 import { trapTabKey } from '../../core/a11y';
 import { LanguageService } from '../../i18n/language.service';
+import { CoupleOverview } from './couple-overview/couple-overview';
 
 interface TipCard {
   slug: string;
@@ -29,7 +30,7 @@ interface TipCard {
 
 @Component({
   selector: 'app-planning',
-  imports: [RouterLink, ReactiveFormsModule, TranslatePipe],
+  imports: [RouterLink, ReactiveFormsModule, TranslatePipe, CoupleOverview],
   templateUrl: './planning.html',
   styleUrl: './planning.scss',
 })
@@ -49,25 +50,8 @@ export class Planning {
   protected readonly isCouple = this.auth.isCouple;
   private coupleLoadStarted = false;
 
-  // couple profile → personalized greeting + wedding countdown
+  // couple profile → the overview's names, date and countdown (and the restart wizard's defaults)
   protected readonly couple = signal<CoupleProfile | null>(null);
-  protected readonly greetingNames = computed(() => {
-    const c = this.couple();
-    if (!c) return '';
-    const a = (c.firstName || '').trim();
-    const b = (c.partnerFirstName || '').trim();
-    if (a && b) return `${a} & ${b}`;
-    return a || b || '';
-  });
-  protected readonly daysToWedding = computed<number | null>(() => {
-    const date = this.couple()?.weddingDate;
-    if (!date) return null;
-    const wedding = new Date(date + 'T00:00:00').getTime();
-    if (Number.isNaN(wedding)) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Math.round((wedding - today.getTime()) / 86_400_000);
-  });
 
   // Guide cards on the explainer (pulled from real content; top 3).
   private readonly articles = toSignal(inject(ContentService).list(), {

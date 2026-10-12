@@ -8,37 +8,6 @@
   padding-block: var(--space-12) var(--space-20);
 }
 
-// personalized welcome + wedding countdown (couple view)
-.planning__welcome {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-6);
-  margin-bottom: var(--space-8);
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.planning__hello {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-h3);
-  line-height: var(--lh-tight);
-}
-
-.planning__countdown {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-weight: var(--fw-medium);
-
-  .num {
-    color: var(--color-brand-600);
-    font-size: var(--fs-h4);
-    font-weight: var(--fw-bold);
-  }
-}
-
 // upcoming budget payment reminders (couple view)
 .preminders {
   margin-bottom: var(--space-10);
@@ -416,7 +385,9 @@
 }
 
 // ---- checklist ----
+// Also the #checklist jump target from the overview: clear the sticky header.
 .planning__head {
+  scroll-margin-top: var(--space-20);
   display: flex;
   align-items: baseline;
   justify-content: space-between;
