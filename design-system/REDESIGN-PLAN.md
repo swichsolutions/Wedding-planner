@@ -29,7 +29,7 @@ turn choices into a plan.
 | სივრცეები და მომსახურებები | catalog of venues/services/shops by category | `/vendors` |
 | რჩევები და იდეები | practical tips, inspiration, real weddings | `/guides` |
 | შესვლა | sign in | login modal |
-| **დაიწყე დაგეგმვა** (CTA) | registration; after sign-in becomes **ჩემი ქორწილი** | `/signup` → `/planning` |
+| **დაიწყე დაგეგმვა** (CTA) | registration; after sign-in becomes **ჩემი გეგმა** (Beka, 2026-10-12; the sitemap says ჩემი ქორწილი, already the menu group's name) | `/signup` → `/planning` |
 
 **Footer:** ჩვენ შესახებ · დახმარება და კონტაქტი · მომწოდებლებისთვის · წესები და პირობები ·
 კონფიდენციალურობა. If paid packages exist, they must be easy to find.
@@ -63,6 +63,11 @@ Therefore: no testimonials are invented, no "booking" wording, "შეამო�
 ---
 
 ## 2. Design direction — "Program on Paper" (საქორწილო პროგრამა)
+
+> **Colours and fonts below are superseded** by the brand theme decided on 2026-10-12
+> (ivory / warm charcoal / evergreen buttons, GF Aisi 2025). See "Brand palette & type" in
+> `CLAUDE.md` and `frontend/src/styles/_brand.scss`. The structure ideas (numbered chapters,
+> one example wedding, progressive disclosure) still apply.
 
 The landing reads like a well-set wedding program booklet: numbered chapters, hairlines,
 dotted leaders (`ცერემონია ........ 17:00`), big condensed Georgian headlines, serif body

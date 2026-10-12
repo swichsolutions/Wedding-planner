@@ -114,12 +114,13 @@ export class App {
   protected readonly navDark = signal(false);
   protected readonly year = new Date().getFullYear();
 
-  /** The header CTA after sign-in (sitemap: "დაიწყე დაგეგმვა" becomes "ჩემი ქორწილი").
+  /** The header CTA after sign-in: "დაიწყე დაგეგმვა" becomes "ჩემი გეგმა" (Beka,
+   * 2026-10-12; the sitemap said "ჩემი ქორწილი", but that is already the menu group's name).
    * Couples go to their organizer; vendors to their listing; admins to the admin panel. */
   protected readonly myLink = computed<{ link: string; key: string }>(() => {
     if (this.auth.isVendor()) return { link: '/dashboard', key: 'nav.myProfile' };
     if (this.auth.isAdmin()) return { link: '/admin', key: 'auth.admin' };
-    return { link: '/planning', key: 'nav.myWedding' };
+    return { link: '/planning', key: 'nav.myPlan' };
   });
 
   // Public wedding sites (/w/{slug}) render chromeless — a couple's invitation page

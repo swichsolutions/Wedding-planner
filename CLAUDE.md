@@ -140,6 +140,25 @@ header, footer and overlays. New or redesigned pages should follow the same rule
 - **Type:** GF Aisi 2025 **Mt** (capitals) only for headings and large text;
   GF Aisi 2025 **Nus** Medium (lowercase, `size-adjust: 120%`) for all other text.
   Nus needs line-height ≥ ~1.4 on wrapping text.
+- **Putting a page on the theme:** add `host: { class: 'theme-brand' }` to the page component
+  (see `pages/home/home.ts`). Style it with the v2 tokens the theme re-points: `--paper`,
+  `--paper-deep`, `--ink`, `--spruce`, `--color-action`, `--font-display`, `--font-body`. The
+  legacy v1 names (`--color-brand-*`, `--color-sage-*`, `--color-gold-*`, …) are NOT themed.
+  They keep the old colours, so convert them when restyling a page. `design-system/MASTER.md`
+  still lists the older "Program on Paper" palette; its colours and fonts are superseded.
+
+### Site structure (information architecture)
+Source of truth: Beka's Georgian sitemap (`Wedding_Planner_Sitemap_GE_Updated.docx`, not in the
+repo), condensed in `design-system/REDESIGN-PLAN.md`. Check new pages and nav changes against it.
+- `/` is the public landing page and is the **same for everyone**, signed in or not. It is
+  server-rendered, and the server can't see who is signed in. Never branch it on auth.
+- The couple's organizer ("ჩემი ქორწილი", sitemap §06) lives at **`/planning`**. Its top is the
+  overview dashboard (`pages/planning/couple-overview`), then payments, then the checklist.
+  Dashboard and organizer work goes there. Budget/guests/seating/website are its sub-tools.
+- Header: logo, three section menus + "ჩემი ქორწილი" group, sign in, and a CTA ("დაიწყე
+  დაგეგმვა", which becomes "ჩემი გეგმა" after sign-in). Couples who sign in on `/` land on
+  `/planning`. Anywhere else they stay on the page they were on.
+- "რჩევები და იდეები" (`/guides`) stays. Its mock articles get replaced with real content.
 
 - **Backend:** .NET 8.
 - **DB:** PostgreSQL.

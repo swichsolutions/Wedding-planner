@@ -1,5 +1,12 @@
 # WeddingPlanner — Design System v2 (MASTER) — "Program on Paper"
 
+> ⚠️ **Palette and fonts in this file are out of date.** On 2026-10-12 Beka and Taso (the
+> designer) chose the brand theme: ivory backgrounds, warm charcoal text and cards, evergreen
+> only on buttons, GF Aisi 2025 Mt/Nus. Follow "Brand palette & type" in `CLAUDE.md`. The theme
+> is implemented in `frontend/src/styles/_brand.scss` (class `.theme-brand`). The limestone /
+> spruce / clay / Noto values below are kept only as history. Layout, spacing, motion and
+> anti-slop rules still apply.
+
 > **Source of truth for tokens:** `frontend/src/styles/_tokens.scss` (CSS custom properties)
 > and `frontend/src/styles/_breakpoints.scss` (Sass breakpoints + `respond-to` mixin).
 > This file is the *spec*; the SCSS files are the *implementation*. Build every surface from
