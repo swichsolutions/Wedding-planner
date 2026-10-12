@@ -1,0 +1,104 @@
+// =============================================================================
+// Brand theme (Mint & Peach brandbook, revised 2026-10-12, + GF Aisi 2025).
+// Re-points the neutral tokens to the brand palette and the brand faces for one
+// subtree, so components written against --paper / --ink / --font-* follow
+// without edits:
+//   paper → ivory (every large background), paper-deep → ivory-deep (small fills),
+//   ink → warm charcoal (text), spruce → charcoal (cards, dark surfaces),
+//   action → evergreen (buttons ONLY; nothing else is evergreen),
+//   --font-display → GF Aisi Mt (capitals: headings and large text only),
+//   --font-body / --font-ui / --font-statement → GF Aisi Nus (lowercase).
+// Mint is not a UI colour here (it lives in the photos); peach only for small
+// callouts. Headings that were set in --font-statement opt into --font-display.
+// Aliases that :root defines in terms of other tokens (--color-text: var(--ink),
+// --ring, ...) are resolved at :root, so they are re-declared here as well.
+// Applied as the global class .theme-brand (styles.scss): on the home page host, and
+// on the header, footer and overlays while on the home page. Elements that set their
+// own text colour (the footer's ivory) keep it: component styles outrank this class.
+// =============================================================================
+@mixin theme {
+  font-family: var(--font-brand-text);
+  font-synthesis: none;
+  color: var(--charcoal);
+
+  // ---- surfaces ----
+  --paper: var(--ivory);
+  --paper-deep: var(--ivory-deep);
+  --paper-white: #fff;
+  --paper-line: color-mix(in srgb, var(--charcoal) 14%, transparent);
+  --paper-line-strong: color-mix(in srgb, var(--charcoal) 26%, transparent);
+
+  // ---- text ----
+  --ink: var(--charcoal);
+  --ink-700: var(--charcoal-600);
+  --ink-500: var(--charcoal-500);
+  --ink-300: var(--charcoal-300);
+  --on-ink: #fff; // primary buttons: evergreen with white text
+
+  // ---- dark surfaces (cards, footer, the dark header veil) ----
+  --spruce: var(--charcoal);
+  --spruce-700: var(--charcoal-700);
+  --spruce-400: color-mix(in srgb, var(--ivory) 14%, var(--charcoal));
+  --on-spruce: var(--ivory);
+  --on-spruce-muted: color-mix(in srgb, var(--ivory) 72%, transparent);
+  --spruce-line: color-mix(in srgb, var(--ivory) 16%, transparent);
+
+  // ---- semantic aliases ----
+  --color-bg: var(--ivory);
+  --color-surface: #fff;
+  --color-surface-sunken: var(--ivory-deep);
+  --color-text: var(--charcoal);
+  --color-text-secondary: var(--charcoal-600);
+  --color-text-muted: var(--charcoal-500);
+  --color-text-on-dark: var(--ivory);
+  --color-border: var(--paper-line);
+  --color-border-strong: var(--paper-line-strong);
+  --color-action: var(--evergreen); // buttons
+  --color-action-hover: var(--evergreen-700);
+  --color-focus: var(--charcoal);
+  --ring: 0 0 0 2px var(--ivory), 0 0 0 4px var(--charcoal);
+
+  // ---- the old clay accent: the brand has no orange. Its button uses (.btn--clay,
+  // .btn--pink, --color-accent) become evergreen buttons; its tints go neutral. ----
+  --clay: var(--evergreen);
+  --clay-700: var(--evergreen-700);
+  --clay-300: var(--peach);
+  --clay-100: var(--peach);
+  --color-accent: var(--evergreen);
+  --color-accent-hover: var(--evergreen-700);
+  --color-brand-50: var(--ivory-deep);
+  --color-brand-100: var(--ivory-deep);
+  --color-brand-200: var(--peach);
+  --color-brand-400: var(--charcoal-500);
+  --color-brand-500: var(--evergreen);
+  --color-brand-600: var(--evergreen-700);
+  --color-brand-700: var(--evergreen-700);
+  --color-brand-900: var(--evergreen-700);
+
+  // ---- the old v1 ink aliases (login modal, confirm dialog) ----
+  --color-ink-100: var(--ivory-deep);
+  --color-ink-200: var(--paper-line);
+  --color-ink-300: var(--paper-line-strong);
+  --color-ink-500: var(--charcoal-500);
+  --color-ink-600: var(--charcoal-600);
+  --color-ink-700: var(--charcoal-600);
+  --color-ink-900: var(--charcoal);
+  --color-canvas: var(--ivory);
+
+  // ---- type: Mt capitals for display, Nus lowercase for text. Neither has a width
+  // axis; no negative tracking (the condensed capitals touch). Nus is scaled in its
+  // @font-face (size-adjust), so the site's type scale mostly stays as it is; its
+  // tall ascenders/descenders need line-height ≥ ~1.4 on wrapping text, and the
+  // smallest role is raised a step (13px Nus has a 5px letter body). ----
+  --fs-caption: 0.875rem; // 14
+  --font-display: var(--font-brand-display);
+  --font-body: var(--font-brand-text);
+  --font-ui: var(--font-brand-text);
+  --font-statement: var(--font-brand-text);
+  --stretch-display: normal;
+  --stretch-ui: normal;
+  --tracking-display: 0;
+  --tracking-tight: 0;
+  --lh-display: 1;
+  --lh-heading: 1.06;
+}

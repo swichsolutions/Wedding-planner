@@ -40,6 +40,28 @@
   --clay-300:     #f0906a; // accent on spruce (text / marks)
   --clay-100:     #f6ddd3; // tint
 
+  // ---- Brand: Mint & Peach (colour brandbook, Oct 2026) ---------------------
+  // Revised 2026-10-12 (Beka + Taso): every large background is ivory; warm
+  // charcoal carries text, cards and dark surfaces; evergreen is ONLY for buttons;
+  // mint appears only inside photos; peach for small callouts; gold is decoration
+  // only (fine lines, small accents, the ring; never text).
+  // Applied through the brand.theme mixin (styles/_brand.scss), page by page.
+  --ivory:         #faf7f2; // page and section backgrounds
+  --ivory-deep:    #f0ece6; // small UI fills (hover, tags, tracks) on ivory
+  --charcoal:      #302b2d; // warm charcoal: text, cards, dark surfaces
+  --charcoal-700:  #221e20; // deeper: photo scrims, pressed dark surfaces
+  --charcoal-600:  #585454; // secondary text: AA on ivory, white and peach
+  --charcoal-500:  #6d6868; // muted text: AA on ivory and white (not peach)
+  --charcoal-300:  #a9a5a3; // decorative / struck-through only (not text)
+  --mint:          #dcece4; // photos only (not a UI colour any more)
+  --peach:         #f2cebb; // callouts that mark each part of the journey
+  --gold:          #b69a68; // decorative only
+  --evergreen:     #29483f; // buttons only (primary action)
+  --evergreen-700: #1d352e; // button hover / pressed
+  --evergreen-600: #48625a; // (legacy: was secondary text)
+  --evergreen-500: #536b63; // (legacy: was muted text)
+  --evergreen-300: #92a098; // (legacy)
+
   // ---- Semantic -------------------------------------------------------------
   --success-600: #2f6b4a;
   --success-100: #dfeee5;
@@ -76,6 +98,11 @@
   --font-ui:      'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
   // Statement text (hero, stage heading, pill buttons): FiraGO trial, Noto fallback.
   --font-statement: 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  // Brand faces: GF Aisi 2025 (Merab Getsadze, typeface.ge), Medium, see _base.scss.
+  // Display = Mt, condensed Mtavruli capitals, for headings and large text only.
+  // Text = Nus, its lowercase companion, for everything else.
+  --font-brand-display: 'GF Aisi Mt', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  --font-brand-text: 'GF Aisi Nus', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
   --stretch-display: 70%;
   --stretch-ui: 100%;
 

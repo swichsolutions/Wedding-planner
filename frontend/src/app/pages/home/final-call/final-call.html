@@ -1,0 +1,27 @@
+<div class="final" appReveal>
+  <!-- two interlocking rings, drawn once and then turning slowly behind the title -->
+  <svg class="rings" viewBox="0 0 600 360" aria-hidden="true">
+    <circle class="ring" cx="225" cy="180" r="150" pathLength="1" />
+    <circle class="ring ring--b" cx="375" cy="180" r="150" pathLength="1" />
+  </svg>
+
+  @let title = 'home.trust.finalTitle' | translate;
+  <h2 class="title" [attr.aria-label]="title">
+    @for (w of words(title); track $index; let i = $index, last = $last) {
+      <span class="w" aria-hidden="true" [style.--i]="i">{{ w }}</span>{{ last ? '' : ' ' }}
+    }
+  </h2>
+  <p class="note">{{ 'home.trust.finalNote' | translate }}</p>
+
+  <!-- what an account adds, next to the sign-up button -->
+  <p class="gets-h">{{ 'home.trust.getTitle' | translate }}</p>
+  <ul class="gets" role="list">
+    @for (g of gets; track g; let i = $index) {
+      <li [style.--i]="i">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" pathLength="1"/></svg>
+        {{ 'home.trust.get' + g | translate }}
+      </li>
+    }
+  </ul>
+  <a class="btn btn--ink btn--lg" [routerLink]="cta().link">{{ cta().key | translate }}</a>
+</div>

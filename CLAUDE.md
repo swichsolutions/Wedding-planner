@@ -125,6 +125,22 @@ conflicting guidance). Use each for its specific role:
 Aesthetic target (concrete): clean, editorial, photo-forward, card-based browsing,
 generous whitespace, mobile-first. Vendor portfolios are the showcase — invest design effort there.
 
+### Brand palette & type (decided 2026-10-12 by Beka + Taso, the designer; supersedes the PDF brandbook)
+Tokens live in `frontend/src/styles/_tokens.scss`, and the theme lives in `_brand.scss`.
+The theme is applied with the `.theme-brand` class, so far only on the home page and its
+header, footer and overlays. New or redesigned pages should follow the same rules:
+- **Large backgrounds:** always ivory `#FAF7F2`. White `#FFF` is for panels and forms.
+- **Warm charcoal `#302B2D`:** text, cards and dark surfaces (footer, scrims). Secondary
+  text `#585454`, muted text `#6d6868`, small fills `#f0ece6`.
+- **Evergreen `#29483F`:** buttons ONLY (hover `#1D352E`), through `--color-action`.
+- **Mint `#DCECE4`:** only inside photos, never a UI colour.
+- **Peach `#F2CEBB`:** small callouts (chapter labels). The home final call is the one
+  large peach section, kept by choice.
+- **Gold `#B69A68`:** decorative only (fine lines, the rings). Never text.
+- **Type:** GF Aisi 2025 **Mt** (capitals) only for headings and large text;
+  GF Aisi 2025 **Nus** Medium (lowercase, `size-adjust: 120%`) for all other text.
+  Nus needs line-height ≥ ~1.4 on wrapping text.
+
 - **Backend:** .NET 8.
 - **DB:** PostgreSQL.
 - **i18n:** wire up Georgian/English from the start; Georgian is default. Don't

@@ -17,9 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Imagery CDN (placeholder photography) — preconnect to speed up LCP. -->
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
-  <!-- Landing hero: preload the orientation-specific render (same files as the <picture> in home.html). -->
-  <link rel="preload" as="image" href="/media/hero-wide.webp" type="image/webp" media="(orientation: landscape)">
-  <link rel="preload" as="image" href="/media/hero-tall.webp" type="image/webp" media="(orientation: portrait)">
+  <!-- The landing hero render and the brand fonts are preloaded by the home page itself
+       (home.ts preloadAssets, server render of / only). -->
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wdth,wght@62.5..100,100..900&family=Noto+Serif+Georgian:wght@100..900&display=swap">
 </head>

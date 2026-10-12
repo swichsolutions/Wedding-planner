@@ -196,8 +196,12 @@
           "sub": "Wedding cakes, desserts, sweet table"
         },
         "attire": {
-          "name": "Attire & rings",
-          "sub": "Wedding dresses, suits, rings"
+          "name": "Attire",
+          "sub": "Wedding dresses, suits"
+        },
+        "rings": {
+          "name": "Rings",
+          "sub": "Wedding rings, jewellery"
         },
         "beauty": {
           "name": "Beauty",
@@ -216,7 +220,7 @@
       "sheet": {
         "names": "Nino & Giorgi",
         "date": "12 September 2027",
-        "daysLeft": "340 days to go",
+        "daysLeft": "125 days to go",
         "progress": "Progress"
       },
       "tasks": {
@@ -236,6 +240,18 @@
         "t4": {
           "text": "Order invitations",
           "due": "1 Nov"
+        },
+        "t5": {
+          "text": "Choose the cake",
+          "due": "20 Nov"
+        },
+        "t6": {
+          "text": "Book the videographer",
+          "due": "5 Dec"
+        },
+        "t7": {
+          "text": "Arrange transport",
+          "due": "15 Dec"
         }
       },
       "budget": {
@@ -271,9 +287,30 @@
         "chosen": "Chosen",
         "saved": "Saved"
       },
-      "cta": "Create your wedding plan"
+      "overline": "Personal organizer",
+      "leadShort": "One plan — tasks, budget and guests. You only ever see the next step.",
+      "plan": {
+        "progressLabel": "of the plan done",
+        "daysLabel": "days to the wedding",
+        "next": "Next step",
+        "myTasks": "My tasks",
+        "doneOf": "done"
+      },
+      "modules": {
+        "m1": "Tasks & deadlines",
+        "m2": "Budget & payments",
+        "m3": "Guests & seating"
+      },
+      "cta": "Create your wedding plan",
+      "chips": {
+        "c1": "Simple planning",
+        "c2": "Made around you",
+        "c3": "Full control"
+      }
     },
     "day": {
+      "overline": "Wedding-day schedule",
+      "leadShort": "Start from a template and shape it to your day — the times and the order are yours.",
       "title": "What happens after what?",
       "lead": "The wedding-day schedule starts from a template and bends to your day — times, order and who's responsible are all editable.",
       "templateLabel": "Template: classic supra · 120 guests",
@@ -303,15 +340,16 @@
         "title": "Cake & farewell",
         "note": "Photos with every guest"
       },
-      "cta": "See wedding-day plans"
+      "cta": "See wedding-day plans",
+      "now": "Now"
     },
     "trust": {
       "title": "Will it really help?",
-      "lead": "The platform doesn't promise a miracle — it promises order: what to do, who you need and what comes after what.",
-      "getTitle": "What you get with an account",
-      "get1": "A personal plan that adapts to your date, guests and budget.",
-      "get2": "Saved and chosen vendors in one list — with contacts and prices.",
-      "get3": "An editable day schedule and seating plan you can share with your partner.",
+      "lead": "No miracles promised — just order.",
+      "getTitle": "With an account you get",
+      "get1": "A personal plan",
+      "get2": "Saved vendors",
+      "get3": "Day schedule and seating",
       "faqTitle": "Frequently asked questions",
       "faq": {
         "q1": "Do I need an account to browse?",
@@ -326,7 +364,12 @@
         "a5": "Add them manually under “My vendors” — with price and payment dates. Not every vendor has to be on the platform."
       },
       "finalTitle": "Start your wedding plan",
-      "finalNote": "Browse without registering. An account only when you want to save or create a plan."
+      "finalNote": "Browsing needs no account.",
+      "question": "Question",
+      "answer": "Answer",
+      "flipHint": "Tap for the answer",
+      "flipBack": "Back to the question",
+      "goTo": "Question {{n}}"
     },
     "stage": {
       "title": "Everything in one place",
@@ -348,7 +391,8 @@
         "r3": "Guests and seating",
         "r4": "Wedding-day schedule",
         "chipLabel": "Personal organizer",
-        "chipValue": "My wedding"
+        "chipValue": "My wedding",
+        "sub": "Tasks · Budget · Guests"
       }
     }
   },

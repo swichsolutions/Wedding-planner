@@ -109,6 +109,9 @@ export class App {
    * where it stays away; the very top of the page always shows it. */
   protected readonly hidden = signal(false);
   private lastY = 0;
+  /** True while a dark section (`data-nav="dark"`) sits under the bar: the bar's
+   * translucent paper then reads as dark grey over it, and the text goes light. */
+  protected readonly navDark = signal(false);
   protected readonly year = new Date().getFullYear();
 
   /** The header CTA after sign-in (sitemap: "დაიწყე დაგეგმვა" becomes "ჩემი ქორწილი").
@@ -134,11 +137,13 @@ export class App {
   );
   protected readonly chromeless = computed(() => this.currentUrl().startsWith('/w/'));
 
+  /** The landing page runs on the brand theme (Mint & Peach + GF Aisi); the header and
+   * footer follow it there, and keep the default palette on every other page. */
+  protected readonly onHome = computed(() => this.currentUrl().split(/[?#]/)[0] === '/');
+
   /** On the landing page the header sits transparently over the full-screen hero photo
    * until the page is scrolled; everywhere else it is the normal paper bar. */
-  protected readonly overlay = computed(
-    () => this.currentUrl().split(/[?#]/)[0] === '/' && !this.scrolled(),
-  );
+  protected readonly overlay = computed(() => this.onHome() && !this.scrolled());
 
   constructor() {
     // noindex must not leak across client-side navigations (the site finder,
@@ -167,6 +172,8 @@ export class App {
     if (y > 32) this.scrolled.set(true);
     else if (y < 4) this.scrolled.set(false);
 
+    this.readSectionUnderBar();
+
     const dy = y - this.lastY;
     this.lastY = y;
     if (y < 8) {
@@ -182,6 +189,18 @@ export class App {
     }
     if (dy > 2) this.hidden.set(true);
     else if (dy < -2) this.hidden.set(false);
+  }
+
+  /** What is under the bar's lower edge: a `data-nav="dark"` section flips the bar's
+   * text to light (the bar's own translucency does the background). Sampled on scroll. */
+  private readSectionUnderBar(): void {
+    const bar = document.querySelector<HTMLElement>('.hdr');
+    if (!bar) return;
+    const y = Math.max(1, bar.offsetHeight - 2);
+    const under = document
+      .elementsFromPoint(window.innerWidth / 2, y)
+      .find((el) => !bar.contains(el));
+    this.navDark.set(!!under?.closest('[data-nav="dark"]'));
   }
 
   @HostListener('window:keydown.escape')

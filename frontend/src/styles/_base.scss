@@ -16,6 +16,34 @@
   src: url('/fonts/FiraGO-Medium.woff2') format('woff2');
 }
 
+// ---- GF Aisi 2025 (Merab Getsadze; self-hosted from typeface.ge, both marked "Free"
+// in the font files) — the brand faces, one Medium cut each, the cuts Beka chose. One
+// file per family serves every weight (a weight range), so 600/700/800 never trigger
+// synthetic bold.
+//   Mt  — Mtavruli capitals: headings and large display text only. typeface.ge's
+//         "Medium" is the zip's "Medium.ttf" (its internal name says Bold).
+//   Nus — the lowercase (Mkhedruli) companion: all running text, labels, buttons.
+//         Its letters are small for their size (x-height 0.34em against ~0.55em
+//         for Noto Sans Georgian and ~0.50em for FiraGO), so size-adjust scales it
+//         up. 120% is the ceiling: its ascenders/descenders already span 1.14em
+//         (1.37em after scaling), so wrapping Nus text needs line-height ≥ ~1.4.
+@font-face {
+  font-family: 'GF Aisi Mt';
+  font-style: normal;
+  font-weight: 1 1000;
+  font-display: swap;
+  src: url('/fonts/GFAisi2025Mt-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'GF Aisi Nus';
+  font-style: normal;
+  font-weight: 1 1000;
+  font-display: swap;
+  size-adjust: 120%;
+  src: url('/fonts/GFAisi2025Nus-Medium.woff2') format('woff2');
+}
+
 // Base layer — minimal reset + element defaults wired to design tokens.
 // Keep this lean; component styles live with their components.
 

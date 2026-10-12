@@ -1,7 +1,27 @@
 @use 'breakpoints' as bp;
 
+// The home page runs on the brand theme (Mint & Peach + GF Aisi; the host carries
+// .theme-brand, styles/_brand.scss): the neutral tokens are re-pointed for this
+// subtree, children (organizer, FAQ, final call) included. Sections alternate ivory
+// and mint, the final call is the peach callout, and each chapter's overline is a
+// small peach label marking the step of the journey.
 :host {
   display: block;
+  background: var(--ivory);
+}
+
+// Peach label: the overline over each chapter title (brandbook: "occasional peach
+// callouts to mark each part of the journey").
+%journey-label {
+  display: inline-block;
+  padding: 0.5em 1.1em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  letter-spacing: 0.04em;
 }
 
 // =============================================================================
@@ -20,6 +40,15 @@
     background: var(--paper-deep);
   }
 
+  &--peach {
+    background: var(--peach);
+  }
+
+  // a carousel runs off the screen edge: clip it here, not at the container
+  &--clip {
+    overflow-x: clip;
+  }
+
   &--spruce {
     background: var(--spruce);
     color: var(--on-spruce);
@@ -31,6 +60,59 @@
 
     .chap__lead {
       color: var(--on-spruce-muted);
+    }
+  }
+
+  // One full screen with the content centred (every chapter after the categories):
+  // padding scales with the screen height, and the section snaps into place like
+  // the steps and categories before it.
+  &.chap--screen {
+    // (two classes: outranks the breakpoint paddings below)
+    display: flex;
+    align-items: center;
+    min-height: 100dvh;
+    padding-block: clamp(1.5rem, 5vh, 4rem);
+    border-top: 0; // no hairline where one screen hands over to the next (a transparent
+    // border would still show the gradient background repeating into its row)
+  
+    > .container {
+      width: 100%;
+    }
+
+    .chap__head {
+      margin-bottom: clamp(1.25rem, 4vh, 2.5rem);
+    }
+
+    .chap__cta {
+      margin-top: clamp(1rem, 3.5vh, 2.5rem);
+    }
+
+    // short desktop screens (a 1080p laptop at 125% leaves ~750px): tighter type so a
+    // chapter still fits one screen
+    @media (min-width: 768px) and (max-height: 900px) {
+      .chap__title {
+        font-size: clamp(1.875rem, 1.3rem + 2vw, 2.75rem);
+      }
+
+      .chap__lead {
+        font-size: 1.0625rem;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  // painted by the colour band around it (see .band); no hairline at the seam
+  &--charcoal {
+    background: transparent;
+    border-top: 0;
+    color: #fff;
+
+    .chap__title {
+      color: #fff;
+    }
+
+    .chap__lead {
+      color: rgba(255, 255, 255, 0.7);
     }
   }
 
@@ -139,7 +221,7 @@
     }
 
     &--next dd {
-      color: var(--clay);
+      color: var(--ink);
     }
   }
 }
@@ -158,7 +240,9 @@
   --card-h: min(26rem, 50vh);
   --card-gap: var(--space-3);
   --cards-y: 14vh; // the card row sits below centre to leave room for the heading
-  --frame-w: min(36rem, 40vw); // the hero frame at rest; the chip wraps inside it
+  // the hero frame at rest; the chip wraps inside it. Sized from the screen height as
+  // well, so it keeps the same tall shape on a short laptop screen as on a big monitor.
+  --frame-w: min(36rem, 40vw, 45vh);
   --mid: 1.08; // the centre card is a touch larger than the side cards (Revolut)
   --mid-w: calc(var(--card-w) * var(--mid));
   --mid-h: calc(var(--card-h) * var(--mid));
@@ -192,16 +276,6 @@
     --card-w: min(19rem, 26vw);
     --card-h: min(24rem, 48vh);
     --cards-y: 17vh;
-
-    // the organizer card is shorter too: tighter rows so the list and the pill fit
-    .stage__card--sheet {
-      padding: var(--space-4);
-    }
-
-    .stage__sheet-list li {
-      padding: var(--space-2) 0;
-      font-size: var(--fs-small);
-    }
   }
 }
 
@@ -279,7 +353,7 @@
       .stage__lead {
         max-width: 44rem;
         font-size: 1.125rem;
-        line-height: 1.35;
+        line-height: 1.45;
       }
     }
   }
@@ -287,12 +361,12 @@
   // Revolut-style statement: regular-width sans at medium weight, tight, centred.
   &__title {
     margin: 0 0 var(--space-3);
-    font-family: var(--font-statement);
+    font-family: var(--font-display);
     font-stretch: var(--stretch-ui);
     font-size: clamp(2.25rem, 1.2rem + 3.6vw, 5rem);
     font-weight: var(--fw-medium);
     line-height: 1;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     color: var(--ink);
   }
 
@@ -308,7 +382,7 @@
 
     @include bp.respond-to(md) {
       font-size: 1.5rem;
-      line-height: 1.35;
+      line-height: 1.45;
     }
   }
 
@@ -340,60 +414,12 @@
 
     &--l { --dir: -1; }
     &--r { --dir: 1; }
-
-    &--sheet {
-      background: var(--paper-white);
-      color: var(--ink);
-      padding: var(--space-5);
-      display: flex;
-      flex-direction: column;
-    }
   }
 
   &__card-scrim {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(21, 23, 26, 0.7), rgba(21, 23, 26, 0.1) 60%);
-  }
-
-  &__sheet-h {
-    margin: 0 0 var(--space-3);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--ink);
-    font-family: var(--font-ui);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-bold);
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--ink-500);
-  }
-
-  &__sheet-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    flex: 1;
-
-    li {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) 0;
-      border-bottom: 1px dotted var(--paper-line-strong);
-      font-family: var(--font-statement);
-      font-size: var(--fs-ui);
-      font-weight: var(--fw-medium);
-
-      svg {
-        flex: none;
-        width: 22px;
-        height: 22px;
-        padding: 4px;
-        border-radius: var(--radius-pill);
-        background: var(--spruce);
-        color: #fff;
-      }
-    }
+    background: linear-gradient(to top, rgba(34, 30, 32, 0.7), rgba(34, 30, 32, 0.1) 60%);
   }
 }
 
@@ -408,7 +434,7 @@
   text-align: center;
   color: #fff;
   // light text over bright photo areas (the white flowers in the centre card)
-  text-shadow: 0 1px 14px rgba(21, 23, 26, 0.55);
+  text-shadow: 0 1px 14px rgba(34, 30, 32, 0.55);
   opacity: clamp(0, (var(--p) - 0.6) * 3, 1);
 
   &__label {
@@ -440,7 +466,7 @@
     justify-self: center;
     padding: 0 var(--space-4);
     border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(250, 247, 242, 0.94);
     color: var(--ink);
     font-family: var(--font-ui);
     font-size: 0.875rem;
@@ -474,7 +500,7 @@
     animation: chip-in var(--dur-reveal) var(--ease-out) 420ms both;
 
     // Text is bigger while the photo is full-screen and eases down to card size with --p.
-    --rest-value: clamp(1.75rem, 1.1rem + 1.8vw, 2.75rem);
+    --rest-value: clamp(1.5rem, calc(var(--frame-w) * 0.078), 2.75rem); // in step with the frame
     --card-value: clamp(1.5rem, 1.1rem + 1.4vw, 2.125rem);
 
     .chip__label {
@@ -494,53 +520,18 @@
     }
   }
 
-  // Phones: the hero copy runs long, so grow the text less and keep the chip lower at
-  // rest, so it fits between the button and the scroll arrow.
+  // Phones (no stage): the chip sits inside the frame, near its bottom edge.
   @media (max-width: 767px) {
     &--center {
-      --rest-value: 1.75rem;
-      bottom: calc(
-        (1 - var(--p)) * (var(--stage-h) * 0.08) +
-        var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y) + var(--space-4))
-      );
+      --rest-value: 1.5rem;
+      bottom: calc(var(--hero-pb) + var(--space-5));
 
       .chip__label {
-        font-size: calc(1.125rem - var(--p) * 0.1875rem); // 18px → 15px
+        font-size: 1rem;
       }
     }
   }
 
-  // Short phone screens (≤ 700px tall): the hero copy already fills the screen, so the
-  // chip only fades in with the transform and lives in the centre card.
-  @media (max-width: 767px) and (max-height: 700px) {
-    &--center {
-      opacity: var(--p);
-      animation: none;
-    }
-  }
-
-}
-
-// the organizer card's foot: a small label and the same pill as the photo cards
-.stage__sheet-foot {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-1);
-  margin-top: auto;
-  padding-top: var(--space-3);
-  text-align: center;
-
-  .chip__sub {
-    margin-top: 0;
-    background: var(--paper-deep); // a white pill would vanish on the white card
-  }
-}
-
-.stage__sheet-label {
-  font-family: var(--font-ui);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  color: var(--ink-500);
 }
 
 // ---- hero copy on the photo (fades up and out as the stage starts) ----
@@ -564,7 +555,7 @@
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(to bottom, rgba(21, 23, 26, 0.5) 0%, rgba(21, 23, 26, 0.22) 45%, rgba(21, 23, 26, 0.45) 100%);
+      linear-gradient(to bottom, rgba(34, 30, 32, 0.5) 0%, rgba(34, 30, 32, 0.22) 45%, rgba(34, 30, 32, 0.45) 100%);
     opacity: calc(1 - var(--p) * 1.5);
   }
 
@@ -602,14 +593,14 @@
     margin: 0;
     max-width: none;
     white-space: nowrap; // "შენი ოცნების ქორწილი" stays on one line; size follows the viewport
-    font-family: var(--font-statement);
+    font-family: var(--font-display);
     font-stretch: var(--stretch-ui);
     // ~8.1vw at phone widths (20 Georgian glyphs fit inside the 16px gutters), 4.6vw on
     // desktop, capped at 72px
     font-size: clamp(1.75rem, min(7.7vw, 2.2rem + 2.6vw), 4.5rem);
     font-weight: var(--fw-medium);
     line-height: 1;
-    letter-spacing: -0.024em;
+    letter-spacing: 0;
     color: #fff;
 
     em {
@@ -630,7 +621,7 @@
     font-stretch: var(--stretch-ui);
     font-size: 18px;
     font-weight: var(--fw-regular);
-    line-height: 24px;
+    line-height: 26px; // Nus ascenders/descenders touch at 24px
     color: #fff;
   }
 
@@ -656,22 +647,28 @@
 
     &:hover {
       color: var(--paper-white);
-      background: rgba(241, 237, 228, 0.14);
+      background: rgba(250, 247, 242, 0.14);
     }
   }
 
   // Not staged (no JS yet, or reduced motion): plain full-screen hero, no cards.
+  // Phones are never staged and keep the chip in their frame.
   &:not(.is-staged) {
     .stage__card,
-    .stage__head,
-    .chip--center {
+    .stage__head {
       display: none;
+    }
+
+    @include bp.respond-to(md) {
+      .chip--center {
+        display: none;
+      }
     }
   }
 }
 
-// Primary call on photos — Revolut's black pill: #1F1F1F, white 16px medium,
-// 10×24 padding, 42px tall, no icon, no shadow.
+// Primary call — Revolut's pill (white 16px medium, 10×24 padding, 42px tall, no
+// icon, no shadow), in the button colour: evergreen in the brand theme.
 .pill-cta {
   display: inline-flex;
   align-items: center;
@@ -680,7 +677,7 @@
   min-height: 42px;
   padding: 10px 24px;
   border-radius: var(--radius-pill);
-  background: var(--ink);
+  background: var(--color-action);
   color: #fff;
   font-family: var(--font-statement);
   font-stretch: var(--stretch-ui);
@@ -698,7 +695,7 @@
 
   &:hover {
     color: #fff;
-    background: #333;
+    background: var(--color-action-hover);
   }
 
   &:active {
@@ -739,89 +736,91 @@
   50% { transform: translate(-50%, 6px); }
 }
 
-// ---- phones: Revolut's mobile hero. The photo does not shrink into a card; it
-// becomes a full-width band at the top, the heading sits under it, and the three
-// cards become a swipeable strip beneath. The band shows whichever card is centred
-// (crossfade), the active card sits full size and its neighbours shrink and dim. ----
+// ---- phones: Revolut's mobile hero. No stage here (ScrollStage never runs below
+// 768px): the photo section scrolls away like any other, the copy at the top and a
+// tall frame (Revolut's 5:7 box) at the bottom holding the "where do I start?" chip.
+// The heading and the three cards follow as an ordinary section: a swipeable strip,
+// the centred card full size, its neighbours smaller and dimmer. ----
 .strip {
   display: none; // md+ keeps the three-card stage
 }
 
 @media (max-width: 767px) {
   .hero {
-    --band-h: 50dvh; // the photo band at p=1
-    --strip-card-h: clamp(10.5rem, 29dvh, 15rem);
+    --frame-w: min(64vw, 18rem);
+    --hero-pb: var(--space-10); // photo below the frame
+    --strip-w: min(72vw, 20rem);
   }
 
-  // the photo: full screen → the top band, rounded at the bottom
-  .stage__photo {
-    clip-path: inset(
-      0 0 calc(var(--p) * (var(--stage-h) - var(--band-h))) 0
-      round 0 0 calc(var(--p) * 22px) calc(var(--p) * 22px)
-    );
+  // at least one screen; the copy at the top, the frame pushed to the bottom
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(var(--hdr-h) + 48px) 0 var(--hero-pb);
   }
 
-  // no zoom-out on phones (the band is full width); drift up so the arch, which sits
-  // just below the middle of the tall render, ends up inside the band
-  .hero__img {
-    transform: translateY(calc(var(--p) * -16vh));
-  }
-
-  // the frame at rest spans the gutters under the copy; on phones the photo ends as a
-  // full-width band, which needs no outline, so the frame fades out with the stage
-  .hero {
-    --frame-w: calc(100% - 2 * var(--gutter));
+  .hero__copy {
+    order: -1; // before the frame (which comes first in the markup)
+    position: relative;
+    top: auto;
+    width: 100%;
+    margin-bottom: var(--space-8);
   }
 
   .stage__frame {
-    --f-top-rest: 52vh;
-    --f-bottom-rest: 4vh; // just under the chip, which rests at 8% on phones
-    opacity: calc(1 - var(--p));
+    position: relative;
+    inset: auto;
+    flex: none;
+    width: var(--frame-w);
+    aspect-ratio: 5 / 7;
+    margin-top: auto;
   }
 
-  // desktop cards and the big riding chip are off; the strip's own chips take over
-  .stage__card {
-    display: none;
-  }
-
-  .chip--center {
-    animation: none;
-    opacity: clamp(0, 1 - var(--p) * 2, 1);
-  }
-
-  // the heading moves under the band, title only
-  .stage__head {
-    top: calc(var(--band-h) + var(--space-4));
-  }
-
-  .stage__title {
-    margin-bottom: 0;
-    font-size: clamp(1.625rem, 6.4vw, 2rem);
-  }
-
-  .stage__lead {
+  .stage__card,
+  .stage__head,
+  .hero__down {
     display: none;
   }
 
   // ---- the strip ----
   .strip {
     display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: max(var(--space-3), env(safe-area-inset-bottom));
-    z-index: 3;
-    opacity: var(--slide);
-    transform: translateY(calc((1 - var(--slide)) * 48px));
+    padding: var(--space-10) 0 var(--space-12);
+    background: var(--paper);
+    color: var(--ink);
+    text-align: center;
+  }
+
+  .strip__title {
+    margin: 0 var(--gutter) var(--space-3);
+    max-width: none;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-ui);
+    font-size: clamp(1.625rem, 6.4vw, 2rem);
+    font-weight: var(--fw-medium);
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  .strip__lead {
+    margin: 0 auto var(--space-6);
+    max-width: 30rem;
+    padding: 0 var(--gutter);
+    font-family: var(--font-statement);
+    font-size: 1.0625rem;
+    line-height: 1.45;
+    color: var(--ink-700);
   }
 
   .strip__track {
     display: flex;
     gap: var(--space-3);
-    padding: var(--space-2) 14vw; // room for the first and last card to sit centred
+    // room for the first and last card to sit centred
+    padding: var(--space-2) calc((100vw - var(--strip-w)) / 2);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: 14vw;
+    scroll-padding-inline: calc((100vw - var(--strip-w)) / 2);
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -832,8 +831,8 @@
   .strip__card {
     position: relative;
     flex: none;
-    width: 72vw;
-    height: var(--strip-card-h);
+    width: var(--strip-w);
+    aspect-ratio: 3 / 4;
     overflow: hidden;
     border-radius: 18px;
     background: var(--spruce);
@@ -866,40 +865,22 @@
       opacity: 1;
       left: var(--space-3);
       right: var(--space-3);
-      bottom: var(--space-3);
+      bottom: var(--space-4);
     }
 
     .chip__label {
-      font-size: var(--fs-caption);
+      font-size: var(--fs-small);
     }
 
     .chip__value {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       text-wrap: balance;
     }
 
     .chip__sub {
-      margin-top: var(--space-1);
-      padding: 3px var(--space-2);
-      font-size: 11px;
-    }
-
-    &--sheet {
-      display: flex;
-      flex-direction: column;
-      padding: var(--space-3) var(--space-4);
-      background: var(--paper-white);
-      color: var(--ink);
-
-      .stage__sheet-h {
-        margin-bottom: var(--space-2);
-        padding-bottom: var(--space-2);
-      }
-
-      .stage__sheet-list li {
-        padding: var(--space-2) 0;
-        font-size: var(--fs-small);
-      }
+      height: 34px;
+      margin-top: var(--space-2);
+      font-size: 0.8125rem;
     }
   }
 
@@ -907,14 +888,14 @@
     display: flex;
     justify-content: center;
     gap: 6px;
-    margin-top: var(--space-2);
+    margin-top: var(--space-4);
   }
 
   .strip__dot {
     width: 6px;
     height: 6px;
     border-radius: 3px;
-    background: rgba(21, 23, 26, 0.25);
+    background: rgba(34, 30, 32, 0.25);
     transition:
       width 300ms var(--ease-out),
       background 300ms var(--ease-out);
@@ -942,7 +923,8 @@
   flex-direction: column;
   align-items: center;
   min-height: 100dvh;
-  padding: var(--space-16) 0 var(--space-12);
+  // padding scales with the screen so the section is exactly one screen on laptops too
+  padding: clamp(2rem, 7vh, 4rem) 0 clamp(1.25rem, 3.5vh, 3rem);
   overflow: hidden;
   background: var(--spruce);
   color: var(--on-spruce);
@@ -966,7 +948,7 @@
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(to bottom, rgba(21, 23, 26, 0.6) 0%, rgba(21, 23, 26, 0.2) 40%, rgba(21, 23, 26, 0.55) 100%);
+      linear-gradient(to bottom, rgba(34, 30, 32, 0.6) 0%, rgba(34, 30, 32, 0.2) 40%, rgba(34, 30, 32, 0.55) 100%);
   }
 
   &__copy {
@@ -982,7 +964,7 @@
     margin: 0 0 var(--space-4);
     font-size: var(--fs-h2);
     color: var(--paper-white);
-    text-shadow: 0 2px 24px rgba(21, 23, 26, 0.25);
+    text-shadow: 0 2px 24px rgba(34, 30, 32, 0.25);
   }
 
   &__lead {
@@ -1001,9 +983,14 @@
     flex: 1;
     display: flex;
     align-items: center;
-    width: min(22rem, calc(100% - 2 * var(--gutter)));
-    min-height: 15rem;
-    margin-block: var(--space-6);
+    // the 4:5 card is sized from the screen height too (44vh tall at most), so the
+    // copy, the card and the labels always fit one screen; its text scales with it
+    // (cqi), so a laptop shows the same card as a big monitor, only smaller
+    container-type: inline-size;
+    width: min(22rem, calc(44vh * 0.8), calc(100% - 2 * var(--gutter)));
+    min-height: 0;
+    // clear of the button above; more room below than above, so it sits a little high
+    margin-block: clamp(1.25rem, 4vh, 3rem) clamp(1.5rem, 6vh, 9rem);
   }
 
   // Revolut-style frame (their "Life, meets savings" box): a tall portrait
@@ -1015,14 +1002,14 @@
     grid-template-rows: 1fr auto 1fr;
     width: 100%;
     aspect-ratio: 4 / 5;
-    padding: var(--space-5);
+    padding: clamp(0.875rem, 5.2cqi, 1.25rem);
     border-radius: 14px;
     background: transparent;
     border: 1px solid #fff;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     text-align: center;
-    text-shadow: 0 1px 12px rgba(21, 23, 26, 0.6); // keeps the text legible on the bare photo
+    text-shadow: 0 1px 12px rgba(34, 30, 32, 0.6); // keeps the text legible on the bare photo
     animation: card-in 700ms var(--ease-out) both;
   }
 
@@ -1034,7 +1021,7 @@
 
   &__card-label {
     font-family: var(--font-ui);
-    font-size: var(--fs-lead);
+    font-size: clamp(0.9375rem, 5.2cqi, 1.25rem);
     font-weight: var(--fw-medium);
     color: var(--paper-white);
   }
@@ -1044,7 +1031,7 @@
     font-family: var(--font-display);
     font-stretch: var(--stretch-display);
     // phrases now, not short numbers — a notch under h3 so they hold one or two lines
-    font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+    font-size: clamp(1.125rem, 7.8cqi, 1.875rem);
     text-wrap: balance;
     font-weight: var(--fw-black);
     line-height: 1.05;
@@ -1058,10 +1045,10 @@
     justify-self: center;
     padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(250, 247, 242, 0.94);
     color: var(--ink);
     font-family: var(--font-ui);
-    font-size: var(--fs-caption);
+    font-size: 0.875rem; // 14px: the theme's floor for Nus; fits every card width
     font-weight: var(--fw-semibold);
   }
 
@@ -1082,7 +1069,7 @@
     appearance: none;
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-pill);
-    border: 1px solid rgba(241, 237, 228, 0.35);
+    border: 1px solid rgba(250, 247, 242, 0.35);
     background: transparent;
     font-family: var(--font-ui);
     font-size: var(--fs-caption);
@@ -1096,7 +1083,7 @@
       color var(--dur-slow) var(--ease-out);
 
     &:hover {
-      border-color: rgba(241, 237, 228, 0.8);
+      border-color: rgba(250, 247, 242, 0.8);
     }
 
     &:focus-visible {
@@ -1112,10 +1099,10 @@
   }
 
   @include bp.respond-to(md) {
-    padding-top: var(--space-20);
+    padding-top: clamp(2.5rem, 8vh, 5rem);
 
     &__card {
-      width: 24rem;
+      width: min(24rem, calc(44vh * 0.8));
     }
   }
 }
@@ -1167,7 +1154,7 @@
 
     &:focus-visible {
       outline: none;
-      box-shadow: inset 0 0 0 2px var(--clay);
+      box-shadow: inset 0 0 0 2px var(--ink);
       border-radius: var(--radius-sm);
     }
   }
@@ -1286,7 +1273,7 @@
 
   &__row.is-active &__num,
   &__link:hover &__num {
-    color: var(--clay);
+    color: var(--ink);
   }
 
   &__link:hover &__arrow,
@@ -1379,390 +1366,277 @@
 }
 
 // =============================================================================
-// 03b — Reel: a full-bleed stage. The ring film covers the whole section, the copy
-// (Revolut's product-block type) sits at the top, the eight categories run along the
-// bottom as large tiles, and the middle stays clear for the ring. Black stage by
-// default (`.chap--reel-dark`), white without the modifier — same markup.
+// 03b — Orbit: a black, one-screen stage. Compact copy, the golden ring, then a
+// card carousel after Revolut's business page: fixed slots -2 -1 [0] 1 2, centre full
+// size, the sides at 90%, the next ones parked invisible; the list rotates through
+// the slots on its own, on a drag/swipe, and from the dots. Cards share the renders'
+// peach backdrop: the visual fills the card, the evergreen text sits on top.
 // The editorial index above stays available (commented out in the template).
 // =============================================================================
-.chap--reel {
-  --reel-bg: #fff;
-  --reel-fg: #1f1f1f;
-  --reel-muted: rgba(31, 31, 31, 0.6);
-  --reel-tile-bg: rgba(255, 255, 255, 0.55);
-  --reel-tile-line: rgba(31, 31, 31, 0.2);
-  --reel-tile-hover-bg: #1f1f1f;
-  --reel-tile-hover-fg: #fff;
-  // fades the film toward the copy (top) and the tiles (bottom), clear in the middle
-  --reel-scrim: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.92) 0%,
-    rgba(255, 255, 255, 0.2) 34%,
-    rgba(255, 255, 255, 0) 50%,
-    rgba(255, 255, 255, 0.25) 66%,
-    rgba(255, 255, 255, 0.92) 100%
-  );
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding-block: 0; // the stage sets its own height
-  background: var(--reel-bg);
-  color: var(--reel-fg);
-  border-top-color: transparent;
-
-  &-dark {
-    --reel-bg: #000;
-    --reel-fg: #fff;
-    --reel-muted: rgba(255, 255, 255, 0.62);
-    --reel-tile-bg: rgba(0, 0, 0, 0.32);
-    --reel-tile-line: rgba(255, 255, 255, 0.32);
-    --reel-tile-hover-bg: #fff;
-    --reel-tile-hover-fg: #0c0c0d;
-    --reel-scrim: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.78) 0%,
-      rgba(0, 0, 0, 0.2) 34%,
-      rgba(0, 0, 0, 0) 50%,
-      rgba(0, 0, 0, 0.3) 66%,
-      rgba(0, 0, 0, 0.85) 100%
-    );
-  }
-}
-
-// the film layer, behind everything
-.reel-bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--reel-bg);
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--reel-scrim);
-  }
-
-  &__media {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.reel-wrap {
+.chap--orbit {
   display: flex;
-  min-height: max(100dvh, 44rem);
-  padding-top: calc(var(--hdr-h) + var(--space-10));
-  padding-bottom: var(--space-10);
-}
-
-.reel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   align-items: center;
-  // the clear band in the middle, where the ring shows: reserved outright on phones
-  // (the copy and four rows of tiles would otherwise squeeze it out), and a minimum
-  // on larger screens where the full-height stage already leaves plenty of room
-  gap: 15rem;
+  min-height: 100dvh;
+  // a little more room below than above: the block sits slightly high of centre
+  padding: clamp(1rem, 3vh, 2rem) 0 clamp(2rem, 8vh, 5rem);
+  background: var(--paper); // ivory; the charcoal render cards sit on it
+  color: var(--ink);
+  border-top: 0;
+  overflow: hidden; // the staging slots sit outside the viewport
 
-  @include bp.respond-to(md) {
-    gap: var(--space-16);
+  > .container {
+    width: 100%;
   }
+}
 
-  // The copy follows Revolut's product blocks ("Your salary, reimagined"): one
-  // grotesk at medium weight, headline set solid (line-height 1) with slightly
-  // tightened tracking, an 18/24 lead in the same colour as the headline, centred.
+.orbit {
+  --card: var(--charcoal); // warm charcoal, the renders' backdrop; shown while an image loads
+  --ch: min(52vh, 32rem); // card height, from the screen height
+  --cw: calc(var(--ch) * 0.71); // Revolut's 360 × 508 proportion
+  --gap: 0.75rem;
+  --slot: calc(var(--cw) + var(--gap));
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.75rem, 2.2vh, 1.5rem);
+
   &__copy {
     display: grid;
     justify-items: center;
-    max-width: 40rem;
     text-align: center;
   }
 
   &__overline {
-    margin: 0 0 var(--space-5);
-    font-family: var(--font-statement);
+    @extend %journey-label;
+    margin: 0 0 var(--space-4);
     font-size: var(--fs-small);
-    font-weight: var(--fw-medium);
-    line-height: 1;
-    color: var(--reel-muted);
   }
 
   &__title {
-    margin: 0 0 var(--space-5);
-    font-family: var(--font-statement);
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
     font-stretch: normal;
-    font-size: clamp(2.5rem, 1.9rem + 2.6vw, 3.4rem); // 40→54
+    // one line everywhere: tracks the viewport width on phones, capped on desktop
+    font-size: clamp(1.625rem, min(7.2vw, 1.4rem + 2vw), 3.25rem);
     font-weight: var(--fw-medium);
     line-height: 1;
-    letter-spacing: -0.011em;
-    color: var(--reel-fg);
-    text-wrap: balance;
+    letter-spacing: 0;
+    color: var(--ink);
+    white-space: nowrap;
   }
 
   &__lead {
-    margin: 0 0 var(--space-6);
+    margin: 0 0 var(--space-5);
     max-width: 37.5rem;
     font-family: var(--font-statement);
-    font-size: 1.125rem;
+    font-size: 1.0625rem;
     font-weight: var(--fw-regular);
-    line-height: 1.5rem;
-    color: var(--reel-fg);
+    line-height: 1.4;
+    color: var(--ink-700);
     text-wrap: balance;
   }
 
-  // ---- categories: large tiles, 2 columns on phones, 4 × 2 from tablets up ----
-  &__cats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-2);
+  // ---- the carousel ----
+  &__stage {
+    position: relative;
     width: 100%;
-    max-width: 72rem;
-    margin: 0;
+    height: var(--ch);
+    touch-action: pan-y; // vertical page scroll stays native; horizontal drags are ours
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  &__cards {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: var(--cw);
+    height: var(--ch);
+    margin: 0 0 0 calc(var(--cw) / -2);
     padding: 0;
     list-style: none;
+  }
 
-    > li {
-      display: grid;
+  &__item {
+    position: absolute;
+    inset: 0;
+    transform: translateX(calc(var(--s) * var(--slot)));
+    opacity: 1;
+    transition:
+      transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 500ms var(--ease-out);
+    will-change: transform;
+
+    // the four side slots: 90%, like Revolut's
+    &.is-side {
+      transform: translateX(calc(var(--s) * var(--slot))) scale(0.9);
+    }
+
+    // staging slots: parked beyond the visible ones, invisible, no transition in
+    &.is-off {
+      transform: translateX(calc(var(--s, 3) * var(--slot))) scale(0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: none;
     }
   }
 
-  &__tile {
+  &__card {
+    position: relative;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: var(--space-3);
-    min-height: 64px;
-    padding: var(--space-2);
-    border-radius: 14px;
-    border: 1px solid var(--reel-tile-line);
-    background: var(--reel-tile-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: var(--reel-fg);
+    grid-template-rows: auto auto 1fr; // name, count, the visual
+    gap: var(--space-2);
+    width: 100%;
+    height: 100%;
+    padding: var(--space-5);
+    border-radius: 22px;
+    background: var(--card);
+    color: var(--ivory);
     text-decoration: none;
-    transition:
-      background var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out);
+    overflow: hidden;
+    isolation: isolate;
 
     &:hover,
     &:focus-visible {
-      background: var(--reel-tile-hover-bg);
-      border-color: var(--reel-tile-hover-bg);
-      color: var(--reel-tile-hover-fg);
-
-      .reel__tile-meta {
-        color: inherit;
-        opacity: 0.6;
-      }
-
-      .reel__tile-arrow {
-        opacity: 1;
-        transform: translateX(3px);
-      }
+      color: var(--ivory);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--clay);
+      outline: 2px solid var(--ink);
       outline-offset: 3px;
     }
   }
 
-  &__tile-img {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+  // Revolut's product cards: the renders are one object on a shared warm-charcoal
+  // backdrop with a floor reflection (Beka's set; the frame the generator drew round
+  // each was painted out), so the picture IS the card: it fills the whole card
+  // and the name is written straight onto it.
+  // `--print` cards (scenes without a render, e.g. the venue) keep the backdrop and
+  // show the photo as a rounded print rising from the bottom edge.
+  &__card-visual {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  &__card-img {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    background: rgba(127, 127, 127, 0.25);
+    object-position: center;
+    transform-origin: 50% 80%;
+    transition: transform 600ms var(--ease-out);
+    pointer-events: none; // drags start on the card, not on the image
   }
 
-  &__tile-text {
-    display: grid;
-    gap: 3px;
-    min-width: 0;
+  &__card:hover &__card-img,
+  &__card:focus-visible &__card-img {
+    transform: scale(1.04);
   }
 
-  &__tile-name {
-    font-family: var(--font-statement);
-    font-size: var(--fs-small);
+  &__card--print &__card-visual {
+    grid-column: 1 / -1;
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    min-height: 0;
+    display: flex;
+    align-items: flex-end;
+    margin: var(--space-3) 0 calc(-1 * var(--space-5));
+  }
+
+  &__card--print &__card-img {
+    object-position: center;
+    border-radius: 14px 14px 0 0;
+  }
+
+  &__card--print:hover &__card-img,
+  &__card--print:focus-visible &__card-img {
+    transform: none;
+  }
+
+  &__card-name {
+    align-self: start;
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
     font-weight: var(--fw-medium);
-    line-height: 1.2;
+    line-height: 1.15;
+    letter-spacing: 0;
+    color: var(--ivory);
     text-wrap: balance;
   }
 
-  &__tile-meta {
+  // the vendor count: one plain line under the name (a 46px chip box covered the
+  // object in the render wherever it sat; a text line stays out of the way)
+  &__card-foot {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    justify-self: start;
+    margin-top: calc(-1 * var(--space-1));
+    white-space: nowrap;
     font-family: var(--font-statement);
     font-size: var(--fs-caption);
-    line-height: 1.2;
+    color: var(--on-spruce-muted); // ivory 72%
+  }
+
+  &__card-n {
+    font-size: 1.125rem;
+    font-weight: var(--fw-medium);
+    color: var(--ivory);
     font-variant-numeric: tabular-nums;
-    color: var(--reel-muted);
-    transition: color var(--dur-fast) var(--ease-out);
   }
 
-  // the arrow only shows from tablets up (no room on phones)
-  &__tile-arrow {
-    display: none;
-    opacity: 0.55;
+  // ---- dots ----
+  &__dots {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  // bigger pills with a generous tap area: the padding is part of the button but
+  // not of the painted dot (background-clip), so only the pill shows
+  &__dot {
+    box-sizing: content-box;
+    width: 12px;
+    height: 12px;
+    padding: 8px 5px;
+    border: 0;
+    border-radius: 14px;
+    background: rgba(48, 43, 45, 0.55); // ~3.3:1 on ivory (WCAG 1.4.11)
+    background-clip: content-box;
+    cursor: pointer;
     transition:
-      opacity var(--dur-fast) var(--ease-out),
-      transform var(--dur-fast) var(--ease-out);
+      width 300ms var(--ease-out),
+      background-color 300ms var(--ease-out);
+
+    &:hover {
+      background-color: rgba(48, 43, 45, 0.8);
+    }
+
+    &.is-active {
+      width: 36px;
+      background-color: var(--ink);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
   }
 
-  @include bp.respond-to(md) {
-    &__cats {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--space-3);
-    }
 
-    &__tile {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: var(--space-4);
-      min-height: 84px;
-      padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
-      border-radius: 18px;
-    }
-
-    &__tile-img {
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
-    }
-
-    &__tile-name {
-      font-size: 1.0625rem;
-    }
-
-    &__tile-arrow {
-      display: block;
-    }
+  // phones: one card centred, neighbours peeking (the far slots fall off-screen)
+  @media (max-width: 767px) {
+    --ch: min(52vh, 26rem, calc(72vw / 0.71)); // never narrower than 0.71, as on desktop
+    --cw: calc(var(--ch) * 0.71);
   }
 }
 
-// =============================================================================
-// 04 — Organizer sheet on spruce
-// =============================================================================
-.sheet {
-  background: var(--paper-white);
-  color: var(--ink);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-
-  &__top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--space-4) var(--space-8);
-    padding: var(--space-6);
-    background: var(--paper);
-    border-bottom: 1px solid var(--paper-line);
-  }
-
-  &__names {
-    margin: 0;
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-display);
-    font-size: var(--fs-h3);
-    font-weight: var(--fw-black);
-    letter-spacing: var(--tracking-tight);
-    line-height: 1;
-  }
-
-  &__meta {
-    margin: var(--space-2) 0 0;
-    font-family: var(--font-ui);
-    font-size: var(--fs-small);
-    color: var(--ink-700);
-  }
-
-  &__progress {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: var(--space-3);
-    min-width: min(100%, 18rem);
-    font-family: var(--font-ui);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
-    color: var(--ink-700);
-  }
-
-  &__progress-bar {
-    display: block;
-    height: 6px;
-    border-radius: var(--radius-pill);
-    background: var(--paper-deep);
-    overflow: hidden;
-
-    span {
-      display: block;
-      height: 100%;
-      background: var(--clay);
-      border-radius: inherit;
-    }
-  }
-
-  &__progress-v {
-    color: var(--ink);
-  }
-
-  &__cols {
-    display: grid;
-  }
-
-  &__col {
-    padding: var(--space-6);
-    border-top: 1px solid var(--paper-line);
-  }
-
-  &__h {
-    margin: 0 0 var(--space-4);
-    font-family: var(--font-ui);
-    font-stretch: var(--stretch-ui);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-bold);
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--ink-500);
-  }
-
-  // tablets: tasks + budget side by side, vendors full width below;
-  // desktop: the three columns of the organizer in one row.
-  @include bp.respond-to(md) {
-    &__cols {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    &__col {
-      border-top: 0;
-
-      &:nth-child(2) {
-        border-left: 1px solid var(--paper-line);
-      }
-
-      &:nth-child(3) {
-        grid-column: span 2;
-        border-top: 1px solid var(--paper-line);
-      }
-    }
-  }
-
-  @include bp.respond-to(lg) {
-    &__cols {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    &__col:nth-child(3) {
-      grid-column: auto;
-      border-top: 0;
-      border-left: 1px solid var(--paper-line);
-    }
+@media (prefers-reduced-motion: reduce) {
+  .orbit__item {
+    transition: none;
   }
 }
 
@@ -1815,7 +1689,7 @@
   }
 
   &:not(.is-done) &__due {
-    color: var(--clay);
+    color: var(--ink);
   }
 }
 
@@ -1878,6 +1752,374 @@
   }
 }
 
+// =============================================================================
+// 05 — The day as a line: centred copy, six moments on one line, a marker that
+// walks from one to the next and leaves the passed ones lit. Phones: the line
+// runs down the page instead of across.
+// =============================================================================
+.tl {
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.25rem, 4vh, 2.5rem);
+
+  &__copy {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+
+  &__overline {
+    @extend %journey-label;
+    margin: 0 0 var(--space-4);
+    font-size: var(--fs-small);
+  }
+
+  &__title {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-stretch: normal;
+    font-size: clamp(1.625rem, min(7.2vw, 1.4rem + 2vw), 3.25rem);
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  &__lead {
+    margin: 0;
+    max-width: 34rem;
+    font-family: var(--font-statement);
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  // ---- the stage: the "now" card, the rail, the template caption ----
+  &__stage {
+    --n: 6;
+    --step: 0;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-5);
+    width: 100%;
+  }
+
+  // the "now" card: the current moment, as a calendar app shows the current event.
+  // Phones: a static card above the list, its content swaps. md+: it floats above the
+  // rail and slides to the marker (left follows --step).
+  &__now {
+    width: min(100%, 24rem);
+    min-height: 9.75rem;
+  }
+
+  &__now-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: 24px;
+  }
+
+  &__now-in {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-5);
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid var(--paper-line);
+    box-shadow:
+      0 1px 2px rgba(34, 30, 32, 0.05),
+      0 18px 40px rgba(34, 30, 32, 0.12);
+    animation: now-in 500ms var(--ease-out) both;
+  }
+
+  &__now-k {
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-500);
+  }
+
+  &__now-time {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: 2.25rem;
+    font-weight: var(--fw-black);
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+    color: var(--ink);
+
+    s {
+      font-size: 1.125rem;
+      font-weight: var(--fw-medium);
+      color: var(--ink-500); // 5.7:1; the line-through marks it as superseded
+    }
+  }
+
+  &__now-title {
+    margin-top: var(--space-1);
+    font-family: var(--font-display);
+    font-size: var(--fs-lead);
+    font-weight: var(--fw-medium);
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  &__now-note {
+    font-family: var(--font-statement);
+    font-size: var(--fs-small);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+
+  &__now-tags {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  &__now-tag {
+    padding: 3px var(--space-2);
+    border-radius: var(--radius-pill);
+    background: var(--paper-deep);
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--ink-700);
+
+    &--edit {
+      background: var(--ink);
+      color: #fff;
+    }
+  }
+
+  &__template {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    color: var(--ink-500);
+  }
+
+  // ---- the rail (phones: vertical) ----
+  &__line {
+    position: relative;
+    display: grid;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 22rem;
+    margin: 0;
+    padding: 0 0 0 var(--space-8);
+    list-style: none;
+  }
+
+  &__track {
+    position: absolute;
+    left: 9px;
+    top: 14px;
+    bottom: 14px;
+    width: 6px;
+    border-radius: 3px;
+    background: var(--paper-line);
+  }
+
+  &__fill {
+    display: block;
+    width: 100%;
+    height: calc(var(--step) / (var(--n) - 1) * 100%);
+    border-radius: inherit;
+    background: var(--ink);
+    box-shadow: 0 0 14px rgba(48, 43, 45, 0.28);
+    transition: height 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  &__stop {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    color: var(--ink-500);
+    transition: color 400ms var(--ease-out);
+
+    &.is-done,
+    &.is-now {
+      color: var(--ink);
+    }
+  }
+
+  &__dot {
+    position: absolute;
+    left: calc(-1 * var(--space-8) + 2px);
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid var(--paper-line-strong);
+    background: var(--paper-deep);
+    transition:
+      border-color 400ms var(--ease-out),
+      background 400ms var(--ease-out),
+      transform 400ms var(--ease-out);
+
+    .is-done & {
+      border-color: var(--ink);
+      background: var(--ink);
+    }
+
+    // the marker: where the day is right now — a white ring on ink, pulsing softly
+    .is-now & {
+      border-color: var(--ink);
+      background: #fff;
+      transform: scale(1.3);
+      box-shadow: 0 0 0 6px rgba(182, 154, 104, 0.38);
+      animation: now-pulse 2s var(--ease-in-out) infinite;
+    }
+  }
+
+  &__time {
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: 1.375rem;
+    font-weight: var(--fw-black);
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  &__name {
+    font-family: var(--font-statement);
+    font-size: var(--fs-small);
+    font-weight: var(--fw-medium);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  // ---- md+: the line runs across ----
+  @include bp.respond-to(md) {
+    &__stage {
+      max-width: 64rem;
+      gap: var(--space-4);
+      padding-top: 12.5rem; // room for the floating card
+    }
+
+    // Anchored to the marker: left is the marker, the card shifts left by a share of its
+    // width that grows with the step (2rem in at the first stop, 2rem from the right edge
+    // at the last), so it never leaves the stage and the pointer always hits the marker.
+    // The box has a fixed height and the card sits at its bottom: a longer card grows
+    // upwards, never into the rail.
+    &__now {
+      --t: calc(var(--step) / (var(--n) - 1));
+      --off: calc(2rem + var(--t) * (100% - 4rem));
+      position: absolute;
+      top: 0;
+      left: calc((var(--step) + 0.5) * 100% / var(--n));
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      width: 24rem;
+      height: 10.75rem;
+      min-height: 0;
+      transform: translateX(calc(-1 * var(--off)));
+      transition:
+        left 900ms cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
+
+      // the little pointer to the rail
+      &::after {
+        content: '';
+        position: absolute;
+        left: var(--off);
+        bottom: -8px;
+        width: 16px;
+        height: 16px;
+        border-right: 1px solid var(--paper-line);
+        border-bottom: 1px solid var(--paper-line);
+        background: #fff;
+        transform: translateX(-50%) rotate(45deg);
+        transition: left 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+    }
+
+    &__line {
+      grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+      gap: 0; // no column gap: stop centres sit at exact sixths, like the card and the fill
+      max-width: none;
+      padding: calc(var(--space-6) + 8px) 0 0;
+    }
+
+    &__track {
+      left: calc(100% / var(--n) / 2);
+      right: calc(100% / var(--n) / 2);
+      top: 5px;
+      bottom: auto;
+      width: auto;
+      height: 6px;
+    }
+
+    &__fill {
+      width: calc(var(--step) / (var(--n) - 1) * 100%);
+      height: 100%;
+      transition: width 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    &__stop {
+      justify-items: center;
+      padding-inline: var(--space-2);
+      text-align: center;
+    }
+
+    &__dot {
+      left: 50%;
+      top: calc(-1 * var(--space-6) - 10px);
+      margin-left: -10px;
+    }
+
+    &__time {
+      font-size: clamp(1.375rem, 1rem + 1vw, 1.75rem);
+    }
+  }
+}
+
+@keyframes now-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes now-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 6px rgba(182, 154, 104, 0.38);
+  }
+
+  50% {
+    box-shadow: 0 0 0 11px rgba(182, 154, 104, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl__fill,
+  .tl__dot,
+  .tl__stop,
+  .tl__now,
+  .tl__now::after {
+    transition: none;
+    animation: none;
+  }
+
+  .tl__now-in {
+    animation: none;
+  }
+}
+
 .program {
   background: var(--paper-white);
   border: 1px solid var(--paper-line);
@@ -1915,7 +2157,7 @@
     }
 
     &.is-edited {
-      background: linear-gradient(to right, var(--clay-100), transparent 70%);
+      background: linear-gradient(to right, var(--paper-deep), transparent 70%);
       margin-inline: calc(var(--space-3) * -1);
       padding-inline: var(--space-3);
       border-radius: var(--radius-sm);
@@ -1971,7 +2213,7 @@
     color: var(--ink-700);
 
     &--edit {
-      background: var(--clay);
+      background: var(--ink);
       color: #fff;
     }
   }
@@ -1982,122 +2224,22 @@
   }
 
   .is-edited &__pen {
-    color: var(--clay);
+    color: var(--ink);
   }
 }
 
 // =============================================================================
-// 06 — Trust: what you get + FAQ, then the final call
+// Colour band: one surface under the dark chapter(s); the ColorBand directive scrubs
+// `--band` with the scroll, Zola-style, blending between the colours of consecutive
+// sections while their seam crosses the middle of the viewport. Currently it holds
+// the organizer alone (forest green); the categories moved to light grey.
 // =============================================================================
-.trust {
-  display: grid;
-  gap: var(--space-12);
-
-  &__h {
-    margin: 0 0 var(--space-5);
-    font-family: var(--font-ui);
-    font-stretch: var(--stretch-ui);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-bold);
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--ink-500);
-  }
-
-  @include bp.respond-to(lg) {
-    grid-template-columns: 5fr 7fr;
-    gap: var(--space-16);
-  }
+.band {
+  background: var(--band, #faf7f2);
 }
 
-.gets {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--ink);
-}
-
-.get {
-  padding: var(--space-5) 0;
-  border-bottom: 1px solid var(--paper-line-strong);
-
-  p {
-    margin: 0;
-    font-size: var(--fs-lead);
-    line-height: 1.45;
-  }
-}
-
-.faq {
-  border-top: 1px solid var(--ink);
-
-  &__item {
-    border-bottom: 1px solid var(--paper-line-strong);
-  }
-
-  &__q {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-    padding: var(--space-4) 0;
-    min-height: 44px;
-    font-family: var(--font-ui);
-    font-size: var(--fs-ui);
-    font-weight: var(--fw-semibold);
-    line-height: 1.35;
-    cursor: pointer;
-    list-style: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    &:hover {
-      color: var(--clay-700);
-    }
-  }
-
-  &__chev {
-    flex: none;
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-
-  &__item[open] &__chev {
-    transform: rotate(180deg);
-  }
-
-  &__a {
-    margin: 0;
-    padding: 0 0 var(--space-5);
-    max-width: 40rem;
-    font-size: var(--fs-body);
-    line-height: var(--lh-body);
-    color: var(--ink-700);
-  }
-}
-
-.final {
-  margin-top: var(--space-20);
-  padding: var(--space-12) var(--space-6);
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  text-align: center;
-
-  &__title {
-    margin: 0 0 var(--space-3);
-    font-size: var(--fs-h2);
-  }
-
-  &__note {
-    margin: 0 auto var(--space-8);
-    max-width: 34rem;
-    font-size: var(--fs-lead);
-    line-height: 1.5;
-    color: var(--ink-700);
-  }
-
-  @include bp.respond-to(md) {
-    padding-block: var(--space-16);
-  }
+// the organizer chapter is the cream panel itself: no chapter padding, no centring box
+.chap.chap--organizer {
+  display: block;
+  padding-block: 0;
 }

@@ -110,10 +110,11 @@
 
 // ---- v2 variants (Program on Paper) ----
 .btn--ink {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--color-action); // = --ink by default; evergreen in the brand theme
+  color: var(--on-ink, var(--paper));
 
-  &:hover { background: #000; color: var(--paper); }
+  // --color-action-hover is #000 by default; the brand theme makes it evergreen-700
+  &:hover { background: var(--color-action-hover); color: var(--on-ink, var(--paper)); }
 }
 
 .btn--clay {

@@ -9,6 +9,8 @@ import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from '@ang
  *
  * Browser-only, after hydration. Without JS or under prefers-reduced-motion the
  * host never gets `is-staged`, and the SCSS falls back to a plain full-screen hero.
+ * Phones (< 768px) never stage either, like Revolut's mobile site: the hero is an
+ * ordinary photo section that scrolls away, nothing pinned or shrunk.
  */
 @Directive({ selector: '[appScrollStage]' })
 export class ScrollStage {
@@ -20,7 +22,7 @@ export class ScrollStage {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
       const host = this.el.nativeElement;
-      host.classList.add('is-staged');
+      const phone = window.matchMedia('(max-width: 767px)');
 
       const DURATION = 950; // ms, one run of the transform
       const TRIGGER_DOWN = 16; // px scrolled: start the transform
@@ -78,23 +80,32 @@ export class ScrollStage {
       };
 
       const onScroll = () => {
+        if (phone.matches) return;
         const y = window.scrollY;
         if (y > TRIGGER_DOWN) setTarget(1);
         else if (y < TRIGGER_UP) setTarget(0);
       };
 
-      // A page opened mid-scroll (refresh, back button) starts in the end state.
-      if (window.scrollY > TRIGGER_DOWN) {
-        p = target = 1;
-      }
-      measure();
-      apply();
+      /** Stage on wider screens only; crossing the phone breakpoint (rotation, a window
+       * resized) switches it on or off. A page opened mid-scroll (refresh, back button)
+       * starts in the end state. */
+      const sync = () => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        host.classList.toggle('is-staged', !phone.matches);
+        p = target = !phone.matches && window.scrollY > TRIGGER_DOWN ? 1 : 0;
+        measure();
+        apply();
+      };
+      sync();
 
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', measure);
+      phone.addEventListener('change', sync);
       this.destroyRef.onDestroy(() => {
         window.removeEventListener('scroll', onScroll);
         window.removeEventListener('resize', measure);
+        phone.removeEventListener('change', sync);
         if (raf) cancelAnimationFrame(raf);
       });
     });

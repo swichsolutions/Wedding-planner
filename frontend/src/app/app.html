@@ -1,8 +1,8 @@
 <a class="skip-link" href="#main" (click)="skipToMain($event)">{{ 'common.skipToContent' | translate }}</a>
 
 @if (!chromeless()) {
-<header class="hdr" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled()" [class.is-overlay]="overlay() && !menuOpen()"
-  [class.is-hidden]="hidden() && !menuOpen()">
+<header class="hdr" [class.theme-brand]="onHome()" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled()" [class.is-overlay]="overlay() && !menuOpen()"
+  [class.is-hidden]="hidden() && !menuOpen()" [class.is-dark]="navDark() && !menuOpen() && !overlay()">
   <div class="container hdr__bar">
     <a routerLink="/" class="wordmark" translate="no" (click)="closeMenu()">
       {{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
@@ -101,7 +101,7 @@
 </main>
 
 @if (!chromeless()) {
-<footer class="ftr">
+<footer class="ftr" [class.theme-brand]="onHome()">
   <div class="container ftr__top">
     <div class="ftr__brand">
       <a routerLink="/" class="wordmark wordmark--light" translate="no">
@@ -132,6 +132,7 @@
 </footer>
 }
 
-<app-login-modal />
-<app-confirm-dialog />
-<app-toasts />
+<!-- overlays opened from the home page follow its brand theme -->
+<app-login-modal [class.theme-brand]="onHome()" />
+<app-confirm-dialog [class.theme-brand]="onHome()" />
+<app-toasts [class.theme-brand]="onHome()" />

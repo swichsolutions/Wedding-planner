@@ -1,0 +1,294 @@
+@use 'breakpoints' as bp;
+
+// =============================================================================
+// Doubts + FAQ ("ნამდვილად დამეხმარება?"), after Revolut's Bills carousel: the promise
+// on the left; on the right a row of question cards running off the screen edge (the
+// chapter clips it). Every card sits at the stage origin and is moved by its slot
+// (data-s): 0 active, 1 beside it at 90%, 2 at 90% half faded, 3 parked unseen, -1 the
+// one leaving, shrinking away. Tapping the active card turns it over to the answer.
+// =============================================================================
+:host {
+  display: block;
+  width: 100%;
+  color: var(--ink);
+  --w: min(78vw, 330px); // card width
+  --h: calc(var(--w) * 1.36);
+  --gap: 16px;
+  --move: 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  @include bp.respond-to(lg) {
+    --w: clamp(300px, 22vw, 360px);
+    --gap: 20px;
+  }
+}
+
+.faq {
+  display: grid;
+  gap: clamp(2rem, 5vh, 3.5rem);
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: clamp(3rem, 5vw, 5rem);
+    align-items: center;
+  }
+}
+
+.title {
+  margin: 0 0 var(--space-6);
+  font-size: clamp(2.5rem, 1.5rem + 3vw, 4.25rem);
+  line-height: var(--lh-heading);
+}
+
+.lead {
+  margin: 0;
+  max-width: 30rem;
+  font-family: var(--font-statement);
+  font-size: clamp(1.25rem, 0.9rem + 1.1vw, 2rem);
+  line-height: 1.4;
+  color: var(--ink-700);
+}
+
+// ---- the carousel ----
+.stage {
+  position: relative;
+  height: var(--h);
+  touch-action: pan-y; // vertical scroll stays native; horizontal moves step the cards
+  user-select: none;
+}
+
+.cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--w);
+  height: var(--h);
+  transition:
+    transform var(--move),
+    opacity var(--move);
+
+  &[data-s='0'] {
+    z-index: 2;
+  }
+
+  &[data-s='1'] {
+    transform: translateX(calc(0.95 * var(--w) + var(--gap))) scale(0.9);
+  }
+
+  &[data-s='2'] {
+    transform: translateX(calc(1.85 * var(--w) + 2 * var(--gap))) scale(0.9);
+    opacity: 0.5;
+  }
+
+  // parked off to the right / leaving to the left: invisible, so the jump between
+  // the two ends of the loop never shows
+  &[data-s='3'] {
+    transform: translateX(calc(2.75 * var(--w) + 3 * var(--gap))) scale(0.9);
+  }
+
+  &[data-s='-1'] {
+    transform: scale(0.6);
+  }
+
+  &[data-s='3'],
+  &[data-s='-1'] {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      transform var(--move),
+      opacity var(--move),
+      visibility 0s linear 600ms;
+  }
+}
+
+.card {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  perspective: 1600px;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+  }
+}
+
+// the two faces turn about the vertical axis
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  border-radius: inherit;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transition: transform 700ms cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.front {
+  background: var(--ink);
+  color: #fff;
+
+  // a large question mark, faint, behind the text
+  &::after {
+    content: '?';
+    position: absolute;
+    right: 0.14em;
+    bottom: 0.06em;
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    font-size: calc(var(--w) * 0.62);
+    font-weight: var(--fw-black);
+    line-height: 1;
+    color: rgba(182, 154, 104, 0.22); // champagne gold, decorative
+    pointer-events: none;
+  }
+
+  .is-flipped & {
+    transform: rotateY(-180deg);
+  }
+}
+
+.back {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  box-shadow: 0 24px 48px rgba(34, 30, 32, 0.12);
+  transform: rotateY(180deg);
+
+  .is-flipped & {
+    transform: rotateY(0deg);
+  }
+}
+
+.k {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  // a quieter label, by colour rather than opacity (60% opacity fell to 3.3:1)
+  color: rgba(250, 247, 242, 0.75); // on the evergreen front: ~6:1
+
+  .back & {
+    color: var(--ink-700); // on the white back: ~6.6:1
+  }
+}
+
+.text {
+  position: relative;
+  z-index: 1;
+  margin-block: auto; // centred between the label row and the hint
+  font-family: var(--font-display);
+  font-stretch: var(--stretch-display);
+  font-size: calc(var(--w) * 0.098);
+  text-align: center;
+  overflow-wrap: break-word; // a word too long for the card breaks rather than spill out
+  font-weight: var(--fw-bold);
+  line-height: 1.12;
+  letter-spacing: var(--tracking-tight);
+  text-wrap: pretty;
+
+  .back & {
+    margin-block: var(--space-6) 0;
+    font-family: var(--font-statement);
+    text-align: left;
+    font-stretch: normal;
+    font-size: clamp(1.0625rem, calc(var(--w) * 0.056), 1.25rem);
+    font-weight: var(--fw-regular);
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--ink-700);
+  }
+}
+
+.hint {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+
+  .back & {
+    margin-top: auto;
+  }
+}
+
+.ic {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  transition: transform var(--dur-slow) var(--ease-out);
+
+  .back & {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .card:hover & {
+    transform: rotate(-35deg);
+  }
+}
+
+// ---- dots, under the active card ----
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  width: var(--w);
+  margin-top: var(--space-6);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(48, 43, 45, 0.65); // a control: >= 3:1 on ivory (WCAG 1.4.11)
+  cursor: pointer;
+  transition:
+    width var(--dur-slow) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+
+  &.is-active {
+    width: 30px;
+    background: var(--ink);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .face,
+  .ic,
+  .dot {
+    transition: none;
+  }
+}

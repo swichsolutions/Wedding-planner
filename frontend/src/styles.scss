@@ -2,3 +2,10 @@
 @use './styles/tokens';
 @use './styles/base';
 @use './styles/components';
+@use './styles/brand';
+
+// Brand theme (Mint & Peach + GF Aisi): the home page host, and the header and footer
+// while on the home page. One global class, so the tokens ship once.
+.theme-brand {
+  @include brand.theme;
+}

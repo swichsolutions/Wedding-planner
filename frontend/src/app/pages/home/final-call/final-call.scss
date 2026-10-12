@@ -1,0 +1,301 @@
+@use 'breakpoints' as bp;
+
+// =============================================================================
+// 07 — The final call: the last screen, everything scaled up so it fills it. The
+// entrance is choreographed per element (not the whole block), so the block-level
+// reveal fade from styles/_base.scss is switched off here.
+//
+// Desktop: the whole block is drawn to the screen height. --u is one pixel of the
+// design at 1270px tall (Beka's monitor), so a laptop shows the same three-line title,
+// pills and button, only smaller (with floors so nothing gets too small to read), and a
+// taller screen shows them larger.
+// =============================================================================
+:host {
+  display: block;
+  --u: calc(100vh / 1270);
+}
+
+.final {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100dvh - 2 * clamp(1.5rem, 5vh, 4rem));
+  text-align: center;
+
+  &[data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---- the rings behind the title: the brand's gold ring, drawn as fine lines ----
+.rings {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: min(100%, 60rem);
+  translate: -50% -58%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ring {
+  fill: none;
+  stroke: var(--gold);
+  stroke-opacity: 0.7;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+// ---- type ----
+.title {
+  margin: 0 0 clamp(1.5rem, 4vh, 3rem);
+  font-size: clamp(3rem, 1rem + 7.5vw, 9.5rem);
+  line-height: 1.1;
+
+  @include bp.respond-to(md) {
+    // three lines on every screen ("დაიწყე შენი / ქორწილის / დაგეგმვა")
+    max-width: 7em;
+    font-size: clamp(3rem, min(1rem + 7.5vw, 150 * var(--u)), 11rem);
+  }
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+
+  // the brand face sets Georgian as Mtavruli capitals: no ascenders or descenders
+  // reaching past the line, so ka and en share one tight line height
+  line-height: 1.02;
+}
+
+.w {
+  display: inline-block;
+}
+
+.note {
+  margin: 0 auto clamp(2.5rem, 7vh, 5rem);
+  max-width: none;
+  font-family: var(--font-statement);
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.875rem);
+  color: var(--ink-700);
+
+  @include bp.respond-to(md) {
+    margin-bottom: max(1.5rem, 80 * var(--u));
+    font-size: max(1.125rem, min(1rem + 1vw, 30 * var(--u)));
+  }
+}
+
+// ---- what an account adds: three ticked pills above the button ----
+.gets-h {
+  max-width: none;
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-ui);
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  font-weight: var(--fw-semibold);
+  color: var(--ink-700); // on peach the muted tone falls under AA; this one holds 4.5:1
+
+  @include bp.respond-to(md) {
+    margin-bottom: max(0.75rem, 20 * var(--u));
+    font-size: max(0.9375rem, 20 * var(--u));
+  }
+}
+
+.gets {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 clamp(2.5rem, 7vh, 5rem);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: clamp(0.875rem, 1.6vh, 1.25rem) clamp(1.25rem, 1.6vw, 1.75rem);
+    border-radius: var(--radius-pill);
+    background: #fff;
+    font-family: var(--font-ui);
+    font-size: clamp(1.0625rem, 0.9rem + 0.4vw, 1.3125rem);
+    font-weight: var(--fw-semibold);
+  }
+
+  svg {
+    flex: none;
+    width: 1.2em;
+    height: 1.2em;
+  }
+
+  path {
+    stroke-dasharray: 1;
+  }
+
+  @include bp.respond-to(md) {
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: max(0.75rem, 16 * var(--u));
+    margin-bottom: max(1.5rem, 80 * var(--u));
+
+    li {
+      padding: max(0.75rem, 20 * var(--u)) max(1rem, 28 * var(--u));
+      font-size: max(0.9375rem, 21 * var(--u));
+    }
+  }
+}
+
+.btn {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.125rem, 2.4vh, 1.625rem) clamp(2.25rem, 3.5vw, 3.5rem);
+  font-size: clamp(1.125rem, 0.9rem + 0.7vw, 1.625rem);
+
+  @include bp.respond-to(md) {
+    padding: max(0.875rem, 26 * var(--u)) max(2rem, 56 * var(--u));
+    font-size: max(1rem, 26 * var(--u));
+  }
+
+  // the glint that crosses it now and then
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
+    translate: -100% 0;
+    pointer-events: none;
+  }
+}
+
+// ---- the entrance: only once Reveal has armed the block (browser, motion allowed) ----
+// before it scrolls in, everything that will move is held at its start
+.final[data-reveal]:not(.is-in) {
+  .ring {
+    stroke-dashoffset: 1;
+  }
+
+  .w,
+  .note,
+  .gets-h,
+  .gets li,
+  .btn {
+    opacity: 0;
+  }
+
+  .gets path {
+    stroke-dashoffset: 1;
+  }
+}
+
+.final.is-in {
+  $ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  .rings {
+    animation: rings-turn 90s linear 1.8s infinite;
+  }
+
+  .ring {
+    animation: draw 1.8s cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+
+  .ring--b {
+    animation-delay: 0.25s;
+  }
+
+  .w {
+    animation: word-in 1s $ease calc(0.15s + var(--i) * 0.11s) both;
+  }
+
+  .note {
+    animation: rise 0.9s $ease 0.6s both;
+  }
+
+  .gets-h {
+    animation: rise 0.9s $ease 0.8s both;
+  }
+
+  .gets li {
+    animation: pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) calc(0.95s + var(--i) * 0.12s) both;
+  }
+
+  .gets path {
+    animation: draw 0.5s ease-out calc(1.2s + var(--i) * 0.12s) both;
+  }
+
+  .btn {
+    animation: rise 0.9s $ease 1.4s both;
+
+    &::after {
+      animation: glint 5s ease-in-out 2.6s infinite;
+    }
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em) rotate(2deg);
+    filter: blur(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes glint {
+  0%,
+  65% {
+    translate: -100% 0;
+  }
+
+  100% {
+    translate: 100% 0;
+  }
+}
+
+@keyframes rings-turn {
+  to {
+    rotate: 360deg;
+  }
+}

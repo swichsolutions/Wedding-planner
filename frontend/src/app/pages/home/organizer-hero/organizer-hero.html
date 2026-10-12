@@ -1,0 +1,67 @@
+<div class="hero">
+  <div class="hero__copy">
+    <p class="hero__eyebrow">{{ 'home.organize.overline' | translate }}</p>
+    <h2 class="hero__title">{{ 'home.organize.title' | translate }}</h2>
+    <p class="hero__lead">{{ 'home.organize.leadShort' | translate }}</p>
+    <a class="hero__cta" routerLink="/signup">
+      <span>{{ 'home.organize.cta' | translate }}</span>
+      <span aria-hidden="true">↗</span>
+    </a>
+    <p class="hero__chips">
+      <span><i aria-hidden="true">✧</i> {{ 'home.organize.chips.c1' | translate }}</span>
+      <span><i aria-hidden="true">♡</i> {{ 'home.organize.chips.c2' | translate }}</span>
+      <span><i aria-hidden="true">✓</i> {{ 'home.organize.chips.c3' | translate }}</span>
+    </p>
+  </div>
+
+  <!-- the phone: a small, self-running demo of the plan (decorative) -->
+  <div class="stage" aria-hidden="true">
+    <div class="stage__glow"></div>
+    <div class="phone">
+      <div class="phone__screen">
+        <div class="phone__status"><strong>9:41</strong><span>▰ ▮ ◉</span></div>
+        <div class="phone__island"></div>
+
+        <div class="app__header">
+          <span class="app__logo">{{ 'brand.name' | translate }}<span class="app__logo-dot">.</span></span>
+          <span class="app__heart">♡</span>
+        </div>
+
+        <div class="card">
+          <div class="card__numbers">
+            <div>
+              <strong class="card__value num"><span class="card__pct">{{ progress() }}</span>%</strong>
+              <span class="card__label">{{ 'home.organize.plan.progressLabel' | translate }}</span>
+            </div>
+            <div class="card__days">
+              <strong class="num">{{ daysUntilWedding }}</strong>
+              <span class="card__label">{{ 'home.organize.plan.daysLabel' | translate }}</span>
+            </div>
+          </div>
+          <div class="card__track"><div class="card__fill" [style.width.%]="progress()"></div></div>
+        </div>
+
+        <div class="tasks__head">
+          <strong>{{ 'home.organize.plan.myTasks' | translate }}</strong>
+          <span>{{ doneCount() }} / {{ tasks().length }} {{ 'home.organize.plan.doneOf' | translate }}</span>
+        </div>
+        <div class="tasks">
+          @for (t of tasks(); track t.id) {
+            <div class="task" [class.is-done]="t.done" [class.is-active]="activeId() === t.id">
+              <span class="task__check">@if (t.done) {✓}</span>
+              <span class="task__label">{{ 'home.organize.tasks.t' + t.id + '.text' | translate }}</span>
+            </div>
+          }
+        </div>
+
+        <nav class="phone__nav">
+          <span class="is-selected">⌂</span>
+          <span>☷</span>
+          <span>♡</span>
+          <span>⚙</span>
+        </nav>
+        <span class="phone__home"></span>
+      </div>
+    </div>
+  </div>
+</div>

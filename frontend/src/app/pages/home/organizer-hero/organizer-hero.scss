@@ -1,0 +1,512 @@
+// =============================================================================
+// Organizer hero ("როგორ ვაკონტროლო ყველაფერი?"): copy on the left, a tilted phone
+// running a small plan demo on the right, on one ivory panel (brandbook: white panels
+// on ivory, evergreen for actions, mint for subtle highlights). Colours and type come
+// from the home page's brand theme.
+// =============================================================================
+:host {
+  display: block;
+  width: 100%;
+  --mute: var(--ink-700);
+  --mute-light: var(--ink-500);
+  --frame: #2c3532; // phone body: a near-black with the evergreen in it
+  --frame-deep: #161c1a;
+  --screen: #fff;
+  --screen-line: var(--paper-line);
+  --screen-muted: var(--ink-500);
+  --screen-faint: var(--ink-300);
+  --accent: var(--ink); // progress fill, ticks, selected nav
+  font-family: var(--font-statement);
+  color: var(--ink);
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  min-height: 100dvh; // the panel is the whole screen
+  overflow: hidden;
+  background: var(--paper); // ivory, between the mint categories and the mint day
+}
+
+// ---- copy ----
+.hero__copy {
+  z-index: 1;
+  // left gutter in step with the page container; room above and below scales with the screen
+  padding: clamp(2rem, 8vh, 4.5rem) 0 clamp(2rem, 8vh, 4.5rem) clamp(1.5rem, 8vw, 10rem);
+}
+
+// the peach label that marks this step of the journey (as on the other chapters)
+.hero__eyebrow {
+  display: inline-block;
+  margin: 0 0 32px;
+  padding: 0.5em 1.1em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  font-size: 15px;
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.hero__title {
+  margin: 0 0 28px;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 5.2vw, 80px);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0;
+  line-height: 1.04; // Mtavruli capitals: no ascenders or descenders to make room for
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.hero__lead {
+  max-width: 560px;
+  margin: 0 0 40px;
+  font-size: 20px;
+  line-height: 1.7;
+  color: var(--mute);
+}
+
+.hero__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 20px 34px;
+  border-radius: var(--radius-pill);
+  background: var(--color-action); // a button: evergreen in the brand theme
+  color: #fff;
+  font-size: 17px;
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(34, 30, 32, 0.12);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+
+  &:hover {
+    background: var(--color-action-hover);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
+}
+
+.hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em 1.6em;
+  margin: 36px 0 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--mute-light);
+
+  i {
+    font-style: normal;
+    margin-right: 0.3em;
+    color: var(--gold); // decorative marks only
+  }
+}
+
+// ---- the phone ----
+.stage {
+  // phone height: from the screen height, so the whole phone (bottom bar included)
+  // is on screen, centred, on a laptop as on a big monitor
+  --ph: min(1100px, 84vh);
+  --u: calc(var(--ph) / 610); // the phone is designed at 286x610 px: every px inside is one --u
+  position: relative;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.stage__glow {
+  position: absolute;
+  top: calc(50% - var(--ph) * 0.44); // just below the phone's top edge
+  width: calc(var(--ph) * 0.56);
+  height: calc(var(--ph) * 0.56);
+  border-radius: 50%;
+  background: rgba(48, 43, 45, 0.07); // a soft warm shadow behind the phone
+  filter: blur(calc(38 * var(--u)));
+}
+
+.phone {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(286 * var(--u));
+  height: calc(610 * var(--u));
+  padding: calc(5 * var(--u));
+  border: calc(5 * var(--u)) solid var(--frame);
+  border-radius: calc(47 * var(--u));
+  background: var(--frame-deep);
+  transform: rotate(-5deg); // the phone stays still; only the screen animates
+  box-shadow:
+    0 calc(27 * var(--u)) calc(54 * var(--u)) rgba(34, 30, 32, 0.26),
+    calc(5 * var(--u)) calc(4 * var(--u)) calc(5 * var(--u)) rgba(255, 255, 255, 0.23) inset;
+
+  &::after {
+    // the side button
+    content: '';
+    position: absolute;
+    right: -7px;
+    top: calc(119 * var(--u));
+    width: calc(2 * var(--u));
+    height: calc(58 * var(--u));
+    border-radius: calc(5 * var(--u));
+    background: #6b6f75;
+  }
+}
+
+.phone__screen {
+  position: relative;
+  height: 100%;
+  padding: calc(43 * var(--u)) calc(14 * var(--u)) 0;
+  overflow: hidden;
+  border-radius: calc(36 * var(--u));
+  background: var(--screen);
+  font-family: var(--font-ui);
+  color: var(--ink);
+}
+
+.phone__status {
+  position: absolute;
+  top: calc(14 * var(--u));
+  left: calc(20 * var(--u));
+  right: calc(18 * var(--u));
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(9 * var(--u));
+}
+
+.phone__island {
+  position: absolute;
+  top: calc(9 * var(--u));
+  left: 50%;
+  width: calc(78 * var(--u));
+  height: calc(20 * var(--u));
+  border-radius: calc(20 * var(--u));
+  background: #0b0b0c;
+  transform: translateX(-50%);
+}
+
+.app__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: calc(7 * var(--u)) 0 calc(18 * var(--u));
+}
+
+.app__logo {
+  font-family: var(--font-display); // the wordmark, as in the site header
+  font-size: calc(22 * var(--u));
+  font-weight: var(--fw-medium);
+  letter-spacing: 0;
+}
+
+.app__logo-dot {
+  color: var(--screen-faint);
+}
+
+.app__heart {
+  display: grid;
+  place-items: center;
+  width: calc(30 * var(--u));
+  height: calc(30 * var(--u));
+  border-radius: 50%;
+  background: var(--paper-deep);
+  color: var(--ink-700);
+  font-size: calc(19 * var(--u));
+}
+
+.card {
+  padding: calc(15 * var(--u));
+  border: calc(1 * var(--u)) solid var(--screen-line);
+  border-radius: calc(16 * var(--u));
+  background: #fff;
+  box-shadow: 0 calc(5 * var(--u)) calc(16 * var(--u)) rgba(34, 30, 32, 0.06);
+}
+
+.card__numbers {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.card__value {
+  display: block;
+  font-family: var(--font-display); // large figures in the capitals face
+  font-size: calc(34 * var(--u));
+  line-height: 1.1;
+}
+
+// the counting figure: the face has no tabular digits, so a fixed box keeps the %
+// from jittering while it counts (the widest two digits are ~0.85em)
+.card__pct {
+  display: inline-block;
+  min-width: 0.86em;
+  text-align: right;
+  letter-spacing: 0;
+}
+
+.card__days {
+  text-align: right;
+
+  strong {
+    font-family: var(--font-display);
+    font-size: calc(26 * var(--u));
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+}
+
+.card__label {
+  display: block;
+  margin-top: calc(6 * var(--u));
+  font-size: calc(9 * var(--u));
+  color: var(--screen-muted);
+}
+
+.card__track {
+  height: calc(6 * var(--u));
+  margin-top: calc(17 * var(--u));
+  border-radius: calc(8 * var(--u));
+  background: var(--paper-deep);
+  overflow: hidden;
+}
+
+.card__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 350ms var(--ease-out);
+}
+
+.tasks__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: calc(25 * var(--u)) calc(3 * var(--u)) calc(12 * var(--u));
+
+  strong {
+    font-size: calc(12 * var(--u));
+  }
+
+  span {
+    font-size: calc(9 * var(--u));
+    color: var(--screen-muted);
+  }
+}
+
+.tasks {
+  display: flex;
+  flex-direction: column;
+  gap: calc(5 * var(--u));
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: calc(11 * var(--u));
+  min-height: calc(42 * var(--u));
+  padding: calc(9 * var(--u));
+  border: calc(1 * var(--u)) solid transparent;
+  border-radius: calc(10 * var(--u));
+  transition:
+    background 300ms var(--ease-out),
+    border-color 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+
+  &.is-active {
+    background: var(--paper-deep);
+    border-color: var(--paper-line-strong);
+    transform: translateX(calc(3 * var(--u)));
+  }
+}
+
+.task__check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: calc(19 * var(--u));
+  height: calc(19 * var(--u));
+  border: calc(1.5 * var(--u)) solid var(--paper-line-strong);
+  border-radius: 50%;
+  background: #fff;
+  color: #fff;
+  font-size: calc(11 * var(--u));
+  transition:
+    background 300ms var(--ease-out),
+    border-color 300ms var(--ease-out);
+}
+
+.task__label {
+  font-size: calc(10 * var(--u));
+  font-weight: var(--fw-medium);
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+
+.task.is-done {
+  .task__check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .task__label {
+    color: var(--screen-faint);
+    text-decoration: line-through;
+  }
+}
+
+.phone__nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(46 * var(--u));
+  padding: 0 calc(27 * var(--u)) calc(8 * var(--u));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: calc(1 * var(--u)) solid var(--screen-line);
+  background: #fff;
+  color: var(--screen-faint);
+  font-size: calc(18 * var(--u));
+
+  .is-selected {
+    color: var(--accent);
+  }
+}
+
+.phone__home {
+  position: absolute;
+  bottom: calc(5 * var(--u));
+  left: 50%;
+  width: calc(74 * var(--u));
+  height: calc(3 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: var(--ink);
+  transform: translateX(-50%);
+}
+
+// ---- desktop: the copy is drawn to the screen height, like the phone beside it ----
+// --u is one pixel of the design at 1270px tall (Beka's monitor): a laptop shows the
+// same three-line title, lead and button, only smaller (with floors for legibility).
+@media (min-width: 801px) {
+  :host {
+    --u: calc(100vh / 1270);
+  }
+
+  .hero__copy {
+    padding-block: max(2rem, 72 * var(--u));
+  }
+
+  .hero__eyebrow {
+    margin-bottom: max(14px, 32 * var(--u));
+    font-size: max(15px, 15 * var(--u)); // the other chapters' peach labels are 15px
+  }
+
+  .hero__title {
+    max-width: 9em; // three lines on every screen, as on the monitor
+    margin-bottom: max(14px, 28 * var(--u));
+    font-size: max(34px, min(5.2vw, 80 * var(--u)));
+  }
+
+  .hero__lead {
+    max-width: 28em;
+    margin-bottom: max(20px, 40 * var(--u));
+    font-size: max(16px, 20 * var(--u));
+  }
+
+  .hero__cta {
+    padding: max(14px, 20 * var(--u)) max(24px, 34 * var(--u));
+    font-size: max(14px, 17 * var(--u));
+  }
+
+  .hero__chips {
+    margin-top: max(16px, 36 * var(--u));
+    font-size: max(14px, 15 * var(--u));
+  }
+}
+
+// ---- phones / small tablets ----
+@media (max-width: 800px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: 100dvh;
+  }
+
+  .hero__copy {
+    padding: 43px 24px 0;
+    text-align: center;
+  }
+
+  .hero__eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .hero__title {
+    margin-bottom: 18px;
+    font-size: clamp(36px, 9vw, 54px);
+  }
+
+  .hero__lead {
+    margin: 0 auto 26px;
+    font-size: 18px;
+    line-height: 1.65;
+  }
+
+  .hero__chips {
+    display: none;
+  }
+
+  // the whole phone, narrower than the screen
+  .stage {
+    --ph: min(600px, 150vw);
+    height: calc(var(--ph) * 1.06 + 48px);
+  }
+}
+
+@media (max-width: 400px) {
+  .hero {
+    min-height: 100dvh;
+  }
+
+  .hero__copy {
+    padding: 30px 17px 0;
+  }
+
+  .hero__title {
+    font-size: 36px;
+    letter-spacing: 0;
+  }
+
+  .hero__lead {
+    font-size: 17px;
+  }
+
+  .hero__cta {
+    padding: 17px 26px;
+    font-size: 15px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__cta,
+  .card__fill,
+  .task,
+  .task__check {
+    transition: none;
+  }
+}

@@ -40,7 +40,7 @@
   }
 
   &__dot {
-    color: var(--clay);
+    color: var(--ink);
   }
 
   &--light {
@@ -51,7 +51,7 @@
     }
 
     .wordmark__dot {
-      color: var(--clay-300);
+      color: inherit;
     }
   }
 }
@@ -63,10 +63,12 @@
   position: sticky;
   top: 0;
   z-index: var(--z-header);
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--paper-line);
+  // Translucent paper over a blur (Revolut): on paper sections it reads as paper, over
+  // a dark section as dark grey, and it shifts gradually as a section edge passes under.
+  background: color-mix(in srgb, var(--paper) 40%, transparent);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border-bottom: 1px solid color-mix(in srgb, var(--paper-line) 70%, transparent);
   transition:
     background var(--dur-base) var(--ease-out),
     border-color var(--dur-base) var(--ease-out),
@@ -77,13 +79,53 @@
     transform: translateY(calc(-100% - 2px));
   }
 
-  // Over the landing hero (not scrolled): transparent bar, paper-colored text.
+  // Over the landing hero (not scrolled): fully transparent bar.
   &.is-overlay {
     background: transparent;
     border-bottom-color: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
 
+  // Over a dark section: the translucent paper already reads as dark grey; just a
+  // faint light hairline.
+  &.is-dark {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  // brand theme: over the dark sections (photo slides, the evergreen categories with
+  // their light cards) a 40% ivory veil left the ivory text under 4.5:1; 75% evergreen
+  // holds it there
+  &.theme-brand.is-dark {
+    background: color-mix(in srgb, var(--spruce) 75%, transparent); // ~4.9:1 worst case, over the peach cards too
+  }
+
+  // brand theme (Nus): its tall ascenders/descenders need more room between lines,
+  // and its capital N reads as a Π at 12px, so the language codes stay lowercase
+  &.theme-brand .hdr__panel-d {
+    line-height: 1.45;
+  }
+
+  &.theme-brand .hdr__lang,
+  &.theme-brand .lang__btn {
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+
+  // brand theme: the bar's text a step larger (the desktop group titles: see the
+  // xl block below)
+  &.theme-brand .hdr__text-btn,
+  &.theme-brand .hdr__cta {
+    font-size: 1rem;
+  }
+
+  &.theme-brand .hdr__lang {
+    font-size: 14px;
+  }
+
+  // Both cases: light text and controls.
+  &.is-overlay,
+  &.is-dark {
     .wordmark,
     .hdr__group,
     .hdr__text-btn,
@@ -115,7 +157,7 @@
     }
 
     .wordmark__dot {
-      color: var(--clay-300);
+      color: inherit;
     }
 
     .hdr__cta {
@@ -500,6 +542,11 @@
       padding: 0 var(--space-3);
       border-radius: var(--radius-pill);
       font-size: 0.875rem; // four Georgian titles + controls must fit the 1248px container
+
+      // brand theme: a step larger (Beka, 2026-10-12); Nus is narrow, so it still fits
+      .hdr.theme-brand & {
+        font-size: 1.0625rem;
+      }
       letter-spacing: 0;
       color: var(--ink-700);
       white-space: nowrap;
@@ -602,7 +649,7 @@
   }
 
   &.is-alert {
-    color: var(--clay);
+    color: var(--ink);
   }
 
   &__badge {
@@ -613,7 +660,7 @@
     height: 18px;
     padding: 0 5px;
     border-radius: var(--radius-pill);
-    background: var(--clay);
+    background: var(--ink);
     color: #fff;
     font-family: var(--font-ui);
     font-size: 11px;
@@ -714,9 +761,15 @@
 
       &:hover {
         color: var(--on-spruce);
-        border-bottom-color: var(--clay-300);
+        border-bottom-color: var(--paper-line-strong);
       }
     }
+  }
+
+  // brand theme: the hover underline is a fine gold line (the theme's hairline
+  // tokens are evergreen and would vanish on the evergreen footer)
+  &.theme-brand &__links a:hover {
+    border-bottom-color: var(--gold);
   }
 
   &__bottom {
