@@ -1,0 +1,39 @@
+<section class="ps">
+  <header class="ps-head">
+    <app-gold-ring class="ps-ring" />
+    <p class="ps-label">{{ 'plan.startLabel' | translate }}</p>
+    <h1 class="ps-title">{{ 'plan.startTitle' | translate }}</h1>
+    <p class="ps-lead">{{ 'plan.startLead' | translate }}</p>
+  </header>
+
+  <form class="ps-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <app-plan-details-fields [form]="form" [iAmPartner]="iAmPartner()" idPrefix="ps" />
+
+    <!-- budget: only here; afterwards it lives in the budget tool -->
+    <fieldset class="ps-set" [formGroup]="budgetForm">
+      <legend class="ps-q">{{ 'plan.budget' | translate }}</legend>
+      <div class="ps-field">
+        <label for="ps-budget">{{ 'plan.budgetAmount' | translate }}</label>
+        <div class="ps-money">
+          <input id="ps-budget" type="number" inputmode="numeric" min="0" step="100" formControlName="amount"
+            [class.is-invalid]="budgetForm.controls.amount.invalid && budgetForm.controls.amount.touched" />
+          <span aria-hidden="true">₾</span>
+        </div>
+      </div>
+      <label class="ps-check">
+        <input type="checkbox" [checked]="budgetForm.controls.unknown.value" (change)="toggleBudgetUnknown($event)" />
+        <span>{{ 'plan.notYet' | translate }}</span>
+      </label>
+    </fieldset>
+
+    @if (error()) {
+      <p class="ps-error" role="alert">{{ 'plan.saveError' | translate }}</p>
+    }
+
+    <div class="ps-actions">
+      <button type="submit" class="btn btn--primary btn--lg" [disabled]="saving()">{{ 'plan.startCta' | translate }}</button>
+      <button type="button" class="ps-skip" [disabled]="saving()" (click)="skip()">{{ 'plan.skip' | translate }}</button>
+    </div>
+    <p class="ps-note">{{ 'plan.laterNote' | translate }}</p>
+  </form>
+</section>

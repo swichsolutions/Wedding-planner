@@ -1,14 +1,14 @@
 namespace WeddingPlanner.Domain.Entities;
 
 /// <summary>One table on the couple's seating chart. Owned by the AppUser (couple)
-/// via UserId, like <see cref="Guest"/>. Position is free-form canvas coordinates
+/// shared plan (<see cref="Couple"/>), like <see cref="Guest"/>. Position is free-form canvas coordinates
 /// (px, relative to the canvas origin) so couples can lay the chart out to mirror
 /// their actual venue.</summary>
 public class SeatingTable
 {
     public int Id { get; set; }
 
-    public string UserId { get; set; } = string.Empty;
+    public int CoupleId { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
@@ -21,6 +21,9 @@ public class SeatingTable
     public double PositionX { get; set; }
 
     public double PositionY { get; set; }
+
+    /// <summary>Clockwise turn in degrees (0–359), about the table's centre.</summary>
+    public double Rotation { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 }

@@ -71,7 +71,20 @@
               <span class="bsum__fill bsum__fill--paid" [style.width.%]="meterPct(sumPaid())"></span>
             </span>
           </div>
+          <div class="bsum__stat">
+            <dt>{{ 'budgetPage.leftCol' | translate }}</dt>
+            <dd class="num">{{ format(sumLeft()) }}</dd>
+          </div>
         </dl>
+
+        @if (nextDue(); as due) {
+          <p class="bsum__due" [class.is-overdue]="reminderState(due) === 'overdue'">
+            {{ 'budgetPage.nextDue' | translate: { date: date(due.reminderDate), name: due.name } }}
+            @if (leftToPay(due) > 0) {
+              · <span class="num">{{ format(leftToPay(due)) }}</span>
+            }
+          </p>
+        }
       </div>
 
       <!-- ---- guided / overview switch ---- -->
@@ -225,16 +238,24 @@
                         <span aria-hidden="true">₾</span>
                       </div>
                     </div>
-                    <div class="bmodal__field" [class.is-paid-up]="isPaidUp(item)">
-                      <label for="bg-paid-{{ item.id }}">{{ 'budgetPage.paidCol' | translate }}</label>
-                      <div class="bmodal__amount">
-                        <input id="bg-paid-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
-                          autocomplete="off" placeholder="—" [value]="item.paid ?? ''"
-                          (change)="commitMoney(item, 'paid', $event)" />
-                        <span aria-hidden="true">₾</span>
-                      </div>
+                    <div class="bmodal__field bpaid" [class.is-paid-up]="isPaidUp(item)">
+                      <span class="bpaid__label">{{ 'budgetPage.paidCol' | translate }}</span>
+                      <span class="bpaid__sum num">
+                        @if (isPaidUp(item)) {
+                          <span aria-hidden="true">✓</span>
+                        }
+                        {{ item.paid === null ? '—' : format(item.paid) }}
+                      </span>
+                      <button type="button" class="blink bpaid__open" (click)="togglePayments(item)"
+                        [attr.aria-expanded]="isDrawerOpen(item, 'payments')" [attr.aria-controls]="'bpay-g-' + item.id">
+                        {{ (item.payments.length ? 'budgetPage.paymentsCount' : 'budgetPage.recordPayment') | translate: { n: item.payments.length } }}
+                      </button>
                     </div>
                   </div>
+
+                  @if (isDrawerOpen(item, 'payments')) {
+                    <ng-container *ngTemplateOutlet="paymentsPanel; context: { $implicit: item, where: 'g' }" />
+                  }
 
                   <div class="bcard__actions">
                     <button type="button" class="bicon" [class.is-on]="item.reminderDate"
@@ -260,7 +281,7 @@
                         <path d="M9 14h6M9 17h4" />
                       </svg>
                     </button>
-                    @if (canPayFull(item)) {
+                    @if (canPayFull(item) && !isDrawerOpen(item, 'payments')) {
                       <button type="button" class="brow__payfull" (click)="markPaidFull(item)">
                         {{ 'budgetPage.payFull' | translate }}
                       </button>
@@ -419,23 +440,18 @@
                 </td>
                 <td class="brow__money" [class.is-paid-up]="isPaidUp(item)"
                   [attr.data-label]="'budgetPage.paidCol' | translate">
-                  <div class="brow__money-wrap">
+                  <div class="brow__paid">
                     @if (isPaidUp(item)) {
                       <span class="brow__check" role="img"
                         [attr.aria-label]="'budgetPage.paidUp' | translate"
                         [attr.title]="'budgetPage.paidUp' | translate">✓</span>
                     }
-                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="—"
-                      [value]="item.paid ?? ''" (change)="commitMoney(item, 'paid', $event)"
-                      [attr.aria-label]="('budgetPage.paidCol' | translate) + ' — ' + item.name" />
-                    <span class="brow__cur" aria-hidden="true">₾</span>
+                    <span class="num">{{ item.paid === null ? '—' : format(item.paid) }}</span>
                   </div>
-                  @if (canPayFull(item)) {
-                    <button type="button" class="brow__payfull" (click)="markPaidFull(item)"
-                      [attr.title]="'budgetPage.payFullTitle' | translate">
-                      {{ 'budgetPage.payFull' | translate }}
-                    </button>
-                  }
+                  <button type="button" class="brow__payfull" (click)="openPayments(item, $event)"
+                    [attr.aria-label]="('budgetPage.recordPayment' | translate) + ' — ' + item.name">
+                    {{ (item.payments.length ? 'budgetPage.paymentsCount' : 'budgetPage.recordPayment') | translate: { n: item.payments.length } }}
+                  </button>
                 </td>
 
                 <td class="brow__actions">
@@ -642,24 +658,16 @@
             <span aria-hidden="true">₾</span>
           </div>
         </div>
-        <div class="bmodal__field" [class.is-paid-up]="isPaidUp(item)">
-          <label for="bm-paid-{{ item.id }}">{{ 'budgetPage.paidCol' | translate }}</label>
-          <div class="bmodal__amount">
-            <input id="bm-paid-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
-              autocomplete="off" placeholder="—" [value]="item.paid ?? ''"
-              (change)="commitMoney(item, 'paid', $event)" />
-            <span aria-hidden="true">₾</span>
-          </div>
-          @if (canPayFull(item)) {
-            <button type="button" class="brow__payfull" (click)="markPaidFull(item)"
-              [attr.title]="'budgetPage.payFullTitle' | translate">
-              {{ 'budgetPage.payFull' | translate }}
-            </button>
-          } @else if (isPaidUp(item)) {
+        <div class="bmodal__field bpaid" [class.is-paid-up]="isPaidUp(item)">
+          <span class="bpaid__label">{{ 'budgetPage.paidCol' | translate }}</span>
+          <span class="bpaid__sum num">{{ item.paid === null ? '—' : format(item.paid) }}</span>
+          @if (isPaidUp(item)) {
             <span class="bmodal__paid-badge">✓ {{ 'budgetPage.paidUp' | translate }}</span>
           }
         </div>
       </div>
+
+      <ng-container *ngTemplateOutlet="paymentsPanel; context: { $implicit: item, where: 'm' }" />
 
       <div class="bmodal__details">
         <div class="bmodal__field">
@@ -691,6 +699,81 @@
     </div>
   </div>
 }
+
+<!-- Payments on a line (B4): what's been paid, what's left, and the form to record one.
+     Shared by the guided card's drawer ('g') and the detail popup ('m'). -->
+<ng-template #paymentsPanel let-item let-where="where">
+  <section class="bpay" [attr.id]="'bpay-' + where + '-' + item.id"
+    [attr.aria-label]="'budgetPage.paymentsTitle' | translate">
+    <div class="bpay__head">
+      <p class="bpay__title">{{ 'budgetPage.paymentsTitle' | translate }}</p>
+      @if (item.actualCost !== null && item.actualCost > 0) {
+        <p class="bpay__left">
+          @if (isPaidUp(item)) {
+            ✓ {{ 'budgetPage.paidUp' | translate }}
+          } @else {
+            {{ 'budgetPage.leftOf' | translate: { left: format(leftToPay(item)), total: format(item.actualCost) } }}
+          }
+        </p>
+      } @else {
+        <p class="bpay__left">{{ 'budgetPage.noAgreedYet' | translate }}</p>
+      }
+    </div>
+
+    @if (item.payments.length) {
+      <ul class="bpay__list" role="list">
+        @for (p of item.payments; track p.id) {
+          <li class="bpay__row">
+            <span class="bpay__amount num">{{ format(p.amount) }}</span>
+            <span class="bpay__date">{{ date(p.paidOn) }}</span>
+            @if (p.note) {
+              <span class="bpay__note">{{ p.note }}</span>
+            }
+            <button type="button" class="bicon bicon--danger bpay__del" (click)="askRemovePayment(item, p)"
+              [attr.aria-label]="('budgetPage.paymentDelete' | translate) + ' — ' + format(p.amount)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <form class="bpay__form" (submit)="$event.preventDefault(); addPayment(item, payAmount, payDate, payNote)">
+      <div class="bpay__field">
+        <label [attr.for]="'bpay-amount-' + where + '-' + item.id">{{ 'budgetPage.paymentAmount' | translate }}</label>
+        <div class="bmodal__amount">
+          <input #payAmount [id]="'bpay-amount-' + where + '-' + item.id" type="number" min="0.01" step="any"
+            inputmode="decimal" autocomplete="off" required
+            [attr.placeholder]="leftToPay(item) > 0 ? leftToPay(item) : null" />
+          <span aria-hidden="true">₾</span>
+        </div>
+      </div>
+      <div class="bpay__field">
+        <label [attr.for]="'bpay-date-' + where + '-' + item.id">{{ 'budgetPage.paymentDate' | translate }}</label>
+        <input #payDate [id]="'bpay-date-' + where + '-' + item.id" type="date" [value]="today" [max]="today" />
+      </div>
+      <div class="bpay__field bpay__field--note">
+        <label [attr.for]="'bpay-note-' + where + '-' + item.id">{{ 'budgetPage.paymentNote' | translate }}</label>
+        <input #payNote [id]="'bpay-note-' + where + '-' + item.id" type="text" maxlength="200" autocomplete="off"
+          [attr.placeholder]="'budgetPage.paymentNotePlaceholder' | translate" />
+      </div>
+      <div class="bpay__actions">
+        <button type="submit" class="btn btn--primary" [disabled]="paymentBusy() === item.id">
+          {{ 'budgetPage.recordPayment' | translate }}
+        </button>
+        @if (canPayFull(item)) {
+          <button type="button" class="blink" (click)="markPaidFull(item)" [disabled]="paymentBusy() === item.id"
+            [attr.title]="'budgetPage.payFullTitle' | translate">
+            {{ 'budgetPage.payFull' | translate }}
+          </button>
+        }
+      </div>
+    </form>
+  </section>
+</ng-template>
 
 <!-- Vendor cell states — shared by the table row and the detail popup. -->
 <ng-template #vendorState let-item>

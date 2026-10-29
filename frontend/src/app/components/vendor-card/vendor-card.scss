@@ -137,9 +137,14 @@
     font-weight: var(--fw-semibold);
   }
 
-  &__price-label {
+  &__price-label,
+  &__unit {
     font-size: var(--fs-caption);
     font-weight: var(--fw-regular);
     color: var(--color-text-secondary);
+  }
+
+  &__unit {
+    margin-left: calc(var(--space-1) * -1); // sits right after the amount: "80 ₾ / სტუმარი"
   }
 }

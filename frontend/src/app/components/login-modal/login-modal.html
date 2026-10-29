@@ -58,6 +58,7 @@
           @if (attempted() && form.controls.password.hasError('required')) {
             <span class="auth__err">{{ 'auth.required' | translate }}</span>
           }
+          <button type="button" class="auth__forgot" (click)="goForgot()">{{ 'auth.forgotPassword' | translate }}</button>
         </div>
         @if (error()) {
           <p class="auth__error" role="alert">{{ 'auth.invalidCredentials' | translate }}</p>

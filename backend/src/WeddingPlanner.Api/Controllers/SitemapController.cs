@@ -1,4 +1,5 @@
 using System.Text;
+using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,10 @@ namespace WeddingPlanner.Api.Controllers;
 /// sitemap.xml generated from REAL data: the home page, the browse page, one URL per
 /// category×city pairing that actually has approved vendors, and one per approved
 /// vendor profile. Served at the site root, so production must proxy /sitemap.xml to
-/// the API alongside /api and /uploads (CLAUDE.md §10). Guides/budget/website URLs
-/// are deliberately absent — guide content is still frontend mock data and joins the
-/// sitemap when it moves to the ContentPage table. No lastmod: vendors don't carry an
-/// UpdatedAt, and a fabricated timestamp is worse than none.
+/// the API alongside /api and /uploads (CLAUDE.md §10). Published editorial pages are
+/// listed too: articles, inspiration, real weddings (plus the hub and each non-empty
+/// section) and the legal pages. Budget/website URLs are deliberately absent. No lastmod:
+/// vendors don't carry an UpdatedAt, and a fabricated timestamp is worse than none.
 /// </summary>
 [ApiController]
 public class SitemapController : ControllerBase
@@ -50,10 +51,34 @@ public class SitemapController : ControllerBase
 
         AppendUrl(sb, $"{origin}/");
         AppendUrl(sb, $"{origin}/vendors");
+        AppendUrl(sb, $"{origin}/schedules");
+        AppendUrl(sb, $"{origin}/invitations");
         foreach (var p in vendors.Select(v => (v.CategorySlug, v.CitySlug)).Distinct())
             AppendUrl(sb, $"{origin}/{p.CategorySlug}/{p.CitySlug}");
         foreach (var v in vendors)
             AppendUrl(sb, $"{origin}/{v.CategorySlug}/{v.CitySlug}/{v.Slug}");
+
+        // Editorial pages: the hub and each section only once something is published in them
+        // (empty ones are noindex on the site), then every published page.
+        var content = await _db.ContentPages
+            .AsNoTracking()
+            .Where(c => c.IsPublished)
+            .OrderBy(c => c.Type).ThenByDescending(c => c.PublishedAt)
+            .Select(c => new { c.Type, c.Slug })
+            .ToListAsync();
+        var sections = new Dictionary<ContentPageType, string>
+        {
+            [ContentPageType.Article] = "/guides/blog",
+            [ContentPageType.Inspiration] = "/guides/inspiration",
+            [ContentPageType.RealWedding] = "/guides/real-weddings",
+        };
+        if (content.Any(c => sections.ContainsKey(c.Type)))
+            AppendUrl(sb, $"{origin}/guides");
+        foreach (var (type, path) in sections)
+            if (content.Any(c => c.Type == type))
+                AppendUrl(sb, $"{origin}{path}");
+        foreach (var c in content)
+            AppendUrl(sb, $"{origin}{ContentRules.PublicPath(c.Type, c.Slug)}");
 
         sb.Append("</urlset>\n");
         return Content(sb.ToString(), "application/xml", Encoding.UTF8);

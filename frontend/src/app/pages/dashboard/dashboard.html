@@ -21,6 +21,10 @@
           </div>
         </div>
 
+        @if (adminMode) {
+          <p class="dash-admin-note">{{ 'dash.adminNote' | translate }}</p>
+        }
+
         <span class="dash-status" [class.is-approved]="v.isApproved">
           <span class="dash-status__dot" aria-hidden="true"></span>
           {{ (v.isApproved ? 'dash.statusApproved' : 'dash.statusPending') | translate }}
@@ -29,12 +33,14 @@
         <!-- Roving tabindex + arrow keys (WAI-ARIA tabs, vertical) — see onTabKeydown. -->
         <nav class="dash-nav" role="tablist" aria-orientation="vertical"
           [attr.aria-label]="'dash.title' | translate" (keydown)="onTabKeydown($event)">
+          @if (!adminMode) {
           <button role="tab" type="button" id="tab-overview" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'overview'"
             [attr.tabindex]="activeSection() === 'overview' ? 0 : -1"
             [class.is-active]="activeSection() === 'overview'" (click)="setSection('overview')">
             <span>{{ 'dash.tabOverview' | translate }}</span>
           </button>
+          }
           <button role="tab" type="button" id="tab-profile" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'profile'"
             [attr.tabindex]="activeSection() === 'profile' ? 0 : -1"
@@ -48,6 +54,7 @@
             <span>{{ 'dash.photosTitle' | translate }}</span>
             @if (photos().length) { <span class="dash-nav__count">{{ photos().length }}</span> }
           </button>
+          @if (!adminMode) {
           <button role="tab" type="button" id="tab-messages" aria-controls="dash-panel"
             [attr.aria-selected]="activeSection() === 'messages'"
             [attr.tabindex]="activeSection() === 'messages' ? 0 : -1"
@@ -55,15 +62,25 @@
             <span>{{ 'dash.inboxTitle' | translate }}</span>
             @if (unreadCount()) { <span class="dash-nav__count is-unread">{{ unreadCount() }}</span> }
           </button>
+          }
         </nav>
 
         <div class="dash-side__links">
+          @if (adminMode) {
+            <a class="dash-link" routerLink="/admin">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              {{ 'dash.backToAdmin' | translate }}
+            </a>
+          } @else {
           <a class="dash-link" routerLink="/account">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
               <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
             </svg>
             {{ 'dash.accountSettings' | translate }}
           </a>
+          }
           @if (v.isApproved) {
             <a class="dash-link" [routerLink]="['/', v.categorySlug, v.citySlug, v.slug]">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
@@ -154,8 +171,13 @@
                   <textarea id="d-bio" rows="5" formControlName="bio" maxlength="4000"></textarea>
                 </div>
                 <div class="auth__field">
-                  <label for="d-areas">{{ 'dash.areasServed' | translate }}</label>
-                  <textarea id="d-areas" rows="2" formControlName="areasServed" maxlength="500"></textarea>
+                  <label for="d-region">{{ 'dash.region' | translate }}</label>
+                  <select id="d-region" formControlName="region">
+                    <option value="">{{ 'dash.selectRegion' | translate }}</option>
+                    @for (r of regions; track r) {
+                      <option [value]="r">{{ 'catalog.regions.' + r | translate }}</option>
+                    }
+                  </select>
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
@@ -163,9 +185,20 @@
                     <input id="d-pmin" type="number" min="0" inputmode="numeric" formControlName="priceMin" />
                   </div>
                   <div class="auth__field">
-                    <label for="d-prange">{{ 'dash.priceRange' | translate }}</label>
-                    <input id="d-prange" type="text" formControlName="priceRange" maxlength="120" />
+                    <label for="d-punit">{{ 'dash.priceUnit' | translate }}</label>
+                    <select id="d-punit" formControlName="priceUnit">
+                      <option value="">{{ 'catalog.units.' + defaultUnit() | translate }}</option>
+                      @for (u of priceUnits; track u) {
+                        @if (u !== defaultUnit()) {
+                          <option [value]="u">{{ 'catalog.units.' + u | translate }}</option>
+                        }
+                      }
+                    </select>
                   </div>
+                </div>
+                <div class="auth__field">
+                  <label for="d-prange">{{ 'dash.priceRange' | translate }}</label>
+                  <input id="d-prange" type="text" formControlName="priceRange" maxlength="120" />
                 </div>
                 <div class="dash__row">
                   <div class="auth__field">
@@ -200,6 +233,179 @@
                     <input id="d-map" type="url" inputmode="url" formControlName="mapUrl" placeholder="https://maps.google.com/…" maxlength="1000" />
                   </div>
                 </div>
+
+                <!-- ---- how couples find you in the catalog ---- -->
+                <fieldset class="dash__set">
+                  <legend>{{ 'dash.catalogTitle' | translate }}</legend>
+                  <p class="dash__hint">{{ 'dash.catalogHint' | translate }}</p>
+
+                  @if (group() !== 'venues') {
+                    <div class="dash__checks" role="group" aria-labelledby="d-served-l">
+                      <span id="d-served-l" class="dash__checks-label">{{ 'dash.servedRegions' | translate }}</span>
+                      @for (r of otherRegions(); track r) {
+                        <label class="dash__check">
+                          <input type="checkbox" [checked]="servedRegions().includes(r)" (change)="toggleIn('servedRegions', r)" />
+                          {{ 'catalog.regions.' + r | translate }}
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  @if (sameGroupCategories().length) {
+                    <div class="dash__checks" role="group" aria-labelledby="d-also-l">
+                      <span id="d-also-l" class="dash__checks-label">{{ 'dash.alsoOffers' | translate }}</span>
+                      @for (c of sameGroupCategories(); track c.slug) {
+                        <label class="dash__check">
+                          <input type="checkbox" [checked]="alsoOffers().includes(c.slug)" (change)="toggleIn('alsoOffers', c.slug)" />
+                          {{ c.key | translate }}
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  @if (groupStyles().length) {
+                    <div class="dash__checks" role="group" aria-labelledby="d-styles-l">
+                      <span id="d-styles-l" class="dash__checks-label">{{ 'dash.styles' | translate }}</span>
+                      @for (s of groupStyles(); track s) {
+                        <label class="dash__check">
+                          <input type="checkbox" [checked]="chosenStyles().includes(s)" (change)="toggleIn('chosenStyles', s)" />
+                          {{ 'catalog.styles.' + s | translate }}
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  @if (groupFeatures().length) {
+                    <div class="dash__checks" role="group" aria-labelledby="d-feat-l">
+                      <span id="d-feat-l" class="dash__checks-label">{{ 'dash.features' | translate }}</span>
+                      @for (f of groupFeatures(); track f) {
+                        <label class="dash__check">
+                          <input type="checkbox" [checked]="chosenFeatures().includes(f)" (change)="toggleIn('chosenFeatures', f)" />
+                          {{ 'catalog.features.' + f | translate }}
+                        </label>
+                      }
+                    </div>
+                  }
+                </fieldset>
+
+                <!-- ---- venues only ---- -->
+                @if (group() === 'venues') {
+                  <fieldset class="dash__set">
+                    <legend>{{ 'dash.venueTitle' | translate }}</legend>
+                    <div class="dash__row">
+                      <div class="auth__field">
+                        <label for="d-cmin">{{ 'dash.capacityMin' | translate }}</label>
+                        <input id="d-cmin" type="number" min="1" max="5000" inputmode="numeric" formControlName="capacityMin"
+                          [attr.aria-invalid]="capacityInvalid() ? 'true' : null"
+                          [attr.aria-describedby]="capacityInvalid() ? 'd-cap-err' : null" />
+                      </div>
+                      <div class="auth__field">
+                        <label for="d-cmax">{{ 'dash.capacityMax' | translate }}</label>
+                        <input id="d-cmax" type="number" min="1" max="5000" inputmode="numeric" formControlName="capacityMax" />
+                      </div>
+                    </div>
+                    @if (capacityInvalid()) {
+                      <span id="d-cap-err" class="auth__err" role="alert">{{ 'dash.capacityInvalid' | translate }}</span>
+                    }
+                    <div class="dash__row">
+                      <div class="auth__field">
+                        <label for="d-setting">{{ 'dash.setting' | translate }}</label>
+                        <select id="d-setting" formControlName="setting">
+                          <option value="">{{ 'dash.notSet' | translate }}</option>
+                          @for (s of settingsList; track s) {
+                            <option [value]="s">{{ 'catalog.settings.' + s | translate }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="auth__field">
+                        <label for="d-vtype">{{ 'dash.venueType' | translate }}</label>
+                        <select id="d-vtype" formControlName="venueType">
+                          <option value="">{{ 'dash.notSet' | translate }}</option>
+                          @for (t of venueTypes; track t) {
+                            <option [value]="t">{{ 'catalog.venueTypes.' + t | translate }}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  </fieldset>
+                }
+
+                <!-- ---- packages ---- -->
+                <fieldset class="dash__set" formArrayName="packages">
+                  <legend>{{ 'dash.packagesTitle' | translate }}</legend>
+                  <p class="dash__hint">{{ 'dash.packagesHint' | translate }}</p>
+                  @for (p of packages.controls; track p; let i = $index) {
+                    <div class="dash__package" [formGroupName]="i">
+                      <div class="dash__row">
+                        <div class="auth__field">
+                          <label [for]="'d-pk-name-' + i">{{ 'dash.packageName' | translate }}</label>
+                          <input [id]="'d-pk-name-' + i" type="text" formControlName="name" maxlength="120" aria-required="true" />
+                        </div>
+                        <div class="auth__field">
+                          <label [for]="'d-pk-dur-' + i">{{ 'dash.packageDuration' | translate }}</label>
+                          <input [id]="'d-pk-dur-' + i" type="text" formControlName="duration" maxlength="60" />
+                        </div>
+                      </div>
+                      <div class="dash__row">
+                        <div class="auth__field">
+                          <label [for]="'d-pk-price-' + i">{{ 'dash.packagePrice' | translate }}</label>
+                          <input [id]="'d-pk-price-' + i" type="number" min="0" inputmode="numeric" formControlName="price" />
+                        </div>
+                        <div class="auth__field">
+                          <label [for]="'d-pk-unit-' + i">{{ 'dash.packageUnit' | translate }}</label>
+                          <select [id]="'d-pk-unit-' + i" formControlName="priceUnit">
+                            <option value="">{{ 'catalog.units.' + (form.controls.priceUnit.value || defaultUnit()) | translate }}</option>
+                            @for (u of priceUnits; track u) {
+                              <option [value]="u">{{ 'catalog.units.' + u | translate }}</option>
+                            }
+                          </select>
+                        </div>
+                      </div>
+                      <div class="auth__field">
+                        <label [for]="'d-pk-inc-' + i">{{ 'dash.packageIncluded' | translate }}</label>
+                        <textarea [id]="'d-pk-inc-' + i" rows="3" formControlName="included" maxlength="1000"></textarea>
+                      </div>
+                      <button type="button" class="dash__link dash__link--danger" (click)="removePackage(i)">
+                        {{ 'dash.packageRemove' | translate }}
+                      </button>
+                    </div>
+                  }
+                  @if (packages.length < maxPackages) {
+                    <button type="button" class="btn btn--ghost" (click)="addPackage()">{{ 'dash.packageAdd' | translate }}</button>
+                  }
+                </fieldset>
+
+                <!-- ---- terms ---- -->
+                <fieldset class="dash__set">
+                  <legend>{{ 'dash.termsTitle' | translate }}</legend>
+                  <p class="dash__hint">{{ 'dash.termsHint' | translate }}</p>
+                  <div class="dash__row">
+                    <div class="auth__field">
+                      <label for="d-deposit">{{ 'dash.deposit' | translate }}</label>
+                      <input id="d-deposit" type="text" formControlName="depositTerms" maxlength="200"
+                        [placeholder]="'dash.depositPlaceholder' | translate" />
+                    </div>
+                    <div class="auth__field">
+                      <label for="d-lead">{{ 'dash.leadTime' | translate }}</label>
+                      <input id="d-lead" type="text" formControlName="bookingLeadTime" maxlength="100"
+                        [placeholder]="'dash.leadTimePlaceholder' | translate" />
+                    </div>
+                  </div>
+                  <div class="auth__field">
+                    <label for="d-cancel">{{ 'dash.cancellation' | translate }}</label>
+                    <textarea id="d-cancel" rows="2" formControlName="cancellationTerms" maxlength="500"></textarea>
+                  </div>
+                  <div class="auth__field">
+                    <label for="d-travel">{{ 'dash.travelPolicy' | translate }}</label>
+                    <select id="d-travel" formControlName="travelPolicy">
+                      <option value="">{{ 'dash.notSet' | translate }}</option>
+                      @for (t of travelPolicies; track t) {
+                        <option [value]="t">{{ 'catalog.travel.' + t | translate }}</option>
+                      }
+                    </select>
+                  </div>
+                </fieldset>
+
                 <div class="dash__save-row">
                   <button class="btn btn--pink" type="submit" [disabled]="saving()">{{ 'dash.save' | translate }}</button>
                   @if (saved()) {

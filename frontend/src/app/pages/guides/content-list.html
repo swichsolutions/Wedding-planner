@@ -1,0 +1,34 @@
+<div class="gd">
+  <header class="gd__intro gd__intro--list container">
+    <nav class="gd__crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
+      <a routerLink="/guides">{{ 'guides.hubTitle' | translate }}</a>
+    </nav>
+    <h1 class="gd__title">{{ 'guides.' + prefix + 'Title' | translate }}</h1>
+    <p class="gd__lead">{{ 'guides.' + prefix + 'Lead' | translate }}</p>
+  </header>
+
+  @if (topics().length > 1) {
+    <nav class="gd__chips container" [attr.aria-label]="'guides.filterLabel' | translate">
+      <a class="gd__chip" [routerLink]="section" [class.is-on]="!topic()"
+        [attr.aria-current]="!topic() ? 'page' : null">{{ 'guides.filterAll' | translate }}</a>
+      @for (t of topics(); track t) {
+        <a class="gd__chip" [routerLink]="section" [queryParams]="{ topic: t }" [class.is-on]="topic() === t"
+          [attr.aria-current]="topic() === t ? 'page' : null">{{ 'guides.topics.' + t | translate }}</a>
+      }
+    </nav>
+  }
+
+  <section class="gd__sec gd__sec--list container">
+    @if (failed()) {
+      <p class="gd__note" role="alert">{{ 'guides.loadError' | translate }}</p>
+    } @else if (loaded() && !items().length) {
+      <p class="gd__note">{{ 'guides.listEmpty' | translate }}</p>
+    } @else {
+      <ul class="gd__grid" [class.gd__grid--4]="card === 'idea'" [class.gd__grid--3]="card !== 'idea'" role="list">
+        @for (c of items(); track c.slug) {
+          <li><app-content-card [item]="c" [variant]="card" /></li>
+        }
+      </ul>
+    }
+  </section>
+</div>

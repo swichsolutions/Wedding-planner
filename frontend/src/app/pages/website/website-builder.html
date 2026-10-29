@@ -1,337 +1,568 @@
-<section class="wb container">
-  @if (!isCouple()) {
-    <!-- ================= guest explainer ================= -->
-    <header class="wb__head wb__head--guest">
-      <h1>{{ 'website.guestTitle' | translate }}</h1>
-      <p class="wb__sub">{{ 'website.guestBody' | translate }}</p>
-      <div class="wb__cta-row">
-        <a class="btn btn--pink" routerLink="/signup" [queryParams]="{ returnUrl: '/website' }">{{ 'website.guestCta' | translate }}</a>
-        <a class="btn btn--pink-outline" routerLink="/website/find">{{ 'siteFinder.cta' | translate }}</a>
-      </div>
-    </header>
-    <ul class="wb-tease" role="list">
-      @for (c of teaser; track c.template) {
-        <li class="wb-tease__item">
-          <button type="button" class="wb-tease__btn" (click)="openPeek(c, $event)"
-            [attr.aria-label]="'wsTemplate.' + c.template | translate">
-            <span class="wb-tease__thumb" aria-hidden="true">
-              <app-wedding-site [data]="c.data" [template]="c.template" [thumb]="true" />
-            </span>
-          </button>
-        </li>
-      }
-    </ul>
-  } @else if (loadError()) {
-    <p class="wb__error" role="alert">
-      {{ 'website.loadError' | translate }}
-      <button type="button" class="btn btn--ghost" (click)="retryLoad()">
-        {{ 'vendors.retry' | translate }}
-      </button>
-    </p>
-  } @else if (!loaded()) {
-    <div class="wb-skel" aria-hidden="true">
-      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-        <span class="wb-skel__card"></span>
-      }
+<section class="ib container">
+  <header class="ib-head">
+    <div class="ib-head__text">
+      <h1 class="ib-title">{{ 'invitation.title' | translate }}</h1>
+      <p class="ib-lead">{{ 'invitation.lead' | translate }}</p>
     </div>
-  } @else if (stage() === 'pick') {
-    <!-- ================= 1. find your design ================= -->
-    <header class="wb__head">
-      <h1>{{ 'website.pickTitle' | translate }}</h1>
-      <p class="wb__sub">{{ 'website.pickSub' | translate }}</p>
-      <a class="link-arrow" routerLink="/website/find">{{ 'siteFinder.cta' | translate }}</a>
-    </header>
-    <ul class="wb-gallery" role="list">
-      @for (t of templates; track t) {
-        <li class="wb-card">
-          <button type="button" class="wb-card__btn" (click)="pick(t)"
-            [attr.aria-label]="'wsTemplate.' + t | translate">
-            <span class="wb-card__thumb" aria-hidden="true">
-              <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
-            </span>
-          </button>
-        </li>
-      }
-    </ul>
-  } @else if (stage() === 'info') {
-    <!-- ================= 2. add your info ================= -->
-    <button type="button" class="wb__back blink" (click)="backToDesigns()">
-      ← {{ 'website.backToDesigns' | translate }}
-    </button>
-
-    <div class="wb-info">
-      <div class="wb-info__preview">
-        <app-wedding-site [data]="sample" [template]="pickedTemplate()!" />
-      </div>
-
-      <form class="wb-info__form"
-        (submit)="$event.preventDefault(); createSite(fFirst, fLast, fPartnerFirst, fPartnerLast, fDate, fPlace)">
-        <h1>{{ 'website.infoTitle' | translate }}</h1>
-
-        <div class="wb-info__row">
-          <div class="wb-field">
-            <label for="wbi-first">{{ 'website.firstName' | translate }}</label>
-            <input id="wbi-first" #fFirst type="text" maxlength="120" autocomplete="off"
-              [value]="info.firstName()" (input)="onInfoInput('firstName', $event)" />
-          </div>
-          <div class="wb-field">
-            <label for="wbi-last">{{ 'website.lastName' | translate }}</label>
-            <input id="wbi-last" #fLast type="text" maxlength="120" autocomplete="off"
-              [value]="info.lastName()" (input)="onInfoInput('lastName', $event)" />
-          </div>
-        </div>
-        <div class="wb-info__row">
-          <div class="wb-field">
-            <label for="wbi-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
-            <input id="wbi-pfirst" #fPartnerFirst type="text" maxlength="120" autocomplete="off"
-              [value]="info.partnerFirstName()" (input)="onInfoInput('partnerFirstName', $event)" />
-          </div>
-          <div class="wb-field">
-            <label for="wbi-plast">{{ 'website.partnerLastName' | translate }}</label>
-            <input id="wbi-plast" #fPartnerLast type="text" maxlength="120" autocomplete="off"
-              [value]="info.partnerLastName()" (input)="onInfoInput('partnerLastName', $event)" />
-          </div>
-        </div>
-        <div class="wb-info__row">
-          <div class="wb-field">
-            <label for="wbi-date">{{ 'website.weddingDate' | translate }}</label>
-            <!-- (change) too: some date pickers emit only change, and a slow profile
-                 prefill must never overwrite a just-picked date. -->
-            <input id="wbi-date" #fDate type="date"
-              [value]="info.weddingDate()" (input)="onInfoInput('weddingDate', $event)"
-              (change)="onInfoInput('weddingDate', $event)" />
-          </div>
-          <div class="wb-field">
-            <label for="wbi-place">{{ 'website.place' | translate }}</label>
-            <input id="wbi-place" #fPlace type="text" maxlength="200" autocomplete="off"
-              [value]="info.place()" (input)="onInfoInput('place', $event)"
-              [attr.placeholder]="'website.placePlaceholder' | translate" />
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn--pink wb-info__continue" [disabled]="creating()">
-          {{ 'website.continue' | translate }}
-        </button>
-        <p class="wb-info__hint">{{ 'website.editLater' | translate }}</p>
-      </form>
-    </div>
-  } @else {
-    <!-- ================= 3. view & edit ================= -->
     @if (site(); as s) {
-      <div class="wb-bar">
-        <div class="wb-bar__status">
-          @if (s.isPublished) {
-            <span class="wb-bar__badge is-live">{{ 'website.published' | translate }}</span>
-            <a class="wb-bar__url num" [href]="siteUrl()" target="_blank" rel="noopener">{{ siteUrl() }}</a>
-            <button type="button" class="blink" (click)="copyLink()">{{ 'website.copy' | translate }}</button>
-          } @else {
-            <span class="wb-bar__badge">{{ 'website.draft' | translate }}</span>
-          }
-        </div>
-        <div class="wb-bar__actions">
-          @if (s.isPublished) {
-            <button type="button" class="btn btn--ghost" (click)="unpublish()" [disabled]="publishBusy()">
-              {{ 'website.unpublish' | translate }}
-            </button>
-          } @else {
-            <button type="button" class="btn btn--pink" (click)="publish()" [disabled]="publishBusy()">
-              {{ 'website.publish' | translate }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="wb-edit">
-        <div class="wb-edit__preview">
-          <app-wedding-site [data]="previewData()" [template]="s.templateKey" />
-        </div>
-
-        <aside class="wb-panel">
-          <section class="wb-panel__section">
-            <h2>{{ 'website.designHeading' | translate }}</h2>
-            <ul class="wb-swatches" role="list">
-              @for (t of templates; track t) {
-                <li>
-                  <button type="button" class="wb-swatch" [class.is-active]="t === s.templateKey"
-                    (click)="switchTemplate(t)" [attr.aria-label]="'wsTemplate.' + t | translate"
-                    [attr.title]="'wsTemplate.' + t | translate"
-                    [attr.aria-pressed]="t === s.templateKey">
-                    <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
-                  </button>
-                </li>
-              }
-            </ul>
-          </section>
-
-          <section class="wb-panel__section">
-            <h2>{{ 'website.colorsHeading' | translate }}</h2>
-
-            <div class="wb-colors">
-              <span class="wb-colors__label">{{ 'website.textColor' | translate }}</span>
-              <div class="wb-colors__row">
-                <button type="button" class="wb-dot wb-dot--reset" [class.is-active]="!s.inkColor"
-                  (click)="setColor('inkColor', null)"
-                  [attr.title]="'website.colorDefault' | translate"
-                  [attr.aria-label]="'website.colorDefault' | translate"></button>
-                @for (c of inkSwatches; track c) {
-                  <button type="button" class="wb-dot" [class.is-active]="s.inkColor === c"
-                    [style.background]="c" (click)="setColor('inkColor', c)"
-                    [attr.aria-label]="('website.textColor' | translate) + ' ' + c"></button>
-                }
-                <label class="wb-dot wb-dot--custom" [class.is-active]="s.inkColor && !inkSwatches.includes(s.inkColor)"
-                  [attr.title]="'website.customColor' | translate">
-                  <input type="color" [value]="s.inkColor ?? '#1c1714'"
-                    (change)="onColorInput('inkColor', $event)"
-                    [attr.aria-label]="'website.customColor' | translate" />
-                </label>
-              </div>
-              @if (lowContrast()) {
-                <p class="wb-colors__warn">{{ 'website.lowContrast' | translate }}</p>
-              }
-            </div>
-
-            <div class="wb-colors">
-              <span class="wb-colors__label">{{ 'website.accentColor' | translate }}</span>
-              <div class="wb-colors__row">
-                <button type="button" class="wb-dot wb-dot--reset" [class.is-active]="!s.accentColor"
-                  (click)="setColor('accentColor', null)"
-                  [attr.title]="'website.colorDefault' | translate"
-                  [attr.aria-label]="'website.colorDefault' | translate"></button>
-                @for (c of accentSwatches; track c) {
-                  <button type="button" class="wb-dot" [class.is-active]="s.accentColor === c"
-                    [style.background]="c" (click)="setColor('accentColor', c)"
-                    [attr.aria-label]="('website.accentColor' | translate) + ' ' + c"></button>
-                }
-                <label class="wb-dot wb-dot--custom" [class.is-active]="s.accentColor && !accentSwatches.includes(s.accentColor)"
-                  [attr.title]="'website.customColor' | translate">
-                  <input type="color" [value]="s.accentColor ?? '#c8a96a'"
-                    (change)="onColorInput('accentColor', $event)"
-                    [attr.aria-label]="'website.customColor' | translate" />
-                </label>
-              </div>
-            </div>
-          </section>
-
-          <section class="wb-panel__section">
-            <h2>{{ 'website.detailsHeading' | translate }}</h2>
-            <div class="wb-info__row">
-              <div class="wb-field">
-                <label for="wbe-first">{{ 'website.firstName' | translate }}</label>
-                <input id="wbe-first" type="text" maxlength="120" autocomplete="off"
-                  [value]="s.firstName ?? ''" (change)="commitField('firstName', $event)" />
-              </div>
-              <div class="wb-field">
-                <label for="wbe-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
-                <input id="wbe-pfirst" type="text" maxlength="120" autocomplete="off"
-                  [value]="s.partnerFirstName ?? ''" (change)="commitField('partnerFirstName', $event)" />
-              </div>
-            </div>
-            <div class="wb-info__row">
-              <div class="wb-field">
-                <label for="wbe-date">{{ 'website.weddingDate' | translate }}</label>
-                <input id="wbe-date" type="date" [value]="s.weddingDate ?? ''" (change)="commitDate($event)" />
-              </div>
-              <div class="wb-field">
-                <label for="wbe-place">{{ 'website.place' | translate }}</label>
-                <input id="wbe-place" type="text" maxlength="200" autocomplete="off"
-                  [value]="s.place ?? ''" (change)="commitField('place', $event)"
-                  [attr.placeholder]="'website.placePlaceholder' | translate" />
-              </div>
-            </div>
-            <div class="wb-field">
-              <label for="wbe-message">{{ 'website.message' | translate }}</label>
-              <textarea id="wbe-message" rows="3" maxlength="2000"
-                [value]="s.message ?? ''" (change)="commitField('message', $event)"
-                [attr.placeholder]="'website.messagePlaceholder' | translate"></textarea>
-            </div>
-          </section>
-
-          <section class="wb-panel__section">
-            <h2>{{ 'website.photoHeading' | translate }}</h2>
-            @if (s.photoUrl; as photo) {
-              <!-- Focal-point picker: designs crop the photo differently; the dot marks
-                   what must stay in frame. Drag anywhere on the image, or arrow-key the dot. -->
-              <div class="wb-focal" [class.is-dragging]="focusDragging()"
-                (pointerdown)="startFocusDrag($event)"
-                (pointermove)="moveFocusDrag($event)"
-                (pointerup)="endFocusDrag()"
-                (pointercancel)="endFocusDrag()">
-                <img class="wb-focal__img" [src]="photo" alt="" draggable="false" />
-                @if (cropRect(); as r) {
-                  <div class="wb-focal__frame" aria-hidden="true"
-                    [style.left.%]="r.left" [style.top.%]="r.top"
-                    [style.width.%]="r.width" [style.height.%]="r.height"></div>
-                }
-                <button type="button" class="wb-focal__point"
-                  [style.left.%]="s.photoFocusX ?? 50" [style.top.%]="s.photoFocusY ?? 50"
-                  [attr.aria-label]="'website.focalPoint' | translate"
-                  (keydown.arrowleft)="nudgeFocus($event, -2, 0)"
-                  (keydown.arrowright)="nudgeFocus($event, 2, 0)"
-                  (keydown.arrowup)="nudgeFocus($event, 0, -2)"
-                  (keydown.arrowdown)="nudgeFocus($event, 0, 2)"></button>
-              </div>
-              <p class="wb-focal__hint">{{ 'website.focalHint' | translate }}</p>
-            }
-            <div class="wb-panel__photo-actions">
-              <label class="btn btn--ghost wb-panel__upload" [class.is-busy]="photoBusy()">
-                {{ (photoBusy() ? 'website.uploading' : 'website.uploadPhoto') | translate }}
-                <input type="file" accept="image/jpeg,image/png,image/webp" #photoInput
-                  (change)="onPhoto(photoInput)" [disabled]="photoBusy()" />
-              </label>
-              @if (s.photoUrl) {
-                <button type="button" class="blink" (click)="removePhoto()" [disabled]="photoBusy()">
-                  {{ 'website.removePhoto' | translate }}
-                </button>
-              }
-            </div>
-          </section>
-        </aside>
+      <div class="ib-status">
+        @if (s.isPublished) {
+          <span class="ib-badge is-live">{{ 'website.published' | translate }}</span>
+          <a class="ib-status__url num" [href]="siteUrl()" target="_blank" rel="noopener">{{ siteUrl() }}</a>
+        } @else {
+          <span class="ib-badge">{{ 'website.draft' | translate }}</span>
+        }
       </div>
     }
+  </header>
+
+  @if (loadError()) {
+    <p class="ib-note ib-note--box" role="alert">
+      {{ 'website.loadError' | translate }}
+      <button type="button" class="ib-quiet" (click)="retryLoad()">{{ 'vendors.retry' | translate }}</button>
+    </p>
+  } @else if (!loaded()) {
+    <div class="ib-skel skel" aria-hidden="true"></div>
+  } @else {
+    <nav class="ib-steps" [attr.aria-label]="'invitation.stepsLabel' | translate">
+      <ol>
+        @for (st of steps; track st; let i = $index) {
+          <li>
+            <button type="button" class="ib-step" [class.is-current]="step() === st" [class.is-done]="i < stepIndex()"
+              [disabled]="!canOpen(st)" [attr.aria-current]="step() === st ? 'step' : null" (click)="go(st)">
+              <span class="ib-step__n num" aria-hidden="true">{{ i + 1 }}</span>
+              <span class="ib-step__label">{{ 'invitation.step.' + st | translate }}</span>
+            </button>
+          </li>
+        }
+      </ol>
+    </nav>
+
+    <div class="ib-work" [class.ib-work--full]="step() === 'preview' || step() === 'share'">
+      <div class="ib-panel">
+        <h2 class="ib-panel__title">
+          <span class="ib-chapter num">{{ stepIndex() + 1 }} / {{ steps.length }}</span>
+          {{ 'invitation.step.' + step() | translate }}
+        </h2>
+        <p class="ib-panel__hint">{{ 'invitation.hint.' + step() | translate }}</p>
+
+        @switch (step()) {
+          <!-- ================= 1. design ================= -->
+          @case ('design') {
+            <section class="ib-block">
+              <h3 class="ib-block__title">{{ 'invitation.designs' | translate }}</h3>
+              <ul class="ib-designs" role="list">
+                @for (t of templates; track t) {
+                  <li>
+                    <button type="button" class="ib-design" [class.is-on]="t === previewTemplate()"
+                      [attr.aria-pressed]="t === previewTemplate()" (click)="pick(t)">
+                      <span class="ib-design__thumb" aria-hidden="true">
+                        <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+                      </span>
+                      <span class="ib-design__name">{{ 'wsTemplate.' + t | translate }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
+
+            @if (site(); as s) {
+              <section class="ib-block">
+                <h3 class="ib-block__title">{{ 'invitation.fontsTitle' | translate }}</h3>
+                <div class="ib-fonts" role="radiogroup" [attr.aria-label]="'invitation.fontsTitle' | translate">
+                  <button type="button" role="radio" class="ib-font" [class.is-on]="!s.fontKey"
+                    [attr.aria-checked]="!s.fontKey" (click)="setFont(null)">
+                    <span class="ib-font__sample">{{ s.firstName || sample.firstName }} &amp; {{ s.partnerFirstName || sample.partnerFirstName }}</span>
+                    <span class="ib-font__name">{{ 'invitation.fontOwn' | translate }}</span>
+                  </button>
+                  @for (f of fonts; track f) {
+                    <button type="button" role="radio" class="ib-font" [class]="'ib-font ib-font--' + f"
+                      [class.is-on]="s.fontKey === f" [attr.aria-checked]="s.fontKey === f" (click)="setFont(f)">
+                      <span class="ib-font__sample">{{ s.firstName || sample.firstName }} &amp; {{ s.partnerFirstName || sample.partnerFirstName }}</span>
+                      <span class="ib-font__name">{{ 'invitation.font.' + f | translate }}</span>
+                    </button>
+                  }
+                </div>
+              </section>
+
+              <section class="ib-block">
+                <h3 class="ib-block__title">{{ 'website.colorsHeading' | translate }}</h3>
+                <div class="ib-colors">
+                  <span class="ib-colors__label">{{ 'website.textColor' | translate }}</span>
+                  <div class="ib-colors__row">
+                    <button type="button" class="ib-dot ib-dot--reset" [class.is-on]="!s.inkColor"
+                      (click)="setColor('inkColor', null)" [attr.aria-pressed]="!s.inkColor"
+                      [attr.title]="'website.colorDefault' | translate"
+                      [attr.aria-label]="'website.colorDefault' | translate"></button>
+                    @for (c of inkSwatches; track c) {
+                      <button type="button" class="ib-dot" [class.is-on]="s.inkColor === c" [style.background]="c"
+                        [attr.aria-pressed]="s.inkColor === c" (click)="setColor('inkColor', c)"
+                        [attr.aria-label]="('website.textColor' | translate) + ' ' + c"></button>
+                    }
+                    <label class="ib-dot ib-dot--custom" [class.is-on]="s.inkColor && !inkSwatches.includes(s.inkColor)"
+                      [attr.title]="'website.customColor' | translate">
+                      <input type="color" [value]="s.inkColor ?? '#1c1714'" (change)="onColorInput('inkColor', $event)"
+                        [attr.aria-label]="'website.customColor' | translate" />
+                    </label>
+                  </div>
+                  @if (lowContrast()) {
+                    <p class="ib-warn">{{ 'website.lowContrast' | translate }}</p>
+                  }
+                </div>
+                <div class="ib-colors">
+                  <span class="ib-colors__label">{{ 'website.accentColor' | translate }}</span>
+                  <div class="ib-colors__row">
+                    <button type="button" class="ib-dot ib-dot--reset" [class.is-on]="!s.accentColor"
+                      (click)="setColor('accentColor', null)" [attr.aria-pressed]="!s.accentColor"
+                      [attr.title]="'website.colorDefault' | translate"
+                      [attr.aria-label]="'website.colorDefault' | translate"></button>
+                    @for (c of accentSwatches; track c) {
+                      <button type="button" class="ib-dot" [class.is-on]="s.accentColor === c" [style.background]="c"
+                        [attr.aria-pressed]="s.accentColor === c" (click)="setColor('accentColor', c)"
+                        [attr.aria-label]="('website.accentColor' | translate) + ' ' + c"></button>
+                    }
+                    <label class="ib-dot ib-dot--custom" [class.is-on]="s.accentColor && !accentSwatches.includes(s.accentColor)"
+                      [attr.title]="'website.customColor' | translate">
+                      <input type="color" [value]="s.accentColor ?? '#c8a96a'" (change)="onColorInput('accentColor', $event)"
+                        [attr.aria-label]="'website.customColor' | translate" />
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="ib-block">
+                <h3 class="ib-block__title">{{ 'invitation.mainPhoto' | translate }}</h3>
+                @if (s.photoUrl; as photo) {
+                  <!-- Focal point: designs crop the photo differently; the dot marks what stays in frame. -->
+                  <div class="ib-focal" [class.is-dragging]="focusDragging()"
+                    (pointerdown)="startFocusDrag($event)" (pointermove)="moveFocusDrag($event)"
+                    (pointerup)="endFocusDrag()" (pointercancel)="endFocusDrag()">
+                    <img class="ib-focal__img" [src]="photo" alt="" draggable="false" />
+                    @if (cropRect(); as r) {
+                      <div class="ib-focal__frame" aria-hidden="true" [style.left.%]="r.left" [style.top.%]="r.top"
+                        [style.width.%]="r.width" [style.height.%]="r.height"></div>
+                    }
+                    <button type="button" class="ib-focal__point" [style.left.%]="s.photoFocusX ?? 50"
+                      [style.top.%]="s.photoFocusY ?? 50" [attr.aria-label]="'website.focalPoint' | translate"
+                      (keydown.arrowleft)="nudgeFocus($event, -2, 0)" (keydown.arrowright)="nudgeFocus($event, 2, 0)"
+                      (keydown.arrowup)="nudgeFocus($event, 0, -2)" (keydown.arrowdown)="nudgeFocus($event, 0, 2)"></button>
+                  </div>
+                  <p class="ib-note">{{ 'website.focalHint' | translate }}</p>
+                }
+                <div class="ib-row">
+                  <label class="ib-out" [class.is-busy]="photoBusy()">
+                    {{ (photoBusy() ? 'website.uploading' : s.photoUrl ? 'invitation.replacePhoto' : 'website.uploadPhoto') | translate }}
+                    <input class="ib-file" type="file" accept="image/jpeg,image/png,image/webp" #photoInput
+                      (change)="onPhoto(photoInput)" [disabled]="photoBusy()" />
+                  </label>
+                  @if (s.photoUrl) {
+                    <button type="button" class="ib-quiet" (click)="removePhoto()" [disabled]="photoBusy()">
+                      {{ 'website.removePhoto' | translate }}
+                    </button>
+                  }
+                </div>
+              </section>
+
+              <section class="ib-block">
+                <h3 class="ib-block__title">{{ 'invitation.gallery' | translate }}</h3>
+                <p class="ib-note">{{ 'invitation.galleryHint' | translate: { n: maxPhotos } }}</p>
+                @if (s.photos.length) {
+                  <ul class="ib-gallery" role="list">
+                    @for (p of s.photos; track p.id; let i = $index) {
+                      <li>
+                        <img [src]="p.url" alt="" loading="lazy" />
+                        <button type="button" class="ib-gallery__remove" (click)="removeGalleryPhoto(p.id)"
+                          [disabled]="photoBusy()"
+                          [attr.aria-label]="'invitation.removeGalleryPhoto' | translate: { n: i + 1 }">✕</button>
+                      </li>
+                    }
+                  </ul>
+                }
+                @if (s.photos.length < maxPhotos) {
+                  <label class="ib-out" [class.is-busy]="photoBusy()">
+                    {{ (photoBusy() ? 'website.uploading' : 'invitation.addPhotos') | translate }}
+                    <input class="ib-file" type="file" multiple accept="image/jpeg,image/png,image/webp" #galleryInput
+                      (change)="onGallery(galleryInput)" [disabled]="photoBusy()" />
+                  </label>
+                }
+              </section>
+            } @else {
+              <p class="ib-note ib-note--box">{{ 'invitation.designFirst' | translate }}</p>
+            }
+          }
+
+          <!-- ================= 2. info ================= -->
+          @case ('info') {
+            @if (site(); as s) {
+              <div class="ib-form">
+                <div class="ib-field">
+                  <label for="ib-first">{{ 'website.firstName' | translate }}</label>
+                  <input id="ib-first" type="text" maxlength="120" autocomplete="off" [value]="s.firstName ?? ''"
+                    (change)="commitText('firstName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ib-last">{{ 'website.lastName' | translate }}</label>
+                  <input id="ib-last" type="text" maxlength="120" autocomplete="off" [value]="s.lastName ?? ''"
+                    (change)="commitText('lastName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ib-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
+                  <input id="ib-pfirst" type="text" maxlength="120" autocomplete="off" [value]="s.partnerFirstName ?? ''"
+                    (change)="commitText('partnerFirstName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ib-plast">{{ 'website.partnerLastName' | translate }}</label>
+                  <input id="ib-plast" type="text" maxlength="120" autocomplete="off" [value]="s.partnerLastName ?? ''"
+                    (change)="commitText('partnerLastName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ib-date">{{ 'website.weddingDate' | translate }}</label>
+                  <input id="ib-date" type="date" [value]="s.weddingDate ?? ''" (change)="commitText('weddingDate', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ib-time">{{ 'invitation.startTime' | translate }}</label>
+                  <input id="ib-time" type="time" [value]="s.startTime ?? ''" (change)="commitText('startTime', $event)" />
+                </div>
+                <div class="ib-field ib-field--wide">
+                  <label for="ib-message">{{ 'invitation.message' | translate }}</label>
+                  <textarea id="ib-message" rows="4" maxlength="2000" [value]="s.message ?? ''"
+                    (change)="commitText('message', $event)"
+                    [attr.placeholder]="'wsite.defaultMessage' | translate"></textarea>
+                  <span class="ib-note">{{ 'invitation.messageHint' | translate }}</span>
+                </div>
+              </div>
+              <p class="ib-note">{{ 'invitation.lastNamesHint' | translate }}</p>
+            } @else {
+              <form class="ib-form" id="ib-create" (submit)="$event.preventDefault(); create()">
+                <div class="ib-field">
+                  <label for="ibc-first">{{ 'website.firstName' | translate }}</label>
+                  <input id="ibc-first" type="text" maxlength="120" autocomplete="off" [value]="info.firstName()"
+                    (input)="onInfoInput('firstName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ibc-last">{{ 'website.lastName' | translate }}</label>
+                  <input id="ibc-last" type="text" maxlength="120" autocomplete="off" [value]="info.lastName()"
+                    (input)="onInfoInput('lastName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ibc-pfirst">{{ 'website.partnerFirstName' | translate }}</label>
+                  <input id="ibc-pfirst" type="text" maxlength="120" autocomplete="off" [value]="info.partnerFirstName()"
+                    (input)="onInfoInput('partnerFirstName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ibc-plast">{{ 'website.partnerLastName' | translate }}</label>
+                  <input id="ibc-plast" type="text" maxlength="120" autocomplete="off" [value]="info.partnerLastName()"
+                    (input)="onInfoInput('partnerLastName', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ibc-date">{{ 'website.weddingDate' | translate }}</label>
+                  <input id="ibc-date" type="date" [value]="info.weddingDate()"
+                    (input)="onInfoInput('weddingDate', $event)" (change)="onInfoInput('weddingDate', $event)" />
+                </div>
+                <div class="ib-field">
+                  <label for="ibc-time">{{ 'invitation.startTime' | translate }}</label>
+                  <input id="ibc-time" type="time" [value]="info.startTime()"
+                    (input)="onInfoInput('startTime', $event)" (change)="onInfoInput('startTime', $event)" />
+                </div>
+              </form>
+              <p class="ib-note">{{ 'invitation.prefillHint' | translate }}</p>
+            }
+          }
+
+          <!-- ================= 3. places ================= -->
+          @case ('places') {
+            @if (site(); as s) {
+              <div class="ib-field">
+                <label for="ib-place">{{ 'invitation.placeLine' | translate }}</label>
+                <input id="ib-place" type="text" maxlength="200" autocomplete="off" [value]="s.place ?? ''"
+                  (change)="commitText('place', $event)" [attr.placeholder]="'website.placePlaceholder' | translate" />
+              </div>
+              @for (k of placeKinds; track k) {
+                <fieldset class="ib-place">
+                  <legend>{{ 'wsite.' + k | translate }}</legend>
+                  <div class="ib-form">
+                    <div class="ib-field">
+                      <label [for]="'ib-' + k + '-name'">{{ 'invitation.placeName' | translate }}</label>
+                      <input [id]="'ib-' + k + '-name'" type="text" maxlength="200" autocomplete="off"
+                        [value]="s[placeField(k, 'Name')] ?? ''" (change)="commitText(placeField(k, 'Name'), $event)"
+                        [attr.placeholder]="'invitation.placeNameHint.' + k | translate" />
+                    </div>
+                    <div class="ib-field">
+                      <label [for]="'ib-' + k + '-time'">{{ 'invitation.placeTime' | translate }}</label>
+                      <input [id]="'ib-' + k + '-time'" type="time" [value]="s[placeField(k, 'Time')] ?? ''"
+                        (change)="commitText(placeField(k, 'Time'), $event)" />
+                    </div>
+                    <div class="ib-field ib-field--wide">
+                      <label [for]="'ib-' + k + '-addr'">{{ 'invitation.placeAddress' | translate }}</label>
+                      <input [id]="'ib-' + k + '-addr'" type="text" maxlength="300" autocomplete="off"
+                        [value]="s[placeField(k, 'Address')] ?? ''" (change)="commitText(placeField(k, 'Address'), $event)" />
+                    </div>
+                    <div class="ib-field ib-field--wide">
+                      <label [for]="'ib-' + k + '-map'">{{ 'invitation.placeMap' | translate }}</label>
+                      <input [id]="'ib-' + k + '-map'" type="url" maxlength="500" autocomplete="off" inputmode="url"
+                        [value]="s[placeField(k, 'MapUrl')] ?? ''" (change)="commitText(placeField(k, 'MapUrl'), $event)"
+                        placeholder="https://maps.app.goo.gl/…" />
+                      <span class="ib-note">{{ 'invitation.placeMapHint' | translate }}</span>
+                    </div>
+                  </div>
+                </fieldset>
+              }
+            }
+          }
+
+          <!-- ================= 4. extra details ================= -->
+          @case ('details') {
+            @if (site(); as s) {
+              @for (x of extras; track x) {
+                <section class="ib-extra" [class.is-on]="extraOn()[x]">
+                  <label class="ib-check">
+                    <input type="checkbox" [checked]="extraOn()[x]" (change)="toggleExtra(x, $event)" />
+                    <span>{{ 'invitation.extra.' + x | translate }}</span>
+                  </label>
+                  @if (extraOn()[x]) {
+                    @if (x === 'schedule') {
+                      <ol class="ib-sched" role="list">
+                        @for (line of scheduleDraft(); track $index; let i = $index) {
+                          <li class="ib-sched__row">
+                            <input type="time" [value]="line.time ?? ''" (change)="editLine(i, 'time', $event)"
+                              [attr.aria-label]="('invitation.lineTime' | translate) + ' ' + (i + 1)" />
+                            <input type="text" maxlength="120" autocomplete="off" [value]="line.text"
+                              (change)="editLine(i, 'text', $event)"
+                              [attr.aria-label]="('invitation.lineText' | translate) + ' ' + (i + 1)"
+                              [attr.placeholder]="'invitation.linePlaceholder' | translate" />
+                            <button type="button" class="ib-x" (click)="removeLine(i)"
+                              [attr.aria-label]="('invitation.lineRemove' | translate) + ' ' + (i + 1)">✕</button>
+                          </li>
+                        }
+                      </ol>
+                      <div class="ib-row">
+                        @if (scheduleDraft().length < maxSchedule) {
+                          <button type="button" class="ib-out" (click)="addLine()">+ {{ 'invitation.lineAdd' | translate }}</button>
+                        }
+                        <button type="button" class="ib-quiet" (click)="importDay()">{{ 'invitation.dayImport' | translate }}</button>
+                      </div>
+                    } @else {
+                      <div class="ib-field">
+                        <textarea [id]="'ib-x-' + x" rows="3" maxlength="500" [value]="s[x] ?? ''"
+                          [attr.aria-label]="'invitation.extra.' + x | translate"
+                          (change)="commitText(x, $event)" [attr.placeholder]="'invitation.extraHint.' + x | translate"></textarea>
+                      </div>
+                    }
+                  }
+                </section>
+              }
+            }
+          }
+
+          <!-- ================= 5. RSVP ================= -->
+          @case ('rsvp') {
+            @if (site(); as s) {
+              <label class="ib-check ib-check--strong">
+                <input type="checkbox" [checked]="s.rsvpEnabled" (change)="setFlag('rsvpEnabled', $event)" />
+                <span>{{ 'invitation.rsvpOn' | translate }}</span>
+              </label>
+              @if (s.rsvpEnabled) {
+                <div class="ib-form">
+                  <div class="ib-field">
+                    <label for="ib-deadline">{{ 'invitation.rsvpDeadline' | translate }}</label>
+                    <input id="ib-deadline" type="date" [value]="s.rsvpDeadline ?? ''"
+                      [attr.max]="s.weddingDate" (change)="commitText('rsvpDeadline', $event)" />
+                  </div>
+                </div>
+                <fieldset class="ib-place">
+                  <legend>{{ 'invitation.rsvpAsk' | translate }}</legend>
+                  <p class="ib-note">{{ 'invitation.rsvpAlways' | translate }}</p>
+                  <label class="ib-check">
+                    <input type="checkbox" [checked]="s.rsvpAskDiet" (change)="setFlag('rsvpAskDiet', $event)" />
+                    <span>{{ 'invitation.rsvpDiet' | translate }}</span>
+                  </label>
+                  <p class="ib-note ib-note--indent">{{ 'invitation.rsvpDietHint' | translate }}</p>
+                  <label class="ib-check">
+                    <input type="checkbox" [checked]="s.rsvpAskMessage" (change)="setFlag('rsvpAskMessage', $event)" />
+                    <span>{{ 'invitation.rsvpMessage' | translate }}</span>
+                  </label>
+                  <div class="ib-field">
+                    <label for="ib-question">{{ 'invitation.rsvpQuestion' | translate }}</label>
+                    <input id="ib-question" type="text" maxlength="200" autocomplete="off" [value]="s.rsvpQuestion ?? ''"
+                      (change)="commitText('rsvpQuestion', $event)"
+                      [attr.placeholder]="'invitation.rsvpQuestionHint' | translate" />
+                  </div>
+                </fieldset>
+              }
+              <p class="ib-note ib-note--box">
+                {{ 'invitation.rsvpHow' | translate }}
+                <a class="ib-quiet" routerLink="/guests">{{ 'invitation.toGuests' | translate }} →</a>
+              </p>
+            }
+          }
+
+          <!-- ================= 6. preview + publish ================= -->
+          @case ('preview') {
+            @if (site(); as s) {
+              <div class="ib-row ib-row--between">
+                <div class="ib-seg" role="radiogroup" [attr.aria-label]="'invitation.deviceLabel' | translate">
+                  <button type="button" role="radio" [class.is-on]="device() === 'phone'" [attr.aria-checked]="device() === 'phone'"
+                    (click)="device.set('phone')">{{ 'invitation.phone' | translate }}</button>
+                  <button type="button" role="radio" [class.is-on]="device() === 'desktop'" [attr.aria-checked]="device() === 'desktop'"
+                    (click)="device.set('desktop')">{{ 'invitation.desktop' | translate }}</button>
+                </div>
+                @if (s.isPublished) {
+                  <div class="ib-row">
+                    <a class="ib-quiet" [href]="siteUrl()" target="_blank" rel="noopener">{{ 'website.view' | translate }} ↗</a>
+                    <button type="button" class="ib-quiet" (click)="unpublish()" [disabled]="publishBusy()">
+                      {{ 'website.unpublish' | translate }}
+                    </button>
+                  </div>
+                } @else {
+                  <button type="button" class="btn btn--primary" (click)="publish()" [disabled]="publishBusy()">
+                    {{ 'invitation.publish' | translate }}
+                  </button>
+                }
+              </div>
+
+              @if (device() === 'phone') {
+                <div class="ib-device ib-device--phone">
+                  <div class="ib-device__screen">
+                    <app-wedding-site [data]="s" [template]="s.templateKey" />
+                  </div>
+                </div>
+              } @else {
+                <div class="ib-device ib-device--desktop">
+                  <div class="ib-device__screen" [style.width.px]="desktopWidth" [style.zoom]="desktopZoom() || null"
+                    [class.is-ready]="desktopZoom() > 0">
+                    <app-wedding-site [data]="s" [template]="s.templateKey" />
+                  </div>
+                </div>
+              }
+              @if (s.isPublished) {
+                <p class="ib-note">{{ 'invitation.liveEdits' | translate }}</p>
+              }
+            }
+          }
+
+          <!-- ================= 7. share ================= -->
+          @case ('share') {
+            @if (site(); as s) {
+              @if (!s.isPublished) {
+                <div class="ib-note ib-note--box">
+                  <span>{{ 'invitation.publishFirst' | translate }}</span>
+                  <button type="button" class="btn btn--primary" (click)="publish()" [disabled]="publishBusy()">
+                    {{ 'invitation.publish' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <section class="ib-card ib-general">
+                  <div class="ib-general__text">
+                    <h3 class="ib-block__title">{{ 'invitation.generalTitle' | translate }}</h3>
+                    <p class="ib-note">{{ 'invitation.generalHint' | translate }}</p>
+                    <p class="ib-link num">{{ siteUrl() }}</p>
+                    <div class="ib-row">
+                      <button type="button" class="btn btn--primary" (click)="copy(siteUrl())">{{ 'website.copy' | translate }}</button>
+                      @if (canShare) {
+                        <button type="button" class="ib-out" (click)="share(siteUrl(), null)">{{ 'invitation.share' | translate }}</button>
+                      }
+                      <a class="ib-quiet" [href]="siteUrl()" target="_blank" rel="noopener">{{ 'website.view' | translate }} ↗</a>
+                    </div>
+                  </div>
+                  <figure class="ib-qr">
+                    @if (qr(); as q) {
+                      <svg [attr.viewBox]="'-2 -2 ' + (q.size + 4) + ' ' + (q.size + 4)" role="img"
+                        [attr.aria-label]="'invitation.qrLabel' | translate" shape-rendering="crispEdges">
+                        <rect x="-2" y="-2" [attr.width]="q.size + 4" [attr.height]="q.size + 4" fill="#fff" />
+                        <path [attr.d]="q.path" fill="#302b2d" />
+                      </svg>
+                    } @else {
+                      <span class="ib-qr__wait skel" aria-hidden="true"></span>
+                    }
+                    <figcaption>
+                      <button type="button" class="ib-quiet" (click)="downloadQr(siteUrl(), null)">{{ 'invitation.qrDownload' | translate }}</button>
+                    </figcaption>
+                  </figure>
+                </section>
+
+                <section class="ib-block">
+                  <h3 class="ib-block__title">{{ 'invitation.personalTitle' | translate }}</h3>
+                  <p class="ib-note">{{ 'invitation.personalHint' | translate }}</p>
+                  @if (partiesError()) {
+                    <p class="ib-note" role="alert">{{ 'website.loadError' | translate }}</p>
+                  } @else if (parties(); as list) {
+                    @if (!list.length) {
+                      <p class="ib-note ib-note--box">
+                        {{ 'invitation.noGuests' | translate }}
+                        <a class="ib-quiet" routerLink="/guests">{{ 'invitation.toGuests' | translate }} →</a>
+                      </p>
+                    } @else {
+                      <p class="ib-count">{{ 'invitation.repliedCount' | translate: { n: replied(), total: list.length } }}</p>
+                      <ul class="ib-parties" role="list">
+                        @for (p of list; track p.kind + p.id) {
+                          <li class="ib-party">
+                            <div class="ib-party__who">
+                              <span class="ib-party__name">{{ p.name }}</span>
+                              <span class="ib-party__meta">
+                                {{ (p.kind === 'family' ? 'invitation.familyPeople' : 'invitation.guestPeople') | translate: { n: p.people } }}
+                                ·
+                                @if (p.rsvpAt) {
+                                  {{ 'invitation.partyReplied' | translate: { yes: p.yes, no: p.no } }}
+                                } @else {
+                                  {{ 'invitation.partyWaiting' | translate }}
+                                }
+                              </span>
+                            </div>
+                            <div class="ib-party__actions">
+                              <button type="button" class="ib-out ib-out--small" (click)="copyText(p)">{{ 'invitation.copyText' | translate }}</button>
+                              <button type="button" class="ib-quiet" (click)="copy(partyUrl(p))">{{ 'invitation.copyLink' | translate }}</button>
+                              @if (canShare) {
+                                <button type="button" class="ib-quiet" (click)="share(partyUrl(p), p.name)">{{ 'invitation.share' | translate }}</button>
+                              }
+                              <button type="button" class="ib-quiet" (click)="downloadQr(partyUrl(p), p.name)">QR</button>
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                      <p class="ib-note">
+                        {{ 'invitation.answersLand' | translate }}
+                        <a class="ib-quiet" routerLink="/guests">{{ 'invitation.toGuests' | translate }} →</a>
+                      </p>
+                    }
+                  } @else {
+                    <div class="ib-skel ib-skel--short skel" aria-hidden="true"></div>
+                  }
+                </section>
+              }
+            }
+          }
+        }
+
+        <footer class="ib-nav">
+          @if (stepIndex() > 0) {
+            <button type="button" class="ib-quiet" (click)="back()">← {{ 'invitation.back' | translate }}</button>
+          } @else {
+            <span></span>
+          }
+          @if (step() === 'info' && !site()) {
+            <button type="submit" form="ib-create" class="btn btn--primary" [disabled]="creating()">
+              {{ 'invitation.create' | translate }}
+            </button>
+          } @else if (step() === 'preview' && site() && !site()!.isPublished) {
+            <button type="button" class="btn btn--primary" (click)="publish()" [disabled]="publishBusy()">
+              {{ 'invitation.publish' | translate }}
+            </button>
+          } @else if (stepIndex() < steps.length - 1) {
+            <button type="button" class="btn btn--primary" (click)="next()">
+              {{ 'invitation.next' | translate }} →
+            </button>
+          }
+        </footer>
+      </div>
+
+      @if (step() !== 'preview' && step() !== 'share') {
+        <aside class="ib-live" [attr.aria-label]="'invitation.livePreview' | translate">
+          <p class="ib-live__label">{{ 'invitation.livePreview' | translate }}</p>
+          <div class="ib-live__frame">
+            <app-wedding-site [data]="previewData()" [template]="previewTemplate()" />
+          </div>
+        </aside>
+      }
+    </div>
   }
 </section>
-
-<!-- published! dialog -->
-@if (showPublished()) {
-  <div class="wb-pub" role="dialog" aria-modal="true"
-    [attr.aria-label]="'website.publishedTitle' | translate" (click)="onPublishedOverlay($event)"
-    (keydown)="onDialogKeydown($event)">
-    <div class="wb-pub__panel">
-      <span class="wb-pub__icon" aria-hidden="true">🎉</span>
-      <h2>{{ 'website.publishedTitle' | translate }}</h2>
-      <p class="wb-pub__body">{{ 'website.publishedBody' | translate }}</p>
-      <div class="wb-pub__url">
-        <span class="num">{{ siteUrl() }}</span>
-        <button type="button" class="blink" (click)="copyLink()">{{ 'website.copy' | translate }}</button>
-      </div>
-      <div class="wb-pub__actions">
-        <a class="btn btn--ghost" [href]="siteUrl()" target="_blank" rel="noopener">{{ 'website.view' | translate }}</a>
-        <button type="button" class="btn btn--primary" (click)="closePublished()">{{ 'website.done' | translate }}</button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- guest design preview -->
-@if (peek(); as p) {
-  <div class="wb-peek" role="dialog" aria-modal="true"
-    [attr.aria-label]="'wsTemplate.' + p.template | translate"
-    (click)="onPeekOverlay($event)" (keydown)="onDialogKeydown($event)">
-    <div class="wb-peek__dialog">
-      <button type="button" class="wb-peek__close" (click)="closePeek()"
-        [attr.aria-label]="'gallery.close' | translate">✕</button>
-      <!-- The full site rendered at desktop width, scaled to fill the dialog — no scrolling. -->
-      <div class="wb-peek__frame" [class.is-ready]="peekScale() > 0"
-        [style.width.px]="peekWidth * peekScale()" [style.height.px]="peekHeight() * peekScale()">
-        <div class="wb-peek__stage" [style.width.px]="peekWidth"
-          [style.transform]="'scale(' + peekScale() + ')'">
-          <app-wedding-site [data]="p.data" [template]="p.template" />
-        </div>
-      </div>
-      <footer class="wb-peek__cta">
-        <a class="btn btn--pink" routerLink="/signup" [queryParams]="{ returnUrl: '/website' }"
-          (click)="closePeek()">{{ 'website.guestCta' | translate }}</a>
-      </footer>
-    </div>
-  </div>
-}

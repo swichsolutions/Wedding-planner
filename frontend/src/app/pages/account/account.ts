@@ -1,28 +1,20 @@
 import { Component, ElementRef, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AccountInfo, AccountService } from '../../core/account.service';
 import { AuthService } from '../../core/auth.service';
-import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
-
-/** New + confirm password must match. Emptiness is left to Validators.required per field. */
-function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
-  const np = group.get('newPassword')?.value;
-  const cp = group.get('confirmPassword')?.value;
-  return np && cp && np !== cp ? { mismatch: true } : null;
-}
+import {
+  focusFirstInvalid,
+  passwordChecks,
+  passwordValidator,
+  passwordsMatchValidator,
+} from '../../core/forms';
 
 /**
  * Account settings for any signed-in user (couple/vendor/admin): view the account and
@@ -31,7 +23,7 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
  */
 @Component({
   selector: 'app-account',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './account.html',
   styleUrl: './account.scss',
 })

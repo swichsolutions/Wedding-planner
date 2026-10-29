@@ -9,8 +9,8 @@ public class CategoryBudget
 {
     public int Id { get; set; }
 
-    /// <summary>Owning couple user's id (AppUser.Id).</summary>
-    public string UserId { get; set; } = string.Empty;
+    /// <summary>The plan it belongs to (<see cref="Couple"/>).</summary>
+    public int CoupleId { get; set; }
 
     public string CategorySlug { get; set; } = string.Empty;
 

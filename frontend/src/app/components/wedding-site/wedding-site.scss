@@ -1,5 +1,3 @@
-@use 'breakpoints' as bp;
-
 // =============================================================================
 // Wedding-site renderer. 5 structural layouts × theme palettes (2 themes each).
 // Palettes here are each site's own content design (like a poster), intentionally
@@ -9,6 +7,9 @@
 :host {
   display: block;
   height: 100%;
+  // Sizes inside follow this component's width, not the window's (cqi, @container), so a
+  // narrow preview frame shows the phone layout.
+  container-type: inline-size;
 }
 
 .ws {
@@ -40,6 +41,12 @@
   font-family: var(--font-body);
 }
 
+// Paragraphs follow the design, not the site's reading measure (the global p max-width would
+// leave centred lines like the eyebrow off-centre). Kept low in specificity, so class rules still win.
+:where(.ws) p {
+  max-width: none;
+}
+
 .ws__ornament {
   position: absolute;
   inset: 0;
@@ -53,7 +60,7 @@
   z-index: 1;
   max-width: 46rem;
   margin-inline: auto;
-  padding: clamp(3rem, 9vw, 6.5rem) var(--space-6) clamp(2.5rem, 6vw, 4rem);
+  padding: clamp(3rem, 9cqi, 6.5rem) var(--space-6) clamp(2.5rem, 6cqi, 4rem);
 }
 
 // ---- shared type ----
@@ -74,7 +81,7 @@
   font-style: var(--wsname-style);
   font-weight: var(--wsname-weight);
   font-stretch: var(--wsname-stretch);
-  font-size: calc(clamp(2.4rem, 7vw, 4.25rem) * var(--wsname-scale));
+  font-size: calc(clamp(2.4rem, 7cqi, 4.25rem) * var(--wsname-scale));
   line-height: 1.1;
   letter-spacing: var(--wsname-track);
   text-transform: var(--wsname-case);
@@ -121,7 +128,7 @@
 }
 
 .ws__photo {
-  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+  margin: clamp(2rem, 5cqi, 3.5rem) 0 0;
 
   img {
     width: 100%;
@@ -136,7 +143,7 @@
 .ws__rule {
   width: 72px;
   height: 2px;
-  margin: clamp(2rem, 5vw, 3rem) auto;
+  margin: clamp(2rem, 5cqi, 3rem) auto;
   background: var(--wsaccent);
 }
 
@@ -152,7 +159,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--space-6) var(--space-12);
-  margin-top: clamp(2rem, 5vw, 3rem);
+  margin-top: clamp(2rem, 5cqi, 3rem);
 }
 
 .ws__detail {
@@ -173,7 +180,7 @@
 }
 
 .ws__brand {
-  margin: clamp(2.5rem, 7vw, 4rem) 0 0;
+  margin: clamp(2.5rem, 7cqi, 4rem) 0 0;
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   color: var(--wsmuted);
@@ -232,7 +239,7 @@
   z-index: 1;
   max-width: 46rem;
   margin-inline: auto;
-  padding: clamp(2rem, 5vw, 3.5rem) var(--space-6) clamp(2.5rem, 6vw, 4rem);
+  padding: clamp(2rem, 5cqi, 3.5rem) var(--space-6) clamp(2.5rem, 6cqi, 4rem);
 }
 
 // Details as a three-column band under a banner hero.
@@ -250,14 +257,14 @@
   display: grid;
   min-height: 100%;
 
-  @include bp.respond-to(md) {
+  @container (min-width: 768px) {
     grid-template-columns: 1.15fr 1fr;
     min-height: clamp(30rem, 80vh, 44rem);
   }
 }
 
 .ws-split__text {
-  padding: clamp(2.5rem, 7vw, 5rem) clamp(1.5rem, 5vw, 4rem);
+  padding: clamp(2.5rem, 7cqi, 5rem) clamp(1.5rem, 5cqi, 4rem);
   text-align: start;
   display: grid;
   align-content: center;
@@ -295,9 +302,6 @@
   }
 }
 
-.ws--layout-split .ws__brand {
-  text-align: start;
-}
 
 .ws-split__media {
   position: relative;
@@ -307,7 +311,7 @@
   place-items: center;
   order: -1; // photo first on mobile
 
-  @include bp.respond-to(md) {
+  @container (min-width: 768px) {
     order: 0;
   }
 
@@ -323,7 +327,7 @@
 .ws-split__amp {
   font-family: var(--wsfont);
   font-style: italic;
-  font-size: clamp(6rem, 18vw, 11rem);
+  font-size: clamp(6rem, 18cqi, 11rem);
   color: var(--wsaccent);
   opacity: 0.55;
 }
@@ -335,7 +339,7 @@
   position: relative;
   width: min(21rem, 78%);
   aspect-ratio: 3 / 4;
-  margin: clamp(2rem, 5vw, 3rem) auto 0;
+  margin: clamp(2rem, 5cqi, 3rem) auto 0;
   border-radius: 50% 50% var(--wsradius) var(--wsradius) / 40% 40% var(--wsradius) var(--wsradius);
   overflow: hidden;
   background: color-mix(in srgb, var(--wsaccent) 20%, var(--wsbg));
@@ -355,7 +359,7 @@
 .ws-arch__amp {
   font-family: var(--wsfont);
   font-style: italic;
-  font-size: clamp(4rem, 12vw, 7rem);
+  font-size: clamp(4rem, 12cqi, 7rem);
   color: var(--wsaccent);
   opacity: 0.6;
 }
@@ -392,7 +396,7 @@
 
 .ws-polaroid {
   width: min(26rem, 92%);
-  margin: clamp(2rem, 5vw, 3rem) auto 0;
+  margin: clamp(2rem, 5cqi, 3rem) auto 0;
   padding: 12px 12px 34px;
   background: #ffffff;
   border-radius: 3px;
@@ -452,7 +456,7 @@
 .ws-medal__amp {
   font-family: var(--wsfont);
   font-style: italic;
-  font-size: clamp(3rem, 9vw, 5rem);
+  font-size: clamp(3rem, 9cqi, 5rem);
   color: var(--wsaccent);
   opacity: 0.75;
 }
@@ -465,12 +469,12 @@
   z-index: 1;
   max-width: 46rem;
   margin-inline: auto;
-  padding: clamp(2.5rem, 7vw, 4.5rem) var(--space-6);
+  padding: clamp(2.5rem, 7cqi, 4.5rem) var(--space-6);
 }
 
 .ws-tap__field {
   position: relative;
-  padding: clamp(2.25rem, 6vw, 3.75rem) clamp(1.5rem, 5vw, 3.25rem);
+  padding: clamp(2.25rem, 6cqi, 3.75rem) clamp(1.5rem, 5cqi, 3.25rem);
   border-block: 3px solid var(--wsaccent);
 
   // vertical selvage stripes, like a carpet's side border
@@ -500,7 +504,7 @@
 .ws-tap__photo {
   width: min(24rem, 88%);
   aspect-ratio: 4 / 3;
-  margin: clamp(1.75rem, 5vw, 2.75rem) auto 0;
+  margin: clamp(1.75rem, 5cqi, 2.75rem) auto 0;
   // stepped (notched) corners — the kilim motif
   clip-path: polygon(
     0 14px, 14px 14px, 14px 0,
@@ -521,7 +525,7 @@
 // LAYOUT: masthead — editorial cover: left-set names, meta rule, photo below.
 // =============================================================================
 .ws-mast {
-  --mastpad: clamp(1.5rem, 6vw, 4.5rem);
+  --mastpad: clamp(1.5rem, 6cqi, 4.5rem);
 
   position: relative;
   z-index: 1;
@@ -529,7 +533,7 @@
   flex-direction: column;
   min-height: 100%;
   text-align: left;
-  padding: clamp(2rem, 6vw, 3.5rem) var(--mastpad) 0;
+  padding: clamp(2rem, 6cqi, 3.5rem) var(--mastpad) 0;
 }
 
 .ws-mast__eyebrow,
@@ -538,7 +542,7 @@
 }
 
 .ws-mast__names {
-  font-size: calc(clamp(2.8rem, 9vw, 5.5rem) * var(--wsname-scale));
+  font-size: calc(clamp(2.8rem, 9cqi, 5.5rem) * var(--wsname-scale));
   margin-bottom: var(--space-5);
 }
 
@@ -558,7 +562,7 @@
 }
 
 .ws-mast__media {
-  margin: clamp(1.75rem, 5vw, 3rem) calc(-1 * var(--mastpad)) 0; // full bleed
+  margin: clamp(1.75rem, 5cqi, 3rem) calc(-1 * var(--mastpad)) 0; // full bleed
 
   img {
     display: block;
@@ -570,7 +574,7 @@
 
 .ws-mast__body {
   max-width: 34rem;
-  padding-block: clamp(2rem, 5vw, 3rem);
+  padding-block: clamp(2rem, 5cqi, 3rem);
 
   .ws__message {
     text-align: left;
@@ -595,13 +599,13 @@
   z-index: 1;
   display: grid;
   place-items: center;
-  padding: clamp(2rem, 6vw, 4rem) var(--space-6);
+  padding: clamp(2rem, 6cqi, 4rem) var(--space-6);
 }
 
 .ws-post__card {
   position: relative;
   width: min(46rem, 100%);
-  padding: clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 3rem);
+  padding: clamp(2rem, 6cqi, 3.5rem) clamp(1.5rem, 5cqi, 3rem);
   text-align: left;
   background: color-mix(in srgb, #ffffff 55%, transparent);
   border: 1px solid color-mix(in srgb, var(--wsink) 25%, transparent);
@@ -641,9 +645,9 @@
 .ws-post__stamp {
   position: absolute;
   z-index: 1;
-  top: clamp(1.25rem, 4vw, 2rem);
-  right: clamp(1.25rem, 4vw, 2rem);
-  width: clamp(5.5rem, 16vw, 7.5rem);
+  top: clamp(1.25rem, 4cqi, 2rem);
+  right: clamp(1.25rem, 4cqi, 2rem);
+  width: clamp(5.5rem, 16cqi, 7.5rem);
   aspect-ratio: 4 / 5;
   margin: 0;
   padding: 5px;
@@ -662,8 +666,8 @@
 
 .ws-post__mark {
   position: absolute;
-  top: clamp(2.25rem, 6vw, 3.5rem);
-  right: clamp(9rem, 24vw, 11.5rem);
+  top: clamp(2.25rem, 6cqi, 3.5rem);
+  right: clamp(9rem, 24cqi, 11.5rem);
   width: 3.6rem;
   height: 3.6rem;
   border: 1.5px solid color-mix(in srgb, var(--wsink) 40%, transparent);
@@ -1052,6 +1056,8 @@
 //     Voice: bold condensed sans Mtavruli — festival-poster energy.
 .ws--sunrise {
   --wsbg: linear-gradient(180deg, #fddcc0 0%, #fbeadd 48%, #fdf7f1 100%);
+  // Solid stand-in for the gradient where a plain colour is needed (the reply form's button text).
+  --wspaper: #fdf7f1;
   --wsink: #6a4632;
   --wsaccent: #d07a4a;
   --wsmuted: rgba(106, 70, 50, 0.6);
@@ -1168,5 +1174,172 @@
         transparent 7.5px
       )
       top / 16px 11px repeat-x;
+  }
+}
+
+// =============================================================================
+// B6: the names typeface the couple picked (OFL faces already on the site; GF Aisi
+// stays off invitations until its licence is confirmed for them).
+// =============================================================================
+.ws.ws--font-classic {
+  --wsname-family: 'Noto Serif Georgian', 'Noto Serif', Georgia, serif;
+  --wsname-style: italic;
+  --wsname-case: none;
+  --wsname-weight: 500;
+  --wsname-track: -0.01em;
+  --wsname-stretch: 100%;
+}
+
+.ws.ws--font-plain {
+  --wsname-family: 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  --wsname-style: normal;
+  --wsname-case: none;
+  --wsname-weight: 500;
+  --wsname-track: -0.01em;
+  --wsname-stretch: 100%;
+}
+
+.ws.ws--font-capitals {
+  --wsname-family: 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  --wsname-style: normal;
+  --wsname-case: uppercase;
+  --wsname-weight: 400;
+  --wsname-track: 0.08em;
+  --wsname-stretch: 100%;
+  --wsname-scale: 0.8;
+}
+
+.ws.ws--font-modern {
+  --wsname-family: 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  --wsname-style: normal;
+  --wsname-case: none;
+  --wsname-weight: 500;
+  --wsname-track: -0.02em;
+  --wsname-stretch: 100%;
+}
+
+// =============================================================================
+// B6: what guests need to know, below every layout — in the design's own colours.
+// =============================================================================
+.ws-more {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(2rem, 6cqi, 3.25rem);
+  max-width: 46rem;
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5cqi, 3rem) var(--space-6) clamp(2.5rem, 6cqi, 4rem);
+}
+
+.ws-sec__title {
+  margin: 0 0 var(--space-3);
+  color: var(--wsmuted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.ws-places {
+  display: grid;
+  gap: var(--space-4);
+
+  @container (min-width: 600px) {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+}
+
+.ws-place {
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--wsink) 14%, transparent);
+  border-radius: var(--wsradius);
+  background: color-mix(in srgb, var(--wsink) 3%, transparent);
+
+  p {
+    margin: 0;
+  }
+}
+
+.ws-place__time {
+  margin-bottom: var(--space-2) !important;
+  font-family: var(--wsfont);
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.ws-place__name {
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.ws-place__addr {
+  margin-top: var(--space-1) !important;
+  color: var(--wsmuted);
+  line-height: 1.5;
+}
+
+.ws-place__map {
+  display: inline-block;
+  margin-top: var(--space-4);
+  color: var(--wsink);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-decoration-color: var(--wsaccent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.ws-sched {
+  display: grid;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  text-align: start;
+
+  li {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+    border-top: 1px solid color-mix(in srgb, var(--wsink) 12%, transparent);
+    line-height: 1.5;
+
+    &:last-child {
+      border-bottom: 1px solid color-mix(in srgb, var(--wsink) 12%, transparent);
+    }
+  }
+}
+
+.ws-sched__time {
+  color: var(--wsmuted);
+}
+
+.ws-note p {
+  max-width: 36rem;
+  margin: 0 auto;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.ws-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+
+  @container (min-width: 600px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--wsradius);
   }
 }

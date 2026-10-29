@@ -11,20 +11,22 @@ import { ColorBand } from '../../core/color-band.directive';
 import { OrganizerHero } from './organizer-hero/organizer-hero';
 import { TrustFaq } from './trust-faq/trust-faq';
 import { FinalCall } from './final-call/final-call';
+import { DaySchedules } from '../../components/day-schedules/day-schedules';
 import { img } from '../../core/catalog';
 import { CategoryStat, VendorService } from '../../core/vendor.service';
 
 /**
- * Landing page — "Program on Paper". Six chapters from the sitemap, each answering
- * the question a couple naturally asks next, with ONE example wedding (Nino & Giorgi)
- * threaded through: first plan → chosen venue → organizer → day schedule.
- * All copy lives in i18n under `home.*`; this file only holds structure.
+ * Landing page, in the guide's seven sections (BUILD-PLAN A5): hero → categories → three
+ * steps → organizer → example day schedules → FAQ → final call. Each answers the question a
+ * couple naturally asks next. All copy lives in i18n under `home.*` (the schedules in
+ * core/day-schedules.ts); this file only holds structure.
  */
 
 /** One row of the category index: a group of catalog slugs shown as a single entry. */
 interface CategoryGroup {
   key: string; // i18n key under home.find.cat
-  slugs: string[]; // catalog slugs folded into this row; slugs[0] is the browse link target
+  slugs: string[]; // catalog slugs folded into this row (their vendor counts are summed)
+  query: Record<string, string>; // the catalog view this row opens: a group, or one category
   img: string; // the card visual: a full-card render (object on the peach backdrop) or, with `print`, a scene
   print?: boolean; // show the visual as a rounded print instead of a cut-out
 }
@@ -36,16 +38,9 @@ interface CategoryRow extends CategoryGroup {
   srcset: string; // the render at 720 and 1086 px wide (sharp on 2x/3x screens)
 }
 
-interface ScheduleItem {
-  time: string;
-  key: string; // i18n key under home.day.item
-  optional?: boolean;
-  edited?: string; // the one row shown "being edited" → new time
-}
-
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, TranslatePipe, Reveal, ScrollStage, ColorBand, OrganizerHero, TrustFaq, FinalCall],
+  imports: [RouterLink, TranslatePipe, Reveal, ScrollStage, ColorBand, OrganizerHero, TrustFaq, FinalCall, DaySchedules],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   // brand theme (Mint & Peach + GF Aisi) for the whole page, see styles/_brand.scss
@@ -72,7 +67,6 @@ export class Home {
     afterNextRender(() => {
       this.setUpStrip(destroyRef);
       this.setUpOrbit(destroyRef);
-      this.setUpDay(destroyRef);
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         this.reelPlays.set(false);
         return;
@@ -164,7 +158,7 @@ export class Home {
     });
   }
 
-  /** 02 — the three planning steps, each a full-bleed photo + the step card.
+  /** 03 — the three planning steps, each a full-bleed photo + the step card.
    * Rotates on its own (browser only, not under reduced motion); the bottom labels
    * also switch slides directly. */
   protected readonly startSlides: { key: string; img: string; pos?: string }[] = [
@@ -177,22 +171,23 @@ export class Home {
   ];
   protected readonly slide = signal(0);
 
-  /** 03 — the categories: the 14 catalog slugs folded into nine cards (the carousel;
+  /** 02 — the categories: the 14 catalog slugs folded into nine cards (the carousel;
    * the older editorial index is commented out in the template). Inventory comes from
    * the API; a card with no approved vendors shows no count instead of a zero. */
   private readonly categoryGroups: CategoryGroup[] = [
     // Revolut-style cards: Beka's renders, one scene or object on a shared peach backdrop
     // with a floor reflection; each has a `-1086` twin for dense screens
     // (public/media/README.md)
-    { key: 'venues', slugs: ['darbazi'], img: '/media/cat/venues.webp' },
-    { key: 'photo', slugs: ['fotografi', 'videografi'], img: '/media/cat/photo.webp' },
-    { key: 'decor', slugs: ['dekori', 'floristi'], img: '/media/cat/decor.webp' },
-    { key: 'music', slugs: ['musika'], img: '/media/cat/music.webp' },
-    { key: 'cake', slugs: ['torti'], img: '/media/cat/cake.webp' },
-    { key: 'attire', slugs: ['kaba', 'kostiumi'], img: '/media/cat/attire.webp' },
-    { key: 'rings', slugs: ['bechdebi'], img: '/media/cat/rings.webp' },
-    { key: 'beauty', slugs: ['makiaji', 'tmis-stili', 'manikiuri'], img: '/media/cat/beauty.webp' },
-    { key: 'transport', slugs: ['transporti'], img: '/media/cat/transport.webp' },
+    // Rows open the catalog's group (guide §4); rings and transport open their one category.
+    { key: 'venues', slugs: ['darbazi', 'keiteringi'], query: { group: 'venues' }, img: '/media/cat/venues.webp' },
+    { key: 'photo', slugs: ['fotografi', 'videografi'], query: { group: 'photo' }, img: '/media/cat/photo.webp' },
+    { key: 'decor', slugs: ['dekori', 'floristi', 'inventari'], query: { group: 'decor' }, img: '/media/cat/decor.webp' },
+    { key: 'music', slugs: ['musika', 'tamada', 'tsamqvani', 'gasartobi'], query: { group: 'music' }, img: '/media/cat/music.webp' },
+    { key: 'cake', slugs: ['torti', 'tkbileuli'], query: { group: 'cake' }, img: '/media/cat/cake.webp' },
+    { key: 'attire', slugs: ['kaba', 'kostiumi', 'pekhsatsmeli', 'aksesuarebi'], query: { group: 'attire' }, img: '/media/cat/attire.webp' },
+    { key: 'rings', slugs: ['bechdebi'], query: { category: 'bechdebi' }, img: '/media/cat/rings.webp' },
+    { key: 'beauty', slugs: ['makiaji', 'tmis-stili', 'manikiuri', 'saloni', 'movla'], query: { group: 'beauty' }, img: '/media/cat/beauty.webp' },
+    { key: 'transport', slugs: ['transporti'], query: { category: 'transporti' }, img: '/media/cat/transport.webp' },
   ];
 
   private readonly vendors = inject(VendorService);
@@ -230,21 +225,6 @@ export class Home {
 
   /** False under reduced motion (kept for any film we add later). */
   protected readonly reelPlays = signal(true);
-
-  /** The day timeline: which moment the marker is on. Walks forward every 2s and
-   * wraps (browser only, not under reduced motion — then it rests on the third stop). */
-  protected readonly dayStep = signal(2);
-  private dayTimer = 0;
-
-  private setUpDay(destroyRef: DestroyRef): void {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    this.dayStep.set(0);
-    this.dayTimer = window.setInterval(() => {
-      if (document.hidden) return;
-      this.dayStep.update((s) => (s + 1) % this.schedule.length);
-    }, 2000);
-    destroyRef.onDestroy(() => window.clearInterval(this.dayTimer));
-  }
 
   // ---- the category carousel around the ring ----
   /** Index of the centred card. */
@@ -352,14 +332,5 @@ export class Home {
     { key: '1', chosen: true },
     { key: '2', chosen: true },
     { key: '3', chosen: false },
-  ];
-
-  protected readonly schedule: ScheduleItem[] = [
-    { time: '16:00', key: '1' },
-    { time: '17:00', key: '2', optional: true },
-    { time: '18:00', key: '3' },
-    { time: '19:30', key: '4', edited: '20:00' },
-    { time: '21:00', key: '5' },
-    { time: '23:30', key: '6' },
   ];
 }

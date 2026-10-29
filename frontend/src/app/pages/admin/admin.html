@@ -1,6 +1,25 @@
 <section class="admin container">
   <header class="admin__head">
     <h1>{{ 'adminPage.title' | translate }}</h1>
+    <nav class="admin__tabs" [attr.aria-label]="'adminPage.sections' | translate">
+      <button type="button" (click)="setTab('vendors')" [attr.aria-current]="tab() === 'vendors' ? 'page' : null">
+        {{ 'adminPage.tabVendors' | translate }}
+      </button>
+      <button type="button" (click)="setTab('content')" [attr.aria-current]="tab() === 'content' ? 'page' : null">
+        {{ 'adminPage.tabContent' | translate }}
+      </button>
+      <button type="button" (click)="setTab('import')" [attr.aria-current]="tab() === 'import' ? 'page' : null">
+        {{ 'adminPage.tabImport' | translate }}
+      </button>
+    </nav>
+  </header>
+
+  @if (tab() === 'content') {
+    <app-admin-content />
+  } @else if (tab() === 'import') {
+    <app-admin-import />
+  } @else {
+  <div class="admin__subhead">
     <div class="admin__filter" role="group">
       <button type="button" (click)="setPending(true)" [attr.aria-pressed]="pendingOnly()">
         {{ 'adminPage.pendingOnly' | translate }}
@@ -9,7 +28,7 @@
         {{ 'adminPage.all' | translate }}
       </button>
     </div>
-  </header>
+  </div>
 
   @if (loadError()) {
     <div class="admin__error" role="alert">
@@ -44,8 +63,17 @@
             @if (v.isFeatured) {
               <span class="admin__badge admin__badge--feat">{{ 'adminPage.feature' | translate }}</span>
             }
+            @if (!v.hasOwner) {
+              <span class="admin__badge admin__badge--plain">{{ 'adminPage.noOwner' | translate }}</span>
+            }
+            @if (v.photoCount === 0) {
+              <span class="admin__badge">{{ 'adminPage.noPhotos' | translate }}</span>
+            }
           </div>
           <div class="admin__actions">
+            <a class="btn btn--ghost admin__btn" [routerLink]="['/admin/vendors', v.id]">
+              {{ 'adminPage.edit' | translate }}
+            </a>
             @if (!v.isApproved) {
               <button type="button" class="btn btn--primary admin__btn" (click)="approve(v.id)">
                 {{ 'adminPage.approve' | translate }}
@@ -59,5 +87,6 @@
         </li>
       }
     </ul>
+  }
   }
 </section>

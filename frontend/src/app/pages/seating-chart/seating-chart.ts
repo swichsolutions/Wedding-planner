@@ -13,7 +13,8 @@ import {
 
 import { trapTabKey } from '../../core/a11y';
 import { AuthService } from '../../core/auth.service';
-import { Guest, GuestService } from '../../core/guest.service';
+import { Guest, GuestFamily, GuestService } from '../../core/guest.service';
+import { LanguageService } from '../../i18n/language.service';
 import {
   AttendeeKind,
   SeatAssignment,
@@ -24,6 +25,8 @@ import {
   SeatingTable,
   SeatingTablePayload,
   TableShape,
+  objectPayload,
+  tablePayload,
 } from '../../core/seating.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
@@ -33,7 +36,13 @@ interface Attendee {
   guestId: number;
   kind: AttendeeKind;
   name: string;
+  /** The party's dietary needs, if any (shown on the chip and in the printed list). */
+  diet: string | null;
 }
+
+/** Width of the venue's floor plan on the canvas, so tables line up with it on every screen. */
+const PLAN_WIDTH = 1000;
+const PLAN_MAX_BYTES = 8 * 1024 * 1024;
 
 interface TablePreset {
   key: string;
@@ -89,13 +98,18 @@ function parseSeatListId(id: string): { tableId: number; seatIndex: number } | n
 /**
  * Free-form seating chart: couples add tables (four quick presets or a custom
  * shape/seat-count), drag each table anywhere on the canvas to mirror their venue,
- * then drag guests from the unassigned pool onto individual seats.
+ * then drag guests from the unassigned pool onto individual seats. B5: tables and zones
+ * turn, zones take a name and size, the venue's floor plan can sit underneath, the counts
+ * (tables, seats, free seats, unseated) sit on top, and the plan downloads as an image, prints
+ * as a list per table or goes out through the phone's share sheet. Guests who said no aren't
+ * offered; families stay together in the pool.
  */
 @Component({
   selector: 'app-seating-chart',
   imports: [TranslatePipe, CdkDropListGroup, CdkDropList, CdkDrag, CdkDragHandle, FeatureLanding],
   templateUrl: './seating-chart.html',
   styleUrl: './seating-chart.scss',
+  host: { class: 'theme-brand' },
 })
 export class SeatingChart {
   private readonly auth = inject(AuthService);
@@ -104,6 +118,7 @@ export class SeatingChart {
   private readonly confirmSvc = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly t = inject(TranslateService);
+  private readonly lang = inject(LanguageService);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -131,6 +146,17 @@ export class SeatingChart {
   protected readonly tables = signal<SeatingTable[]>([]);
   protected readonly assignments = signal<SeatAssignment[]>([]);
   protected readonly objects = signal<SeatingObject[]>([]);
+  protected readonly families = signal<GuestFamily[]>([]);
+
+  // ---- the venue's floor plan, under the chart ----
+  protected readonly floorPlanUrl = signal<string | null>(null);
+  protected readonly showPlan = signal(true);
+  protected readonly planBusy = signal(false);
+  protected readonly planWidth = PLAN_WIDTH;
+
+  /** The phone's share sheet can take an image (hidden where it can't). */
+  protected readonly canShare = signal(false);
+  protected readonly exporting = signal(false);
 
   protected readonly presets = PRESETS;
   protected readonly objectSections = OBJECT_SECTIONS;
@@ -138,9 +164,10 @@ export class SeatingChart {
   // ---- add/edit side drawer (one entry point for both tables and venue items) ----
   protected readonly shapes: TableShape[] = ['round', 'one_sided', 'rectangular', 'four_sided'];
   protected readonly drawerOpen = signal(false);
-  protected readonly modalStep = signal<'browse' | 'custom'>('browse');
+  protected readonly modalStep = signal<'browse' | 'custom' | 'object'>('browse');
   protected readonly customShape = signal<TableShape>('round');
   protected readonly editingTable = signal<SeatingTable | null>(null);
+  protected readonly editingObject = signal<SeatingObject | null>(null);
   private modalTrigger: HTMLElement | null = null;
 
   protected readonly renamingTableId = signal<number | null>(null);
@@ -154,6 +181,15 @@ export class SeatingChart {
       this.loadStarted = true;
       this.loadAll();
     });
+
+    if (this.isBrowser) {
+      try {
+        const probe = new File([new Blob()], 'plan.png', { type: 'image/png' });
+        this.canShare.set(typeof navigator.share === 'function' && !!navigator.canShare?.({ files: [probe] }));
+      } catch {
+        this.canShare.set(false);
+      }
+    }
   }
 
   private loadAll(): void {
@@ -162,11 +198,13 @@ export class SeatingChart {
       next: (list) => this.guests.set(list),
       error: () => this.loadError.set(true),
     });
+    this.guestSvc.families().subscribe({ next: (list) => this.families.set(list), error: () => {} });
     this.seatingSvc.load().subscribe({
       next: (state) => {
         this.tables.set(state.tables);
         this.assignments.set(state.assignments);
         this.objects.set(state.objects);
+        this.floorPlanUrl.set(state.floorPlanUrl);
         this.loaded.set(true);
       },
       error: () => {
@@ -184,23 +222,27 @@ export class SeatingChart {
   // ---- attendees derived from the guest list (primary / plus-one / child) ----
 
   private attendeesFor(guest: Guest): Attendee[] {
-    const list: Attendee[] = [{ guestId: guest.id, kind: 'primary', name: [guest.firstName, guest.lastName].filter(Boolean).join(' ') }];
+    const diet = guest.dietaryNeeds;
+    const list: Attendee[] = [{ guestId: guest.id, kind: 'primary', name: [guest.firstName, guest.lastName].filter(Boolean).join(' '), diet }];
     if (guest.hasPlusOne) {
       const name = guest.plusOneNameUnknown
         ? this.t.instant('seatingPage.plusOneUnknown')
         : [guest.plusOneFirstName, guest.plusOneLastName].filter(Boolean).join(' ');
-      list.push({ guestId: guest.id, kind: 'plus_one', name });
+      list.push({ guestId: guest.id, kind: 'plus_one', name, diet });
     }
     if (guest.hasChild) {
       const name = guest.childNameUnknown
         ? this.t.instant('seatingPage.childUnknown')
         : [guest.childFirstName, guest.childLastName].filter(Boolean).join(' ');
-      list.push({ guestId: guest.id, kind: 'child', name });
+      list.push({ guestId: guest.id, kind: 'child', name, diet });
     }
     return list;
   }
 
-  protected readonly allAttendees = computed<Attendee[]>(() => this.guests().flatMap((g) => this.attendeesFor(g)));
+  /** Everyone who may still come: guests who said no aren't seated (their seats were freed). */
+  protected readonly allAttendees = computed<Attendee[]>(() =>
+    this.guests().filter((g) => g.attendance !== 'no').flatMap((g) => this.attendeesFor(g)),
+  );
 
   private readonly assignedKeySet = computed(() => new Set(this.assignments().map((a) => `${a.guestId}:${a.attendeeKind}`)));
 
@@ -209,6 +251,26 @@ export class SeatingChart {
   );
 
   protected readonly totalSeated = computed(() => this.assignments().length);
+
+  /** The unseated, by family (families stay together), then everyone else. */
+  protected readonly poolGroups = computed(() => {
+    const left = this.unassignedAttendees();
+    const familyOf = new Map(this.guests().map((g) => [g.id, g.familyId]));
+    const groups = this.families()
+      .map((f) => ({ key: 'f' + f.id, name: f.name as string | null, attendees: left.filter((a) => familyOf.get(a.guestId) === f.id) }))
+      .filter((g) => g.attendees.length > 0);
+    const known = new Set(this.families().map((f) => f.id));
+    const rest = left.filter((a) => {
+      const fid = familyOf.get(a.guestId);
+      return fid == null || !known.has(fid);
+    });
+    if (rest.length) groups.push({ key: 'rest', name: null, attendees: rest });
+    return groups;
+  });
+
+  // ---- counts (guide: tables, seats, free seats, unseated guests) ----
+  protected readonly seatTotal = computed(() => this.tables().reduce((sum, t) => sum + t.seatCount, 0));
+  protected readonly freeTotal = computed(() => Math.max(0, this.seatTotal() - this.assignments().length));
 
   // ---- table geometry (shared by the template for seat-dot placement) ----
 
@@ -318,7 +380,7 @@ export class SeatingChart {
   /** Quick-add straight from the preset grid — no form, no extra click. */
   protected selectPreset(preset: TablePreset): void {
     const pos = this.nextPosition();
-    this.addTable({ name: this.nextName(), shape: preset.shape, seatCount: preset.seatCount, positionX: pos.x, positionY: pos.y });
+    this.addTable({ name: this.nextName(), shape: preset.shape, seatCount: preset.seatCount, positionX: pos.x, positionY: pos.y, rotation: 0 });
     this.closeModal();
   }
 
@@ -326,19 +388,21 @@ export class SeatingChart {
   protected duplicateTable(table: SeatingTable): void {
     const pos = this.nextPosition();
     const name = `${table.name} ${this.t.instant('seatingPage.copySuffix')}`;
-    this.addTable({ name, shape: table.shape, seatCount: table.seatCount, positionX: pos.x, positionY: pos.y });
+    this.addTable({ name, shape: table.shape, seatCount: table.seatCount, positionX: pos.x, positionY: pos.y, rotation: table.rotation });
   }
 
   // ---- add/edit side drawer ----
 
   protected openAddModal(): void {
     this.editingTable.set(null);
+    this.editingObject.set(null);
     this.customShape.set('round');
     this.modalStep.set('browse');
     this.openModal();
   }
 
   protected openEditModal(table: SeatingTable): void {
+    this.editingObject.set(null);
     this.editingTable.set(table);
     this.customShape.set(table.shape);
     this.modalStep.set('custom');
@@ -448,7 +512,7 @@ export class SeatingChart {
     const editing = this.editingTable();
 
     if (editing) {
-      const payload: SeatingTablePayload = { name, shape, seatCount, positionX: editing.positionX, positionY: editing.positionY };
+      const payload: SeatingTablePayload = { ...tablePayload(editing), name, shape, seatCount };
       this.seatingSvc.updateTable(editing.id, payload).subscribe({
         next: () => {
           this.tables.update((list) => list.map((t) => (t.id === editing.id ? { ...t, name, shape, seatCount } : t)));
@@ -462,7 +526,7 @@ export class SeatingChart {
     }
 
     const pos = this.nextPosition();
-    this.seatingSvc.addTable({ name, shape, seatCount, positionX: pos.x, positionY: pos.y }).subscribe({
+    this.seatingSvc.addTable({ name, shape, seatCount, positionX: pos.x, positionY: pos.y, rotation: 0 }).subscribe({
       next: (table) => {
         this.tables.update((list) => [...list, table]);
         this.closeModal();
@@ -475,7 +539,7 @@ export class SeatingChart {
 
   protected onTableDragEnded(table: SeatingTable, event: CdkDragEnd): void {
     const pos = event.source.getFreeDragPosition();
-    const payload: SeatingTablePayload = { name: table.name, shape: table.shape, seatCount: table.seatCount, positionX: pos.x, positionY: pos.y };
+    const payload: SeatingTablePayload = { ...tablePayload(table), positionX: pos.x, positionY: pos.y };
     this.seatingSvc.updateTable(table.id, payload).subscribe({
       next: () =>
         this.tables.update((list) =>
@@ -498,7 +562,7 @@ export class SeatingChart {
     this.renamingTableId.set(null);
     if (!name || name === table.name) return;
 
-    const payload: SeatingTablePayload = { name, shape: table.shape, seatCount: table.seatCount, positionX: table.positionX, positionY: table.positionY };
+    const payload: SeatingTablePayload = { ...tablePayload(table), name };
     this.seatingSvc.updateTable(table.id, payload).subscribe({
       next: () => this.tables.update((list) => list.map((t) => (t.id === table.id ? { ...t, name } : t))),
       error: () => this.toast.error('seatingPage.saveError'),
@@ -534,7 +598,7 @@ export class SeatingChart {
   protected addObject(type: SeatingObjectType): void {
     const info = this.objectKind(type);
     const pos = this.nextPosition();
-    const payload: SeatingObjectPayload = { type, positionX: pos.x, positionY: pos.y, width: info.width, height: info.height };
+    const payload: SeatingObjectPayload = { type, positionX: pos.x, positionY: pos.y, width: info.width, height: info.height, rotation: 0, label: null };
     this.seatingSvc.addObject(payload).subscribe({
       next: (obj) => this.objects.update((list) => [...list, obj]),
       error: () => this.toast.error('seatingPage.saveError'),
@@ -543,13 +607,7 @@ export class SeatingChart {
 
   protected onObjectDragEnded(obj: SeatingObject, event: CdkDragEnd): void {
     const pos = event.source.getFreeDragPosition();
-    const payload: SeatingObjectPayload = {
-      type: obj.type,
-      positionX: pos.x,
-      positionY: pos.y,
-      width: obj.width,
-      height: obj.height,
-    };
+    const payload: SeatingObjectPayload = { ...objectPayload(obj), positionX: pos.x, positionY: pos.y };
     this.seatingSvc.updateObject(obj.id, payload).subscribe({
       next: () =>
         this.objects.update((list) =>
@@ -559,11 +617,292 @@ export class SeatingChart {
     });
   }
 
+  // ---- turning tables and zones ----
+
+  protected rotateTable(table: SeatingTable, delta: number): void {
+    const rotation = (((table.rotation + delta) % 360) + 360) % 360;
+    this.tables.update((list) => list.map((t) => (t.id === table.id ? { ...t, rotation } : t)));
+    this.seatingSvc.updateTable(table.id, { ...tablePayload(table), rotation }).subscribe({
+      error: () => {
+        this.tables.update((list) => list.map((t) => (t.id === table.id ? { ...t, rotation: table.rotation } : t)));
+        this.toast.error('seatingPage.saveError');
+      },
+    });
+  }
+
+  protected rotateObject(obj: SeatingObject, delta: number): void {
+    const rotation = (((obj.rotation + delta) % 360) + 360) % 360;
+    this.objects.update((list) => list.map((o) => (o.id === obj.id ? { ...o, rotation } : o)));
+    this.seatingSvc.updateObject(obj.id, { ...objectPayload(obj), rotation }).subscribe({
+      error: () => {
+        this.objects.update((list) => list.map((o) => (o.id === obj.id ? { ...o, rotation: obj.rotation } : o)));
+        this.toast.error('seatingPage.saveError');
+      },
+    });
+  }
+
+  /** A zone's own name, else its type's. */
+  protected objectLabel(obj: SeatingObject): string {
+    return obj.label || this.t.instant('seatingPage.objectType.' + this.objectKind(obj.type).i18nKey);
+  }
+
+  // ---- editing a zone: name and size ----
+
+  protected openObjectEdit(obj: SeatingObject): void {
+    this.editingObject.set(obj);
+    this.modalStep.set('object');
+    this.openModal('#om-label');
+  }
+
+  protected submitObjectForm(form: HTMLFormElement): void {
+    const obj = this.editingObject();
+    if (!obj) return;
+    const num = (name: string, fallback: number) => {
+      const v = Number((form.elements.namedItem(name) as HTMLInputElement | null)?.value);
+      return Number.isFinite(v) && v > 0 ? Math.min(1200, Math.max(20, Math.round(v))) : fallback;
+    };
+    const label = ((form.elements.namedItem('objectLabel') as HTMLInputElement | null)?.value ?? '').trim() || null;
+    const payload: SeatingObjectPayload = { ...objectPayload(obj), label, width: num('objectWidth', obj.width), height: num('objectHeight', obj.height) };
+    this.seatingSvc.updateObject(obj.id, payload).subscribe({
+      next: () => {
+        this.objects.update((list) => list.map((o) => (o.id === obj.id ? { ...o, ...payload } : o)));
+        this.closeModal();
+      },
+      error: () => this.toast.error('seatingPage.saveError'),
+    });
+  }
+
+  // ---- the venue's floor plan ----
+
+  protected uploadPlan(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      this.toast.error('seatingPage.planType');
+      return;
+    }
+    if (file.size > PLAN_MAX_BYTES) {
+      this.toast.error('seatingPage.planTooBig');
+      return;
+    }
+    this.planBusy.set(true);
+    this.seatingSvc.uploadFloorPlan(file).subscribe({
+      next: (state) => {
+        this.planBusy.set(false);
+        this.floorPlanUrl.set(state.floorPlanUrl);
+        this.showPlan.set(true);
+        this.toast.success('seatingPage.planAdded');
+      },
+      error: () => {
+        this.planBusy.set(false);
+        this.toast.error('seatingPage.saveError');
+      },
+    });
+  }
+
+  protected askRemovePlan(): void {
+    void this.confirmSvc
+      .confirm({ title: 'seatingPage.planRemoveTitle', body: 'seatingPage.planRemoveBody', confirmLabel: 'seatingPage.planRemove', danger: true })
+      .then((ok) => {
+        if (!ok) return;
+        this.seatingSvc.removeFloorPlan().subscribe({
+          next: (state) => this.floorPlanUrl.set(state.floorPlanUrl),
+          error: () => this.toast.error('seatingPage.saveError'),
+        });
+      });
+  }
+
+  // ---- download, print, share ----
+
+  /** Who sits at each table, in seat order, then the unseated: the printed list and the image's side list. */
+  private seatingList(): { name: string; people: { seat: number; name: string; diet: string | null }[] }[] {
+    return this.tables().map((t) => ({
+      name: t.name,
+      people: this.assignments()
+        .filter((a) => a.tableId === t.id)
+        .sort((a, b) => a.seatIndex - b.seatIndex)
+        .map((a) => ({ seat: a.seatIndex + 1, name: this.attendeeFor(a)?.name ?? '', diet: this.attendeeFor(a)?.diet ?? null })),
+    }));
+  }
+
+  /** The plan as an SVG drawing: floor plan (as a data URL), zones, tables with their seats, names beside. */
+  private async chartSvg(): Promise<{ svg: string; width: number; height: number }> {
+    const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const font = "'Noto Sans Georgian', 'BPG Arial', Sylfaen, 'Segoe UI', sans-serif";
+    let maxX = 600;
+    let maxY = 400;
+    const parts: string[] = [];
+
+    const plan = this.floorPlanUrl();
+    if (plan && this.showPlan()) {
+      const data = await this.imageData(plan);
+      if (data) {
+        parts.push(`<image href="${data.url}" x="0" y="0" width="${PLAN_WIDTH}" height="${(PLAN_WIDTH * data.h) / data.w}" opacity="0.55"/>`);
+        maxX = Math.max(maxX, PLAN_WIDTH);
+        maxY = Math.max(maxY, (PLAN_WIDTH * data.h) / data.w);
+      }
+    }
+
+    for (const o of this.objects()) {
+      const cx = o.positionX + o.width / 2;
+      const cy = o.positionY + o.height / 2;
+      maxX = Math.max(maxX, o.positionX + o.width + 40);
+      maxY = Math.max(maxY, o.positionY + o.height + 40);
+      parts.push(`<g transform="translate(${cx} ${cy}) rotate(${o.rotation})">` +
+        `<rect x="${-o.width / 2}" y="${-o.height / 2}" width="${o.width}" height="${o.height}" rx="10" fill="#F0ECE6" stroke="#6d6868" stroke-dasharray="6 4"/>` +
+        `<text x="0" y="5" text-anchor="middle" font-size="13" fill="#585454" transform="rotate(${-o.rotation})">${esc(this.objectLabel(o))}</text></g>`);
+    }
+
+    for (const t of this.tables()) {
+      const { width, height } = this.tableSize(t);
+      const cx = t.positionX + width / 2;
+      const cy = t.positionY + height / 2;
+      maxX = Math.max(maxX, t.positionX + width + 70);
+      maxY = Math.max(maxY, t.positionY + height + 70);
+      const shape = t.shape === 'round'
+        ? `<ellipse cx="0" cy="0" rx="${width / 2}" ry="${height / 2}" fill="#fff" stroke="#302B2D" stroke-width="2"/>`
+        : `<rect x="${-width / 2}" y="${-height / 2}" width="${width}" height="${height}" rx="12" fill="#fff" stroke="#302B2D" stroke-width="2"/>`;
+      const seats = this.seatIndexes(t).map((i) => {
+        const off = this.seatOffset(t, i);
+        const occ = this.seatOccupant(t.id, i);
+        const who = occ ? this.attendeeFor(occ) : undefined;
+        const initial = who?.name ? esc([...who.name.trim()][0] ?? '') : String(i + 1);
+        return `<circle cx="${off.x}" cy="${off.y}" r="15" fill="${who ? '#302B2D' : '#fff'}" stroke="#302B2D" stroke-width="1.5"/>` +
+          `<text x="${off.x}" y="${off.y + 5}" text-anchor="middle" font-size="13" fill="${who ? '#FAF7F2' : '#6d6868'}" transform="rotate(${-t.rotation} ${off.x} ${off.y})">${initial}</text>`;
+      }).join('');
+      parts.push(`<g transform="translate(${cx} ${cy}) rotate(${t.rotation})">${shape}${seats}` +
+        `<text x="0" y="5" text-anchor="middle" font-size="14" font-weight="600" fill="#302B2D" transform="rotate(${-t.rotation})">${esc(t.name)}</text></g>`);
+    }
+
+    // the names, table by table, to the right of the drawing
+    const listX = maxX + 40;
+    let y = 40;
+    const list: string[] = [];
+    for (const table of this.seatingList()) {
+      list.push(`<text x="${listX}" y="${y}" font-size="16" font-weight="700" fill="#302B2D">${esc(table.name)}</text>`);
+      y += 24;
+      for (const p of table.people) {
+        list.push(`<text x="${listX}" y="${y}" font-size="13" fill="#302B2D">${p.seat}. ${esc(p.name)}${p.diet ? ' · ' + esc(p.diet) : ''}</text>`);
+        y += 19;
+      }
+      y += 14;
+    }
+    const width = listX + 340;
+    const height = Math.max(maxY, y) + 20;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="${font}">` +
+      `<rect width="100%" height="100%" fill="#FAF7F2"/>${parts.join('')}${list.join('')}</svg>`;
+    return { svg, width, height };
+  }
+
+  /** An image as a data URL (so it can be drawn and exported), or null if it can't be read. */
+  private async imageData(url: string): Promise<{ url: string; w: number; h: number } | null> {
+    try {
+      const blob = await (await fetch(url, { mode: 'cors' })).blob();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result));
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+      const img = await this.loadImage(dataUrl);
+      return { url: dataUrl, w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
+    } catch {
+      return null;
+    }
+  }
+
+  private loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  private async chartPng(): Promise<Blob> {
+    const { svg, width, height } = await this.chartSvg();
+    const img = await this.loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0, width, height);
+    return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('png'))), 'image/png'));
+  }
+
+  protected async downloadPng(): Promise<void> {
+    if (!this.isBrowser || this.exporting()) return;
+    this.exporting.set(true);
+    try {
+      const blob = await this.chartPng();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = this.t.instant('seatingPage.fileName') + '.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } catch {
+      this.toast.error('seatingPage.exportError');
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
+  protected async sharePng(): Promise<void> {
+    if (!this.isBrowser || this.exporting()) return;
+    this.exporting.set(true);
+    try {
+      const blob = await this.chartPng();
+      const file = new File([blob], this.t.instant('seatingPage.fileName') + '.png', { type: 'image/png' });
+      await navigator.share({ files: [file], title: this.t.instant('seatingPage.title') });
+    } catch (e) {
+      if ((e as DOMException)?.name !== 'AbortError') this.toast.error('seatingPage.exportError');
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
+  /** The list per table (with dietary needs and the unseated) in a print window: print or save as PDF. */
+  protected printList(): void {
+    if (!this.isBrowser) return;
+    const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const tables = this.seatingList()
+      .map((t) => `<section><h2>${esc(t.name)} <small>${t.people.length}</small></h2><ol>${t.people
+        .map((p) => `<li value="${p.seat}">${esc(p.name)}${p.diet ? ` <em>${esc(p.diet)}</em>` : ''}</li>`)
+        .join('')}</ol></section>`)
+      .join('');
+    const unseated = this.unassignedAttendees();
+    const rest = unseated.length
+      ? `<section><h2>${esc(this.t.instant('seatingPage.unassignedTitle'))} <small>${unseated.length}</small></h2><ul>${unseated
+          .map((a) => `<li>${esc(a.name)}${a.diet ? ` <em>${esc(a.diet)}</em>` : ''}</li>`)
+          .join('')}</ul></section>`
+      : '';
+    const title = esc(this.t.instant('seatingPage.title'));
+    const win = window.open('', '_blank');
+    if (!win) {
+      this.toast.error('seatingPage.exportError');
+      return;
+    }
+    win.document.write(`<!doctype html><html lang="${this.lang.current()}"><head><meta charset="utf-8"><title>${title}</title><style>
+      body{font-family:'Noto Sans Georgian','BPG Arial',Sylfaen,'Segoe UI',sans-serif;color:#302B2D;margin:32px;line-height:1.5}
+      h1{font-size:24px;margin:0 0 4px}p{color:#585454;margin:0 0 24px}
+      main{columns:2 260px;column-gap:40px}section{break-inside:avoid;margin:0 0 20px}
+      h2{font-size:16px;margin:0 0 6px;border-bottom:1px solid #ccc;padding-bottom:4px}h2 small{color:#6d6868;font-weight:400}
+      ol,ul{margin:0;padding-left:22px}li{font-size:14px}em{color:#6d6868;font-style:normal;font-size:12px}
+    </style></head><body><h1>${title}</h1><p>${esc(this.t.instant('seatingPage.printMeta', { tables: this.tables().length, seated: this.totalSeated(), unseated: unseated.length }))}</p><main>${tables}${rest}</main></body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
+  }
+
   protected askRemoveObject(obj: SeatingObject): void {
     void this.confirmSvc
       .confirm({
         title: 'seatingPage.removeObjectTitle',
-        detail: this.t.instant('seatingPage.objectType.' + this.objectKind(obj.type).i18nKey),
+        detail: this.objectLabel(obj),
         confirmLabel: 'seatingPage.removeObject',
         danger: true,
       })

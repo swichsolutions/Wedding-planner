@@ -25,6 +25,24 @@ const angularApp = new AngularNodeAppEngine();
  */
 
 /**
+ * Old article URLs (/guides/<slug>) moved to /guides/blog/<slug> (design-system/PROPOSALS.md
+ * P11). Redirected here, permanently and before Angular: search engines carry the old URL's
+ * standing over, and a missing article still ends as a plain 404 at its new address (inside
+ * Angular, a redirect whose target page answers 404 crashes the SSR response).
+ */
+const GUIDE_SECTIONS = new Set(['blog', 'inspiration', 'real-weddings']);
+app.get('/guides/:slug', (req, res, next) => {
+  const { slug } = req.params;
+  if (GUIDE_SECTIONS.has(slug)) {
+    next();
+    return;
+  }
+  const at = req.originalUrl.indexOf('?');
+  const query = at === -1 ? '' : req.originalUrl.slice(at);
+  res.redirect(301, `/guides/blog/${encodeURIComponent(slug)}${query}`);
+});
+
+/**
  * Serve static files from /browser
  */
 app.use(

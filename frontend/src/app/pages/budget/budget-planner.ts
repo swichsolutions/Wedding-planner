@@ -27,11 +27,14 @@ import {
   Budget,
   BudgetItem,
   BudgetItemUpdate,
+  BudgetPayment,
   BudgetService,
   BudgetVendorRef,
+  leftToPay,
   reminderStatus,
   saveGuestBudgetDraft,
 } from '../../core/budget.service';
+import { formatDate, todayIso } from '../../core/dates';
 import { trapTabKey } from '../../core/a11y';
 import { CATEGORIES, CategoryRef } from '../../core/catalog';
 import { BudgetVendorsService } from '../../core/budget-vendors.service';
@@ -44,17 +47,20 @@ import { WishlistService } from '../../core/wishlist.service';
 import { FeatureLanding } from '../../components/feature-landing/feature-landing';
 import { LanguageService } from '../../i18n/language.service';
 
-type DrawerKind = 'vendor' | 'details';
+type DrawerKind = 'vendor' | 'details' | 'payments';
 type DetailsTrigger = 'bell' | 'note';
 type MoneyField = 'estimate' | 'actualCost' | 'paid';
+/** Typed in directly; paid is the sum of recorded payments. */
+type EditableMoney = 'estimate' | 'actualCost';
 
 const DRAG_HINT_KEY = 'weddingplanner.budget.dragHintSeen';
 
 /**
  * Wedding budget planner. Two modes:
  * - Guest: the SEO-facing estimator (total → suggested split, Georgian norms) + signup CTA.
- * - Couple: the real tracker — server-backed line items (estimate / actual / paid), each
- *   linkable to a directory vendor or a free-text merchant, with notes + payment reminders.
+ * - Couple: the real tracker — server-backed line items (planned / agreed / paid), each
+ *   linkable to a directory vendor or a free-text merchant, with notes, the next payment's due
+ *   date and the payments made (deposit, instalments; B4). Paid is their sum.
  */
 @Component({
   selector: 'app-budget-planner',
@@ -70,7 +76,7 @@ const DRAG_HINT_KEY = 'weddingplanner.budget.dragHintSeen';
   ],
   templateUrl: './budget-planner.html',
   styleUrl: './budget-planner.scss',
-  host: { '(document:keydown.escape)': 'onEscape()' },
+  host: { class: 'theme-brand', '(document:keydown.escape)': 'onEscape()' },
 })
 export class BudgetPlanner {
   private readonly auth = inject(AuthService);
@@ -280,6 +286,14 @@ export class BudgetPlanner {
   protected readonly sumEstimate = computed(() => this.sum('estimate'));
   protected readonly sumActual = computed(() => this.sum('actualCost'));
   protected readonly sumPaid = computed(() => this.sum('paid'));
+  /** Agreed but not yet paid, across all lines. */
+  protected readonly sumLeft = computed(() => this.items().reduce((acc, i) => acc + leftToPay(i), 0));
+  /** The soonest due date on a line that still has something to pay. */
+  protected readonly nextDue = computed(() =>
+    this.items()
+      .filter((i) => i.reminderDate && !this.isPaidUp(i))
+      .sort((a, b) => a.reminderDate!.localeCompare(b.reminderDate!))[0] ?? null,
+  );
   protected readonly overBudget = computed(() => {
     const t = this.total();
     return t !== null && t > 0 && this.sumActual() > t;
@@ -307,6 +321,8 @@ export class BudgetPlanner {
   private rowTrigger: HTMLElement | null = null;
   private prevBodyOverflow: string | null = null;
   private modalWasOpen = false;
+  /** Where focus lands when the popup opens (default: its close button). */
+  private modalFocus: string | null = null;
 
   // ---- vendor picker ----
   protected readonly pickerVendors = signal<Vendor[]>([]);
@@ -406,10 +422,10 @@ export class BudgetPlanner {
         // Save what the lock replaces so nesting with other dialogs can't strand it.
         this.prevBodyOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
-        // setTimeout: the panel renders after this effect runs.
-        setTimeout(() =>
-          (this.host.nativeElement.querySelector('.bmodal__close') as HTMLElement | null)?.focus(),
-        );
+        // setTimeout: the panel renders after this effect runs. Opened for a payment: its amount.
+        const target = this.modalFocus ?? '.bmodal__close';
+        this.modalFocus = null;
+        setTimeout(() => (this.host.nativeElement.querySelector(target) as HTMLElement | null)?.focus());
       } else {
         document.body.style.overflow = this.prevBodyOverflow ?? '';
         this.prevBodyOverflow = null;
@@ -535,7 +551,6 @@ export class BudgetPlanner {
       merchantName: current.merchantName,
       estimate: current.estimate,
       actualCost: current.actualCost,
-      paid: current.paid,
       note: current.note,
       reminderDate: current.reminderDate,
       ...changes,
@@ -597,7 +612,7 @@ export class BudgetPlanner {
     this.patch(item, { name: value });
   }
 
-  protected commitMoney(item: BudgetItem, field: MoneyField, event: Event): void {
+  protected commitMoney(item: BudgetItem, field: EditableMoney, event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
     const value = raw === '' ? null : Math.max(0, Number(raw) || 0);
     if (value === item[field]) return;
@@ -808,6 +823,24 @@ export class BudgetPlanner {
     }
   }
 
+  /** The payments drawer (guided cards): the list, and the form to record one. */
+  protected togglePayments(item: BudgetItem): void {
+    if (this.isDrawerOpen(item, 'payments')) {
+      this.drawer.set(null);
+      return;
+    }
+    this.drawer.set({ id: item.id, kind: 'payments' });
+    this.focusDrawer(`#bpay-amount-g-${item.id}`);
+  }
+
+  /** From the overview table: open the row's popup at its payments. */
+  protected openPayments(item: BudgetItem, event: Event): void {
+    this.rowTrigger = (event.currentTarget as HTMLElement).closest('tr') ?? null;
+    this.drawer.set(null);
+    this.modalFocus = `#bpay-amount-m-${item.id}`;
+    this.modalId.set(item.id);
+  }
+
   /** Bell/note share the details drawer: same icon toggles, the other icon switches. */
   protected toggleDetails(item: BudgetItem, src: DetailsTrigger): void {
     const d = this.drawer();
@@ -887,7 +920,8 @@ export class BudgetPlanner {
 
   /** 'overdue' | 'soon' (≤14 days) | 'later' | null — drives the bell badge. */
   protected reminderState(item: BudgetItem): 'overdue' | 'soon' | 'later' | null {
-    return item.reminderDate ? reminderStatus(item.reminderDate) : null;
+    // Paid in full: nothing is due any more, whatever date is still on the line.
+    return item.reminderDate && !this.isPaidUp(item) ? reminderStatus(item.reminderDate) : null;
   }
 
   // ---- row status signals ----
@@ -913,10 +947,79 @@ export class BudgetPlanner {
     return target !== null && target > 0 && (item.paid === null || item.paid < target);
   }
 
+  /** Records the rest as one payment, dated today. */
   protected markPaidFull(item: BudgetItem): void {
     const target = item.actualCost ?? item.estimate;
     if (target === null || target <= 0) return;
-    this.patch(item, { paid: target });
+    const rest = target - (item.paid ?? 0);
+    if (rest > 0) this.recordPayment(item, rest, todayIso(), null);
+  }
+
+  // ---- payments (B4): a deposit, instalments, the rest ----
+
+  protected readonly paymentBusy = signal<number | null>(null);
+  protected readonly today = todayIso();
+
+  protected leftToPay(item: BudgetItem): number {
+    return leftToPay(item);
+  }
+
+  protected addPayment(item: BudgetItem, amount: HTMLInputElement, date: HTMLInputElement, note: HTMLInputElement): void {
+    const value = Math.round((Number(amount.value) || 0) * 100) / 100;
+    if (value <= 0) {
+      amount.focus();
+      return;
+    }
+    this.recordPayment(item, value, date.value || todayIso(), note.value.trim() || null, () => {
+      amount.value = '';
+      note.value = '';
+      date.value = todayIso();
+    });
+  }
+
+  private recordPayment(item: BudgetItem, amount: number, paidOn: string, note: string | null, done?: () => void): void {
+    if (this.paymentBusy() !== null) return;
+    this.paymentBusy.set(item.id);
+    this.budgetSvc.addPayment(item.id, { amount, paidOn, note }).subscribe({
+      next: (updated) => {
+        this.paymentBusy.set(null);
+        this.applyPayments(updated);
+        done?.();
+        this.toast.success('budgetPage.paymentSaved');
+      },
+      error: () => {
+        this.paymentBusy.set(null);
+        this.toast.error('budgetPage.saveError');
+      },
+    });
+  }
+
+  protected askRemovePayment(item: BudgetItem, payment: BudgetPayment): void {
+    void this.confirmSvc
+      .confirm({
+        title: 'budgetPage.paymentDelete',
+        detail: `${this.format(payment.amount)} · ${this.date(payment.paidOn)}`,
+        confirmLabel: 'budgetPage.delete',
+        danger: true,
+      })
+      .then((ok) => {
+        if (!ok) return;
+        this.budgetSvc.removePayment(item.id, payment.id).subscribe({
+          next: (updated) => this.applyPayments(updated),
+          error: () => this.toast.error('budgetPage.saveError'),
+        });
+      });
+  }
+
+  /** Only the payment fields: a field edit still in flight on the same line keeps its own state. */
+  private applyPayments(updated: BudgetItem): void {
+    this.items.update((list) =>
+      list.map((i) => (i.id === updated.id ? { ...i, paid: updated.paid, payments: updated.payments } : i)),
+    );
+  }
+
+  protected date(iso: string | null): string {
+    return formatDate(iso, this.lang.current(), 'medium');
   }
 
   // =============================== guest estimator ===============================

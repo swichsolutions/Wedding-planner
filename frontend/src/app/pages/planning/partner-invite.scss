@@ -1,0 +1,119 @@
+// The partner invitation page. Brand theme: ivory page, the gold ring as the one visual,
+// peach label, Mt heading, evergreen only on buttons.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pi {
+  display: grid;
+  justify-items: center;
+  max-width: 38rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-4) var(--space-20);
+  text-align: center;
+
+  @include bp.respond-to(md) {
+    padding-top: var(--space-12);
+  }
+}
+
+.pi-ring {
+  width: clamp(11rem, 44vw, 16rem);
+  margin-bottom: calc(-1 * var(--space-2));
+}
+
+.pi-label {
+  margin: 0 0 var(--space-4);
+  padding: 0.5em 1.1em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+}
+
+.pi-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.3rem + 3.4vw, 3.25rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.pi-lead {
+  max-width: 30rem;
+  margin: 0 0 var(--space-8);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--ink-700);
+  text-wrap: balance;
+}
+
+.pi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+
+  &--center {
+    justify-content: center;
+  }
+}
+
+.pi-hint {
+  max-width: 26rem;
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+.pi-card {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  margin: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+  text-align: left;
+}
+
+.pi-h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-medium);
+  line-height: 1.15;
+}
+
+.pi-text {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.pi-quiet {
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: var(--ink);
+  }
+}
+
+.pi-error {
+  margin: var(--space-4) 0 0;
+  color: var(--color-danger-600);
+  line-height: 1.5;
+}

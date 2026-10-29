@@ -9,18 +9,32 @@ import {
   CdkDropList,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { EMPTY, catchError, concatMap, finalize, from, tap } from 'rxjs';
 
 import { focusFirstInvalid } from '../../core/forms';
-import { CATEGORIES } from '../../core/catalog';
+import {
+  CATEGORIES,
+  FEATURES,
+  GroupKey,
+  PRICE_UNITS,
+  REGIONS,
+  SETTINGS,
+  TRAVEL_POLICIES,
+  VENUE_TYPES,
+  categoriesIn,
+  defaultUnit,
+  groupOf,
+  stylesFor,
+} from '../../core/catalog';
 
 import {
   DashboardService,
   InboxMessage,
   VendorDashboard,
+  VendorPackageEdit,
   VendorPhotoAdmin,
   VendorStats,
 } from '../../core/dashboard.service';
@@ -48,6 +62,16 @@ export class Dashboard {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
+  /**
+   * Set on /admin/vendors/:id: an admin edits that vendor (usually an imported profile with no
+   * owner yet). Only the profile and photos show; the inbox and stats stay the vendor's own.
+   */
+  private readonly vendorId: number | undefined = (() => {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    return Number.isInteger(id) && id > 0 ? id : undefined;
+  })();
+  protected readonly adminMode = this.vendorId !== undefined;
+
   protected readonly vendor = signal<VendorDashboard | null>(null);
   protected readonly stats = signal<VendorStats | null>(null);
   protected readonly messages = signal<InboxMessage[]>([]);
@@ -70,7 +94,7 @@ export class Dashboard {
   private pendingOrder: number[] | null = null;
 
   /** Which section of the dashboard shell is showing. */
-  protected readonly activeSection = signal<DashSection>('overview');
+  protected readonly activeSection = signal<DashSection>(this.adminMode ? 'profile' : 'overview');
 
   /** Live unread count (updates on markRead) for the Messages tab badge. */
   protected readonly unreadCount = computed(() => this.messages().filter((m) => !m.isRead).length);
@@ -105,12 +129,64 @@ export class Dashboard {
     phone: ['', [Validators.maxLength(40)]],
     whatsapp: [''],
     mapUrl: ['', [Validators.maxLength(1000)]],
-    areasServed: ['', [Validators.maxLength(500)]],
+    // ---- catalog attributes (PROPOSALS.md P2–P5) ----
+    priceUnit: [''],
+    region: [''],
+    capacityMin: [null as number | null, [Validators.min(1), Validators.max(5000)]],
+    capacityMax: [null as number | null, [Validators.min(1), Validators.max(5000)]],
+    setting: [''],
+    venueType: [''],
+    depositTerms: ['', [Validators.maxLength(200)]],
+    cancellationTerms: ['', [Validators.maxLength(500)]],
+    travelPolicy: [''],
+    bookingLeadTime: ['', [Validators.maxLength(100)]],
+    packages: this.fb.array<FormGroup>([]),
   });
+
+  // Multi-choice attributes, edited as checkbox lists.
+  protected readonly servedRegions = signal<string[]>([]);
+  protected readonly alsoOffers = signal<string[]>([]);
+  protected readonly chosenStyles = signal<string[]>([]);
+  protected readonly chosenFeatures = signal<string[]>([]);
+
+  protected readonly regions = REGIONS;
+  protected readonly priceUnits = PRICE_UNITS;
+  protected readonly settingsList = SETTINGS;
+  protected readonly venueTypes = VENUE_TYPES;
+  protected readonly travelPolicies = TRAVEL_POLICIES;
+  protected readonly maxPackages = 5;
+
+  /** The vendor's catalog group decides which attributes apply (venue fields, styles…). */
+  protected readonly group = computed<GroupKey | null>(() => {
+    const slug = this.vendor()?.categorySlug;
+    return slug ? (groupOf(slug) ?? null) : null;
+  });
+  protected readonly sameGroupCategories = computed(() => {
+    const g = this.group();
+    const own = this.vendor()?.categorySlug;
+    return g ? categoriesIn(g).filter((c) => c.slug !== own) : [];
+  });
+  protected readonly groupStyles = computed(() => {
+    const g = this.group();
+    return g ? stylesFor(g) : [];
+  });
+  protected readonly groupFeatures = computed(() => {
+    const g = this.group();
+    return g ? FEATURES[g] : [];
+  });
+  protected readonly defaultUnit = computed(() => defaultUnit(this.group() ?? undefined));
+  /** Regions offered as "also works in": everything except the vendor's own region. */
+  protected readonly otherRegions = computed(() => REGIONS.filter((r) => r !== this.ownRegion()));
+  /** Mirrors the form's region control (kept in sync by a valueChanges subscription). */
+  private readonly ownRegion = signal('');
+
+  protected get packages(): FormArray<FormGroup> {
+    return this.form.controls.packages;
+  }
 
   constructor() {
     const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('dash.title')} | ${t.instant('brand.name')}`);
+    inject(Title).setTitle(`${t.instant(this.adminMode ? 'dash.adminTitle' : 'dash.title')} | ${t.instant('brand.name')}`);
 
     // Editing any field makes the "Saved" badge a lie — clear it (and the
     // WhatsApp error, which the vendor is presumably correcting) on any change.
@@ -118,17 +194,23 @@ export class Dashboard {
       this.saved.set(false);
       this.whatsappInvalid.set(false);
     });
+    this.form.controls.region.valueChanges.subscribe((r) => {
+      this.ownRegion.set(r ?? '');
+      // The own region can't also be an "also works in" region.
+      if (r) this.servedRegions.update((list) => list.filter((x) => x !== r));
+    });
 
     // Open a specific tab when navigated with ?tab= (e.g. the navbar notification bell → messages).
     this.route.queryParamMap.subscribe((pm) => {
       const tab = pm.get('tab');
-      if (tab === 'overview' || tab === 'profile' || tab === 'photos' || tab === 'messages') {
-        this.activeSection.set(tab);
+      const section = this.sections.find((x) => x === tab);
+      if (section) {
+        this.activeSection.set(section);
       }
     });
 
     if (this.isBrowser) {
-      this.dashboard.getMyVendor().subscribe({
+      this.dashboard.getMyVendor(this.vendorId).subscribe({
         next: (v) => {
           this.vendor.set(v);
           this.form.patchValue({
@@ -142,23 +224,44 @@ export class Dashboard {
             phone: v.phone ?? '',
             whatsapp: v.whatsapp ?? '',
             mapUrl: v.mapUrl ?? '',
-            areasServed: v.areasServed ?? '',
+            // The empty option stands for the group's default unit, which isn't listed again, so
+            // a stored default ("event" for a photographer: imports, the A2 backfill) maps to it.
+            priceUnit: v.priceUnit && v.priceUnit !== this.defaultUnit() ? v.priceUnit : '',
+            region: v.region ?? '',
+            capacityMin: v.capacityMin,
+            capacityMax: v.capacityMax,
+            setting: v.setting ?? '',
+            venueType: v.venueType ?? '',
+            depositTerms: v.depositTerms ?? '',
+            cancellationTerms: v.cancellationTerms ?? '',
+            travelPolicy: v.travelPolicy ?? '',
+            bookingLeadTime: v.bookingLeadTime ?? '',
           });
+          this.servedRegions.set(v.servedRegions ?? []);
+          this.alsoOffers.set(v.alsoOffers ?? []);
+          this.chosenStyles.set(v.styles ?? []);
+          this.chosenFeatures.set(v.features ?? []);
+          this.packages.clear();
+          (v.packages ?? []).forEach((p) => this.addPackage(p));
+          this.form.markAsPristine();
+          this.saved.set(false);
         },
         error: () => this.loadError.set(true),
       });
-      this.dashboard.getStats().subscribe({
-        next: (s) => this.stats.set(s),
-        error: () => this.statsError.set(true),
-      });
-      this.dashboard.getMessages().subscribe({
-        next: (m) => {
-          this.messages.set(m);
-          this.notif.setUnread(m.filter((x) => !x.isRead).length); // keep the navbar badge exact
-        },
-        error: () => this.messagesError.set(true),
-      });
-      this.dashboard.getPhotos().subscribe({
+      if (!this.adminMode) {
+        this.dashboard.getStats().subscribe({
+          next: (s) => this.stats.set(s),
+          error: () => this.statsError.set(true),
+        });
+        this.dashboard.getMessages().subscribe({
+          next: (m) => {
+            this.messages.set(m);
+            this.notif.setUnread(m.filter((x) => !x.isRead).length); // keep the navbar badge exact
+          },
+          error: () => this.messagesError.set(true),
+        });
+      }
+      this.dashboard.getPhotos(this.vendorId).subscribe({
         next: (p) => {
           this.photos.set(p);
           this.lastSavedIds = p.map((x) => x.id);
@@ -181,7 +284,7 @@ export class Dashboard {
     from(files)
       .pipe(
         concatMap((file) =>
-          this.dashboard.uploadPhoto(file).pipe(
+          this.dashboard.uploadPhoto(file, this.vendorId).pipe(
             tap((p) => {
               this.photos.update((list) => [...list, p]);
               this.lastSavedIds = [...this.lastSavedIds, p.id];
@@ -206,7 +309,7 @@ export class Dashboard {
     });
     if (!ok) return;
 
-    this.dashboard.deletePhoto(photo.id).subscribe({
+    this.dashboard.deletePhoto(photo.id, this.vendorId).subscribe({
       next: () => {
         this.photos.update((list) => list.filter((p) => p.id !== photo.id));
         this.lastSavedIds = this.lastSavedIds.filter((id) => id !== photo.id);
@@ -221,7 +324,7 @@ export class Dashboard {
     this.photos.update((list) =>
       list.map((p) => (p.id === photo.id ? { ...p, isRealWedding: next } : p)),
     );
-    this.dashboard.updatePhoto(photo.id, { alt: photo.alt, isRealWedding: next }).subscribe({
+    this.dashboard.updatePhoto(photo.id, { alt: photo.alt, isRealWedding: next }, this.vendorId).subscribe({
       error: () => {
         this.photos.update((list) =>
           list.map((p) => (p.id === photo.id ? { ...p, isRealWedding: photo.isRealWedding } : p)),
@@ -235,7 +338,7 @@ export class Dashboard {
     const input = event.target as HTMLInputElement;
     const alt = input.value.trim();
     if (alt === (photo.alt ?? '')) return;
-    this.dashboard.updatePhoto(photo.id, { alt, isRealWedding: photo.isRealWedding }).subscribe({
+    this.dashboard.updatePhoto(photo.id, { alt, isRealWedding: photo.isRealWedding }, this.vendorId).subscribe({
       next: () =>
         this.photos.update((list) => list.map((p) => (p.id === photo.id ? { ...p, alt } : p))),
       error: () => {
@@ -295,7 +398,7 @@ export class Dashboard {
 
   private sendReorder(ids: number[]): void {
     this.reorderInFlight = true;
-    this.dashboard.reorderPhotos(ids).subscribe({
+    this.dashboard.reorderPhotos(ids, this.vendorId).subscribe({
       next: () => {
         this.lastSavedIds = ids;
         this.finishReorder();
@@ -324,10 +427,41 @@ export class Dashboard {
     if (next) this.sendReorder(next);
   }
 
+  // ---- multi-choice + packages ----
+
+  protected toggleIn(list: 'servedRegions' | 'alsoOffers' | 'chosenStyles' | 'chosenFeatures', value: string): void {
+    this[list].update((items) => (items.includes(value) ? items.filter((x) => x !== value) : [...items, value]));
+    this.saved.set(false);
+  }
+
+  protected addPackage(p?: VendorPackageEdit): void {
+    if (this.packages.length >= this.maxPackages) return;
+    this.packages.push(
+      this.fb.group({
+        name: [p?.name ?? '', [Validators.required, Validators.maxLength(120)]],
+        price: [p?.price ?? (null as number | null), [Validators.min(0)]],
+        priceUnit: [p?.priceUnit ?? ''],
+        included: [p?.included ?? '', [Validators.maxLength(1000)]],
+        duration: [p?.duration ?? '', [Validators.maxLength(60)]],
+      }),
+    );
+  }
+
+  protected removePackage(i: number): void {
+    this.packages.removeAt(i);
+    this.form.markAsDirty();
+  }
+
+  /** Min > max is the one cross-field rule the API also enforces. */
+  protected readonly capacityInvalid = signal(false);
+
   protected save(): void {
-    if (this.form.invalid) {
+    const { capacityMin, capacityMax } = this.form.getRawValue();
+    this.capacityInvalid.set(capacityMin != null && capacityMax != null && capacityMin > capacityMax);
+    if (this.form.invalid || this.capacityInvalid()) {
       this.form.markAllAsTouched();
       focusFirstInvalid(this.host.nativeElement);
+      if (this.capacityInvalid()) (this.host.nativeElement.querySelector('#d-cmin') as HTMLElement | null)?.focus();
       return;
     }
     this.saving.set(true);
@@ -346,8 +480,28 @@ export class Dashboard {
         phone: v.phone,
         whatsapp: v.whatsapp,
         mapUrl: v.mapUrl,
-        areasServed: v.areasServed,
-      })
+        priceUnit: v.priceUnit || null,
+        region: v.region || null,
+        servedRegions: this.servedRegions(),
+        alsoOffers: this.alsoOffers(),
+        styles: this.chosenStyles(),
+        features: this.chosenFeatures(),
+        capacityMin: v.capacityMin,
+        capacityMax: v.capacityMax,
+        setting: v.setting || null,
+        venueType: v.venueType || null,
+        depositTerms: v.depositTerms || null,
+        cancellationTerms: v.cancellationTerms || null,
+        travelPolicy: v.travelPolicy || null,
+        bookingLeadTime: v.bookingLeadTime || null,
+        packages: (v.packages as VendorPackageEdit[]).map((p) => ({
+          name: p.name.trim(),
+          price: p.price,
+          priceUnit: p.priceUnit || null,
+          included: p.included || null,
+          duration: p.duration || null,
+        })),
+      }, this.vendorId)
       .subscribe({
         next: (updated) => {
           this.vendor.set(updated);
@@ -398,8 +552,10 @@ export class Dashboard {
     this.activeSection.set(section);
   }
 
-  /** Tab order for the sidebar tablist's keyboard navigation. */
-  private readonly sections: DashSection[] = ['overview', 'profile', 'photos', 'messages'];
+  /** Tab order for the sidebar tablist's keyboard navigation (an admin sees two of them). */
+  private readonly sections: DashSection[] = this.adminMode
+    ? ['profile', 'photos']
+    : ['overview', 'profile', 'photos', 'messages'];
 
   /**
    * WAI-ARIA tabs pattern (vertical tablist, roving tabindex in the template):

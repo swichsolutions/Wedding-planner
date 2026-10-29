@@ -37,6 +37,7 @@ import { focusFirstInvalid } from '../../core/forms';
             @if (attempted() && form.controls.password.hasError('required')) {
               <span class="auth__err">{{ 'auth.required' | translate }}</span>
             }
+            <a class="auth__forgot" routerLink="/forgot-password">{{ 'auth.forgotPassword' | translate }}</a>
           </div>
           @if (error()) {
             <p class="auth__error" role="alert">{{ 'auth.invalidCredentials' | translate }}</p>

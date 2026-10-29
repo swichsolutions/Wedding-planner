@@ -1,0 +1,153 @@
+<section class="tk container">
+  <header class="tk-head">
+    <div>
+      <h1 class="tk-title">{{ 'tasks.title' | translate }}</h1>
+      @if (loaded()) {
+        <p class="tk-lead">
+          <span class="num">{{ doneCount() }}</span> / <span class="num">{{ items().length }}</span> {{ 'tasks.doneOf' | translate }}
+          @if (overdueCount()) {
+            · <span class="tk-late">{{ 'tasks.overdueCount' | translate: { n: overdueCount() } }}</span>
+          }
+        </p>
+        <div class="tk-bar" role="progressbar" aria-valuemin="0" [attr.aria-valuemax]="items().length"
+          [attr.aria-valuenow]="doneCount()" [attr.aria-label]="'tasks.title' | translate">
+          <span [style.width.%]="items().length ? (doneCount() / items().length) * 100 : 0"></span>
+        </div>
+      }
+      @if (loaded() && !weddingDate()) {
+        <p class="tk-note">
+          {{ 'tasks.noDate' | translate }} <a routerLink="/planning/settings">{{ 'tasks.setDate' | translate }}</a>
+        </p>
+      }
+    </div>
+    @if (loaded()) {
+      <button type="button" class="btn btn--primary" (click)="startAdd()" [disabled]="editing() !== null">
+        {{ 'tasks.add' | translate }}
+      </button>
+    }
+  </header>
+
+  <!-- the add / edit form -->
+  <ng-template #taskForm>
+    <form class="tk-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="tk-field tk-field--wide">
+        <label for="task-title">{{ 'tasks.task' | translate }}</label>
+        <input id="task-title" type="text" formControlName="title" maxlength="300" aria-required="true"
+          [class.is-invalid]="form.controls.title.invalid && form.controls.title.touched"
+          [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched ? 'true' : null" />
+        @if (form.controls.title.invalid && form.controls.title.touched) {
+          <span class="tk-err">{{ 'tasks.titleRequired' | translate }}</span>
+        }
+      </div>
+      <div class="tk-field">
+        <label for="task-stage">{{ 'tasks.stage' | translate }}</label>
+        <select id="task-stage" formControlName="stage">
+          <option value="">{{ 'tasks.stages.none' | translate }}</option>
+          @for (s of stages; track s.key) {
+            <option [value]="s.key">{{ 'tasks.stages.' + s.key | translate }}</option>
+          }
+        </select>
+      </div>
+      <div class="tk-field">
+        <label for="task-due">{{ 'tasks.ownDate' | translate }}</label>
+        <input id="task-due" type="date" formControlName="dueDate" />
+      </div>
+      <div class="tk-field">
+        <label for="task-who">{{ 'tasks.who' | translate }}</label>
+        <input id="task-who" type="text" formControlName="who" maxlength="120" list="task-who-list" />
+        <datalist id="task-who-list">
+          @for (p of people(); track p) {
+            <option [value]="p"></option>
+          }
+        </datalist>
+      </div>
+      <div class="tk-form__actions">
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ 'tasks.save' | translate }}</button>
+        <button type="button" class="tk-quiet" (click)="cancel()">{{ 'tasks.cancel' | translate }}</button>
+      </div>
+    </form>
+  </ng-template>
+
+  @if (loadError()) {
+    <p class="tk-note tk-note--box" role="alert">{{ 'tasks.loadError' | translate }}</p>
+  } @else if (!loaded()) {
+    <span class="skel tk-skel" aria-hidden="true"></span>
+  } @else {
+    @if (editing() === 'new') {
+      <ng-container [ngTemplateOutlet]="taskForm" />
+    }
+
+    <div class="tk-filter" role="group" [attr.aria-label]="'tasks.filterLabel' | translate">
+      @for (f of ['open', 'all', 'done']; track f) {
+        <button type="button" [attr.aria-pressed]="filter() === f" (click)="filter.set($any(f))">
+          {{ 'tasks.filter.' + f | translate }}
+        </button>
+      }
+    </div>
+
+    @for (g of groups(); track g.key) {
+      <section class="tk-stage" [attr.aria-labelledby]="'tk-stage-' + (g.key ?? 'none')">
+        <header class="tk-stage__head">
+          <h2 class="tk-stage__title" [id]="'tk-stage-' + (g.key ?? 'none')">
+            {{ 'tasks.stages.' + (g.key ?? 'none') | translate }}
+          </h2>
+          <span class="tk-stage__meta">
+            @if (stageDate(g.due); as d) {
+              <span>{{ 'tasks.until' | translate: { date: d } }}</span> ·
+            }
+            <span class="num">{{ g.done }}/{{ g.total }}</span>
+          </span>
+        </header>
+
+        <ul class="tk-list" role="list">
+          @for (item of g.tasks; track item.id) {
+            <li class="tk-item" [class.is-done]="item.isDone" [class.is-late]="overdue(item)" [class.is-editing]="editing() === item.id">
+              @if (editing() === item.id) {
+                <ng-container [ngTemplateOutlet]="taskForm" />
+              } @else {
+                <label class="tk-check">
+                  <input type="checkbox" [checked]="item.isDone" (change)="toggle(item)" />
+                  <span class="tk-check__box" aria-hidden="true"></span>
+                  <span class="tk-name">{{ item.title }}</span>
+                </label>
+                <div class="tk-meta">
+                  @if (due(item); as d) {
+                    <span class="tk-due" [class.is-own]="!!item.dueDate">
+                      @if (overdue(item)) {
+                        {{ 'tasks.lateSince' | translate: { date: d } }}
+                      } @else {
+                        {{ d }}
+                      }
+                    </span>
+                  }
+                  @if (item.who) {
+                    <span class="tk-who">{{ item.who }}</span>
+                  }
+                </div>
+                <div class="tk-actions">
+                  @if (link(item); as l) {
+                    <a class="tk-go" [routerLink]="l.route" [queryParams]="l.query ?? null">{{ l.key | translate }} →</a>
+                  }
+                  <button type="button" class="tk-icon" (click)="startEdit(item)" [disabled]="editing() !== null"
+                    [attr.aria-label]="'tasks.edit' | translate: { name: item.title }">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                  </button>
+                  <button type="button" class="tk-icon" (click)="remove(item)" [attr.aria-label]="'tasks.deleteNamed' | translate: { name: item.title }">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /></svg>
+                  </button>
+                </div>
+              }
+            </li>
+          }
+        </ul>
+        <button type="button" class="tk-quiet tk-add-here" (click)="startAdd(g.key)" [disabled]="editing() !== null">
+          + {{ 'tasks.addHere' | translate }}
+        </button>
+      </section>
+    } @empty {
+      <p class="tk-note tk-note--box">
+        {{ (filter() === 'done' ? 'tasks.noneDone' : filter() === 'open' ? 'tasks.allDone' : 'tasks.empty') | translate }}
+      </p>
+    }
+  }
+</section>

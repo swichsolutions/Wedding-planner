@@ -8,6 +8,15 @@ Served as-is at `/media/...`.
   e.g. a stock site's "small"/540p variant, or a clip from a seeded
   videographer. A CSS crossfade montage of three stills runs underneath as the
   fallback while it loads and for reduced-motion users.
+- `gold-ring.webm` — a gold wedding band turning slowly, 5 s loop, 1920×1080, VP9 with a
+  transparent background, no sound (provided 2026-10-27, Downloads/Gold_Ring_Web.webm). Shown by
+  `components/gold-ring` in the home page's final section (above „დაიწყე შენი ქორწილის დაგეგმვა“,
+  replacing the drawn rings), on the welcome form after sign-up and on the partner-invitation
+  page. ~3.6 MB, so the video is fetched only when the ring comes near the screen; the poster
+  shows until then.
+- `gold-ring.webp` — its poster: the centre 1080×1080 of the frame at 3.6 s, 720 px, transparent
+  (webp q86). Shown first, and instead of the video in Safari and iOS browsers (no alpha video)
+  and under reduced motion.
 - `plan-details-3.webp` — background of the third "საიდან დავიწყო?" slide
   ("დაგეგმე დეტალები"), referenced from `startSlides` in `home.ts`. Beka's own
   photo (OneDrive Desktop/9411badc3c9c0017093c677b8c55a4cb.jpg), portrait, only

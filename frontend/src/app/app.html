@@ -1,30 +1,38 @@
 <a class="skip-link" href="#main" (click)="skipToMain($event)">{{ 'common.skipToContent' | translate }}</a>
 
 @if (!chromeless()) {
-<header class="hdr" [class.theme-brand]="onHome()" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled()" [class.is-overlay]="overlay() && !menuOpen()"
+<header class="hdr" [class.theme-brand]="brandChrome()" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled()" [class.is-overlay]="overlay() && !menuOpen()"
   [class.is-hidden]="hidden() && !menuOpen()" [class.is-dark]="navDark() && !menuOpen() && !overlay()">
   <div class="container hdr__bar">
     <a routerLink="/" class="wordmark" translate="no" (click)="closeMenu()">
       {{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
     </a>
 
-    <!-- Sitemap header: four sections, each a dropdown (details on hover / tap). -->
+    <!-- Guide §1 header: three sections. The title opens the section's page; the dropdown
+         (hover on desktop, the arrow button on phones and for keyboards) holds the details. -->
     <nav id="site-nav" class="hdr__nav" [attr.aria-label]="'nav.menu' | translate">
       <ol class="hdr__links">
         @for (g of navGroups; track g.key) {
           <li class="hdr__item" [class.is-open]="openGroup() === g.key"
             (mouseenter)="hoverGroup(g.key)" (mouseleave)="hoverGroup(null)"
             (focusout)="onGroupBlur($event, g.key)">
-            <button type="button" class="hdr__group" [attr.aria-expanded]="openGroup() === g.key"
-              [attr.aria-controls]="'nav-' + g.key" (click)="toggleGroup(g.key)">
-              <span>{{ 'nav.g.' + g.key + '.title' | translate }}</span>
-              <svg class="hdr__chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
+            <div class="hdr__group-row">
+              <a class="hdr__group" [routerLink]="g.link"
+                [routerLinkActive]="g.link === '/' ? [] : 'is-active'" (click)="closeMenu()">
+                {{ 'nav.g.' + g.key + '.title' | translate }}
+              </a>
+              <button type="button" class="hdr__chev-btn" [attr.aria-expanded]="openGroup() === g.key"
+                [attr.aria-controls]="'nav-' + g.key" (click)="toggleGroup(g.key)"
+                [attr.aria-label]="'nav.submenu' | translate: { name: ('nav.g.' + g.key + '.title' | translate) }">
+                <svg class="hdr__chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </div>
             <div class="hdr__panel" [class.hdr__panel--cols]="g.items.length > 6" [id]="'nav-' + g.key">
               <ul class="hdr__panel-list">
                 @for (it of g.items; track it.key) {
                   <li>
-                    <a class="hdr__panel-link" [routerLink]="it.link" [queryParams]="it.query ?? null" (click)="closeMenu()">
+                    <a class="hdr__panel-link" [routerLink]="it.link" [queryParams]="it.query ?? null"
+                      [fragment]="it.fragment" (click)="closeMenu()">
                       <span class="hdr__panel-t">{{ 'nav.g.' + g.key + '.i.' + it.key + '.t' | translate }}</span>
                       <span class="hdr__panel-d">{{ 'nav.g.' + g.key + '.i.' + it.key + '.d' | translate }}</span>
                     </a>
@@ -97,11 +105,14 @@
 }
 
 <main id="main" tabindex="-1">
+  @if (inOrganizer() && auth.isCouple()) {
+    <app-organizer-nav />
+  }
   <router-outlet />
 </main>
 
 @if (!chromeless()) {
-<footer class="ftr" [class.theme-brand]="onHome()">
+<footer class="ftr" [class.theme-brand]="brandChrome()">
   <div class="container ftr__top">
     <div class="ftr__brand">
       <a routerLink="/" class="wordmark wordmark--light" translate="no">
@@ -132,7 +143,7 @@
 </footer>
 }
 
-<!-- overlays opened from the home page follow its brand theme -->
-<app-login-modal [class.theme-brand]="onHome()" />
-<app-confirm-dialog [class.theme-brand]="onHome()" />
-<app-toasts [class.theme-brand]="onHome()" />
+<!-- overlays opened from a brand-themed page follow its theme -->
+<app-login-modal [class.theme-brand]="brandChrome()" />
+<app-confirm-dialog [class.theme-brand]="brandChrome()" />
+<app-toasts [class.theme-brand]="brandChrome()" />

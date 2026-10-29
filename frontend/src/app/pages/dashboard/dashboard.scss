@@ -94,6 +94,17 @@
   color: var(--color-text-secondary);
 }
 
+// an admin editing a vendor's profile (/admin/vendors/:id)
+.dash-admin-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-50);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
 // status chip
 .dash-status {
   display: inline-flex;
@@ -421,6 +432,80 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
+}
+
+// ---- catalog attributes, venue, packages, terms (grouped sets inside the form) ----
+.dash__set {
+  margin: var(--space-6) 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+
+  legend {
+    padding: 0 var(--space-2);
+    font-weight: var(--fw-semibold);
+  }
+}
+
+.dash__hint {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.dash__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.dash__checks-label {
+  flex-basis: 100%;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+}
+
+.dash__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  line-height: 1.4;
+  cursor: pointer;
+
+  input {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+.dash__package {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.dash__link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-caption);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &--danger {
+    color: var(--color-danger-600);
+  }
 }
 
 .dash__saved {

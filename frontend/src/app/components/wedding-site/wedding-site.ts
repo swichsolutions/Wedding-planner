@@ -13,6 +13,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { WeddingSiteData } from '../../core/website.service';
+import { formatDate } from '../../core/dates';
 import { LanguageService } from '../../i18n/language.service';
 
 /** Structural layout archetypes — each theme maps to one. */
@@ -44,11 +45,24 @@ const TEMPLATE_LAYOUTS: Record<string, SiteLayout> = {
   tbilisi: 'postcard',
 };
 
+/** A place on the invitation: the ceremony or the reception. */
+interface InvitePlace {
+  key: 'ceremony' | 'reception';
+  name: string | null;
+  address: string | null;
+  time: string | null;
+  /** The couple's own map link, or a map search for the name and address. */
+  map: string;
+}
+
 /**
- * Renders a couple's wedding site in one of the catalog designs. Designs differ
+ * Renders a couple's invitation (B6; it grew from the wedding website) in one of the catalog designs. Designs differ
  * structurally (5 layout archetypes) as well as in palette/typography. Used at
  * full size by the public /w/{slug} page and the builder's live preview, and in
- * `thumb` mode (hero only) by the design gallery.
+ * `thumb` mode (hero only) by the design gallery. Below the hero come what guests need to
+ * know (places, schedule, details, photos), then projected content: the reply form on a
+ * personal link. Sizes follow the component's own width (container units), so the builder's
+ * phone preview shows the phone layout.
  *
  * Theme palettes are content design (each site's own look), deliberately outside
  * the app's UI tokens — see the theme blocks in the SCSS.
@@ -67,6 +81,9 @@ export class WeddingSite {
   readonly data = input.required<WeddingSiteData>();
   readonly template = input.required<string>();
   readonly thumb = input(false);
+  /** The invitation is the page (/w/…): the names are its h1. Embedded copies (thumbnails,
+   * previews, examples) keep their headings out of the host page's outline. */
+  readonly page = input(false);
 
   protected readonly layout = computed<SiteLayout>(
     () => TEMPLATE_LAYOUTS[this.template()] ?? 'classic',
@@ -90,6 +107,51 @@ export class WeddingSite {
       set('--wsaccent', accentColor);
     });
   }
+
+  /** The couple's choice of typeface for the names; none = the design's own. */
+  protected readonly fontClass = computed(() => {
+    const f = this.data().fontKey;
+    return f ? ` ws--font-${f}` : '';
+  });
+
+  protected readonly places = computed<InvitePlace[]>(() => {
+    const d = this.data();
+    const out: InvitePlace[] = [];
+    const add = (
+      key: InvitePlace['key'],
+      name: string | null,
+      address: string | null,
+      time: string | null,
+      mapUrl: string | null,
+    ): void => {
+      if (!name && !address) return;
+      const query = [name, address].filter(Boolean).join(', ');
+      out.push({
+        key,
+        name,
+        address,
+        time,
+        map: mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`,
+      });
+    };
+    add('ceremony', d.ceremonyName, d.ceremonyAddress, d.ceremonyTime, d.ceremonyMapUrl);
+    add('reception', d.receptionName, d.receptionAddress, d.receptionTime, d.receptionMapUrl);
+    return out;
+  });
+
+  /** Dress code, transport, accommodation: only the ones the couple filled in. */
+  protected readonly notes = computed(() => {
+    const d = this.data();
+    return (
+      [
+        ['dressCode', d.dressCode],
+        ['transport', d.transport],
+        ['accommodation', d.accommodation],
+      ] as const
+    )
+      .filter(([, text]) => !!text)
+      .map(([key, text]) => ({ key, text: text! }));
+  });
 
   protected readonly nameA = computed(() => (this.data().firstName ?? '').trim());
   protected readonly nameB = computed(() => (this.data().partnerFirstName ?? '').trim());
@@ -115,16 +177,8 @@ export class WeddingSite {
     return a || b || '';
   });
 
-  protected readonly dateLine = computed(() => {
-    const date = this.data().weddingDate;
-    if (!date) return '';
-    const parsed = new Date(date + 'T00:00:00');
-    if (Number.isNaN(parsed.getTime())) return '';
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(
-      parsed,
-    );
-  });
+  /** Georgian month names spelled out (browsers don't reliably ship them, see core/dates). */
+  protected readonly dateLine = computed(() => formatDate(this.data().weddingDate, this.lang.current()));
 
   protected readonly daysToGo = computed<number | null>(() => {
     const date = this.data().weddingDate;

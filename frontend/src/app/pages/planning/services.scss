@@ -1,0 +1,611 @@
+// „ჩემი მომსახურებები“ on the brand theme: ivory page, white status panels, Mt headings, Nus
+// text, charcoal status pills (evergreen only on buttons), peach for the small chapter label.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.sv {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 60rem;
+  padding-block: var(--space-10) var(--space-20);
+}
+
+.sv-head {
+  display: grid;
+  gap: var(--space-4);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+
+  > div:first-child {
+    display: grid;
+    gap: var(--space-2);
+  }
+}
+
+.sv-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.sv-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.05;
+}
+
+.sv-lead {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.sv-note {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+
+  &--box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    border-radius: 20px;
+    background: var(--paper-deep);
+    font-size: 1rem;
+  }
+}
+
+.sv-skel {
+  display: block;
+  height: 360px;
+  border-radius: 20px;
+}
+
+.sv-quiet {
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// ---------------------------------------------------------------- empty state
+
+.sv-empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+
+  @include bp.respond-to(md) {
+    padding: var(--space-12) var(--space-10);
+  }
+}
+
+.sv-empty__label {
+  margin: 0;
+  padding: 0.2em 0.75em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+}
+
+.sv-empty__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.15;
+}
+
+.sv-empty__body {
+  max-width: 36rem;
+  margin: 0;
+  line-height: 1.55;
+  color: var(--ink-700);
+}
+
+.sv-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-2);
+}
+
+// ---------------------------------------------------------------- filter
+
+// Phones: the row scrolls sideways instead of wrapping.
+.sv-filter {
+  display: inline-flex;
+  justify-self: start;
+  max-width: 100%;
+  gap: var(--space-1);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--paper-deep);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: none;
+    min-height: 36px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    font-family: var(--font-body);
+    font-size: var(--fs-small);
+    line-height: 1.4;
+    color: var(--ink-700);
+    white-space: nowrap;
+    cursor: pointer;
+
+    .num {
+      color: var(--ink-500);
+    }
+
+    &[aria-pressed='true'] {
+      background: var(--paper-white, #fff);
+      color: var(--ink);
+      box-shadow: 0 1px 2px rgba(34, 30, 32, 0.08);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- the form
+
+.sv-form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.sv-form__hint {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+  grid-column: 1 / -1;
+}
+
+.sv-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+
+  &--wide {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+
+    &.is-invalid {
+      border-color: var(--color-danger-600);
+    }
+  }
+
+  textarea {
+    padding-block: var(--space-2);
+    line-height: 1.45;
+    resize: vertical;
+  }
+}
+
+.sv-amount {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    padding-right: 2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    position: absolute;
+    right: var(--space-3);
+    color: var(--ink-500);
+    pointer-events: none;
+  }
+}
+
+.sv-err {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--color-danger-600);
+}
+
+.sv-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  grid-column: 1 / -1;
+}
+
+// ---------------------------------------------------------------- sections
+
+.sv-section {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+}
+
+.sv-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.sv-section__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.15;
+}
+
+.sv-section__meta {
+  font-size: var(--fs-caption);
+  color: var(--ink-500);
+}
+
+.sv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// ---------------------------------------------------------------- a vendor
+
+.sv-card {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--paper-line);
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 96px 1fr;
+    gap: var(--space-3) var(--space-5);
+  }
+
+  &.is-editing {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+}
+
+.sv-card__editing {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.sv-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--paper-deep);
+
+  @include bp.respond-to(sm) {
+    width: 96px;
+    height: 96px;
+    border-radius: 16px;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  span {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--ink-500);
+  }
+}
+
+.sv-body {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.sv-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+}
+
+.sv-meta {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink-500);
+}
+
+.sv-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+
+  a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--paper-line-strong);
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      text-decoration-color: var(--ink);
+    }
+  }
+}
+
+.sv-offer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.sv-offer__label {
+  font-size: var(--fs-caption);
+  color: var(--ink-500);
+}
+
+.sv-offer__note {
+  font-size: var(--fs-small);
+  color: var(--ink-700);
+}
+
+.sv-text {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+// Under the text: the whole card width on phones, beside the photo from sm up.
+.sv-foot {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+
+  @include bp.respond-to(sm) {
+    grid-column: 2;
+  }
+}
+
+// saved → shortlisted → chosen: a small segmented control, charcoal when set. Three equal parts
+// across the card on phones.
+.sv-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-pill);
+
+  @include bp.respond-to(sm) {
+    display: inline-flex;
+    justify-self: start;
+  }
+
+  button {
+    min-height: 34px;
+    padding: 0 var(--space-3);
+    white-space: nowrap;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    font-family: var(--font-body);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    color: var(--ink-700);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--ink);
+    }
+
+    &[aria-pressed='true'] {
+      background: var(--ink);
+      color: var(--paper);
+    }
+  }
+}
+
+.sv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.sv-actions__icons {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.sv-btn-sm {
+  min-height: 38px;
+  padding-inline: var(--space-4);
+  font-size: var(--fs-small);
+}
+
+.sv-go {
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sv-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-700);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--paper-line-strong);
+    color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+// the agreed price into the budget
+.sv-budget {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border-radius: 16px;
+  background: var(--paper-deep);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sv-budget__title {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.sv-budget__body {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+}

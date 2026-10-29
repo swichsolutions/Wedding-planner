@@ -47,6 +47,14 @@ export function passwordChecks(value: string): PasswordChecks {
   };
 }
 
+/** Group validator: newPassword and confirmPassword must match. Emptiness is left to
+ * Validators.required per field. */
+export function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
+  const np = group.get('newPassword')?.value;
+  const cp = group.get('confirmPassword')?.value;
+  return np && cp && np !== cp ? { mismatch: true } : null;
+}
+
 /** Fails with the list of unmet rule keys; leaves emptiness to Validators.required. */
 export function passwordValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

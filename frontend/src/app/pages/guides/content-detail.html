@@ -1,0 +1,108 @@
+@if (missing()) {
+  <app-not-found />
+} @else if (failed()) {
+  <div class="gd">
+    <p class="gd__note container" role="alert">{{ 'guides.loadError' | translate }}</p>
+  </div>
+} @else if (page(); as p) {
+  <article class="gd cd" [class.cd--idea]="kind === 'inspiration'">
+    <header class="cd__head cd__col">
+      <nav class="gd__crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
+        <a routerLink="/guides">{{ 'guides.hubTitle' | translate }}</a>
+        <span aria-hidden="true">/</span>
+        <a [routerLink]="section">{{ 'guides.' + prefix + 'Title' | translate }}</a>
+      </nav>
+      @if (p.summary.topic) {
+        <a class="cd__topic" [routerLink]="section" [queryParams]="{ topic: p.summary.topic }">
+          {{ 'guides.topics.' + p.summary.topic | translate }}
+        </a>
+      }
+      <h1 class="cd__title">{{ title() }}</h1>
+      @if (excerpt()) {
+        <p class="cd__lead">{{ excerpt() }}</p>
+      }
+      @if (date()) {
+        <p class="cd__date">{{ 'guides.published' | translate }}: <time [attr.datetime]="p.summary.publishedAt">{{ date() }}</time></p>
+      }
+    </header>
+
+    @if (cover() && kind !== 'inspiration') {
+      <figure class="cd__cover container">
+        <img [src]="cover()!.src" [alt]="cover()!.alt" width="1200" height="800" fetchpriority="high" />
+      </figure>
+    }
+
+    @if (kind === 'inspiration' && gallery().length) {
+      <section class="cd__gallery cd__gallery--masonry container" [attr.aria-label]="'guides.galleryTitle' | translate">
+        @for (ph of gallery(); track ph.id; let first = $first) {
+          <figure class="cd__shot">
+            <img [src]="ph.src" [alt]="ph.alt" width="1200" height="1500" [attr.loading]="first ? null : 'lazy'" />
+            @if (canMark()) {
+              <button type="button" class="cd__mark" [class.is-on]="isMarked(ph.id)"
+                [attr.aria-pressed]="isMarked(ph.id)" [disabled]="planPhotos.busy()"
+                (click)="planPhotos.toggle({ contentPhotoId: ph.id })" [attr.title]="'planPhotos.hint' | translate">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 3h12v18l-6-4-6 4z" />
+                </svg>
+                {{ (isMarked(ph.id) ? 'planPhotos.markedLabel' : 'planPhotos.mark') | translate }}
+              </button>
+            }
+          </figure>
+        }
+      </section>
+    }
+
+    @if (html()) {
+      <div class="cd__body cd__col prose" [innerHTML]="html()"></div>
+    }
+
+    @if (kind === 'real-wedding' && gallery().length) {
+      <section class="cd__gallery container" aria-labelledby="cd-gallery">
+        <h2 id="cd-gallery" class="cd__h2 cd__col">{{ 'guides.galleryTitle' | translate }}</h2>
+        <div class="cd__gallery-grid">
+          @for (ph of gallery(); track ph.id) {
+            <img [src]="ph.src" [alt]="ph.alt" width="1200" height="800" loading="lazy" />
+          }
+        </div>
+      </section>
+    }
+
+    @if (credits().length) {
+      <section class="cd__credits cd__col" aria-labelledby="cd-credits">
+        <h2 id="cd-credits" class="cd__h2">{{ 'guides.vendorsTitle' | translate }}</h2>
+        <dl class="cd__credit-list">
+          @for (c of credits(); track $index) {
+            <div class="cd__credit">
+              <dt>{{ c.role }}</dt>
+              <dd>
+                @if (c.vendorPath) {
+                  <a [routerLink]="c.vendorPath">{{ c.name }}</a>
+                } @else {
+                  {{ c.name }}
+                }
+              </dd>
+            </div>
+          }
+        </dl>
+      </section>
+    }
+
+    @if (action(); as a) {
+      <div class="cd__action cd__col">
+        <a class="btn btn--primary btn--lg" [routerLink]="a.tree">{{ a.label }}</a>
+      </div>
+    }
+
+    @if (p.related.length) {
+      <section class="gd__sec container" aria-labelledby="cd-related">
+        <h2 id="cd-related" class="gd__sec-title">{{ 'guides.relatedTitle' | translate }}</h2>
+        <ul class="gd__grid gd__grid--3" role="list">
+          @for (r of p.related; track r.slug) {
+            <li><app-content-card [item]="r" [variant]="kind === 'inspiration' ? 'idea' : kind === 'real-wedding' ? 'story' : 'article'" /></li>
+          }
+        </ul>
+      </section>
+    }
+  </article>
+}

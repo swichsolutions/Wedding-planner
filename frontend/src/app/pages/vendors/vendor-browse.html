@@ -1,50 +1,151 @@
-<section class="browse">
+<section class="cat">
   <div class="container">
-    <header class="browse__head">
-      <h1>{{ 'vendors.title' | translate }}</h1>
-      <p class="browse__sub">{{ 'vendors.subtitle' | translate }}</p>
+    <header class="cat__head">
+      <h1 class="cat__title">
+        {{ (group() ? 'catalog.groups.' + group() : 'vendors.title') | translate }}
+      </h1>
+      <p class="cat__lead">{{ 'vendors.subtitle' | translate }}</p>
+      <form class="cat__search" role="search" (submit)="search($event, q.value)">
+        <label class="cat__search-label" for="cat-q">{{ 'vendors.searchLabel' | translate }}</label>
+        <input id="cat-q" #q type="search" name="q" autocomplete="off" enterkeyhint="search"
+          [value]="filter().q ?? ''" [placeholder]="'vendors.searchPlaceholder' | translate" />
+        <button class="btn btn--primary" type="submit">{{ 'vendors.searchCta' | translate }}</button>
+      </form>
     </header>
 
-    <form class="filters" (submit)="$event.preventDefault()">
-      <div class="filters__field">
-        <label class="filters__label" for="f-cat">{{ 'search.category' | translate }}</label>
-        <select id="f-cat" name="category" autocomplete="off" class="filters__select"
-          [value]="filter().category ?? ''" (change)="onFilterChange('category', $event)">
-          <option value="">{{ 'search.allCategories' | translate }}</option>
-          @for (c of categories; track c.slug) {
-            <option [value]="c.slug">{{ c.key | translate }}</option>
-          }
-        </select>
+    <!-- The 8 groups (guide §4: categories switch the results in place). -->
+    <nav class="cat__groups" [attr.aria-label]="'vendors.groupsLabel' | translate">
+      <a class="cat__group" [routerLink]="[]" [queryParams]="groupParams(null)" [class.is-on]="!group()"
+        [attr.aria-current]="!group() ? 'page' : null">{{ 'vendors.allGroups' | translate }}</a>
+      @for (g of groups; track g) {
+        <a class="cat__group" [routerLink]="[]" [queryParams]="groupParams(g)" [class.is-on]="group() === g"
+          [attr.aria-current]="group() === g ? 'page' : null">{{ 'catalog.groups.' + g | translate }}</a>
+      }
+    </nav>
+
+    @if (subtypes().length > 1) {
+      <nav class="cat__subs" [attr.aria-label]="'catalog.groups.' + group() | translate">
+        <a class="cat__sub" [routerLink]="[]" [queryParams]="categoryParams(null)" [class.is-on]="!filter().category"
+          [attr.aria-current]="!filter().category ? 'page' : null">{{ 'vendors.allInGroup' | translate }}</a>
+        @for (c of subtypes(); track c.slug) {
+          <a class="cat__sub" [routerLink]="[]" [queryParams]="categoryParams(c.slug)"
+            [class.is-on]="filter().category === c.slug"
+            [attr.aria-current]="filter().category === c.slug ? 'page' : null">{{ c.key | translate }}</a>
+        }
+      </nav>
+    }
+
+    <form class="cat__filters" [attr.aria-label]="'vendors.filtersLabel' | translate" (submit)="$event.preventDefault()">
+      <div class="cat__row">
+        <div class="cat__field">
+          <label for="f-region">{{ 'vendors.region' | translate }}</label>
+          <select id="f-region" [value]="filter().region ?? ''" (change)="setParam('region', $event)">
+            <option value="">{{ 'vendors.anyRegion' | translate }}</option>
+            @for (r of regions; track r) {
+              <option [value]="r">{{ 'catalog.regions.' + r | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="cat__field">
+          <label for="f-price">{{ 'vendors.price' | translate }}</label>
+          <select id="f-price" [value]="filter().maxPrice ?? ''" (change)="setParam('maxPrice', $event)">
+            <option value="">{{ 'vendors.anyPrice' | translate }}</option>
+            @for (p of priceBuckets(); track p) {
+              <option [value]="p">≤ {{ formatPrice(p) }} {{ 'catalog.per.' + priceUnit() | translate }}</option>
+            }
+          </select>
+        </div>
+
+        @if (group() === 'venues') {
+          <div class="cat__field">
+            <label for="f-guests">{{ 'vendors.guests' | translate }}</label>
+            <select id="f-guests" [value]="filter().guests ?? ''" (change)="setParam('guests', $event)">
+              <option value="">{{ 'vendors.anyGuests' | translate }}</option>
+              @for (b of guestBuckets; track b) {
+                <option [value]="b">{{ 'catalog.guests.' + b | translate }}</option>
+              }
+            </select>
+          </div>
+          <div class="cat__field">
+            <label for="f-setting">{{ 'vendors.setting' | translate }}</label>
+            <select id="f-setting" [value]="filter().setting ?? ''" (change)="setParam('setting', $event)">
+              <option value="">{{ 'vendors.anySetting' | translate }}</option>
+              @for (s of settings; track s) {
+                @if (s !== 'both') {
+                  <option [value]="s">{{ 'catalog.settings.' + s | translate }}</option>
+                }
+              }
+            </select>
+          </div>
+        }
+
+        @if (styles().length) {
+          <div class="cat__field">
+            <label for="f-style">{{ 'vendors.style' | translate }}</label>
+            <select id="f-style" [value]="filter().styles?.[0] ?? ''" (change)="setParam('styles', $event)">
+              <option value="">{{ 'vendors.anyStyle' | translate }}</option>
+              @for (s of styles(); track s) {
+                <option [value]="s">{{ 'catalog.styles.' + s | translate }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @for (f of primaryFeatures(); track f) {
+          <button type="button" class="cat__toggle" [class.is-on]="isFeatureOn(f)" [attr.aria-pressed]="isFeatureOn(f)"
+            (click)="toggleFeature(f)">{{ 'catalog.features.' + f | translate }}</button>
+        }
+
+        <div class="cat__field cat__field--sort">
+          <label for="f-sort">{{ 'vendors.sort' | translate }}</label>
+          <select id="f-sort" [value]="filter().sort ?? ''" (change)="setParam('sort', $event)">
+            <option value="">{{ 'catalog.sort.recommended' | translate }}</option>
+            <option value="price_asc">{{ 'catalog.sort.price_asc' | translate }}</option>
+            <option value="price_desc">{{ 'catalog.sort.price_desc' | translate }}</option>
+          </select>
+        </div>
       </div>
 
-      <div class="filters__field">
-        <label class="filters__label" for="f-price">{{ 'vendors.price' | translate }}</label>
-        <select id="f-price" name="maxPrice" autocomplete="off" class="filters__select"
-          [value]="filter().maxPrice ?? ''" (change)="onFilterChange('maxPrice', $event)">
-          <option value="">{{ 'vendors.anyPrice' | translate }}</option>
-          @for (p of priceBuckets; track p) {
-            <option [value]="p">≤ {{ formatPrice(p) }}</option>
-          }
-        </select>
-      </div>
+      @if (hasMore()) {
+        <button type="button" class="cat__more-btn" (click)="moreOpen.set(!moreOpen())"
+          [attr.aria-expanded]="moreOpen()" aria-controls="cat-more">
+          {{ (moreOpen() ? 'vendors.lessFilters' : 'vendors.moreFilters') | translate }}
+        </button>
+        @if (moreOpen()) {
+          <div class="cat__more" id="cat-more">
+            @if (group() === 'venues') {
+              <div class="cat__field">
+                <label for="f-vtype">{{ 'vendors.venueType' | translate }}</label>
+                <select id="f-vtype" [value]="filter().venueType ?? ''" (change)="setParam('venueType', $event)">
+                  <option value="">{{ 'vendors.anyVenueType' | translate }}</option>
+                  @for (v of venueTypes; track v) {
+                    <option [value]="v">{{ 'catalog.venueTypes.' + v | translate }}</option>
+                  }
+                </select>
+              </div>
+            }
+            @for (f of moreFeatures(); track f) {
+              <button type="button" class="cat__toggle" [class.is-on]="isFeatureOn(f)" [attr.aria-pressed]="isFeatureOn(f)"
+                (click)="toggleFeature(f)">{{ 'catalog.features.' + f | translate }}</button>
+            }
+          </div>
+        }
+      }
 
       @if (hasFilters()) {
-        <button type="button" class="filters__clear link-arrow" (click)="clearFilters()">
-          {{ 'vendors.clear' | translate }}
-        </button>
+        <button type="button" class="cat__clear" (click)="clearFilters()">{{ 'vendors.clear' | translate }}</button>
       }
     </form>
 
     @if (loadError()) {
-      <div class="browse__empty">
+      <div class="cat__empty">
         <h2>{{ 'vendors.loadErrorTitle' | translate }}</h2>
         <p>{{ 'vendors.loadErrorBody' | translate }}</p>
-        <button type="button" class="btn btn--ghost" (click)="retry()">
-          {{ 'vendors.retry' | translate }}
-        </button>
+        <button type="button" class="btn btn--ghost" (click)="retry()">{{ 'vendors.retry' | translate }}</button>
       </div>
     } @else if (loading()) {
-      <p class="browse__count" aria-hidden="true"><span class="skel skel--text"></span></p>
+      <p class="cat__count" aria-hidden="true"><span class="skel skel--text"></span></p>
       <ul class="vendor-grid" role="list" aria-hidden="true">
         @for (i of skeletons; track i) {
           <li class="skel-card">
@@ -55,20 +156,20 @@
         }
       </ul>
     } @else if (results().length > 0) {
-      <p class="browse__count"><span class="num">{{ results().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
+      <p class="cat__count" role="status"><span class="num">{{ results().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
       <ul class="vendor-grid" role="list">
         @for (v of results(); track v.id) {
           <li><app-vendor-card [vendor]="v" /></li>
         }
       </ul>
     } @else {
-      <p class="browse__count"><span class="num">0</span> {{ 'vendors.countLabel' | translate }}</p>
-      <div class="browse__empty">
+      <p class="cat__count" role="status"><span class="num">0</span> {{ 'vendors.countLabel' | translate }}</p>
+      <div class="cat__empty">
         <h2>{{ 'vendors.emptyTitle' | translate }}</h2>
         <p>{{ 'vendors.emptyBody' | translate }}</p>
-        <button type="button" class="btn btn--ghost" (click)="clearFilters()">
-          {{ 'vendors.clear' | translate }}
-        </button>
+        @if (hasFilters()) {
+          <button type="button" class="btn btn--ghost" (click)="clearFilters()">{{ 'vendors.clear' | translate }}</button>
+        }
       </div>
     }
   </div>

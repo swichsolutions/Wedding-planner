@@ -1,0 +1,360 @@
+@if (!editing()) {
+  <!-- ======================= list ======================= -->
+  <div class="ac-bar">
+    <div class="ac-filter" role="group" [attr.aria-label]="'adminContent.filterLabel' | translate">
+      <button type="button" (click)="filter.set('all')" [attr.aria-pressed]="filter() === 'all'">
+        {{ 'adminContent.filterAll' | translate }}
+      </button>
+      @for (k of kinds; track k) {
+        <button type="button" (click)="filter.set(k)" [attr.aria-pressed]="filter() === k">
+          {{ 'adminContent.kind.' + k | translate }}
+        </button>
+      }
+    </div>
+    <div class="ac-new">
+      <label for="ac-new-type">{{ 'adminContent.newLabel' | translate }}</label>
+      <select id="ac-new-type" #newType>
+        @for (k of kinds; track k) {
+          <option [value]="k">{{ 'adminContent.kind.' + k | translate }}</option>
+        }
+      </select>
+      <button type="button" class="btn btn--primary" (click)="startNew($any(newType.value))">
+        {{ 'adminContent.create' | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (loadError()) {
+    <div class="ac-error" role="alert">
+      {{ 'dash.loadError' | translate }}
+      <button type="button" class="btn btn--ghost" (click)="load()">{{ 'vendors.retry' | translate }}</button>
+    </div>
+  } @else if (loading()) {
+    <p class="ac-muted">{{ 'common.loading' | translate }}</p>
+  } @else if (visibleRows().length === 0) {
+    <p class="ac-muted">{{ 'adminContent.empty' | translate }}</p>
+  } @else {
+    <ul class="ac-list" role="list">
+      @for (r of visibleRows(); track r.id) {
+        <li>
+          <button type="button" class="ac-row" (click)="open(r)">
+            <span class="ac-row__main">
+              <strong class="ac-row__title">{{ r.titleKa }}</strong>
+              <span class="ac-row__sub">
+                {{ 'adminContent.kind.' + r.type | translate }}
+                @if (r.topic) { · {{ 'guides.topics.' + r.topic | translate }} }
+                · {{ 'adminContent.photoCount' | translate: { n: r.photoCount } }}
+                @if (r.updatedAt) { · {{ 'adminContent.updated' | translate }} {{ formatDate(r.updatedAt) }} }
+              </span>
+            </span>
+            <span class="ac-status" [class.is-live]="r.isPublished">
+              {{ (r.isPublished ? 'adminContent.statusPublished' : 'adminContent.statusDraft') | translate }}
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+} @else {
+  <!-- ======================= editor ======================= -->
+  <form class="ac-editor" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="ac-editor__head">
+      <button type="button" class="ac-link" (click)="back()">← {{ 'adminContent.back' | translate }}</button>
+      <h2>{{ (current() ? 'adminContent.editTitle' : 'adminContent.newTitle') | translate }}</h2>
+    </div>
+
+    <!-- ---- basics ---- -->
+    <fieldset class="ac-card">
+      <legend>{{ 'adminContent.basics' | translate }}</legend>
+
+      <div class="ac-grid">
+        <div class="ac-field">
+          <label for="ac-type">{{ 'adminContent.fType' | translate }}</label>
+          @if (current()) {
+            <p class="ac-static" id="ac-type">{{ 'adminContent.kind.' + kind() | translate }}</p>
+            <span class="ac-hint">{{ 'adminContent.typeLocked' | translate }}</span>
+          } @else {
+            <select id="ac-type" formControlName="type">
+              @for (k of kinds; track k) {
+                <option [value]="k">{{ 'adminContent.kind.' + k | translate }}</option>
+              }
+            </select>
+          }
+        </div>
+
+        @if (topics().length) {
+          <div class="ac-field">
+            <label for="ac-topic">{{ 'adminContent.fTopic' | translate }}</label>
+            <select id="ac-topic" formControlName="topic">
+              <option value="">{{ 'adminContent.noTopic' | translate }}</option>
+              @for (t of topics(); track t) {
+                <option [value]="t">{{ 'guides.topics.' + t | translate }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="ac-field">
+        <label for="ac-title-ka">{{ 'adminContent.fTitleKa' | translate }} *</label>
+        <input id="ac-title-ka" type="text" formControlName="titleKa" aria-required="true"
+          [attr.aria-invalid]="showError('titleKa') ? 'true' : null" />
+        @if (showError('titleKa')) {
+          <span class="auth__err">{{ 'auth.required' | translate }}</span>
+        }
+      </div>
+      <div class="ac-field">
+        <label for="ac-title-en">{{ 'adminContent.fTitleEn' | translate }}</label>
+        <input id="ac-title-en" type="text" formControlName="titleEn" lang="en" />
+      </div>
+
+      <div class="ac-field">
+        @if (kind() === 'legal') {
+          <label for="ac-slug">{{ 'adminContent.fLegalSlug' | translate }}</label>
+          <select id="ac-slug" formControlName="slug">
+            @for (s of legalSlugs; track s) {
+              <option [value]="s">{{ 'adminContent.legal.' + s | translate }} (/{{ s }})</option>
+            }
+          </select>
+        } @else {
+          <label for="ac-slug">{{ 'adminContent.fSlug' | translate }}</label>
+          <input id="ac-slug" type="text" formControlName="slug" spellcheck="false" lang="en"
+            aria-describedby="ac-slug-hint" [attr.aria-invalid]="showError('slug') ? 'true' : null" />
+          <span class="ac-hint" id="ac-slug-hint">{{ 'adminContent.slugHint' | translate }}</span>
+          @if (showError('slug')) {
+            <span class="auth__err">{{ 'adminContent.errors.invalid_slug' | translate }}</span>
+          }
+        }
+        @if (current(); as page) {
+          <span class="ac-hint">
+            {{ 'adminContent.publicPath' | translate }}:
+            @if (page.isPublished) {
+              <a class="ac-public" [href]="page.publicPath" target="_blank" rel="noopener">{{ page.publicPath }}</a>
+            } @else {
+              <code>{{ page.publicPath }}</code> ({{ 'adminContent.statusDraft' | translate }})
+            }
+          </span>
+        }
+      </div>
+    </fieldset>
+
+    <!-- ---- text ---- -->
+    <fieldset class="ac-card">
+      <legend>{{ 'adminContent.textTitle' | translate }}</legend>
+
+      <div class="ac-field">
+        <label for="ac-excerpt-ka">{{ 'adminContent.fExcerptKa' | translate }}</label>
+        <textarea id="ac-excerpt-ka" rows="2" formControlName="excerptKa" aria-describedby="ac-excerpt-hint"></textarea>
+        <span class="ac-hint" id="ac-excerpt-hint">{{ 'adminContent.excerptHint' | translate }}</span>
+      </div>
+      <div class="ac-field">
+        <label for="ac-excerpt-en">{{ 'adminContent.fExcerptEn' | translate }}</label>
+        <textarea id="ac-excerpt-en" rows="2" formControlName="excerptEn" lang="en"></textarea>
+      </div>
+
+      <div class="ac-field">
+        <div class="ac-field__row">
+          <label for="ac-body-ka">{{ 'adminContent.fBodyKa' | translate }}</label>
+          <button type="button" class="ac-link" (click)="previewKa.set(!previewKa())" [attr.aria-pressed]="previewKa()">
+            {{ (previewKa() ? 'adminContent.editText' : 'adminContent.preview') | translate }}
+          </button>
+        </div>
+        @if (previewKa()) {
+          <div class="ac-preview prose" [innerHTML]="preview('ka')"></div>
+        } @else {
+          <textarea id="ac-body-ka" rows="16" formControlName="bodyKa" class="ac-mono"
+            aria-describedby="ac-body-hint"></textarea>
+        }
+        <span class="ac-hint" id="ac-body-hint">{{ 'adminContent.bodyHint' | translate }}</span>
+      </div>
+
+      <div class="ac-field">
+        <div class="ac-field__row">
+          <label for="ac-body-en">{{ 'adminContent.fBodyEn' | translate }}</label>
+          <button type="button" class="ac-link" (click)="previewEn.set(!previewEn())" [attr.aria-pressed]="previewEn()">
+            {{ (previewEn() ? 'adminContent.editText' : 'adminContent.preview') | translate }}
+          </button>
+        </div>
+        @if (previewEn()) {
+          <div class="ac-preview prose" lang="en" [innerHTML]="preview('en')"></div>
+        } @else {
+          <textarea id="ac-body-en" rows="8" formControlName="bodyEn" class="ac-mono" lang="en"></textarea>
+        }
+      </div>
+    </fieldset>
+
+    <!-- ---- photos ---- -->
+    <fieldset class="ac-card">
+      <legend>{{ 'adminContent.photosTitle' | translate }}</legend>
+      @if (!current()) {
+        <p class="ac-muted">{{ 'adminContent.photosSaveFirst' | translate }}</p>
+      } @else {
+        <p class="ac-hint">{{ 'adminContent.photosHint' | translate }}</p>
+        <label class="btn btn--ghost ac-upload">
+          {{ 'adminContent.photosAdd' | translate }}
+          <input type="file" accept="image/jpeg,image/png,image/webp" multiple (change)="upload($event)" />
+        </label>
+        @if (uploading() > 0) {
+          <p class="ac-muted" role="status">{{ 'adminContent.uploading' | translate: { n: uploading() } }}</p>
+        }
+        <ul class="ac-photos" role="list">
+          @for (p of photos(); track p.id; let i = $index, last = $last) {
+            <li class="ac-photo">
+              <div class="ac-photo__img">
+                <img [src]="p.url" [alt]="p.altKa" loading="lazy" />
+                @if (i === 0) { <span class="ac-photo__cover">{{ 'adminContent.cover' | translate }}</span> }
+              </div>
+              <div class="ac-photo__fields">
+                <label [for]="'ac-alt-ka-' + p.id">{{ 'adminContent.altKa' | translate }}</label>
+                <input [id]="'ac-alt-ka-' + p.id" type="text" maxlength="300" #altKa [value]="p.altKa"
+                  (blur)="saveAlt(p, altKa.value, altEn.value)" />
+                <label [for]="'ac-alt-en-' + p.id">{{ 'adminContent.altEn' | translate }}</label>
+                <input [id]="'ac-alt-en-' + p.id" type="text" maxlength="300" lang="en" #altEn [value]="p.altEn ?? ''"
+                  (blur)="saveAlt(p, altKa.value, altEn.value)" />
+              </div>
+              <div class="ac-photo__actions">
+                <button type="button" class="ac-link" (click)="insertPhoto(p)">{{ 'adminContent.insert' | translate }}</button>
+                <button type="button" class="ac-icon" (click)="movePhoto(i, -1)" [disabled]="i === 0"
+                  [attr.aria-label]="'adminContent.moveUp' | translate">↑</button>
+                <button type="button" class="ac-icon" (click)="movePhoto(i, 1)" [disabled]="last"
+                  [attr.aria-label]="'adminContent.moveDown' | translate">↓</button>
+                <button type="button" class="ac-link ac-link--danger" (click)="deletePhoto(p)">
+                  {{ 'adminContent.photoDelete' | translate }}
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </fieldset>
+
+    <!-- ---- real wedding: credits + consent ---- -->
+    @if (kind() === 'real-wedding') {
+      <fieldset class="ac-card">
+        <legend>{{ 'adminContent.creditsTitle' | translate }}</legend>
+        <p class="ac-hint">{{ 'adminContent.creditsHint' | translate }}</p>
+        <div formArrayName="credits" class="ac-credits">
+          @for (c of credits.controls; track c; let i = $index, last = $last) {
+            <div class="ac-credit" [formGroupName]="i">
+              <div class="ac-field">
+                <label [for]="'ac-cr-role-' + i">{{ 'adminContent.creditRoleKa' | translate }} *</label>
+                <input [id]="'ac-cr-role-' + i" type="text" formControlName="roleKa" aria-required="true" />
+              </div>
+              <div class="ac-field">
+                <label [for]="'ac-cr-role-en-' + i">{{ 'adminContent.creditRoleEn' | translate }}</label>
+                <input [id]="'ac-cr-role-en-' + i" type="text" formControlName="roleEn" lang="en" />
+              </div>
+              <div class="ac-field">
+                <label [for]="'ac-cr-vendor-' + i">{{ 'adminContent.creditVendor' | translate }}</label>
+                <select [id]="'ac-cr-vendor-' + i" formControlName="vendorId" (change)="onCreditVendor(i)">
+                  <option value="">{{ 'adminContent.creditNotOnPlatform' | translate }}</option>
+                  @for (v of vendors(); track v.id) {
+                    <option [value]="'' + v.id">{{ v.name }} · {{ v.city }}</option>
+                  }
+                </select>
+              </div>
+              <div class="ac-field">
+                <label [for]="'ac-cr-name-' + i">{{ 'adminContent.creditName' | translate }}</label>
+                <input [id]="'ac-cr-name-' + i" type="text" formControlName="name" />
+              </div>
+              <div class="ac-credit__actions">
+                <button type="button" class="ac-icon" (click)="moveCredit(i, -1)" [disabled]="i === 0"
+                  [attr.aria-label]="'adminContent.moveUp' | translate">↑</button>
+                <button type="button" class="ac-icon" (click)="moveCredit(i, 1)" [disabled]="last"
+                  [attr.aria-label]="'adminContent.moveDown' | translate">↓</button>
+                <button type="button" class="ac-link ac-link--danger" (click)="removeCredit(i)">
+                  {{ 'adminContent.creditRemove' | translate }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn--ghost" (click)="addCredit()">{{ 'adminContent.creditAdd' | translate }}</button>
+
+        <div class="ac-field ac-consent">
+          <label for="ac-consent">{{ 'adminContent.consentTitle' | translate }}</label>
+          <textarea id="ac-consent" rows="2" formControlName="consentNote" aria-describedby="ac-consent-hint"></textarea>
+          <span class="ac-hint" id="ac-consent-hint">{{ 'adminContent.consentHint' | translate }}</span>
+        </div>
+      </fieldset>
+    }
+
+    <!-- ---- related action ---- -->
+    @if (kind() !== 'legal') {
+      <fieldset class="ac-card">
+        <legend>{{ 'adminContent.actionTitle' | translate }}</legend>
+        <p class="ac-hint">{{ 'adminContent.actionHint' | translate }}</p>
+        <div class="ac-field">
+          <label for="ac-action">{{ 'adminContent.actionPick' | translate }}</label>
+          <select id="ac-action" formControlName="actionPreset">
+            <option value="">{{ 'adminContent.actionNone' | translate }}</option>
+            <optgroup [label]="'adminContent.actionTools' | translate">
+              @for (p of toolPresets; track p.id) {
+                <option [value]="p.id">{{ p.labelKa }}</option>
+              }
+            </optgroup>
+            <optgroup [label]="'adminContent.actionCategories' | translate">
+              @for (p of categoryPresets; track p.id) {
+                <option [value]="p.id">{{ p.labelKa }}</option>
+              }
+            </optgroup>
+            <option value="custom">{{ 'adminContent.actionCustom' | translate }}</option>
+          </select>
+        </div>
+        @if (form.controls.actionPreset.value) {
+          <div class="ac-grid">
+            <div class="ac-field">
+              <label for="ac-action-path">{{ 'adminContent.fActionPath' | translate }}</label>
+              <input id="ac-action-path" type="text" formControlName="actionPath" spellcheck="false" lang="en" />
+            </div>
+            <div class="ac-field">
+              <label for="ac-action-ka">{{ 'adminContent.fActionLabelKa' | translate }}</label>
+              <input id="ac-action-ka" type="text" formControlName="actionLabelKa" />
+            </div>
+            <div class="ac-field">
+              <label for="ac-action-en">{{ 'adminContent.fActionLabelEn' | translate }}</label>
+              <input id="ac-action-en" type="text" formControlName="actionLabelEn" lang="en" />
+            </div>
+          </div>
+        }
+      </fieldset>
+    }
+
+    <!-- ---- search ---- -->
+    <fieldset class="ac-card">
+      <legend>{{ 'adminContent.seoTitle' | translate }}</legend>
+      <div class="ac-field">
+        <label for="ac-meta-ka">{{ 'adminContent.fMetaKa' | translate }}</label>
+        <textarea id="ac-meta-ka" rows="2" formControlName="metaDescriptionKa" aria-describedby="ac-meta-hint"></textarea>
+        <span class="ac-hint" id="ac-meta-hint">
+          {{ 'adminContent.metaHint' | translate: { n: form.controls.metaDescriptionKa.value.length } }}
+        </span>
+      </div>
+      <div class="ac-field">
+        <label for="ac-meta-en">{{ 'adminContent.fMetaEn' | translate }}</label>
+        <textarea id="ac-meta-en" rows="2" formControlName="metaDescriptionEn" lang="en"></textarea>
+      </div>
+    </fieldset>
+
+    <!-- ---- save bar ---- -->
+    <div class="ac-savebar">
+      <label class="ac-publish">
+        <input type="checkbox" formControlName="isPublished" />
+        <span>{{ 'adminContent.fPublished' | translate }}</span>
+      </label>
+      @if (errorKey()) {
+        <p class="auth__error ac-savebar__error" role="alert">{{ errorKey()! | translate }}</p>
+      }
+      <div class="ac-savebar__actions">
+        @if (current()) {
+          <button type="button" class="ac-link ac-link--danger" (click)="remove()">
+            {{ 'adminContent.deletePage' | translate }}
+          </button>
+        }
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">
+          {{ (saving() ? 'adminContent.saving' : 'adminContent.save') | translate }}
+        </button>
+      </div>
+    </div>
+  </form>
+}

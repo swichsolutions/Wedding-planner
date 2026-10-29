@@ -31,6 +31,8 @@ import { ContactForm } from '../../components/contact-form/contact-form';
 import { BudgetVendorsService } from '../../core/budget-vendors.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
+import { WishlistService } from '../../core/wishlist.service';
+import { MARKABLE_CATEGORIES, PlanPhotosService } from '../../core/plan-photos.service';
 
 const JSON_LD_ID = 'vendor-jsonld';
 
@@ -39,6 +41,7 @@ type LoadParams = { category: string; city: string; slug: string };
 @Component({
   selector: 'app-vendor-profile',
   imports: [RouterLink, TranslatePipe, ContactForm],
+  host: { class: 'theme-brand' },
   templateUrl: './vendor-profile.html',
   styleUrl: './vendor-profile.scss',
 })
@@ -50,6 +53,17 @@ export class VendorProfile implements OnDestroy {
   private readonly reviewSvc = inject(ReviewService);
   protected readonly auth = inject(AuthService);
   protected readonly budgetVendors = inject(BudgetVendorsService);
+  protected readonly wishlist = inject(WishlistService);
+  protected readonly planPhotos = inject(PlanPhotosService);
+
+  /** Couples can mark venue, décor, flower, rental and cake photos for their banner (B7). */
+  protected readonly canMark = computed(
+    () => this.auth.isCouple() && MARKABLE_CATEGORIES.includes(this.vendor()?.categorySlug ?? ''),
+  );
+
+  protected isMarked(photoId: number): boolean {
+    return !!this.planPhotos.markedVendorPhoto(photoId);
+  }
   private readonly confirmSvc = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly title = inject(Title);
@@ -336,6 +350,40 @@ export class VendorProfile implements OnDestroy {
     return new Intl.NumberFormat(locale).format(amount) + ' ₾';
   }
 
+  /** „შეინახე ჩემს ქორწილში" (guide §4): saving is a couple-account feature, so anyone else
+   * goes to sign-up first and comes back here. Saving never means booked. */
+  protected toggleSave(v: Vendor): void {
+    if (!this.auth.isCouple()) {
+      // Back here after sign-up, with the vendor saved (WishlistService.rememberSave).
+      this.wishlist.rememberSave(v.id);
+      this.router.navigate(['/signup'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    this.wishlist.toggle(v.id);
+  }
+
+  /** Package "what's included": one item per line. */
+  protected lines(text: string | null): string[] {
+    return (text ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+  }
+
+  /** The profile's facts block has something to show (region, venue facts, styles…). */
+  protected hasDetails(v: Vendor): boolean {
+    return !!(v.region || v.servedRegions.length || v.alsoOffers.length || v.styles.length ||
+      v.features.length || v.capacityMax || v.setting || v.venueType);
+  }
+
+  protected catKey(slug: string): string {
+    return categoryKey(slug);
+  }
+
+  /** "სიღნაღი, კახეთი" — but just "თბილისი" when the city and the region are the same. */
+  protected locationLabel(v: Vendor): string {
+    const region = v.region ? this.translate.instant(`catalog.regions.${v.region}`) : '';
+    if (!v.city) return region;
+    return region && region !== v.city ? `${v.city}, ${region}` : v.city;
+  }
+
   // ---- reviews ----
   private loadReviews(vendorId: number): void {
     // This subscription lives outside the main switchMap, so a vendor→vendor
@@ -480,6 +528,25 @@ export class VendorProfile implements OnDestroy {
       },
       priceRange: v.priceRange,
       telephone: v.phone,
+      // Where they work: their own region plus the ones they travel to (real data only).
+      ...((v.region || v.servedRegions.length)
+        ? {
+            areaServed: [v.region, ...v.servedRegions]
+              .filter((r): r is string => !!r)
+              .map((r) => ({ '@type': 'AdministrativeArea', name: this.translate.instant(`catalog.regions.${r}`) })),
+          }
+        : {}),
+      // Packages as offers, so search engines see what's sold and from what price.
+      ...(v.packages.length
+        ? {
+            makesOffer: v.packages.map((p) => ({
+              '@type': 'Offer',
+              name: p.name,
+              ...(p.price ? { price: p.price, priceCurrency: 'GEL' } : {}),
+              ...(p.included ? { description: this.lines(p.included).join('; ') } : {}),
+            })),
+          }
+        : {}),
       ...(v.reviewCount
         ? {
             aggregateRating: {

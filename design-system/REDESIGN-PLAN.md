@@ -1,5 +1,10 @@
 # Redesign plan — from the Georgian sitemap (2026-10-07)
 
+> **Superseded in part (2026-10-21):** the newer guide and the decisions on it live in
+> `BUILD-PLAN.md`. In particular: no `/plan` page (step 2 cancelled), no „ჩემი ქორწილი" header
+> group, and the „დაგეგმე ქორწილი" dropdown is დღის განრიგები · მოსაწვევები. Where this file
+> disagrees with BUILD-PLAN, BUILD-PLAN wins.
+
 > Source of truth: `Wedding_Planner_Sitemap_GE_Updated.docx` on the user's Desktop (OneDrive).
 > The user will keep editing it. When it changes, re-read it and update this file — do not
 > carry old decisions forward silently.

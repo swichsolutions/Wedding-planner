@@ -32,9 +32,15 @@ public class MessagesController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.SenderEmail) && string.IsNullOrWhiteSpace(dto.SenderPhone))
             return BadRequest("Provide an email or phone so the vendor can reply.");
 
-        var vendorExists = await _db.Vendors.AnyAsync(v => v.Id == dto.VendorId && v.IsApproved);
-        if (!vendorExists)
+        var vendor = await _db.Vendors
+            .Where(v => v.Id == dto.VendorId && v.IsApproved)
+            .Select(v => new { HasOwner = _db.Users.Any(u => u.VendorId == v.Id) })
+            .FirstOrDefaultAsync();
+        if (vendor is null)
             return NotFound();
+        // An imported profile has no account to read the inbox yet: a message would go unread.
+        if (!vendor.HasOwner)
+            return Conflict("This vendor doesn't take messages here yet. Use their phone or links.");
 
         _db.Messages.Add(new Message
         {

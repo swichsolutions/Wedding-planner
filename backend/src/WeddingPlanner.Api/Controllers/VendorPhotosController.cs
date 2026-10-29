@@ -11,7 +11,8 @@ namespace WeddingPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/vendor/me/photos")]
-[Authorize(Roles = Roles.Vendor)]
+[Route("api/admin/vendors/{vendorId:int}/photos")]
+[Authorize(Roles = Roles.Vendor + "," + Roles.Admin)]
 public class VendorPhotosController : ControllerBase
 {
     private const int MaxPhotos = 20;
@@ -29,8 +30,8 @@ public class VendorPhotosController : ControllerBase
         _logger = logger;
     }
 
-    private int? VendorId =>
-        int.TryParse(User.FindFirst("vendorId")?.Value, out var id) ? id : null;
+    /// <summary>The vendor's own photos, or any vendor's for an admin on the admin route.</summary>
+    private int? VendorId => VendorScope.Resolve(User, RouteData);
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VendorPhotoAdminDto>>> List()

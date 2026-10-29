@@ -12,6 +12,10 @@ dist/
 *.log
 npm-debug.log*
 
+# ---- Local uploads ----
+# Photos stored on disk when Cloudinary isn't configured (dev, tests) — user content, not source.
+backend/src/WeddingPlanner.Api/uploads/
+
 # ---- Secrets / local config ----
 # Dev connection string (contains the ipsum_app password) — never commit.
 **/appsettings.Development.json

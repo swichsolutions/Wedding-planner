@@ -148,15 +148,22 @@ header, footer and overlays. New or redesigned pages should follow the same rule
   still lists the older "Program on Paper" palette; its colours and fonts are superseded.
 
 ### Site structure (information architecture)
-Source of truth: Beka's Georgian sitemap (`Wedding_Planner_Sitemap_GE_Updated.docx`, not in the
-repo), condensed in `design-system/REDESIGN-PLAN.md`. Check new pages and nav changes against it.
+Source of truth: the Georgian guide `Wedding Planner Guide final.docx` (Taso, 2026-10-15, not in
+the repo; it replaces the earlier sitemap docx). Its plan, the decisions taken on it (2026-10-21)
+and progress live in `design-system/BUILD-PLAN.md`; the approved detail (categories, filters,
+schedules, tasks, URLs) in `design-system/PROPOSALS.md`. `REDESIGN-PLAN.md` is the older
+condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav changes against these.
 - `/` is the public landing page and is the **same for everyone**, signed in or not. It is
   server-rendered, and the server can't see who is signed in. Never branch it on auth.
-- The couple's organizer ("ჩემი ქორწილი", sitemap §06) lives at **`/planning`**. Its top is the
-  overview dashboard (`pages/planning/couple-overview`), then payments, then the checklist.
-  Dashboard and organizer work goes there. Budget/guests/seating/website are its sub-tools.
-- Header: logo, three section menus + "ჩემი ქორწილი" group, sign in, and a CTA ("დაიწყე
-  დაგეგმვა", which becomes "ჩემი გეგმა" after sign-in). Couples who sign in on `/` land on
+- The couple's organizer ("ჩემი ქორწილი", sitemap §06) lives at **`/planning`**. It is the
+  overview (`pages/planning/couple-overview`, B7): the personal banner, the next step, and one block
+  per tool, tasks and payments included.
+  Dashboard and organizer work goes there. Budget/guests/seating are its sub-tools, and so is
+  the invitation (`/planning/invitation`; guests open it at `/w/<slug>`).
+- Header: logo, three section menus, sign in, and a CTA ("დაიწყე დაგეგმვა", which becomes
+  "ჩემი გეგმა" after sign-in and opens `/planning`). No "ჩემი ქორწილი" group in the header:
+  the organizer has its own inner menu. "დაგეგმე ქორწილი" opens `/` (there is no `/plan` page);
+  its dropdown is დღის განრიგები · მოსაწვევები. Couples who sign in on `/` land on
   `/planning`. Anywhere else they stay on the page they were on.
 - "რჩევები და იდეები" (`/guides`) stays. Its mock articles get replaced with real content.
 
@@ -234,7 +241,11 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
    limits (auth 10/min, messages 5/min, tracking/search 60/min) become site-wide.
 4. **Migrations do NOT auto-apply outside Development.** Run them explicitly on deploy
    (e.g. `dotnet ef database update` from WeddingPlanner.Infrastructure, or a migration bundle).
-   Roles (Couple/Vendor/Admin) DO seed automatically on every startup.
+   Roles (Couple/Vendor/Admin) DO seed automatically on every startup, and so does the vendor
+   category list (`CategoryCatalog` — 8 groups, 27 categories; it needs the `CatalogAttributes`
+   migration applied first). **Back up the database before `SharedPlan`:** it moves every
+   couple's organizer data from the user onto a shared plan and can't be rolled back (its
+   `Down` refuses; restore the backup instead).
 5. **Admin account:** set `Seed:AdminEmail` + `Seed:AdminPassword` (no fallback exists,
    deliberately) or create the admin manually.
 6. **Cloudinary** (`Cloudinary:CloudName/ApiKey/ApiSecret`) for photo storage — without
@@ -243,4 +254,9 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
 7. **`Cors:AllowedOrigins`** = the production origin; **`Google:ClientId`** in BOTH
    backend config and the frontend environment for Google sign-in (omitting it just
    hides the button — password auth still works).
+8. **Email (`Email:Smtp:Host/Port/Username/Password` + `Email:From`)** for "forgot
+   password" — without it the API delivers nothing (it only logs a warning). Any SMTP
+   provider on port 587. Reset links point at `Site:PublicOrigin`, so set that too. The
+   link-signing keys live in the `DataProtectionKeys` table (migration
+   `AddDataProtectionKeys`), so links survive restarts.
 

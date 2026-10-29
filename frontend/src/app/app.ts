@@ -1,11 +1,12 @@
 import { Component, DOCUMENT, HostListener, computed, effect, inject, signal } from '@angular/core';
 
-/** One entry of a header dropdown. `link`s marked "(pending)" in REDESIGN-PLAN.md point at
- * the nearest existing page until the real page is built. */
+/** One entry of a header dropdown. Items whose page isn't built yet point at the nearest
+ * existing page (listed under "Temporary links" in design-system/BUILD-PLAN.md). */
 interface NavItem {
   key: string;
   link: string;
   query?: Record<string, string>;
+  fragment?: string;
 }
 
 interface NavGroup {
@@ -35,10 +36,12 @@ import { NotificationService } from './core/notification.service';
 import { LoginModal } from './components/login-modal/login-modal';
 import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
 import { Toasts } from './components/toasts/toasts';
+import { ORGANIZER_PATHS, OrganizerNav } from './components/organizer-nav/organizer-nav';
+import { CATEGORIES } from './core/catalog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LoginModal, ConfirmDialog, Toasts],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LoginModal, ConfirmDialog, Toasts, OrganizerNav],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -53,31 +56,30 @@ export class App {
   /** Which header dropdown is open (desktop: hover/click; phone sheet: accordion). */
   protected readonly openGroup = signal<string | null>(null);
 
-  /** Header = four dropdowns (sitemap §02: short menu, details on hover). The fourth,
-   * "ჩემი ქორწილი", is the organizer and is where the older tool pages live. */
+  /** Header = three sections (guide §1). Each title opens its page (home, the catalog, the
+   * tips hub); the dropdown holds the details. The organizer is reached through the CTA and
+   * has its own inner menu (OrganizerNav) — no "ჩემი ქორწილი" group here (decision D2). */
   protected readonly navGroups: NavGroup[] = [
     {
       key: 'plan',
-      link: '/planning',
+      link: '/',
       items: [
-        { key: 'start', link: '/planning' },
-        { key: 'stages', link: '/planning' },
-        { key: 'templates', link: '/planning' },
-        { key: 'organizer', link: '/planning' },
+        { key: 'schedules', link: '/schedules' },
+        { key: 'invitations', link: '/invitations' },
       ],
     },
     {
       key: 'vendors',
       link: '/vendors',
       items: [
-        { key: 'venues', link: '/vendors', query: { category: 'darbazi' } },
-        { key: 'photo', link: '/vendors', query: { category: 'fotografi' } },
-        { key: 'decor', link: '/vendors', query: { category: 'dekori' } },
-        { key: 'music', link: '/vendors', query: { category: 'musika' } },
-        { key: 'cake', link: '/vendors', query: { category: 'torti' } },
-        { key: 'attire', link: '/vendors', query: { category: 'kaba' } },
-        { key: 'beauty', link: '/vendors', query: { category: 'makiaji' } },
-        { key: 'other', link: '/vendors', query: { category: 'transporti' } },
+        { key: 'venues', link: '/vendors', query: { group: 'venues' } },
+        { key: 'photo', link: '/vendors', query: { group: 'photo' } },
+        { key: 'decor', link: '/vendors', query: { group: 'decor' } },
+        { key: 'music', link: '/vendors', query: { group: 'music' } },
+        { key: 'cake', link: '/vendors', query: { group: 'cake' } },
+        { key: 'attire', link: '/vendors', query: { group: 'attire' } },
+        { key: 'beauty', link: '/vendors', query: { group: 'beauty' } },
+        { key: 'other', link: '/vendors', query: { group: 'other' } },
         { key: 'all', link: '/vendors' },
       ],
     },
@@ -85,21 +87,9 @@ export class App {
       key: 'guides',
       link: '/guides',
       items: [
-        { key: 'tips', link: '/guides' },
-        { key: 'inspiration', link: '/guides' },
-        { key: 'real', link: '/guides' },
-      ],
-    },
-    {
-      key: 'mine',
-      link: '/planning',
-      items: [
-        { key: 'overview', link: '/planning' },
-        { key: 'tasks', link: '/planning' },
-        { key: 'budget', link: '/budget' },
-        { key: 'guests', link: '/guests' },
-        { key: 'seating', link: '/seating' },
-        { key: 'website', link: '/website' },
+        { key: 'blog', link: '/guides/blog' },
+        { key: 'inspiration', link: '/guides/inspiration' },
+        { key: 'real', link: '/guides/real-weddings' },
       ],
     },
   ];
@@ -115,7 +105,7 @@ export class App {
   protected readonly year = new Date().getFullYear();
 
   /** The header CTA after sign-in: "დაიწყე დაგეგმვა" becomes "ჩემი გეგმა" (Beka,
-   * 2026-10-12; the sitemap said "ჩემი ქორწილი", but that is already the menu group's name).
+   * 2026-10-12; confirmed as decision D1 on 2026-10-21 over the guide's "ჩემი ქორწილი").
    * Couples go to their organizer; vendors to their listing; admins to the admin panel. */
   protected readonly myLink = computed<{ link: string; key: string }>(() => {
     if (this.auth.isVendor()) return { link: '/dashboard', key: 'nav.myProfile' };
@@ -137,6 +127,31 @@ export class App {
     { initialValue: inject(PlatformLocation).pathname },
   );
   protected readonly chromeless = computed(() => this.currentUrl().startsWith('/w/'));
+  /** Pages already on the brand theme also get the themed header, footer and overlays, so
+   * the chrome doesn't switch fonts against the page. Home is first; others join as they're
+   * redesigned (CLAUDE.md "Putting a page on the theme"). */
+  protected readonly brandChrome = computed(() => {
+    const path = this.currentUrl().split(/[?#]/)[0];
+    const parts = path.split('/').filter(Boolean);
+    // A vendor profile: /{category}/{city}/{slug} with a known category slug.
+    const isProfile = parts.length === 3 && CATEGORIES.some((c) => c.slug === parts[0]);
+    return (
+      path === '/' ||
+      path === '/vendors' ||
+      path === '/schedules' ||
+      path === '/invitations' ||
+      path === '/invitations/find' ||
+      path === '/guides' ||
+      path.startsWith('/guides/') ||
+      isProfile ||
+      path.startsWith('/partner/') ||
+      ['/terms', '/privacy', '/forgot-password', '/reset-password', '/signup', '/planning', '/planning/start', '/planning/settings', '/planning/day', '/planning/tasks', '/planning/services', '/planning/invitation', '/budget', '/guests', '/seating'].includes(path)
+    );
+  });
+  /** On one of the organizer's working pages (shows its inner menu to couples). */
+  protected readonly inOrganizer = computed(() =>
+    ORGANIZER_PATHS.includes(this.currentUrl().split(/[?#]/)[0]),
+  );
 
   /** The landing page runs on the brand theme (Mint & Peach + GF Aisi); the header and
    * footer follow it there, and keep the default palette on every other page. */
@@ -210,10 +225,12 @@ export class App {
     else if (this.menuOpen()) this.menuOpen.set(false);
   }
 
-  /** Pointer devices open a dropdown on hover; touch devices only on tap (otherwise the
-   * synthetic mouseenter before a tap would open it and the tap would close it again). */
+  /** On the desktop bar, a mouse opens a dropdown on hover. Never on touch (the synthetic
+   * mouseenter before a tap would open it and the tap would close it again), and never in the
+   * phone sheet, which a narrow laptop window shows too: there hover opened the section and
+   * the click on its arrow closed it again. Matches the xl breakpoint in app.scss. */
   protected hoverGroup(key: string | null): void {
-    if (window.matchMedia('(hover: hover)').matches) this.openGroup.set(key);
+    if (window.matchMedia('(hover: hover) and (min-width: 1280px)').matches) this.openGroup.set(key);
   }
 
   protected toggleGroup(key: string): void {

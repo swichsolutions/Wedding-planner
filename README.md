@@ -200,6 +200,10 @@ the real URLs (table above). Then:
   (api) are set to a client whose authorized origins include the frontend URL.
 - A custom domain works on the free tier: add it in Render, then add the hostname to
   `NG_ALLOWED_HOSTS`, `Cors__AllowedOrigins__0` and `Site__PublicOrigin`.
+- "Forgot password" emails need SMTP: set `Email__Smtp__Host`, `Email__Smtp__Port` (587),
+  `Email__Smtp__Username`, `Email__Smtp__Password` and `Email__From`. Without them the API
+  writes each mail to its log instead (in Development the whole mail, link included), and the
+  reset links point at `Site__PublicOrigin`.
 
 ---
 
@@ -215,6 +219,8 @@ the real URLs (table above). Then:
    secret store / env vars in production.
 4. **Brand name** — replace the `WeddingPlanner` placeholder in `i18n/{ka,en}.json`.
 5. **Real data** — replace seeded/mock vendors and articles with real content.
+6. **Email** — configure `Email:Smtp:*` + `Email:From` (see `appsettings.Development.json.example`),
+   or "forgot password" sends nothing. The startup log warns when it's missing.
 
 ## What's built / what's next
 

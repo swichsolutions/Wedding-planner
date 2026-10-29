@@ -41,9 +41,18 @@ export class VendorService {
 
   list(filter: VendorFilter = {}): Observable<Vendor[]> {
     let params = new HttpParams();
+    if (filter.group) params = params.set('group', filter.group);
     if (filter.category) params = params.set('category', filter.category);
     if (filter.city) params = params.set('city', filter.city);
+    if (filter.region) params = params.set('region', filter.region);
     if (filter.maxPrice != null) params = params.set('maxPrice', String(filter.maxPrice));
+    if (filter.styles?.length) params = params.set('styles', filter.styles.join(','));
+    if (filter.guests) params = params.set('guests', filter.guests);
+    if (filter.setting) params = params.set('setting', filter.setting);
+    if (filter.venueType) params = params.set('venueType', filter.venueType);
+    if (filter.features?.length) params = params.set('features', filter.features.join(','));
+    if (filter.q) params = params.set('q', filter.q);
+    if (filter.sort) params = params.set('sort', filter.sort);
     if (filter.vip) params = params.set('featured', 'true');
 
     return this.http

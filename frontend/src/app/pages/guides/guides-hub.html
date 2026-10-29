@@ -1,0 +1,64 @@
+<div class="gd">
+  <header class="gd__intro container">
+    <h1 class="gd__title">{{ 'guides.hubTitle' | translate }}</h1>
+    <p class="gd__lead">{{ 'guides.hubLead' | translate }}</p>
+    <a class="btn btn--primary" [routerLink]="cta().link">{{ cta().key | translate }}</a>
+  </header>
+
+  @if (failed()) {
+    <p class="gd__note container" role="alert">{{ 'guides.loadError' | translate }}</p>
+  } @else if (empty()) {
+    <p class="gd__note container">{{ 'guides.hubEmpty' | translate }}</p>
+  }
+
+  @if (articles().length) {
+    <section class="gd__sec container" aria-labelledby="gd-blog">
+      <div class="gd__sec-head">
+        <div>
+          <h2 id="gd-blog" class="gd__sec-title">{{ 'guides.blogTitle' | translate }}</h2>
+          <p class="gd__sec-lead">{{ 'guides.blogLead' | translate }}</p>
+        </div>
+        <a class="gd__all" routerLink="/guides/blog">{{ 'guides.allArticles' | translate }} →</a>
+      </div>
+      <ul class="gd__grid gd__grid--3" role="list">
+        @for (a of articles(); track a.slug) {
+          <li><app-content-card [item]="a" /></li>
+        }
+      </ul>
+    </section>
+  }
+
+  @if (ideas().length) {
+    <section class="gd__sec container" aria-labelledby="gd-ideas">
+      <div class="gd__sec-head">
+        <div>
+          <h2 id="gd-ideas" class="gd__sec-title">{{ 'guides.inspirationTitle' | translate }}</h2>
+          <p class="gd__sec-lead">{{ 'guides.inspirationLead' | translate }}</p>
+        </div>
+        <a class="gd__all" routerLink="/guides/inspiration">{{ 'guides.allIdeas' | translate }} →</a>
+      </div>
+      <ul class="gd__grid gd__grid--4" role="list">
+        @for (i of ideas(); track i.slug) {
+          <li><app-content-card [item]="i" variant="idea" /></li>
+        }
+      </ul>
+    </section>
+  }
+
+  @if (stories().length) {
+    <section class="gd__sec container" aria-labelledby="gd-real">
+      <div class="gd__sec-head">
+        <div>
+          <h2 id="gd-real" class="gd__sec-title">{{ 'guides.realTitle' | translate }}</h2>
+          <p class="gd__sec-lead">{{ 'guides.realLead' | translate }}</p>
+        </div>
+        <a class="gd__all" routerLink="/guides/real-weddings">{{ 'guides.allStories' | translate }} →</a>
+      </div>
+      <ul class="gd__grid gd__grid--3" role="list">
+        @for (s of stories(); track s.slug) {
+          <li><app-content-card [item]="s" variant="story" /></li>
+        }
+      </ul>
+    </section>
+  }
+</div>

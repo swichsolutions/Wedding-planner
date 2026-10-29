@@ -1,0 +1,60 @@
+<section class="pi">
+  <app-gold-ring class="pi-ring" />
+
+  @if (loadError()) {
+    <h1 class="pi-title">{{ 'partner.errorTitle' | translate }}</h1>
+    <p class="pi-lead">{{ 'partner.errorBody' | translate }}</p>
+  } @else if (preview(); as p) {
+    @if (p.status === 'ok') {
+      <p class="pi-label">{{ 'partner.label' | translate }}</p>
+      <h1 class="pi-title">
+        @if (p.names) {
+          {{ 'partner.titleNamed' | translate: { names: p.names } }}
+        } @else {
+          {{ 'partner.title' | translate }}
+        }
+      </h1>
+      <p class="pi-lead">{{ 'partner.lead' | translate }}</p>
+
+      @if (confirmLeave(); as c) {
+        <div class="pi-card" role="alertdialog" aria-labelledby="pi-leave-title" aria-describedby="pi-leave-body">
+          <h2 id="pi-leave-title" class="pi-h2">{{ 'partner.leaveTitle' | translate }}</h2>
+          <p id="pi-leave-body" class="pi-text">{{ (c.shared ? 'partner.leaveShared' : 'partner.leaveOwn') | translate }}</p>
+          <div class="pi-actions">
+            <button type="button" class="btn btn--primary btn--lg" [disabled]="joining()" (click)="join(true)">
+              {{ 'partner.joinAnyway' | translate }}
+            </button>
+            <a class="pi-quiet" routerLink="/planning">{{ 'partner.keepMine' | translate }}</a>
+          </div>
+        </div>
+      } @else if (auth.isCouple()) {
+        <div class="pi-actions pi-actions--center">
+          <button type="button" class="btn btn--primary btn--lg" [disabled]="joining()" (click)="join()">
+            {{ 'partner.join' | translate }}
+          </button>
+        </div>
+      } @else if (auth.isAuthenticated()) {
+        <p class="pi-card pi-text">{{ 'partner.notCouple' | translate }}</p>
+      } @else {
+        <div class="pi-actions pi-actions--center">
+          <a class="btn btn--primary btn--lg" routerLink="/signup" [queryParams]="{ returnUrl: here() }">
+            {{ 'partner.create' | translate }}
+          </a>
+          <button type="button" class="btn btn--outline-ink btn--lg" (click)="signIn()">{{ 'partner.signIn' | translate }}</button>
+        </div>
+        <p class="pi-hint">{{ 'partner.signedOutHint' | translate }}</p>
+      }
+      @if (joinError()) {
+        <p class="pi-error" role="alert">{{ 'partner.joinError' | translate }}</p>
+      }
+    } @else {
+      <h1 class="pi-title">{{ 'partner.' + p.status + 'Title' | translate }}</h1>
+      <p class="pi-lead">{{ 'partner.' + p.status + 'Body' | translate }}</p>
+      <div class="pi-actions pi-actions--center">
+        <a class="btn btn--outline-ink" routerLink="/">{{ 'partner.home' | translate }}</a>
+      </div>
+    }
+  } @else {
+    <p class="pi-lead" role="status">{{ 'partner.loading' | translate }}</p>
+  }
+</section>

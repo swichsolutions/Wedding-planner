@@ -1,0 +1,377 @@
+// "რჩევები და იდეები": hub, section lists and the detail page. Brand theme (theme-brand
+// host): ivory page, charcoal text, Mt capitals for headings, Nus for text, peach only for
+// the small topic labels, evergreen only on buttons.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.gd {
+  padding-bottom: var(--space-20);
+}
+
+// ---------------------------------------------------------------- intro
+
+.gd__intro {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  padding-block: var(--space-12) var(--space-10);
+
+  @include bp.respond-to(md) {
+    padding-block: var(--space-16) var(--space-12);
+  }
+
+  &--list {
+    padding-bottom: var(--space-6);
+  }
+}
+
+.gd__title,
+.cd__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.gd__lead,
+.cd__lead {
+  max-width: 40rem;
+  margin: 0;
+  font-size: var(--fs-lead, 1.25rem);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.gd__note {
+  margin: 0 0 var(--space-10);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--paper-deep);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.gd__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-500);
+
+  a {
+    color: var(--ink-700);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--ink);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- sections + grids
+
+.gd__sec {
+  padding-block: var(--space-10);
+
+  & + & {
+    border-top: 1px solid var(--paper-line);
+  }
+
+  &--list {
+    padding-top: var(--space-4);
+  }
+}
+
+.gd__sec-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.gd__sec-title,
+.cd__h2 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.gd__sec-lead {
+  margin: 0;
+  max-width: 36rem;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.gd__all {
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.gd__grid {
+  display: grid;
+  gap: var(--space-8) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &--3 {
+    @include bp.respond-to(lg) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  &--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-4);
+
+    @include bp.respond-to(lg) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+// ---------------------------------------------------------------- topic chips
+
+.gd__chips {
+  display: flex;
+  gap: var(--space-2);
+  padding-bottom: var(--space-6);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.gd__chip {
+  flex: none;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--paper-line-strong);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  &.is-on {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+}
+
+// ---------------------------------------------------------------- detail page
+
+// The reading column: title block, text, credits and section headings share one left edge;
+// photos (cover, galleries) run wider, at container width.
+.cd__col {
+  box-sizing: content-box;
+  max-width: 42rem;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+
+  @include bp.respond-to(md) {
+    padding-inline: var(--space-6);
+  }
+}
+
+.cd__head {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  padding-block: var(--space-10) var(--space-8);
+
+  @include bp.respond-to(md) {
+    padding-top: var(--space-16);
+  }
+}
+
+// Peach: a small callout (CLAUDE.md brand rules).
+.cd__topic {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cd__date {
+  margin: 0;
+  font-size: var(--fs-caption);
+  color: var(--ink-500);
+}
+
+.cd__cover {
+  margin: 0 auto var(--space-10);
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 42rem;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+}
+
+.cd__body {
+  margin-bottom: var(--space-10);
+  font-size: 1.0625rem;
+}
+
+.cd__gallery {
+  margin-bottom: var(--space-10);
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+
+  // Inspiration: photos lead, in a loose two/three-column flow.
+  &--masonry {
+    columns: 2;
+    column-gap: var(--space-3);
+
+    @include bp.respond-to(lg) {
+      columns: 3;
+      column-gap: var(--space-4);
+    }
+
+    img {
+      margin-bottom: var(--space-3);
+      break-inside: avoid;
+    }
+
+    .cd__shot img {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// One inspiration photo; couples can mark it for their banner (B7).
+.cd__shot {
+  position: relative;
+  margin: 0 0 var(--space-3);
+  break-inside: avoid;
+
+  @include bp.respond-to(lg) {
+    margin-bottom: var(--space-4);
+  }
+}
+
+.cd__mark {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 92%);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  cursor: pointer;
+
+  &.is-on {
+    background: var(--ink);
+    color: var(--paper);
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  &:disabled {
+    cursor: progress;
+  }
+}
+
+// Fills the width whatever the count: two photos make two wide tiles, not two of three.
+.cd__gallery-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+
+  img {
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+}
+
+.cd__credits {
+  margin-bottom: var(--space-10);
+}
+
+.cd__credit-list {
+  margin: 0;
+  border-top: 1px solid var(--paper-line);
+}
+
+.cd__credit {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--paper-line);
+  line-height: 1.4;
+
+  dt {
+    color: var(--ink-700);
+  }
+
+  dd {
+    margin: 0;
+    text-align: right;
+    font-weight: var(--fw-medium);
+  }
+
+  a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.cd__action {
+  display: flex;
+  margin-bottom: var(--space-12);
+}

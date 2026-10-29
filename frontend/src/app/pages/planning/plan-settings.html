@@ -1,0 +1,112 @@
+<section class="st container">
+  <header class="st-head">
+    <h1 class="st-title">{{ 'plan.settingsTitle' | translate }}</h1>
+    <p class="st-lead">{{ 'plan.settingsLead' | translate }}</p>
+  </header>
+
+  @if (loadError()) {
+    <p class="st-note" role="alert">{{ 'plan.loadError' | translate }}</p>
+  } @else {
+    <!-- ======================= the plan's details ======================= -->
+    <form class="st-card" [formGroup]="form" (ngSubmit)="save()" novalidate aria-labelledby="st-details">
+      <h2 id="st-details" class="st-h2">{{ 'plan.detailsTitle' | translate }}</h2>
+      <app-plan-details-fields [form]="form" [iAmPartner]="!!plan()?.iAmPartner" idPrefix="st" />
+      <div class="st-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="saving() || !plan()">{{ 'plan.save' | translate }}</button>
+        @if (saved()) {
+          <span class="st-saved" role="status">{{ 'plan.saved' | translate }}</span>
+        }
+      </div>
+      <p class="st-hint">{{ 'plan.budgetElsewhere' | translate }} <a routerLink="/budget">{{ 'plan.budgetLink' | translate }}</a></p>
+    </form>
+
+    <!-- ======================= partner access ======================= -->
+    <section class="st-card" aria-labelledby="st-partner">
+      <h2 id="st-partner" class="st-h2">{{ 'plan.partnerTitle' | translate }}</h2>
+      <p class="st-text">{{ 'plan.partnerLead' | translate }}</p>
+
+      @if (plan(); as p) {
+        @if (partner(); as other) {
+          <!-- two people on the plan -->
+          <ul class="st-people" role="list">
+            @if (me(); as m) {
+              <li class="st-person">
+                <span class="st-avatar" aria-hidden="true">{{ (m.name || m.email || '?').charAt(0) }}</span>
+                <span class="st-person__text">
+                  <span class="st-person__name">{{ m.name || m.email }} <span class="st-you">{{ 'plan.you' | translate }}</span></span>
+                  <span class="st-person__mail">{{ m.email }}</span>
+                </span>
+              </li>
+            }
+            <li class="st-person">
+              <span class="st-avatar" aria-hidden="true">{{ (other.name || other.email || '?').charAt(0) }}</span>
+              <span class="st-person__text">
+                <span class="st-person__name">{{ other.name || other.email }}</span>
+                <span class="st-person__mail">{{ other.email }} · {{ 'plan.joined' | translate: { date: date(other.joinedAt) } }}</span>
+              </span>
+              <button type="button" class="st-quiet" (click)="removePartner()">{{ 'plan.remove' | translate }}</button>
+            </li>
+          </ul>
+          <button type="button" class="st-quiet st-leave" (click)="leave()">{{ 'plan.leave' | translate }}</button>
+        } @else {
+          <!-- alone: invite -->
+          @if (created(); as c) {
+            <div class="st-link" role="status">
+              <p class="st-text">
+                {{ (c.emailed ? 'plan.linkEmailed' : 'plan.linkReady') | translate }}
+              </p>
+              <div class="st-link__row">
+                <input class="st-link__field" type="text" readonly [value]="c.link" [attr.aria-label]="'plan.linkLabel' | translate"
+                  (focus)="$any($event.target).select()" />
+                <button type="button" class="btn btn--primary" (click)="copyLink()">
+                  {{ (copied() ? 'plan.copied' : 'plan.copy') | translate }}
+                </button>
+              </div>
+              <p class="st-hint">{{ 'plan.linkRules' | translate: { date: date(c.expiresAt) } }}</p>
+            </div>
+          } @else if (p.invite; as open) {
+            <p class="st-text st-open">
+              {{ (open.email ? 'plan.openInviteTo' : 'plan.openInvite') | translate: { email: open.email, date: date(open.expiresAt) } }}
+            </p>
+          }
+
+          <form class="st-invite" [formGroup]="inviteForm" (ngSubmit)="invite()" novalidate>
+            @if (p.emailInvites) {
+              <div class="st-field">
+                <label for="st-invite-email">{{ 'plan.inviteEmail' | translate }}</label>
+                <input id="st-invite-email" type="email" formControlName="email" autocomplete="off" spellcheck="false"
+                  [attr.placeholder]="'plan.inviteEmailHint' | translate"
+                  [class.is-invalid]="inviteForm.controls.email.invalid && inviteForm.controls.email.touched" />
+                @if (inviteForm.controls.email.invalid && inviteForm.controls.email.touched) {
+                  <span class="st-err">{{ 'auth.emailInvalid' | translate }}</span>
+                }
+              </div>
+            }
+            <div class="st-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="inviting()">
+                {{ (p.invite || created() ? 'plan.newLink' : 'plan.invite') | translate }}
+              </button>
+              @if (p.invite || created()) {
+                <button type="button" class="st-quiet" (click)="revoke()">{{ 'plan.revoke' | translate }}</button>
+              }
+            </div>
+            @if (!p.emailInvites) {
+              <p class="st-hint">{{ 'plan.linkOnly' | translate }}</p>
+            }
+          </form>
+        }
+      } @else {
+        <span class="skel st-skel" aria-hidden="true"></span>
+      }
+    </section>
+
+    <!-- ======================= account ======================= -->
+    <section class="st-card st-card--row" aria-labelledby="st-account">
+      <div>
+        <h2 id="st-account" class="st-h2">{{ 'plan.accountTitle' | translate }}</h2>
+        <p class="st-text">{{ 'plan.accountLead' | translate }}</p>
+      </div>
+      <a class="btn btn--outline-ink" routerLink="/account">{{ 'plan.accountLink' | translate }}</a>
+    </section>
+  }
+</section>

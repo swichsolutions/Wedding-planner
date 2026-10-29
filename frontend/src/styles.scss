@@ -8,4 +8,9 @@
 // while on the home page. One global class, so the tokens ship once.
 .theme-brand {
   @include brand.theme;
+
+  // "more →" text links take the action colour elsewhere; evergreen is for buttons only here.
+  .link-arrow {
+    color: var(--ink);
+  }
 }

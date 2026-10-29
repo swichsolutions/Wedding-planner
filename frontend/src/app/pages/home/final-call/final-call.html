@@ -1,9 +1,7 @@
 <div class="final" appReveal>
-  <!-- two interlocking rings, drawn once and then turning slowly behind the title -->
-  <svg class="rings" viewBox="0 0 600 360" aria-hidden="true">
-    <circle class="ring" cx="225" cy="180" r="150" pathLength="1" />
-    <circle class="ring ring--b" cx="375" cy="180" r="150" pathLength="1" />
-  </svg>
+  <!-- the gold ring turning above the title (public/media/gold-ring.webm; a still where video
+       can't be transparent or motion is reduced) -->
+  <app-gold-ring class="ring" />
 
   @let title = 'home.trust.finalTitle' | translate;
   <h2 class="title" [attr.aria-label]="title">

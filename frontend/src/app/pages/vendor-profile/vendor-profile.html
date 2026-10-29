@@ -16,6 +16,18 @@
               @if (photo.isRealWedding) {
                 <span class="gallery__badge">{{ 'profile.realWedding' | translate }}</span>
               }
+              @if (canMark()) {
+                <button type="button" class="gallery__mark" [class.is-on]="isMarked(photo.id)"
+                  [attr.aria-pressed]="isMarked(photo.id)" [disabled]="planPhotos.busy()"
+                  (click)="planPhotos.toggle({ vendorPhotoId: photo.id })"
+                  [attr.title]="'planPhotos.hint' | translate">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 3h12v18l-6-4-6 4z" />
+                  </svg>
+                  {{ (isMarked(photo.id) ? 'planPhotos.markedLabel' : 'planPhotos.mark') | translate }}
+                </button>
+              }
               @if (v.photos.length > 1) {
                 <button type="button" class="gallery__nav gallery__nav--prev" (click)="prev()"
                   [attr.aria-label]="'gallery.prev' | translate">‹</button>
@@ -56,16 +68,30 @@
             </p>
           }
 
-          <p class="info__price">
-            <span class="info__price-label">{{ 'profile.from' | translate }}</span>
-            <span class="num info__price-val">{{ formatPrice(v.priceFrom) }}</span>
-          </p>
+          @if (v.priceFrom > 0) {
+            <p class="info__price">
+              <span class="info__price-label">{{ 'profile.from' | translate }}</span>
+              <span class="num info__price-val">{{ formatPrice(v.priceFrom) }}</span>
+              <span class="info__price-label">{{ 'catalog.units.' + v.priceUnit | translate }}</span>
+            </p>
+          }
           @if (v.priceRange) {
             <p class="info__range num">{{ v.priceRange }}</p>
           }
 
           <div class="info__contact">
-            <button type="button" class="btn btn--pink info__cta" (click)="openContact()">{{ 'profile.contactCta' | translate }}</button>
+            @if (v.acceptsMessages) {
+              <button type="button" class="btn btn--pink info__cta" (click)="openContact()">{{ 'profile.contactCta' | translate }}</button>
+            }
+
+            <button type="button" class="btn btn--ghost info__save" [class.is-saved]="wishlist.isSaved(v.id)"
+              [attr.aria-pressed]="wishlist.isSaved(v.id)" (click)="toggleSave(v)">
+              <svg viewBox="0 0 24 24" width="18" height="18" [attr.fill]="wishlist.isSaved(v.id) ? 'currentColor' : 'none'"
+                stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.2 5 3 1.4-1.8 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2Z" />
+              </svg>
+              {{ (wishlist.isSaved(v.id) ? 'profile.saved' : 'profile.save') | translate }}
+            </button>
 
             @if (showAddToBudget()) {
               <button type="button" class="btn btn--ghost info__add-budget" [class.is-added]="inBudget()"
@@ -140,6 +166,132 @@
         <h2>{{ 'profile.about' | translate }}</h2>
         <p class="about__bio">{{ v.bio }}</p>
       </section>
+
+      <!-- ---------- details: where, what kind, extras ---------- -->
+      @if (hasDetails(v)) {
+        <section class="facts" aria-labelledby="facts-h">
+          <h2 id="facts-h">{{ 'profile.details' | translate }}</h2>
+          <dl class="facts__list">
+            @if (v.region) {
+              <div class="facts__row">
+                <dt>{{ 'profile.region' | translate }}</dt>
+                <dd>{{ locationLabel(v) }}</dd>
+              </div>
+            }
+            @if (v.servedRegions.length) {
+              <div class="facts__row">
+                <dt>{{ 'profile.servesAlso' | translate }}</dt>
+                <dd>
+                  @for (r of v.servedRegions; track r; let last = $last) {
+                    {{ 'catalog.regions.' + r | translate }}@if (!last) {, }
+                  }
+                </dd>
+              </div>
+            }
+            @if (v.capacityMax) {
+              <div class="facts__row">
+                <dt>{{ 'profile.capacity' | translate }}</dt>
+                <dd class="num">
+                  {{ (v.capacityMin ? 'profile.capacityRange' : 'profile.capacityUpTo') | translate: { min: v.capacityMin, max: v.capacityMax } }}
+                </dd>
+              </div>
+            }
+            @if (v.venueType) {
+              <div class="facts__row">
+                <dt>{{ 'profile.venueType' | translate }}</dt>
+                <dd>{{ 'catalog.venueTypes.' + v.venueType | translate }}</dd>
+              </div>
+            }
+            @if (v.setting) {
+              <div class="facts__row">
+                <dt>{{ 'profile.setting' | translate }}</dt>
+                <dd>{{ 'catalog.settings.' + v.setting | translate }}</dd>
+              </div>
+            }
+            @if (v.alsoOffers.length) {
+              <div class="facts__row">
+                <dt>{{ 'profile.alsoOffers' | translate }}</dt>
+                <dd>
+                  @for (c of v.alsoOffers; track c; let last = $last) {
+                    {{ catKey(c) | translate }}@if (!last) {, }
+                  }
+                </dd>
+              </div>
+            }
+            @if (v.styles.length) {
+              <div class="facts__row">
+                <dt>{{ 'profile.styles' | translate }}</dt>
+                <dd>
+                  @for (s of v.styles; track s; let last = $last) {
+                    {{ 'catalog.styles.' + s | translate }}@if (!last) {, }
+                  }
+                </dd>
+              </div>
+            }
+            @if (v.features.length) {
+              <div class="facts__row">
+                <dt>{{ 'profile.extras' | translate }}</dt>
+                <dd>
+                  @for (f of v.features; track f; let last = $last) {
+                    {{ 'catalog.features.' + f | translate }}@if (!last) {, }
+                  }
+                </dd>
+              </div>
+            }
+          </dl>
+        </section>
+      }
+
+      <!-- ---------- packages (guide §4: portfolio, packages, terms, contact) ---------- -->
+      @if (v.packages.length) {
+        <section class="packages" aria-labelledby="packages-h">
+          <h2 id="packages-h">{{ 'profile.packages' | translate }}</h2>
+          <ul class="packages__list" role="list">
+            @for (p of v.packages; track $index) {
+              <li class="package">
+                <h3 class="package__name">{{ p.name }}</h3>
+                @if (p.price) {
+                  <p class="package__price">
+                    <span class="num">{{ formatPrice(p.price) }}</span>
+                    <span class="package__unit">{{ 'catalog.units.' + p.priceUnit | translate }}</span>
+                  </p>
+                }
+                @if (p.duration) {
+                  <p class="package__duration">{{ p.duration }}</p>
+                }
+                @if (lines(p.included).length) {
+                  <ul class="package__included">
+                    @for (item of lines(p.included); track $index) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (v.terms; as t) {
+        <section class="terms" aria-labelledby="terms-h">
+          <h2 id="terms-h">{{ 'profile.terms' | translate }}</h2>
+          <dl class="facts__list">
+            @if (t.deposit) {
+              <div class="facts__row"><dt>{{ 'profile.deposit' | translate }}</dt><dd>{{ t.deposit }}</dd></div>
+            }
+            @if (t.cancellation) {
+              <div class="facts__row"><dt>{{ 'profile.cancellation' | translate }}</dt><dd>{{ t.cancellation }}</dd></div>
+            }
+            @if (t.travelPolicy) {
+              <div class="facts__row"><dt>{{ 'profile.travel' | translate }}</dt><dd>{{ 'catalog.travel.' + t.travelPolicy | translate }}</dd></div>
+            }
+            @if (t.bookingLeadTime) {
+              <div class="facts__row"><dt>{{ 'profile.leadTime' | translate }}</dt><dd>{{ t.bookingLeadTime }}</dd></div>
+            }
+          </dl>
+          <p class="terms__note">{{ 'profile.termsNote' | translate }}</p>
+        </section>
+      }
 
       <!-- ---------- reviews ---------- -->
       <section class="reviews" id="reviews">

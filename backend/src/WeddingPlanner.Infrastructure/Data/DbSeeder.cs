@@ -4,9 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace WeddingPlanner.Infrastructure.Data;
 
 /// <summary>
-/// Idempotent dev seed: categories and a starter set of approved vendors.
-/// Mirrors the frontend mock data so the directory looks the same once the API is live.
-/// Replace/extend with real vendors (CLAUDE.md §8 step 7).
+/// Idempotent dev seed: a starter set of approved demo vendors. (Categories are synced for
+/// every environment by CategoryCatalog.) Replace/extend with real vendors (CLAUDE.md §8 step 7).
 /// </summary>
 public static class DbSeeder
 {
@@ -15,8 +14,6 @@ public static class DbSeeder
 
     public static async Task SeedAsync(AppDbContext db)
     {
-        await EnsureCategoriesAsync(db); // idempotent — adds any categories missing by slug
-
         if (await db.Vendors.AnyAsync())
             return; // starter vendors already seeded
 
@@ -28,7 +25,7 @@ public static class DbSeeder
             new()
             {
                 Name = "სტუდია ნათელი", Slug = "studia-nateli", Category = cat["fotografi"],
-                City = "თბილისი", CitySlug = "tbilisi", AreasServed = "თბილისი, მცხეთა, კახეთი",
+                City = "თბილისი", CitySlug = "tbilisi", Region = "tbilisi", AreasServed = "თბილისი, მცხეთა, კახეთი",
                 PriceMin = 1500, PriceRange = "1500–4000 ₾",
                 Bio = "დოკუმენტური სტილის საქორწინო ფოტოგრაფია, რომელიც ბუნებრივ ემოციას იჭერს. ვმუშაობთ წყვილებთან მთელი დღის განმავლობაში — მზადებიდან ცეკვებამდე. გვაქვს 8 წლის გამოცდილება და 200-ზე მეტი გადაღებული ქორწილი.",
                 Instagram = "studia_nateli", Phone = "+995 599 12 34 56",
@@ -43,7 +40,7 @@ public static class DbSeeder
             new()
             {
                 Name = "თეთრი დარბაზი", Slug = "tetri-darbazi", Category = cat["darbazi"],
-                City = "თბილისი", CitySlug = "tbilisi", AreasServed = "თბილისი",
+                City = "თბილისი", CitySlug = "tbilisi", Region = "tbilisi", AreasServed = "თბილისი",
                 PriceMin = 8000, PriceRange = "8000–20000 ₾",
                 Bio = "ელეგანტური საქორწინო დარბაზი თბილისის ცენტრში, 300 სტუმრამდე. მაღალი ჭერი, ბუნებრივი განათება და დიდი ტერასა ცერემონიისთვის. სრული კეთერინგი და ტექნიკური უზრუნველყოფა.",
                 Instagram = "tetri_darbazi", Phone = "+995 599 22 33 44",
@@ -57,7 +54,7 @@ public static class DbSeeder
             new()
             {
                 Name = "ლილე მაკიაჟი", Slug = "lile-makiaji", Category = cat["makiaji"],
-                City = "ბათუმი", CitySlug = "batumi", AreasServed = "ბათუმი, ქობულეთი",
+                City = "ბათუმი", CitySlug = "batumi", Region = "adjara", AreasServed = "ბათუმი, ქობულეთი",
                 PriceMin = 400, PriceRange = "400–900 ₾",
                 Bio = "საქორწინო მაკიაჟი და ვარცხნილობა, რომელიც მთელ დღეს ძლებს. ვმუშაობ ბუნებრივ, ნატურალურ სტილში და ვითვალისწინებ თითოეული პატარძლის ინდივიდუალურ ნაკვთებს. შესაძლებელია გასვლითი მომსახურება.",
                 Instagram = "lile_makeup", Phone = "+995 577 55 66 77",
@@ -71,7 +68,7 @@ public static class DbSeeder
             new()
             {
                 Name = "ფლორა დეკორი", Slug = "flora-dekori", Category = cat["floristi"],
-                City = "ქუთაისი", CitySlug = "kutaisi", AreasServed = "ქუთაისი, იმერეთი",
+                City = "ქუთაისი", CitySlug = "kutaisi", Region = "imereti", AreasServed = "ქუთაისი, იმერეთი",
                 PriceMin = 1200, PriceRange = "1200–5000 ₾",
                 Bio = "ცოცხალი ყვავილების საქორწინო დეკორი — თაიგულებიდან არქებამდე. ვქმნით სეზონურ კომპოზიციებს და ვმუშაობთ ადგილობრივ მებაღეებთან. თითოეული ქორწილი უნიკალურია.",
                 Instagram = "flora_dekori", Phone = "+995 591 88 99 00",
@@ -85,7 +82,7 @@ public static class DbSeeder
             new()
             {
                 Name = "გიო ბერიძე ფოტო", Slug = "gio-beridze-foto", Category = cat["fotografi"],
-                City = "ბათუმი", CitySlug = "batumi", AreasServed = "ბათუმი, აჭარა",
+                City = "ბათუმი", CitySlug = "batumi", Region = "adjara", AreasServed = "ბათუმი, აჭარა",
                 PriceMin = 1300, PriceRange = "1300–3500 ₾",
                 Bio = "მხატვრული საქორწინო ფოტოგრაფია ზღვისპირა ფონზე. მიყვარს ბუნებრივ განათებაში გადაღება და გულწრფელი მომენტების დაჭერა. ვაწვდი სრულ ციფრულ გალერეას და ნაბეჭდ ალბომს.",
                 Instagram = "gio_beridze_photo", Phone = "+995 593 11 22 33",
@@ -99,7 +96,7 @@ public static class DbSeeder
             new()
             {
                 Name = "კადრი ფილმსი", Slug = "kadri-films", Category = cat["videografi"],
-                City = "თბილისი", CitySlug = "tbilisi", AreasServed = "მთელი საქართველო",
+                City = "თბილისი", CitySlug = "tbilisi", Region = "tbilisi", AreasServed = "მთელი საქართველო",
                 PriceMin = 2000, PriceRange = "2000–6000 ₾",
                 Bio = "საქორწინო ვიდეოგრაფია კინემატოგრაფიულ სტილში. ვიღებთ მოკლე ფილმსაც და სრულ ვერსიასაც, საჰაერო კადრებით. თქვენი დღე ისე, როგორც ფილმში.",
                 Instagram = "kadri_films", Phone = "+995 595 77 88 99",
@@ -113,41 +110,6 @@ public static class DbSeeder
         };
 
         db.Vendors.AddRange(vendors);
-        await db.SaveChangesAsync();
-    }
-
-    /// <summary>The full category taxonomy (CLAUDE.md §1). The original 8 keep SortOrder 1–8 and
-    /// new ones are appended, so an already-seeded DB never needs its existing rows updated.</summary>
-    private static readonly (string Ka, string En, string Slug, int Sort)[] CategorySeed =
-    {
-        ("ფოტოგრაფი", "Photographer", "fotografi", 1),
-        ("დარბაზი", "Venue", "darbazi", 2),
-        ("დეკორი", "Decor", "dekori", 3),
-        ("ფლორისტი", "Florist", "floristi", 4),
-        ("მაკიაჟი", "Makeup", "makiaji", 5),
-        ("ვიდეოგრაფი", "Videographer", "videografi", 6),
-        ("ტორტი", "Cake", "torti", 7),
-        ("მუსიკა და DJ", "Music & DJ", "musika", 8),
-        ("თმის სტილისტი", "Hair stylist", "tmis-stili", 9),
-        ("მანიკიური", "Nails", "manikiuri", 10),
-        ("საქორწილო კაბა", "Wedding dress", "kaba", 11),
-        ("კოსტიუმი", "Groom's suit", "kostiumi", 12),
-        ("ბეჭდები", "Rings & jewelry", "bechdebi", 13),
-        ("ტრანსპორტი", "Transport", "transporti", 14),
-    };
-
-    /// <summary>Idempotently add any categories missing by slug, so an already-seeded DB picks
-    /// up newly-added categories (Hair, Nails, Dress, Suit, Rings, Transport) on next startup.</summary>
-    private static async Task EnsureCategoriesAsync(AppDbContext db)
-    {
-        var have = (await db.Categories.Select(c => c.Slug).ToListAsync()).ToHashSet();
-        var missing = CategorySeed
-            .Where(c => !have.Contains(c.Slug))
-            .Select(c => new Category { NameKa = c.Ka, NameEn = c.En, Slug = c.Slug, SortOrder = c.Sort })
-            .ToList();
-        if (missing.Count == 0) return;
-
-        db.Categories.AddRange(missing);
         await db.SaveChangesAsync();
     }
 }

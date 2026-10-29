@@ -1,7 +1,11 @@
+// The seating chart on the brand theme (CLAUDE.md): ivory page, white panels and tables,
+// charcoal seats and text, evergreen only on buttons.
 @use 'breakpoints' as bp;
 
 :host {
   display: block;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .seat {
@@ -14,6 +18,10 @@
 
   h1 {
     margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+    font-weight: var(--fw-medium);
+    line-height: 1.05;
   }
 }
 
@@ -41,7 +49,7 @@
 .seat__skel-bar {
   height: 3rem;
   border-radius: var(--radius-md);
-  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-surface-sunken) 50%, var(--color-ink-100) 75%);
+  background: linear-gradient(90deg, var(--paper-deep) 25%, var(--color-surface-sunken) 50%, var(--paper-deep) 75%);
   background-size: 200% 100%;
   animation: seat-shimmer 1.4s ease-in-out infinite;
 }
@@ -78,9 +86,129 @@
   font-size: var(--fs-lead);
 }
 
-// ---- toolbar: single entry point for adding to the canvas ----
+// ---- toolbar: add, the floor plan, download / print / share ----
 .seat-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
   margin-bottom: var(--space-6);
+}
+
+.seat-toolbar__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.seat-toolbar__out {
+  @include bp.respond-to(md) {
+    margin-left: auto;
+  }
+}
+
+.seat-quiet {
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.seat-out {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 38px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--paper-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--paper-white, #fff);
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: progress;
+  }
+}
+
+// ---- counts: tables, seats, free seats, unseated guests ----
+.seat-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius-pill);
+    background: var(--paper-white, #fff);
+    font-size: var(--fs-small);
+    line-height: 1.4;
+    color: var(--ink-700);
+
+    .num {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      color: var(--ink);
+    }
+
+    &.is-open {
+      border-color: transparent;
+      background: var(--peach);
+      color: var(--ink);
+    }
+  }
+}
+
+.seat__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seat-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.seat-empty__hint {
+  margin: 0;
+  max-width: 44ch;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-500);
 }
 
 .seat__seated-count {
@@ -192,20 +320,31 @@
   position: absolute;
   top: 0;
   left: 0;
+}
+
+// The table and its seats turn together (cdkDrag owns the outer element's transform).
+.seat-table__turn {
+  position: absolute;
+  inset: 0;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.seat-table__shape {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  border: 2px solid var(--color-border-strong);
+  background: var(--paper-white, #fff);
+  border: 2px solid var(--ink);
   box-shadow: var(--shadow-sm);
 
-  &--rect {
+  .seat-table--rect & {
     border-radius: var(--radius-lg);
   }
 
-  &--one-sided {
+  .seat-table--one-sided & {
     border-radius: var(--radius-md);
     border-style: dashed;
   }
@@ -213,6 +352,7 @@
 
 .seat-table__grip {
   position: absolute;
+  z-index: 2;
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
@@ -221,8 +361,8 @@
   width: 28px;
   height: 20px;
   border-radius: var(--radius-sm);
-  background: var(--color-ink-100);
-  color: var(--color-ink-500);
+  background: var(--paper-deep);
+  color: var(--ink-500);
   cursor: grab;
 
   svg {
@@ -284,12 +424,41 @@
 }
 
 // edit / copy / remove cluster on each table (venue objects keep the single × above)
+// Turn / edit / copy / remove: above the ring of seats, so it never covers one. With a mouse it
+// shows on hover or keyboard focus; on touch screens it's always there.
 .seat-table__toolbar {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  z-index: 3;
+  bottom: calc(100% + 44px);
+  left: 50%;
   display: flex;
   gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--paper-white, #fff);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(-50%);
+  transition: opacity var(--dur-fast) var(--ease-out);
+
+  .seat-object & {
+    bottom: calc(100% + 16px);
+  }
+
+  // A short hide delay bridges the gap above the seats on the way up to it.
+  @media (hover: hover) {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur-fast) var(--ease-out), visibility 0s linear 0.35s;
+
+    .seat-table:hover &,
+    .seat-table:focus-within &,
+    .seat-object:hover &,
+    .seat-object:focus-within & {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+  }
 }
 
 .seat-table__icon-btn {
@@ -312,7 +481,7 @@
   }
 
   &:hover {
-    background: var(--color-ink-100);
+    background: var(--paper-deep);
     color: var(--color-text);
   }
 
@@ -349,13 +518,12 @@
   height: 32px;
   padding: 0;
   border-radius: var(--radius-pill);
-  background: var(--color-brand-500);
+  background: var(--ink);
   color: #fff;
-  border-color: var(--color-brand-500);
+  border-color: var(--ink);
   display: grid;
   place-items: center;
   font-weight: var(--fw-semibold);
-  text-transform: uppercase;
 }
 
 .seat-chip__remove {
@@ -385,18 +553,24 @@
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.seat-object__turn {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-2);
   border-radius: var(--radius-md);
-  background: var(--color-ink-100);
-  border: 1.5px dashed var(--color-border-strong);
+  background: var(--paper-deep);
+  border: 1.5px dashed var(--paper-line-strong);
   text-align: center;
+  transition: transform var(--dur-fast) var(--ease-out);
 
   &--dance-floor {
     background-image:
-      repeating-conic-gradient(var(--color-surface) 0% 25%, var(--color-ink-100) 0% 50%);
+      repeating-conic-gradient(var(--paper-white, #fff) 0% 25%, var(--paper-deep) 0% 50%);
     background-size: 28px 28px;
     border-radius: var(--radius-lg);
   }
@@ -404,6 +578,7 @@
 
 .seat-object__grip {
   position: absolute;
+  z-index: 2;
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
@@ -412,8 +587,8 @@
   width: 28px;
   height: 20px;
   border-radius: var(--radius-sm);
-  background: var(--color-ink-200);
-  color: var(--color-ink-600);
+  background: var(--paper-line);
+  color: var(--ink-700);
   cursor: grab;
 
   svg {
@@ -443,7 +618,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(20, 12, 14, 0.5);
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
   backdrop-filter: blur(1px);
   animation: add-drawer-fade var(--dur-fast) var(--ease-out);
 }
@@ -479,7 +654,7 @@
   cursor: pointer;
 
   &:hover {
-    background: var(--color-ink-100);
+    background: var(--paper-deep);
   }
 }
 
@@ -515,7 +690,6 @@
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
   color: var(--color-text-muted);
 }
 
@@ -539,7 +713,7 @@
   transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
   }
 
   &--custom {
@@ -593,13 +767,13 @@
   transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
   }
 
   &.is-selected {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
     color: var(--color-text);
-    background: color-mix(in srgb, var(--color-brand-500) 6%, var(--color-surface));
+    background: color-mix(in srgb, var(--ink) 6%, var(--color-surface));
   }
 }
 
@@ -693,7 +867,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   background-color: var(--color-surface);
-  background-image: radial-gradient(var(--color-ink-200) 1px, transparent 1.5px);
+  background-image: radial-gradient(var(--paper-line) 1px, transparent 1.5px);
   background-size: 18px 18px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
@@ -706,7 +880,7 @@
   width: 56%;
   padding: var(--space-2) var(--space-3) var(--space-3);
   border-radius: var(--radius-md);
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   border: 1px solid var(--color-border-strong);
   text-align: center;
   animation: sp-rise var(--dur-slow) var(--ease-out) both;
@@ -750,11 +924,11 @@
   }
 
   &--active {
-    border-color: var(--color-brand-500);
-    box-shadow: 0 0 0 4px var(--color-brand-50);
+    border-color: var(--ink);
+    box-shadow: 0 0 0 4px var(--paper-deep);
 
     .sp-table__label {
-      color: var(--color-brand-700);
+      color: var(--ink);
     }
   }
 }
@@ -768,8 +942,8 @@
   border: 1.5px solid var(--color-border-strong);
 
   &--filled {
-    background: var(--color-ink-900);
-    border-color: var(--color-ink-900);
+    background: var(--ink);
+    border-color: var(--ink);
   }
 
   // chairs around a round table: rotate each by its share of the circle, then push out
@@ -789,7 +963,7 @@
   gap: 2px;
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-lg);
-  background: var(--color-ink-900);
+  background: var(--ink);
   color: #f3ece2;
   box-shadow: var(--shadow-md);
   animation: sp-rise var(--dur-slow) var(--ease-out) both;
@@ -803,7 +977,7 @@
     font-family: var(--font-display);
     font-size: var(--fs-h2);
     line-height: 1;
-    color: var(--color-brand-400);
+    color: var(--ink-500);
 
     small {
       font-size: 0.5em;
@@ -848,4 +1022,41 @@
   .sp-tally {
     animation: none;
   }
+}
+
+// ---- B5: the floor plan under the chart, pool groups, dietary mark ----
+.seat-plan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  height: auto;
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.seat-pool__group {
+  flex-basis: 100%;
+  margin-top: var(--space-2);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  color: var(--ink-500);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.seat-chip__diet {
+  color: var(--ink-500);
+  font-weight: var(--fw-medium);
+}
+
+.table-form__hint {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.45;
+  color: var(--ink-500);
 }

@@ -1,0 +1,75 @@
+<ul class="ds" role="list">
+  @for (s of schedules(); track s.key; let i = $index) {
+    <li class="ds-card">
+      <p class="ds-label">{{ 'schedules.example' | translate: { n: i + 1 } }}</p>
+      @if (headingLevel() === 2) {
+        <h2 class="ds-card__title">{{ s.title }}</h2>
+      } @else {
+        <h3 class="ds-card__title">{{ s.title }}</h3>
+      }
+      <p class="ds-card__summary">{{ s.summary }}</p>
+
+      <ol class="ds-card__preview" role="list">
+        @for (r of s.preview; track $index) {
+          <li><span class="ds-time num">{{ r.time }}</span><span>{{ r.activity }}</span></li>
+        }
+      </ol>
+      <p class="ds-card__span">
+        <span class="num">{{ s.first }}–{{ s.last }}</span> · {{ 'schedules.items' | translate: { n: s.count } }}
+      </p>
+
+      <button type="button" class="btn btn--outline-ink ds-card__open" aria-haspopup="dialog" (click)="open(dlg)">
+        {{ 'schedules.open' | translate }}
+      </button>
+
+      <dialog #dlg class="ds-dialog" [attr.aria-labelledby]="'ds-title-' + s.key"
+        (close)="onClosed()" (click)="onDialogClick($event, dlg)">
+        <div class="ds-dialog__panel">
+          <header class="ds-dialog__head">
+            <div>
+              <p class="ds-label">{{ 'schedules.example' | translate: { n: i + 1 } }}</p>
+              <h2 class="ds-dialog__title" [id]="'ds-title-' + s.key">{{ s.title }}</h2>
+              <p class="ds-dialog__summary">{{ s.summary }}</p>
+            </div>
+            <button type="button" class="ds-dialog__x" [attr.aria-label]="'schedules.close' | translate" (click)="close(dlg)">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+          </header>
+
+          <div class="ds-cols" aria-hidden="true">
+            <span>{{ 'schedules.time' | translate }}</span>
+            <span>{{ 'schedules.activity' | translate }}</span>
+            <span>{{ 'schedules.who' | translate }}</span>
+          </div>
+          <ol class="ds-rows" role="list">
+            @for (r of s.rows; track $index) {
+              <li class="ds-row">
+                <span class="ds-time num">{{ r.time }}</span>
+                <span class="ds-row__body">
+                  <span class="ds-row__activity">{{ r.activity }}</span>
+                  @if (r.note) {
+                    <span class="ds-row__note">{{ r.note }}</span>
+                  }
+                </span>
+                @if (r.who) {
+                  <span class="ds-row__who"><span class="ds-sr">{{ 'schedules.who' | translate }}: </span>{{ r.who }}</span>
+                }
+              </li>
+            }
+          </ol>
+
+          @if (s.note) {
+            <p class="ds-dialog__note">{{ s.note }}</p>
+          }
+          <div class="ds-dialog__foot">
+            <!-- vendors and admins have no wedding day to fill -->
+            @if (!auth.isAuthenticated() || auth.isCouple()) {
+              <button type="button" class="btn btn--primary" (click)="use(s.key, dlg)">{{ 'schedules.use' | translate }}</button>
+            }
+            <p class="ds-dialog__hint">{{ 'schedules.hint' | translate }}</p>
+          </div>
+        </div>
+      </dialog>
+    </li>
+  }
+</ul>

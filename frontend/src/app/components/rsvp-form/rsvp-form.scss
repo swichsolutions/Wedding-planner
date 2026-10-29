@@ -1,0 +1,261 @@
+// The reply form inside the invitation: drawn with the design's own variables (--wsink,
+// --wsaccent, --wsbg, --wsradius from the wedding-site renderer), so it suits light and dark
+// designs alike. Deliberately outside the app's UI tokens, like the designs themselves.
+:host {
+  display: block;
+}
+
+.rsvp {
+  padding: clamp(1.5rem, 5cqi, 2.5rem) clamp(1.25rem, 5cqi, 2.5rem);
+  border: 1px solid color-mix(in srgb, var(--wsink) 18%, transparent);
+  border-radius: var(--wsradius, 10px);
+  background: color-mix(in srgb, var(--wsink) 4%, transparent);
+  color: var(--wsink);
+  text-align: start;
+}
+
+.rsvp--note {
+  text-align: center;
+}
+
+.rsvp__eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--wsmuted);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.rsvp__title {
+  margin: 0 0 var(--space-2);
+  color: var(--wsink);
+  font-family: var(--wsfont);
+  font-size: clamp(1.5rem, 5cqi, 2rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.rsvp__lead {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.rsvp__meta {
+  margin: var(--space-2) 0 0;
+  color: var(--wsmuted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.rsvp__form {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.rsvp__guest {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0 0 var(--space-6);
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--wsink) 14%, transparent);
+  min-width: 0;
+}
+
+.rsvp__who {
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.rsvp__choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.rsvp__pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--wsink) 35%, transparent);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--wsaccent);
+    outline-offset: 2px;
+  }
+
+  &.is-on {
+    border-color: var(--wsink);
+    background: var(--wsink);
+    color: var(--wspaper, var(--wsbg));
+  }
+}
+
+.rsvp__field {
+  display: grid;
+  gap: var(--space-2);
+
+  label {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--wsmuted);
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--wsink) 28%, transparent);
+    border-radius: calc(var(--wsradius, 10px) * 0.6);
+    background: color-mix(in srgb, var(--wspaper, var(--wsbg)) 70%, transparent);
+    color: var(--wsink);
+    font: inherit;
+    line-height: 1.5;
+
+    &:focus-visible {
+      outline: 2px solid var(--wsaccent);
+      outline-offset: 1px;
+    }
+
+    &::placeholder {
+      color: var(--wsmuted);
+      opacity: 0.8;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.rsvp__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.rsvp__chip {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--wsink) 25%, transparent);
+  border-radius: 999px;
+  background: none;
+  color: var(--wsink);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--wsaccent);
+    outline-offset: 2px;
+  }
+
+  &.is-on {
+    border-color: var(--wsink);
+    background: color-mix(in srgb, var(--wsink) 12%, transparent);
+  }
+}
+
+.rsvp__error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--wsaccent);
+  background: color-mix(in srgb, var(--wsink) 6%, transparent);
+  line-height: 1.5;
+}
+
+.rsvp__send,
+.rsvp__again {
+  justify-self: start;
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 1px solid var(--wsink);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--wsaccent);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.rsvp__send {
+  background: var(--wsink);
+  color: var(--wspaper, var(--wsbg));
+}
+
+.rsvp__again {
+  margin-top: var(--space-5);
+  background: none;
+  color: var(--wsink);
+}
+
+.rsvp__summary {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    gap: var(--space-1);
+    padding-top: var(--space-3);
+    border-top: 1px solid color-mix(in srgb, var(--wsink) 12%, transparent);
+  }
+}
+
+.rsvp__said {
+  color: var(--wsmuted);
+  line-height: 1.5;
+}
+
+.rsvp__quote {
+  margin: var(--space-5) 0 0;
+  font-style: italic;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.rsvp--loading {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.rsvp__skel {
+  display: block;
+  height: 1.25rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--wsink) 10%, transparent);
+
+  &--short {
+    width: 55%;
+  }
+}

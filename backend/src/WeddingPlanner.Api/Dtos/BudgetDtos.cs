@@ -16,7 +16,12 @@ public record BudgetItemDto(
     decimal? Paid,
     string? Note,
     DateOnly? ReminderDate,
-    int SortOrder);
+    int SortOrder,
+    /// <summary>What has been paid, oldest first. Paid is their sum.</summary>
+    IReadOnlyList<BudgetPaymentDto> Payments);
+
+/// <summary>One payment on a line: a deposit, an instalment or the rest.</summary>
+public record BudgetPaymentDto(int Id, decimal Amount, DateOnly PaidOn, string? Note);
 
 public record BudgetDto(decimal? TotalBudget, IReadOnlyList<BudgetItemDto> Items);
 
@@ -37,9 +42,16 @@ public class BudgetItemUpdateDto
     [MaxLength(200)] public string? MerchantName { get; set; }
     [Range(0, 999_999_999)] public decimal? Estimate { get; set; }
     [Range(0, 999_999_999)] public decimal? ActualCost { get; set; }
-    [Range(0, 999_999_999)] public decimal? Paid { get; set; }
     [MaxLength(1000)] public string? Note { get; set; }
     public DateOnly? ReminderDate { get; set; }
+}
+
+public class BudgetPaymentCreateDto
+{
+    [Range(0.01, 999_999_999)] public decimal Amount { get; set; }
+    /// <summary>Defaults to today.</summary>
+    public DateOnly? PaidOn { get; set; }
+    [MaxLength(200)] public string? Note { get; set; }
 }
 
 public class BudgetTotalUpdateDto

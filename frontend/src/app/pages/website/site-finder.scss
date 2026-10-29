@@ -1,7 +1,9 @@
-@use 'breakpoints' as bp;
-
+// /invitations/find on the brand theme: ivory page, white search panel, charcoal text, evergreen
+// only on the search button.
 :host {
   display: block;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .sf {
@@ -12,24 +14,32 @@
 .sf__back {
   display: inline-block;
   margin-bottom: var(--space-6);
-  color: var(--color-text-secondary);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
 
   &:hover {
-    color: var(--color-action);
+    color: var(--ink);
   }
 }
 
 .sf__head {
   margin-bottom: var(--space-8);
 
-  h1 {
-    margin: 0;
-  }
+}
+
+.sf__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.05;
 }
 
 .sf__sub {
   margin: var(--space-3) 0 0;
-  color: var(--color-text-secondary);
+  line-height: 1.5;
+  color: var(--ink-700);
   max-width: var(--measure);
 }
 
@@ -40,9 +50,8 @@
   align-items: flex-end;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--paper-white, #fff);
+  border-radius: 20px;
 }
 
 .sf-form__field {
@@ -53,16 +62,20 @@
 
   label {
     font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-700);
   }
 
   input,
   select {
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border-strong);
+    min-height: 46px;
+    border: 1px solid var(--paper-line-strong);
     border-radius: var(--radius-md);
     font: inherit;
-    background: var(--color-surface);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
   }
 
   &--narrow {
@@ -77,20 +90,23 @@
 .sf__error {
   margin: var(--space-4) 0 0;
   padding: var(--space-3) var(--space-4);
-  background: var(--color-danger-100);
-  color: var(--color-danger-600);
+  background: var(--paper-deep);
+  color: var(--ink);
+  line-height: 1.5;
   border-radius: var(--radius-md);
   font-size: var(--fs-caption);
 }
 
 .sf__count {
   margin: var(--space-8) 0 var(--space-4);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
 }
 
 .sf__empty {
   margin: var(--space-8) 0 0;
-  color: var(--color-text-secondary);
+  line-height: 1.5;
+  color: var(--ink-700);
 }
 
 // ---- results table (scrolls inside itself on narrow screens) ----
@@ -106,21 +122,20 @@
   th {
     text-align: start;
     font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-overline);
-    color: var(--color-text-secondary);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-500);
     padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--color-border-strong);
+    border-bottom: 1px solid var(--paper-line-strong);
   }
 
   td {
     padding: var(--space-4);
-    border-bottom: 1px solid var(--color-ink-100);
+    border-bottom: 1px solid var(--paper-line);
     white-space: nowrap;
   }
 }
 
 .sf-table__couple {
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }

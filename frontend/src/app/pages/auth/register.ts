@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor } from '../../core/auth.service';
-import { CATEGORIES, img } from '../../core/catalog';
+import { GROUPS, categoriesIn, img } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 
 interface ScatterPhoto {
@@ -50,8 +50,12 @@ interface ScatterPhoto {
                 [class.is-invalid]="attempted() && form.controls.categorySlug.invalid"
                 [attr.aria-invalid]="attempted() && form.controls.categorySlug.invalid ? 'true' : null">
                 <option value="">{{ 'auth.selectCategory' | translate }}</option>
-                @for (c of categories; track c.slug) {
-                  <option [value]="c.slug">{{ c.key | translate }}</option>
+                @for (g of groups; track g) {
+                  <optgroup [label]="'catalog.groups.' + g | translate">
+                    @for (c of categoriesIn(g); track c.slug) {
+                      <option [value]="c.slug">{{ c.key | translate }}</option>
+                    }
+                  </optgroup>
                 }
               </select>
               @if (attempted() && form.controls.categorySlug.invalid) {
@@ -110,7 +114,8 @@ export class Register {
   private readonly router = inject(Router);
   private readonly host = inject(ElementRef<HTMLElement>);
 
-  protected readonly categories = CATEGORIES;
+  protected readonly groups = GROUPS;
+  protected readonly categoriesIn = categoriesIn;
   protected readonly error = signal(false);
   protected readonly loading = signal(false);
   /** Set on a failed submit — reveals the inline email/password validation messages. */

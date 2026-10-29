@@ -635,7 +635,8 @@ color flow was also verified in a real browser via Playwright.
   channel) for real-browser verification — used to catch the two color bugs above.
 
 
-- **[UNFIXED] Two notification-badge bugs** the code-reviewer found (feature works; these are edge
+- **[FIXED since — verified in code 2026-10-19: `loadSeq` invalidation in notification.service.ts,
+  optimistic `isRead` + guard in dashboard `markRead`]** Two notification-badge bugs the code-reviewer found (feature works; these are edge
   cases — user was deciding whether to fix):
   1. Race in `core/notification.service.ts` `refresh()` — a slow `GET /api/vendor/me/stats` can land
      AFTER a `markOneRead()` and `unread.set(...)` clobbers it back to the stale higher count (until

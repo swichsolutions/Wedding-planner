@@ -42,8 +42,9 @@ export class VendorCard {
     event.stopPropagation();
 
     // Saving is a couple-account feature — send everyone else to couple sign-up first,
-    // remembering where they were so a future sign-up page can return them here.
+    // remembering the vendor and the page: they come back here with it saved.
     if (!this.auth.isCouple()) {
+      this.wishlist.rememberSave(this.vendor().id);
       this.router.navigate(['/signup'], {
         queryParams: { returnUrl: this.router.url },
       });

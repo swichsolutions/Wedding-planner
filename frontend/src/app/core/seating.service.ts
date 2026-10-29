@@ -27,6 +27,8 @@ export interface SeatingTable {
   seatCount: number;
   positionX: number;
   positionY: number;
+  /** Clockwise degrees, 0–359. */
+  rotation: number;
 }
 
 export interface SeatingTablePayload {
@@ -35,6 +37,7 @@ export interface SeatingTablePayload {
   seatCount: number;
   positionX: number;
   positionY: number;
+  rotation: number;
 }
 
 export interface SeatAssignment {
@@ -51,6 +54,9 @@ export interface SeatingObject {
   positionY: number;
   width: number;
   height: number;
+  rotation: number;
+  /** The couple's own name for it; the type's name when null. */
+  label: string | null;
 }
 
 export interface SeatingObjectPayload {
@@ -59,12 +65,25 @@ export interface SeatingObjectPayload {
   positionY: number;
   width: number;
   height: number;
+  rotation: number;
+  label: string | null;
 }
 
 export interface SeatingState {
   tables: SeatingTable[];
   assignments: SeatAssignment[];
   objects: SeatingObject[];
+  /** The venue's floor plan under the chart, if uploaded. */
+  floorPlanUrl: string | null;
+}
+
+/** The table payload that keeps everything as it is (spread changes over it). */
+export function tablePayload(t: SeatingTable): SeatingTablePayload {
+  return { name: t.name, shape: t.shape, seatCount: t.seatCount, positionX: t.positionX, positionY: t.positionY, rotation: t.rotation };
+}
+
+export function objectPayload(o: SeatingObject): SeatingObjectPayload {
+  return { type: o.type, positionX: o.positionX, positionY: o.positionY, width: o.width, height: o.height, rotation: o.rotation, label: o.label };
 }
 
 /** The couple's seating chart API (requires Couple role; token via interceptor). */
@@ -107,5 +126,20 @@ export class SeatingService {
 
   removeObject(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/planning/seating/objects/${id}`);
+  }
+
+  /** Seat a guest's whole party at a table (free seats, in order), or unseat it (tableId null). */
+  seatGuest(guestId: number, tableId: number | null): Observable<SeatAssignment[]> {
+    return this.http.put<SeatAssignment[]>(`${this.base}/api/planning/seating/seat-guest`, { guestId, tableId });
+  }
+
+  uploadFloorPlan(file: File): Observable<SeatingState> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<SeatingState>(`${this.base}/api/planning/seating/floor-plan`, body);
+  }
+
+  removeFloorPlan(): Observable<SeatingState> {
+    return this.http.delete<SeatingState>(`${this.base}/api/planning/seating/floor-plan`);
   }
 }

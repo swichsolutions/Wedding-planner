@@ -29,6 +29,31 @@ export interface VendorDashboard {
   mapUrl: string | null;
   areasServed: string | null;
   photos: DashboardPhoto[];
+  // ---- catalog attributes (PROPOSALS.md P2–P5) ----
+  group: string;
+  priceUnit: string | null;
+  region: string | null;
+  servedRegions: string[];
+  alsoOffers: string[];
+  styles: string[];
+  features: string[];
+  capacityMin: number | null;
+  capacityMax: number | null;
+  setting: string | null;
+  venueType: string | null;
+  depositTerms: string | null;
+  cancellationTerms: string | null;
+  travelPolicy: string | null;
+  bookingLeadTime: string | null;
+  packages: VendorPackageEdit[];
+}
+
+export interface VendorPackageEdit {
+  name: string;
+  price: number | null;
+  priceUnit: string | null;
+  included: string | null;
+  duration: string | null;
 }
 
 export interface VendorEdit {
@@ -42,7 +67,21 @@ export interface VendorEdit {
   phone?: string | null;
   whatsapp?: string | null;
   mapUrl?: string | null;
-  areasServed?: string | null;
+  priceUnit?: string | null;
+  region?: string | null;
+  servedRegions?: string[];
+  alsoOffers?: string[];
+  styles?: string[];
+  features?: string[];
+  capacityMin?: number | null;
+  capacityMax?: number | null;
+  setting?: string | null;
+  venueType?: string | null;
+  depositTerms?: string | null;
+  cancellationTerms?: string | null;
+  travelPolicy?: string | null;
+  bookingLeadTime?: string | null;
+  packages?: VendorPackageEdit[];
 }
 
 export interface InboxMessage {
@@ -70,18 +109,26 @@ export interface VendorPhotoAdmin {
   sortOrder: number;
 }
 
-/** Authenticated vendor self-serve dashboard API (requires Vendor role; token via interceptor). */
+/**
+ * Authenticated vendor self-serve dashboard API (requires Vendor role; token via interceptor).
+ * The profile and photo calls take an optional vendorId: an admin editing a vendor, typically an
+ * imported profile nobody owns yet, goes through /api/admin/vendors/{id} instead of /api/vendor/me.
+ */
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBaseUrl;
 
-  getMyVendor(): Observable<VendorDashboard> {
-    return this.http.get<VendorDashboard>(`${this.base}/api/vendor/me`);
+  private root(vendorId?: number): string {
+    return vendorId == null ? `${this.base}/api/vendor/me` : `${this.base}/api/admin/vendors/${vendorId}`;
   }
 
-  updateMyVendor(dto: VendorEdit): Observable<VendorDashboard> {
-    return this.http.put<VendorDashboard>(`${this.base}/api/vendor/me`, dto);
+  getMyVendor(vendorId?: number): Observable<VendorDashboard> {
+    return this.http.get<VendorDashboard>(this.root(vendorId));
+  }
+
+  updateMyVendor(dto: VendorEdit, vendorId?: number): Observable<VendorDashboard> {
+    return this.http.put<VendorDashboard>(this.root(vendorId), dto);
   }
 
   getMessages(): Observable<InboxMessage[]> {
@@ -97,25 +144,29 @@ export class DashboardService {
   }
 
   // ---- photos ----
-  getPhotos(): Observable<VendorPhotoAdmin[]> {
-    return this.http.get<VendorPhotoAdmin[]>(`${this.base}/api/vendor/me/photos`);
+  getPhotos(vendorId?: number): Observable<VendorPhotoAdmin[]> {
+    return this.http.get<VendorPhotoAdmin[]>(`${this.root(vendorId)}/photos`);
   }
 
-  uploadPhoto(file: File): Observable<VendorPhotoAdmin> {
+  uploadPhoto(file: File, vendorId?: number): Observable<VendorPhotoAdmin> {
     const form = new FormData();
     form.append('file', file);
-    return this.http.post<VendorPhotoAdmin>(`${this.base}/api/vendor/me/photos`, form);
+    return this.http.post<VendorPhotoAdmin>(`${this.root(vendorId)}/photos`, form);
   }
 
-  updatePhoto(id: number, payload: { alt: string | null; isRealWedding: boolean }): Observable<void> {
-    return this.http.put<void>(`${this.base}/api/vendor/me/photos/${id}`, payload);
+  updatePhoto(
+    id: number,
+    payload: { alt: string | null; isRealWedding: boolean },
+    vendorId?: number,
+  ): Observable<void> {
+    return this.http.put<void>(`${this.root(vendorId)}/photos/${id}`, payload);
   }
 
-  reorderPhotos(ids: number[]): Observable<void> {
-    return this.http.put<void>(`${this.base}/api/vendor/me/photos/order`, { ids });
+  reorderPhotos(ids: number[], vendorId?: number): Observable<void> {
+    return this.http.put<void>(`${this.root(vendorId)}/photos/order`, { ids });
   }
 
-  deletePhoto(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/api/vendor/me/photos/${id}`);
+  deletePhoto(id: number, vendorId?: number): Observable<void> {
+    return this.http.delete<void>(`${this.root(vendorId)}/photos/${id}`);
   }
 }

@@ -24,7 +24,7 @@ export class TrustFaq {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** i18n keys: home.trust.faq.q<n> / a<n> */
-  protected readonly questions = ['1', '2', '3', '4', '5'];
+  protected readonly questions = ['1', '2', '3', '4', '5', '6'];
   protected readonly active = signal(0);
   protected readonly flipped = signal<number | null>(null);
   protected readonly hover = signal(false);
@@ -54,11 +54,12 @@ export class TrustFaq {
     destroyRef.onDestroy(() => this.stop());
   }
 
-  /** Card i's place relative to the active one: -1 leaving, 0 active, 1–2 waiting, 3+ parked. */
+  /** Card i's place relative to the active one: -1 leaving, 0 active, 1–2 waiting, 3 parked
+   * (every card further out shares the parked slot, which is the last one styled). */
   protected slot(i: number): number {
     const n = this.questions.length;
     const k = (((i - this.active()) % n) + n) % n;
-    return k === n - 1 ? -1 : k;
+    return k === n - 1 ? -1 : Math.min(k, 3);
   }
 
   protected go(i: number): void {

@@ -39,5 +39,23 @@
   "Google": {
     // OPTIONAL — empty just hides the Google sign-in button; password auth works.
     "ClientId": ""
+  },
+  "Email": {
+    // OPTIONAL in dev — with no Smtp:Host, "forgot password" mails are written to the API
+    // console instead (copy the reset link from there). Set these to really send:
+    // any SMTP provider on its STARTTLS submission port (587).
+    "From": "no-reply@weddingplanner.ge",
+    "FromName": "WeddingPlanner",
+    "Smtp": {
+      "Host": "",
+      "Port": 587,
+      "Username": "",
+      "Password": "",
+      "EnableSsl": true
+    }
+  },
+  "Site": {
+    // Brand name used in emails (the frontend's is brand.name in i18n).
+    "Name": "WeddingPlanner"
   }
 }

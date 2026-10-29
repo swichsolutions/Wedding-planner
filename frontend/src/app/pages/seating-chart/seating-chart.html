@@ -5,6 +5,10 @@
       <p class="seat__sub">{{ 'seatingPage.subtitle' | translate }}</p>
     </header>
 
+    <!-- the venue's floor plan picker (hidden; the toolbar's button opens it) -->
+    <input #planInput type="file" accept="image/jpeg,image/png,image/webp" class="seat__file"
+      [attr.aria-label]="'seatingPage.planUpload' | translate" (change)="uploadPlan(planInput)" />
+
     @if (loadError()) {
       <p class="seat__error" role="alert">
         {{ 'seatingPage.loadError' | translate }}
@@ -18,28 +22,71 @@
           <span class="seat__skel-bar"></span>
         }
       </div>
-    } @else if (tables().length === 0 && objects().length === 0) {
+    } @else if (tables().length === 0 && objects().length === 0 && !floorPlanUrl()) {
       <!-- ---- empty canvas: nothing added yet ---- -->
       <div class="seat-empty">
         <p class="seat-empty__text">{{ 'seatingPage.noTables' | translate }}</p>
-        <button type="button" class="btn btn--pink" (click)="openAddModal()">
-          {{ 'seatingPage.addItemCta' | translate }}
-        </button>
+        <div class="seat-empty__actions">
+          <button type="button" class="btn btn--primary" (click)="openAddModal()">
+            {{ 'seatingPage.addItemCta' | translate }}
+          </button>
+          <button type="button" class="seat-quiet" (click)="planInput.click()" [disabled]="planBusy()">
+            {{ 'seatingPage.planUpload' | translate }}
+          </button>
+        </div>
+        <p class="seat-empty__hint">{{ 'seatingPage.planHint' | translate }}</p>
       </div>
     } @else {
-      <!-- ---- toolbar: one entry point for tables + venue items ---- -->
+      <!-- ---- counts: tables, seats, free seats, unseated guests ---- -->
+      <ul class="seat-stats" role="list">
+        <li><span class="num">{{ tables().length }}</span> {{ 'seatingPage.statTables' | translate }}</li>
+        <li><span class="num">{{ seatTotal() }}</span> {{ 'seatingPage.statSeats' | translate }}</li>
+        <li><span class="num">{{ freeTotal() }}</span> {{ 'seatingPage.statFree' | translate }}</li>
+        <li [class.is-open]="unassignedAttendees().length > 0">
+          <span class="num">{{ unassignedAttendees().length }}</span> {{ 'seatingPage.statUnseated' | translate }}
+        </li>
+      </ul>
+
+      <!-- ---- toolbar: add, the floor plan, download / print / share ---- -->
       <div class="seat-toolbar">
-        <button type="button" class="btn btn--pink-outline" (click)="openAddModal()">
+        <button type="button" class="btn btn--primary" (click)="openAddModal()">
           {{ 'seatingPage.addItemCta' | translate }}
         </button>
+        <span class="seat-toolbar__group">
+          @if (floorPlanUrl()) {
+            <button type="button" class="seat-quiet" (click)="showPlan.set(!showPlan())" [attr.aria-pressed]="showPlan()">
+              {{ (showPlan() ? 'seatingPage.planHide' : 'seatingPage.planShow') | translate }}
+            </button>
+            <button type="button" class="seat-quiet" (click)="planInput.click()" [disabled]="planBusy()">
+              {{ 'seatingPage.planReplace' | translate }}
+            </button>
+            <button type="button" class="seat-quiet" (click)="askRemovePlan()">{{ 'seatingPage.planRemove' | translate }}</button>
+          } @else {
+            <button type="button" class="seat-quiet" (click)="planInput.click()" [disabled]="planBusy()">
+              {{ 'seatingPage.planUpload' | translate }}
+            </button>
+          }
+        </span>
+        <span class="seat-toolbar__group seat-toolbar__out">
+          <button type="button" class="seat-out" (click)="downloadPng()" [disabled]="exporting()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5" /><path d="M4 19h16" /></svg>
+            {{ 'seatingPage.download' | translate }}
+          </button>
+          <button type="button" class="seat-out" (click)="printList()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6" /><rect x="3" y="9" width="18" height="8" rx="2" /><path d="M7 14h10v7H7z" /></svg>
+            {{ 'seatingPage.print' | translate }}
+          </button>
+          @if (canShare()) {
+            <button type="button" class="seat-out" (click)="sharePng()" [disabled]="exporting()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
+              {{ 'seatingPage.share' | translate }}
+            </button>
+          }
+        </span>
       </div>
 
-      <p class="seat__seated-count">
-        {{ 'seatingPage.seatedCount' | translate: { seated: totalSeated(), total: allAttendees().length } }}
-      </p>
-
       <div class="seat-layout" cdkDropListGroup>
-        <!-- ---- unassigned guests pool ---- -->
+        <!-- ---- unassigned guests pool (families together; guests who said no aren't here) ---- -->
         <div class="seat-pool">
           <h2 class="seat-pool__title">{{ 'seatingPage.unassignedTitle' | translate }}</h2>
           <div class="seat-pool__list" cdkDropList id="unassigned" [cdkDropListData]="unassignedAttendees()"
@@ -47,17 +94,28 @@
             @if (unassignedAttendees().length === 0) {
               <p class="seat-pool__empty">{{ 'seatingPage.allSeated' | translate }}</p>
             }
-            @for (attendee of unassignedAttendees(); track (attendee.guestId + '-' + attendee.kind)) {
-              <div class="seat-chip" cdkDrag [cdkDragData]="attendee">
-                {{ attendee.name }}
-              </div>
+            @for (group of poolGroups(); track group.key) {
+              @if (group.name || poolGroups().length > 1) {
+                <span class="seat-pool__group">{{ group.name ?? ('seatingPage.poolOthers' | translate) }}</span>
+              }
+              @for (attendee of group.attendees; track (attendee.guestId + '-' + attendee.kind)) {
+                <div class="seat-chip" cdkDrag [cdkDragData]="attendee" [attr.title]="attendee.diet">
+                  {{ attendee.name }}
+                  @if (attendee.diet) {
+                    <span class="seat-chip__diet" [attr.aria-label]="('guestListPage.dietaryLabel' | translate) + ': ' + attendee.diet">•</span>
+                  }
+                </div>
+              }
             }
           </div>
         </div>
 
         <!-- ---- canvas ---- -->
         <div class="seat-canvas-wrap">
-          <div class="seat-canvas">
+          <div class="seat-canvas" [style.min-width.px]="floorPlanUrl() && showPlan() ? planWidth : null">
+            @if (floorPlanUrl() && showPlan()) {
+              <img class="seat-plan" [src]="floorPlanUrl()" alt="" [style.width.px]="planWidth" />
+            }
             @for (table of tables(); track table.id) {
               <div class="seat-table"
                 [class.seat-table--rect]="table.shape === 'rectangular' || table.shape === 'four_sided'"
@@ -73,16 +131,50 @@
                   </svg>
                 </span>
 
-                <div class="seat-table__surface">
-                  @if (renamingTableId() === table.id) {
-                    <input class="seat-table__name-input" type="text" [value]="table.name" maxlength="120"
-                      (blur)="commitRename(table, $event)" (keydown.enter)="commitRename(table, $event)" />
-                  } @else {
-                    <span class="seat-table__name" (click)="startRename(table)">{{ table.name }}</span>
+                <!-- the table and its seats turn together; names stay upright -->
+                <div class="seat-table__turn" [style.transform]="'rotate(' + table.rotation + 'deg)'">
+                  <div class="seat-table__shape">
+                    <div class="seat-table__surface" [style.transform]="'rotate(' + -table.rotation + 'deg)'">
+                      @if (renamingTableId() === table.id) {
+                        <input class="seat-table__name-input" type="text" [value]="table.name" maxlength="120"
+                          (blur)="commitRename(table, $event)" (keydown.enter)="commitRename(table, $event)" />
+                      } @else {
+                        <span class="seat-table__name" (click)="startRename(table)">{{ table.name }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  @for (seatIndex of seatIndexes(table); track seatIndex) {
+                    <div class="seat-dot-wrap"
+                      [style.left.px]="tableSize(table).width / 2 + seatOffset(table, seatIndex).x - 16"
+                      [style.top.px]="tableSize(table).height / 2 + seatOffset(table, seatIndex).y - 16">
+                      <div class="seat-dot" cdkDropList [id]="seatListId(table.id, seatIndex)"
+                        (cdkDropListDropped)="onDrop($event)" [style.transform]="'rotate(' + -table.rotation + 'deg)'">
+                        @if (seatOccupant(table.id, seatIndex); as occ) {
+                          <div class="seat-chip seat-chip--seated" cdkDrag [cdkDragData]="attendeeFor(occ)"
+                            [attr.title]="attendeeFor(occ)?.name">
+                            {{ (attendeeFor(occ)?.name ?? '')?.charAt(0) }}
+                            <button type="button" class="seat-chip__remove"
+                              (click)="$event.stopPropagation(); unassignSeat(table.id, seatIndex)"
+                              [attr.aria-label]="('seatingPage.unassignSeat' | translate) + ' — ' + (attendeeFor(occ)?.name ?? '')">×</button>
+                          </div>
+                        } @else {
+                          <span class="seat-dot__num">{{ seatIndex + 1 }}</span>
+                        }
+                      </div>
+                    </div>
                   }
                 </div>
 
                 <div class="seat-table__toolbar">
+                  <button type="button" class="seat-table__icon-btn" (click)="rotateTable(table, -15)"
+                    [attr.aria-label]="('seatingPage.rotateLeft' | translate) + ' — ' + table.name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                  </button>
+                  <button type="button" class="seat-table__icon-btn" (click)="rotateTable(table, 15)"
+                    [attr.aria-label]="('seatingPage.rotateRight' | translate) + ' — ' + table.name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>
+                  </button>
                   <button type="button" class="seat-table__icon-btn" (click)="openEditModal(table)"
                     [attr.aria-label]="('seatingPage.editTable' | translate) + ' — ' + table.name">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -103,35 +195,17 @@
                     (click)="askRemoveTable(table)"
                     [attr.aria-label]="('seatingPage.removeTable' | translate) + ' — ' + table.name">×</button>
                 </div>
-
-                @for (seatIndex of seatIndexes(table); track seatIndex) {
-                  <div class="seat-dot-wrap"
-                    [style.left.px]="tableSize(table).width / 2 + seatOffset(table, seatIndex).x - 16"
-                    [style.top.px]="tableSize(table).height / 2 + seatOffset(table, seatIndex).y - 16">
-                    <div class="seat-dot" cdkDropList [id]="seatListId(table.id, seatIndex)"
-                      (cdkDropListDropped)="onDrop($event)">
-                      @if (seatOccupant(table.id, seatIndex); as occ) {
-                        <div class="seat-chip seat-chip--seated" cdkDrag [cdkDragData]="attendeeFor(occ)"
-                          [attr.title]="attendeeFor(occ)?.name">
-                          {{ (attendeeFor(occ)?.name ?? '')?.charAt(0) }}
-                          <button type="button" class="seat-chip__remove"
-                            (click)="$event.stopPropagation(); unassignSeat(table.id, seatIndex)"
-                            [attr.aria-label]="'seatingPage.unassignSeat' | translate">×</button>
-                        </div>
-                      } @else {
-                        <span class="seat-dot__num">{{ seatIndex + 1 }}</span>
-                      }
-                    </div>
-                  </div>
-                }
               </div>
             }
 
             @for (obj of objects(); track obj.id) {
-              <div class="seat-object" [class.seat-object--dance-floor]="obj.type === 'dance_floor'"
-                cdkDrag [cdkDragFreeDragPosition]="{ x: obj.positionX, y: obj.positionY }"
+              <div class="seat-object" cdkDrag [cdkDragFreeDragPosition]="{ x: obj.positionX, y: obj.positionY }"
                 (cdkDragEnded)="onObjectDragEnded(obj, $event)"
                 [style.width.px]="obj.width" [style.height.px]="obj.height">
+                <div class="seat-object__turn" [class.seat-object__turn--dance-floor]="obj.type === 'dance_floor'"
+                  [style.transform]="'rotate(' + obj.rotation + 'deg)'">
+                  <span class="seat-object__label" [style.transform]="'rotate(' + -obj.rotation + 'deg)'">{{ objectLabel(obj) }}</span>
+                </div>
                 <span class="seat-object__grip" cdkDragHandle aria-hidden="true"
                   [attr.title]="'seatingPage.dragObject' | translate">
                   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -139,9 +213,22 @@
                     <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
                   </svg>
                 </span>
-                <span class="seat-object__label">{{ ('seatingPage.objectType.' + objectKind(obj.type).i18nKey) | translate }}</span>
-                <button type="button" class="seat-table__remove" (click)="askRemoveObject(obj)"
-                  [attr.aria-label]="('seatingPage.removeObject' | translate) + ' — ' + (('seatingPage.objectType.' + objectKind(obj.type).i18nKey) | translate)">×</button>
+                <div class="seat-table__toolbar">
+                  <button type="button" class="seat-table__icon-btn" (click)="rotateObject(obj, -15)"
+                    [attr.aria-label]="('seatingPage.rotateLeft' | translate) + ' — ' + objectLabel(obj)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+                  </button>
+                  <button type="button" class="seat-table__icon-btn" (click)="rotateObject(obj, 15)"
+                    [attr.aria-label]="('seatingPage.rotateRight' | translate) + ' — ' + objectLabel(obj)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>
+                  </button>
+                  <button type="button" class="seat-table__icon-btn" (click)="openObjectEdit(obj)"
+                    [attr.aria-label]="('seatingPage.editObject' | translate) + ' — ' + objectLabel(obj)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                  </button>
+                  <button type="button" class="seat-table__icon-btn seat-table__icon-btn--danger" (click)="askRemoveObject(obj)"
+                    [attr.aria-label]="('seatingPage.removeObject' | translate) + ' — ' + objectLabel(obj)">×</button>
+                </div>
               </div>
             }
           </div>
@@ -310,6 +397,30 @@
                 </div>
               </section>
             }
+          } @else if (modalStep() === 'object' && editingObject(); as obj) {
+            <h2 id="tm-title" class="add-drawer__title">{{ 'seatingPage.editObjectTitle' | translate }}</h2>
+
+            <form class="table-form" (submit)="$event.preventDefault(); submitObjectForm(objectForm)" #objectForm>
+              <div class="table-form__field">
+                <label for="om-label">{{ 'seatingPage.objectLabel' | translate }}</label>
+                <input id="om-label" name="objectLabel" type="text" maxlength="60" [value]="obj.label ?? ''"
+                  [attr.placeholder]="'seatingPage.objectType.' + objectKind(obj.type).i18nKey | translate" />
+              </div>
+              <div class="table-form__row">
+                <div class="table-form__field">
+                  <label for="om-width">{{ 'seatingPage.objectWidth' | translate }}</label>
+                  <input id="om-width" name="objectWidth" type="number" min="20" max="1200" step="10" [value]="obj.width" />
+                </div>
+                <div class="table-form__field">
+                  <label for="om-height">{{ 'seatingPage.objectHeight' | translate }}</label>
+                  <input id="om-height" name="objectHeight" type="number" min="20" max="1200" step="10" [value]="obj.height" />
+                </div>
+              </div>
+              <p class="table-form__hint">{{ 'seatingPage.objectSizeHint' | translate }}</p>
+              <div class="table-form__actions">
+                <button type="submit" class="btn btn--primary">{{ 'seatingPage.saveChanges' | translate }}</button>
+              </div>
+            </form>
           } @else {
             <h2 id="tm-title" class="add-drawer__title">
               {{ (editingTable() ? 'seatingPage.editTableModalTitle' : 'seatingPage.customTable') | translate }}
@@ -404,7 +515,7 @@
                     {{ 'seatingPage.backToPresets' | translate }}
                   </button>
                 }
-                <button type="submit" class="btn btn--pink">
+                <button type="submit" class="btn btn--primary">
                   {{ (editingTable() ? 'seatingPage.saveChanges' : 'seatingPage.addTableCta') | translate }}
                 </button>
               </div>

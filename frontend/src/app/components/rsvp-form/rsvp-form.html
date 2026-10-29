@@ -1,0 +1,137 @@
+@if (!code()) {
+  <!-- General link: replies come through each family's personal link. -->
+  @if (site().rsvpEnabled) {
+    <section class="rsvp rsvp--note">
+      <h2 class="rsvp__eyebrow">{{ 'rsvp.title' | translate }}</h2>
+      <p class="rsvp__lead">{{ 'rsvp.generalNote' | translate }}</p>
+      @if (deadline()) {
+        <p class="rsvp__meta">{{ 'rsvp.deadline' | translate: { date: deadline() } }}</p>
+      }
+    </section>
+  }
+} @else if (state() === 'missing') {
+  <section class="rsvp rsvp--note" role="status">
+    <h2 class="rsvp__eyebrow">{{ 'rsvp.title' | translate }}</h2>
+    <p class="rsvp__lead">{{ 'rsvp.missing' | translate }}</p>
+  </section>
+} @else if (state() === 'loading') {
+  <section class="rsvp rsvp--loading" aria-hidden="true">
+    <span class="rsvp__skel"></span>
+    <span class="rsvp__skel rsvp__skel--short"></span>
+  </section>
+} @else if (party(); as p) {
+  <section class="rsvp" aria-labelledby="rsvp-title">
+    <p class="rsvp__eyebrow">{{ 'rsvp.personal' | translate }}</p>
+    <h2 id="rsvp-title" class="rsvp__title">{{ partyName() }}</h2>
+
+    @if (!p.enabled) {
+      <!-- RSVP is off: the personal link is just a personal copy of the invitation. -->
+    } @else if (editing()) {
+      @if (deadline()) {
+        <p class="rsvp__meta">{{ 'rsvp.deadline' | translate: { date: deadline() } }}</p>
+      }
+
+      <form class="rsvp__form" (submit)="$event.preventDefault(); submit()" novalidate>
+        @for (g of p.guests; track g.id) {
+          <fieldset class="rsvp__guest">
+            <legend class="rsvp__who">{{ people(g) }}</legend>
+            <div class="rsvp__choice">
+              <label class="rsvp__pill" [class.is-on]="answerOf(g.id).attendance === 'yes'">
+                <input type="radio" [name]="'att-' + g.id" value="yes"
+                  [checked]="answerOf(g.id).attendance === 'yes'" (change)="set(g.id, { attendance: 'yes' })" />
+                {{ (isGroup(g) ? 'rsvp.yesMany' : 'rsvp.yesOne') | translate }}
+              </label>
+              <label class="rsvp__pill" [class.is-on]="answerOf(g.id).attendance === 'no'">
+                <input type="radio" [name]="'att-' + g.id" value="no"
+                  [checked]="answerOf(g.id).attendance === 'no'" (change)="set(g.id, { attendance: 'no' })" />
+                {{ (isGroup(g) ? 'rsvp.noMany' : 'rsvp.noOne') | translate }}
+              </label>
+            </div>
+
+            @if (answerOf(g.id).attendance === 'yes') {
+              @if (g.hasPlusOne && !g.plusOneName) {
+                <div class="rsvp__field">
+                  <label [for]="'rsvp-plus-' + g.id">{{ 'rsvp.plusOneName' | translate }}</label>
+                  <input [id]="'rsvp-plus-' + g.id" type="text" maxlength="120" autocomplete="off"
+                    [value]="answerOf(g.id).plusOne" (input)="onText(g.id, 'plusOne', $event)" />
+                </div>
+              }
+              @if (p.askDiet) {
+                <div class="rsvp__field">
+                  <label [for]="'rsvp-diet-' + g.id">{{ 'rsvp.dietLabel' | translate }}</label>
+                  <div class="rsvp__chips" role="group" [attr.aria-label]="'rsvp.dietLabel' | translate">
+                    @for (d of diets; track d) {
+                      <button type="button" class="rsvp__chip" [class.is-on]="dietOn(g.id, d)"
+                        [attr.aria-pressed]="d === 'other' ? null : dietOn(g.id, d)"
+                        (click)="pickDiet(g.id, d)">
+                        {{ 'rsvp.diet.' + d | translate }}@if (d === 'allergy' || d === 'other') {…}
+                      </button>
+                    }
+                  </div>
+                  <input [id]="'rsvp-diet-' + g.id" type="text" maxlength="200" autocomplete="off"
+                    [value]="answerOf(g.id).diet" (input)="onText(g.id, 'diet', $event)"
+                    [attr.placeholder]="'rsvp.dietPlaceholder' | translate" />
+                </div>
+              }
+            }
+          </fieldset>
+        }
+
+        @if (p.askMessage) {
+          <div class="rsvp__field">
+            <label for="rsvp-message">{{ 'rsvp.messageLabel' | translate }}</label>
+            <textarea id="rsvp-message" rows="3" maxlength="1000" [value]="message()"
+              (input)="message.set($any($event.target).value)"></textarea>
+          </div>
+        }
+        @if (p.question) {
+          <div class="rsvp__field">
+            <label for="rsvp-answer">{{ p.question }}</label>
+            <input id="rsvp-answer" type="text" maxlength="500" autocomplete="off" [value]="answer()"
+              (input)="answer.set($any($event.target).value)" />
+          </div>
+        }
+
+        @if (error(); as e) {
+          <p class="rsvp__error" role="alert">{{ e | translate }}</p>
+        }
+        <button type="submit" class="rsvp__send" [disabled]="busy()">
+          {{ (busy() ? 'rsvp.sending' : 'rsvp.send') | translate }}
+        </button>
+      </form>
+    } @else {
+      <!-- What this party answered (after sending, or when replies are closed). -->
+      <div role="status">
+        @if (p.respondedAt) {
+          <p class="rsvp__lead">{{ (p.open ? 'rsvp.thanks' : 'rsvp.thanksClosed') | translate }}</p>
+        } @else {
+          <p class="rsvp__lead">{{ 'rsvp.closed' | translate }}</p>
+        }
+        @if (error(); as e) {
+          <p class="rsvp__error">{{ e | translate }}</p>
+        }
+      </div>
+      @if (p.respondedAt) {
+        <ul class="rsvp__summary" role="list">
+          @for (g of p.guests; track g.id) {
+            <li>
+              <span class="rsvp__who">{{ people(g) }}</span>
+              <span class="rsvp__said">
+                {{ (g.attendance === 'yes' ? 'rsvp.saidYes' : g.attendance === 'no' ? 'rsvp.saidNo' : 'rsvp.saidNothing') | translate }}
+                @if (g.attendance === 'yes' && g.dietaryNeeds) {
+                  · {{ g.dietaryNeeds }}
+                }
+              </span>
+            </li>
+          }
+        </ul>
+        @if (p.message) {
+          <p class="rsvp__quote">„{{ p.message }}“</p>
+        }
+      }
+      @if (p.open) {
+        <button type="button" class="rsvp__again" (click)="edit()">{{ 'rsvp.change' | translate }}</button>
+      }
+    }
+  </section>
+}

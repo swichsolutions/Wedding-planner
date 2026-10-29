@@ -18,7 +18,28 @@ public record GuestDto(
     string? ChildFirstName,
     string? ChildLastName,
     bool ChildNameUnknown,
-    int SortOrder);
+    int SortOrder,
+    string Attendance,
+    string? DietaryNeeds,
+    int? FamilyId,
+    DateTimeOffset? RsvpAt,
+    string? RsvpMessage,
+    string? RsvpAnswer);
+
+/// <summary>A family on the guest list (D9), with its last answer on the invitation (B6).</summary>
+public record GuestFamilyDto(int Id, string Name, DateTimeOffset? RsvpAt, string? RsvpMessage, string? RsvpAnswer);
+
+public class GuestFamilyUpsertDto
+{
+    [Required, MaxLength(120)] public string Name { get; set; } = string.Empty;
+}
+
+/// <summary>Put several guests into a family (or take them out of one: FamilyId null).</summary>
+public class GuestFamilyAssignDto
+{
+    [Required, MaxLength(500)] public List<int> GuestIds { get; set; } = new();
+    public int? FamilyId { get; set; }
+}
 
 public class GuestCreateDto
 {
@@ -38,6 +59,11 @@ public class GuestCreateDto
     [MaxLength(120)] public string? ChildFirstName { get; set; }
     [MaxLength(120)] public string? ChildLastName { get; set; }
     public bool ChildNameUnknown { get; set; }
+
+    /// <summary>pending (default), yes, no.</summary>
+    [MaxLength(10)] public string? Attendance { get; set; }
+    [MaxLength(200)] public string? DietaryNeeds { get; set; }
+    public int? FamilyId { get; set; }
 }
 
 public class GuestUpdateDto : GuestCreateDto

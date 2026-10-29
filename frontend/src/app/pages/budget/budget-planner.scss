@@ -1,7 +1,11 @@
+// The budget on the brand theme (CLAUDE.md): ivory page, white panels, charcoal text and
+// meters, evergreen only on buttons, peach for small "due" callouts.
 @use 'breakpoints' as bp;
 
 :host {
   display: block;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .budget {
@@ -14,6 +18,10 @@
 
   h1 {
     margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+    font-weight: var(--fw-medium);
+    line-height: 1.05;
   }
 }
 
@@ -59,7 +67,7 @@
 .bskel__bar {
   height: 3.25rem;
   border-radius: var(--radius-md);
-  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-surface-sunken) 50%, var(--color-ink-100) 75%);
+  background: linear-gradient(90deg, var(--paper-deep) 25%, var(--color-surface-sunken) 50%, var(--paper-deep) 75%);
   background-size: 200% 100%;
   animation: bskel-shimmer 1.4s ease-in-out infinite;
 
@@ -95,8 +103,6 @@
   margin-bottom: var(--space-2);
   font-size: var(--fs-caption);
   font-weight: var(--fw-medium);
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
   color: var(--color-text-secondary);
 }
 
@@ -133,7 +139,7 @@
   margin-inline-start: var(--space-2);
   text-transform: none;
   letter-spacing: var(--tracking-normal);
-  color: var(--color-success-600);
+  color: var(--ink);
   font-weight: var(--fw-semibold);
 }
 
@@ -152,13 +158,13 @@
   font-family: var(--font-body);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
-  color: var(--color-brand-700);
+  color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
 
   &:hover {
-    color: var(--color-brand-600);
+    color: var(--ink);
   }
 }
 
@@ -200,7 +206,7 @@
   display: block;
   height: 6px;
   border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   overflow: hidden;
 }
 
@@ -208,15 +214,15 @@
   display: block;
   height: 100%;
   border-radius: var(--radius-pill);
-  background: var(--color-brand-500);
+  background: var(--ink-300);
   transition: width var(--dur-base) var(--ease-out);
 
   &--actual {
-    background: var(--color-ink-900);
+    background: var(--ink-500);
   }
 
   &--paid {
-    background: var(--color-success-600);
+    background: var(--ink);
   }
 }
 
@@ -328,8 +334,6 @@
     padding: var(--space-3) var(--space-3);
     font-size: var(--fs-caption);
     font-weight: var(--fw-medium);
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
     color: var(--color-text-secondary);
     text-align: start;
     border-bottom: 1px solid var(--color-border-strong);
@@ -447,7 +451,7 @@
   width: 1.75rem;
   height: 1.75rem;
   border-radius: var(--radius-sm);
-  color: var(--color-ink-300);
+  color: var(--paper-line-strong);
   cursor: grab;
   touch-action: none;
   transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
@@ -456,7 +460,7 @@
   &:focus-visible {
     outline: 2px solid var(--color-action);
     outline-offset: 1px;
-    color: var(--color-ink-600);
+    color: var(--ink-700);
   }
 
   svg {
@@ -465,20 +469,20 @@
   }
 
   &:hover {
-    color: var(--color-ink-900);
-    background: var(--color-ink-100);
+    color: var(--ink);
+    background: var(--paper-deep);
   }
 
   &:active {
     cursor: grabbing;
-    color: var(--color-brand-600);
-    background: var(--color-brand-50);
+    color: var(--ink);
+    background: var(--paper-deep);
   }
 }
 
 // Row hover invites the handle out — the whole row hints "you can grab me here".
 .brow:hover .brow__grip {
-  color: var(--color-ink-600);
+  color: var(--ink-700);
 }
 
 // One-time coach mark for reordering (dismiss persists in localStorage).
@@ -488,8 +492,8 @@
   gap: var(--space-2);
   margin: 0 0 var(--space-3);
   padding: var(--space-2) var(--space-3);
-  background: var(--color-sage-100);
-  color: var(--color-sage-700);
+  background: var(--paper-deep);
+  color: var(--ink);
   border-radius: var(--radius-md);
   font-size: var(--fs-caption);
 }
@@ -507,13 +511,13 @@
   border: 0;
   border-radius: var(--radius-pill);
   background: none;
-  color: var(--color-sage-700);
+  color: var(--ink);
   font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
 
   &:hover {
-    background: var(--color-sage-300);
+    background: var(--paper-line-strong);
   }
 }
 
@@ -562,11 +566,11 @@
     font-weight: var(--fw-semibold);
     color: var(--color-text);
     text-decoration: underline;
-    text-decoration-color: var(--color-brand-400);
+    text-decoration-color: var(--ink-500);
     text-underline-offset: 3px;
 
     &:hover {
-      color: var(--color-brand-700);
+      color: var(--ink);
     }
   }
 }
@@ -576,7 +580,7 @@
   height: 1.5rem;
   border: 0;
   border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   color: var(--color-text-secondary);
   font-size: 1rem;
   line-height: 1;
@@ -599,7 +603,7 @@
   cursor: pointer;
 
   &:hover {
-    border-bottom-color: var(--color-brand-500);
+    border-bottom-color: var(--ink);
   }
 }
 
@@ -636,7 +640,7 @@
 
   // Fully paid — green figure plus the ✓ (non-color signal).
   &.is-paid-up input {
-    color: var(--color-success-600);
+    color: var(--ink);
   }
 
   // Mobile: label the three money fields.
@@ -644,8 +648,6 @@
     content: attr(data-label);
     display: block;
     font-size: 0.75rem;
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
     color: var(--color-text-muted);
     margin-bottom: var(--space-1);
   }
@@ -684,7 +686,7 @@
 
 .brow__check {
   flex: none;
-  color: var(--color-success-600);
+  color: var(--ink);
   font-weight: var(--fw-bold);
 }
 
@@ -708,9 +710,9 @@
     background var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-success-600);
-    background: var(--color-success-100);
-    color: var(--color-success-600);
+    border-color: var(--ink);
+    background: var(--paper-deep);
+    color: var(--ink);
   }
 
   @include bp.respond-to(md) {
@@ -744,7 +746,7 @@
   border: 0;
   border-radius: var(--radius-pill);
   background: none;
-  color: var(--color-ink-500);
+  color: var(--ink-500);
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 
@@ -754,13 +756,13 @@
   }
 
   &:hover {
-    background: var(--color-ink-100);
-    color: var(--color-ink-900);
+    background: var(--paper-deep);
+    color: var(--ink);
   }
 
-  // Has a saved note / reminder — pink dot.
+  // Has a saved note / reminder — a dot.
   &.is-on {
-    color: var(--color-ink-900);
+    color: var(--ink);
 
     &::after {
       content: '';
@@ -770,12 +772,12 @@
       width: 7px;
       height: 7px;
       border-radius: var(--radius-pill);
-      background: var(--color-brand-500);
+      background: var(--ink);
     }
   }
 
   &.is-soon::after {
-    background: var(--color-warning-600);
+    background: var(--ink);
   }
 
   &.is-overdue {
@@ -801,7 +803,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-3);
-  border-top: 3px double var(--color-ink-900);
+  border-top: 3px double var(--ink);
 
   @include bp.respond-to(md) {
     display: table-row;
@@ -811,7 +813,7 @@
 
     > td {
       padding: var(--space-4) var(--space-3);
-      border-top: 3px double var(--color-ink-900);
+      border-top: 3px double var(--ink);
     }
   }
 }
@@ -838,8 +840,6 @@
     font-family: var(--font-body);
     font-weight: var(--fw-regular);
     font-size: 0.75rem;
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
     color: var(--color-text-muted);
     margin-bottom: var(--space-1);
   }
@@ -947,7 +947,7 @@
   transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
     box-shadow: var(--shadow-xs);
   }
 
@@ -971,7 +971,7 @@
   margin-inline-start: var(--space-2);
   font-size: 0.75rem;
   font-weight: var(--fw-semibold);
-  color: var(--color-brand-700);
+  color: var(--ink);
 }
 
 .bpicker__vmeta {
@@ -1073,8 +1073,8 @@
   }
 
   &.is-soon {
-    background: var(--color-warning-100);
-    color: var(--color-warning-600);
+    background: var(--peach);
+    color: var(--ink);
   }
 }
 
@@ -1093,7 +1093,7 @@
   overflow-y: auto;
   padding: var(--space-4);
   padding-top: clamp(var(--space-4), 8vh, var(--space-16));
-  background: var(--color-overlay);
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
 }
 
 .bmodal__panel {
@@ -1166,7 +1166,7 @@
   cursor: pointer;
 
   &:hover {
-    background: var(--color-ink-100);
+    background: var(--paper-deep);
     color: var(--color-text);
   }
 }
@@ -1176,8 +1176,6 @@
   margin-bottom: var(--space-2);
   font-size: var(--fs-caption);
   font-weight: var(--fw-medium);
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
   color: var(--color-text-secondary);
 }
 
@@ -1239,7 +1237,7 @@
   }
 
   &.is-paid-up .bmodal__amount input {
-    color: var(--color-success-600);
+    color: var(--ink);
   }
 }
 
@@ -1272,7 +1270,7 @@
 .bmodal__paid-badge {
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
-  color: var(--color-success-600);
+  color: var(--ink);
 }
 
 .bmodal__details {
@@ -1470,7 +1468,7 @@
 .alloc__bar {
   height: 10px;
   border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   overflow: hidden;
 }
 
@@ -1478,7 +1476,7 @@
   display: block;
   height: 100%;
   border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--color-brand-500), var(--color-brand-700));
+  background: var(--ink);
   transition: width var(--dur-base) var(--ease-out);
 }
 
@@ -1544,12 +1542,12 @@
   transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
   }
 
   &.is-active {
-    background: var(--color-ink-900);
-    border-color: var(--color-ink-900);
+    background: var(--ink);
+    border-color: var(--ink);
     color: var(--color-surface);
   }
 }
@@ -1576,13 +1574,13 @@
   -webkit-appearance: none;
   height: 44px;
   padding: 0 2.5rem 0 1.25rem;
-  border: 1.5px dashed var(--color-brand-400);
+  border: 1.5px dashed var(--ink-500);
   border-radius: var(--radius-pill);
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff3fa4' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23302B2D' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
       no-repeat right 0.9rem center / 0.9rem,
     var(--color-surface);
-  color: var(--color-brand-700);
+  color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
@@ -1590,9 +1588,9 @@
   transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
     border-style: solid;
-    background-color: color-mix(in srgb, var(--color-brand-500) 6%, var(--color-surface));
+    background-color: color-mix(in srgb, var(--ink) 6%, var(--color-surface));
   }
 
   &:focus-visible {
@@ -1813,5 +1811,188 @@
   // the sign-up aside and the landing's first band are both cream: keep them apart
   .bcta {
     margin-bottom: var(--space-16);
+  }
+}
+
+// =============================================================================
+// Payments (B4): paid is the sum of recorded payments, never typed in
+// =============================================================================
+.bsum__due {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--paper-deep);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink);
+
+  &.is-overdue {
+    background: var(--peach);
+  }
+}
+
+// The paid amount where an input used to be (guided card, popup)
+.bpaid {
+  gap: var(--space-1);
+}
+
+.bpaid__label {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.bpaid__sum {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.bpaid__open {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+}
+
+.brow__paid {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  min-height: 40px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bpay {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--paper-deep);
+}
+
+.bpay__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+
+.bpay__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.2;
+}
+
+.bpay__left {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink-700);
+}
+
+.bpay__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: var(--paper-white, #fff);
+}
+
+.bpay__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0 var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--paper-line);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.bpay__amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.bpay__date {
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+}
+
+.bpay__note {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-500);
+  overflow-wrap: anywhere;
+}
+
+.bpay__del {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
+.bpay__form {
+  display: grid;
+  gap: var(--space-3);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.bpay__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+  }
+
+  > input {
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+  }
+
+  @include bp.respond-to(sm) {
+    &--note {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.bpay__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+
+  @include bp.respond-to(sm) {
+    grid-column: 1 / -1;
   }
 }

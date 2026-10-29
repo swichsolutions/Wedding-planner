@@ -27,7 +27,10 @@ public class AdminController : ControllerBase
         var vendors = await query
             .OrderByDescending(v => v.CreatedAt)
             .Select(v => new AdminVendorDto(
-                v.Id, v.Name, v.Category.Slug, v.City, v.IsApproved, v.IsFeatured, v.CreatedAt))
+                v.Id, v.Name, v.Category.Slug, v.City, v.IsApproved, v.IsFeatured, v.CreatedAt,
+                v.Slug, v.CitySlug,
+                _db.Users.Any(u => u.VendorId == v.Id),
+                v.Photos.Count))
             .ToListAsync();
 
         return Ok(vendors);

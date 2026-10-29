@@ -21,13 +21,46 @@ public class Vendor
     /// <summary>URL-safe city slug (e.g. "tbilisi").</summary>
     public string CitySlug { get; set; } = string.Empty;
 
-    /// <summary>Free-text regions/areas served, beyond the primary city.</summary>
+    /// <summary>Legacy free-text areas (no longer edited; superseded by Region + ServedRegions).</summary>
     public string? AreasServed { get; set; }
+
+    /// <summary>Region of the primary city/village (key, e.g. "kakheti"; PROPOSALS.md P4).</summary>
+    public string? Region { get; set; }
+
+    /// <summary>Other regions the vendor works in (service vendors; venues leave it empty).</summary>
+    public List<string> ServedRegions { get; set; } = new();
+
+    /// <summary>Other categories in the same group the vendor also offers (category slugs).</summary>
+    public List<string> AlsoOffers { get; set; } = new();
 
     public decimal? PriceMin { get; set; }
 
+    /// <summary>What the starting price is for: event, guest, hour, kg, item (null = the group's default).</summary>
+    public string? PriceUnit { get; set; }
+
     /// <summary>Human-readable price range, e.g. "1000–3000 ₾".</summary>
     public string? PriceRange { get; set; }
+
+    /// <summary>Style keys (PROPOSALS.md P3), for photo/video and decor/flowers.</summary>
+    public List<string> Styles { get; set; } = new();
+
+    /// <summary>Group-specific feature keys (PROPOSALS.md P2), e.g. parking, drone, delivery, rental.</summary>
+    public List<string> Features { get; set; } = new();
+
+    // ---- venues only ----
+    public int? CapacityMin { get; set; }
+    public int? CapacityMax { get; set; }
+    /// <summary>indoor, outdoor or both.</summary>
+    public string? Setting { get; set; }
+    /// <summary>restaurant, hall, openAir, winery or hotel.</summary>
+    public string? VenueType { get; set; }
+
+    // ---- terms (information only: payments stay between couple and vendor, CLAUDE.md §4) ----
+    public string? DepositTerms { get; set; }
+    public string? CancellationTerms { get; set; }
+    /// <summary>Working outside the base city: included, extra or none.</summary>
+    public string? TravelPolicy { get; set; }
+    public string? BookingLeadTime { get; set; }
 
     public string? Bio { get; set; }
     public string? Instagram { get; set; }
@@ -42,6 +75,13 @@ public class Vendor
     /// <summary>Google Maps URL the vendor pastes (no API key needed to link out).</summary>
     public string? MapUrl { get; set; }
 
+    // ---- permission, for profiles the platform builds for a vendor (the A3 spreadsheet import) ----
+    /// <summary>Who allowed us to use the vendor's photos and information.</summary>
+    public string? ConsentBy { get; set; }
+    public DateOnly? ConsentOn { get; set; }
+    /// <summary>How it was given, e.g. "Instagram შეტყობინება".</summary>
+    public string? ConsentMethod { get; set; }
+
     /// <summary>Dormant monetization plumbing — paid placement switch (see CLAUDE.md §4).</summary>
     public bool IsFeatured { get; set; }
 
@@ -51,6 +91,7 @@ public class Vendor
     public DateTimeOffset CreatedAt { get; set; }
 
     public ICollection<VendorPhoto> Photos { get; set; } = new List<VendorPhoto>();
+    public ICollection<VendorPackage> Packages { get; set; } = new List<VendorPackage>();
     public ICollection<Message> Messages { get; set; } = new List<Message>();
     public ICollection<VendorStat> Stats { get; set; } = new List<VendorStat>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();

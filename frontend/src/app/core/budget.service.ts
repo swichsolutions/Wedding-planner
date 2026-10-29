@@ -37,6 +37,14 @@ export interface BudgetVendorRef {
   slug: string;
 }
 
+/** One payment on a line: a deposit, an instalment or the rest. */
+export interface BudgetPayment {
+  id: number;
+  amount: number;
+  paidOn: string; // 'yyyy-MM-dd'
+  note: string | null;
+}
+
 export interface BudgetItem {
   id: number;
   name: string;
@@ -45,10 +53,17 @@ export interface BudgetItem {
   merchantName: string | null;
   estimate: number | null;
   actualCost: number | null;
+  /** The sum of `payments` (read-only: record a payment to change it). */
   paid: number | null;
   note: string | null;
   reminderDate: string | null; // 'yyyy-MM-dd'
   sortOrder: number;
+  payments: BudgetPayment[];
+}
+
+/** What's left to pay on a line: the agreed cost minus what's paid (0 when there's no agreed cost). */
+export function leftToPay(item: Pick<BudgetItem, 'actualCost' | 'paid'>): number {
+  return Math.max(0, (item.actualCost ?? 0) - (item.paid ?? 0));
 }
 
 export interface Budget {
@@ -73,7 +88,6 @@ export interface BudgetItemUpdate {
   merchantName: string | null;
   estimate: number | null;
   actualCost: number | null;
-  paid: number | null;
   note: string | null;
   reminderDate: string | null;
 }
@@ -131,6 +145,15 @@ export class BudgetService {
 
   removeItem(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/planning/budget/items/${id}`);
+  }
+
+  /** Record a payment; returns the line with its new paid total. paidOn defaults to today. */
+  addPayment(itemId: number, payment: { amount: number; paidOn?: string | null; note?: string | null }): Observable<BudgetItem> {
+    return this.http.post<BudgetItem>(`${this.base}/api/planning/budget/items/${itemId}/payments`, payment);
+  }
+
+  removePayment(itemId: number, paymentId: number): Observable<BudgetItem> {
+    return this.http.delete<BudgetItem>(`${this.base}/api/planning/budget/items/${itemId}/payments/${paymentId}`);
   }
 
   /** Dated reminders, soonest first. Never seeds the budget (safe from /planning). */

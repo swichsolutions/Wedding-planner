@@ -105,16 +105,20 @@ public class ReviewsController : ControllerBase
     }
 
     /// <summary>
-    /// Public byline: couple's first name + last initial ("ნინო გ."), falling back to
-    /// the account display name, then a generic label. Captured once at first submit.
+    /// Public byline: the reviewer's own first name + last initial ("ნინო გ.") from the shared
+    /// plan (the partner who joined by invitation is its Partner* name), falling back to the
+    /// account display name, then a generic label. Captured once at first submit.
     /// </summary>
     private async Task<string> AuthorNameAsync(string uid)
     {
-        var couple = await _db.Couples.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == uid);
-        var first = couple?.FirstName?.Trim();
+        var member = await _db.CoupleMembers.AsNoTracking().Include(m => m.Couple)
+            .FirstOrDefaultAsync(m => m.UserId == uid);
+        var couple = member?.Couple;
+        var first = (member?.IsPartner == true ? couple?.PartnerFirstName : couple?.FirstName)?.Trim();
         if (!string.IsNullOrEmpty(first))
         {
-            var lastInitial = couple?.LastName?.Trim() is { Length: > 0 } last ? $" {last[0]}." : string.Empty;
+            var lastName = member?.IsPartner == true ? couple?.PartnerLastName : couple?.LastName;
+            var lastInitial = lastName?.Trim() is { Length: > 0 } last ? $" {last[0]}." : string.Empty;
             return first + lastInitial;
         }
 

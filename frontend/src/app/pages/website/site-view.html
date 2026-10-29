@@ -5,7 +5,9 @@
     <a class="btn btn--primary" routerLink="/">{{ 'notFound.home' | translate }}</a>
   </section>
 } @else if (site(); as s) {
-  <app-wedding-site [data]="s" [template]="s.templateKey" />
+  <app-wedding-site [data]="s" [template]="s.templateKey" [page]="true">
+    <app-rsvp-form [slug]="slug" [code]="code" [site]="s" />
+  </app-wedding-site>
 } @else {
   <!-- loading (client-side navigation) — hold the page shape instead of blank -->
   <div class="sv-skel" aria-hidden="true">

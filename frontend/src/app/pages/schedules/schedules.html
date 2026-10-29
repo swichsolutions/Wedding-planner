@@ -1,0 +1,15 @@
+<div class="sc">
+  <header class="sc__intro container">
+    <nav class="sc__crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
+      <a routerLink="/">{{ 'nav.g.plan.title' | translate }}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{{ 'schedules.title' | translate }}</span>
+    </nav>
+    <h1 class="sc__title">{{ 'schedules.title' | translate }}</h1>
+    <p class="sc__lead">{{ 'schedules.lead' | translate }}</p>
+  </header>
+
+  <div class="container">
+    <app-day-schedules [headingLevel]="2" />
+  </div>
+</div>

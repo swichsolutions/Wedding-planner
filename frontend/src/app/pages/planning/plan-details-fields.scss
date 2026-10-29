@@ -1,0 +1,130 @@
+// The plan's details fields, on the brand theme (the page hosts .theme-brand): white inputs,
+// charcoal text, Nus with line-height ≥ 1.4, evergreen only on the page's buttons.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.pd {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.pd-set {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.pd-q {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.pd-pair {
+  display: grid;
+  gap: var(--space-3);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pd-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  &--narrow {
+    max-width: 16rem;
+  }
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+
+  input,
+  select {
+    height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+
+    &:disabled {
+      opacity: 0.5;
+    }
+
+    &.is-invalid {
+      border-color: var(--color-danger-600);
+    }
+  }
+}
+
+.pd-err {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--color-danger-600);
+}
+
+.pd-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--ink);
+  }
+}
+
+.pd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pd-chip {
+  min-height: 42px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--paper-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--paper-white, #fff);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--ink);
+  }
+
+  // chosen: a charcoal fill (evergreen is for buttons only)
+  &.is-on {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+}

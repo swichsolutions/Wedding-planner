@@ -1,0 +1,287 @@
+<section class="sv container">
+  <header class="sv-head">
+    <div>
+      <h1 class="sv-title">{{ 'services.title' | translate }}</h1>
+      @if (loaded() && items().length) {
+        <p class="sv-lead">
+          {{ 'services.lead' | translate: { n: items().length, chosen: count().chosen } }}
+        </p>
+      }
+    </div>
+    @if (loaded()) {
+      <div class="sv-head__actions">
+        <button type="button" class="btn btn--primary" (click)="startAdd()" [disabled]="editing() !== null">
+          {{ 'services.add' | translate }}
+        </button>
+        <a class="sv-quiet" routerLink="/vendors">{{ 'services.browse' | translate }} →</a>
+      </div>
+    }
+  </header>
+
+  <!-- add / edit form (hand-added vendors: everything; catalog vendors: the offer and a note) -->
+  <ng-template #serviceForm>
+    <form class="sv-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      @if (editingCatalog()) {
+        <p class="sv-form__hint">{{ 'services.catalogHint' | translate }}</p>
+      } @else {
+        <div class="sv-field sv-field--wide">
+          <label for="svc-name">{{ 'services.name' | translate }}</label>
+          <input id="svc-name" type="text" formControlName="name" maxlength="200" autocomplete="off" aria-required="true"
+            [class.is-invalid]="form.controls.name.invalid && form.controls.name.touched"
+            [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched ? 'true' : null"
+            [attr.placeholder]="'services.namePlaceholder' | translate" />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="sv-err">{{ 'services.nameRequired' | translate }}</span>
+          }
+        </div>
+        <div class="sv-field">
+          <label for="svc-category">{{ 'services.category' | translate }}</label>
+          <select id="svc-category" formControlName="categorySlug">
+            <option value="">{{ 'services.noCategory' | translate }}</option>
+            @for (c of categories; track c.slug) {
+              <option [value]="c.slug">{{ c.key | translate }}</option>
+            }
+          </select>
+        </div>
+        @if (editing() === 'new') {
+          <div class="sv-field">
+            <label for="svc-status">{{ 'services.status' | translate }}</label>
+            <select id="svc-status" formControlName="status">
+              @for (st of statuses; track st) {
+                <option [value]="st">{{ 'services.statuses.' + st | translate }}</option>
+              }
+            </select>
+          </div>
+        }
+        <div class="sv-field">
+          <label for="svc-phone">{{ 'services.phone' | translate }}</label>
+          <input id="svc-phone" type="tel" formControlName="phone" maxlength="40" autocomplete="off" inputmode="tel" />
+        </div>
+        <div class="sv-field">
+          <label for="svc-email">{{ 'services.email' | translate }}</label>
+          <input id="svc-email" type="email" formControlName="email" maxlength="256" autocomplete="off"
+            [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched"
+            [attr.aria-invalid]="form.controls.email.invalid && form.controls.email.touched ? 'true' : null" />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <span class="sv-err">{{ 'services.emailInvalid' | translate }}</span>
+          }
+        </div>
+        <div class="sv-field">
+          <label for="svc-instagram">Instagram</label>
+          <input id="svc-instagram" type="text" formControlName="instagram" maxlength="200" autocomplete="off"
+            placeholder="@" />
+        </div>
+      }
+      <div class="sv-field">
+        <label for="svc-offer">{{ 'services.offer' | translate }}</label>
+        <div class="sv-amount">
+          <input id="svc-offer" type="number" formControlName="offer" min="0" step="10" inputmode="numeric" autocomplete="off"
+            [class.is-invalid]="form.controls.offer.invalid && form.controls.offer.touched" />
+          <span aria-hidden="true">₾</span>
+        </div>
+      </div>
+      <div class="sv-field sv-field--wide">
+        <label for="svc-offer-note">{{ 'services.offerNote' | translate }}</label>
+        <input id="svc-offer-note" type="text" formControlName="offerNote" maxlength="500" autocomplete="off"
+          [attr.placeholder]="'services.offerNotePlaceholder' | translate" />
+      </div>
+      <div class="sv-field sv-field--wide">
+        <label for="svc-note">{{ 'services.note' | translate }}</label>
+        <textarea id="svc-note" formControlName="note" rows="2" maxlength="1000"></textarea>
+      </div>
+      <div class="sv-form__actions">
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ 'services.save' | translate }}</button>
+        <button type="button" class="sv-quiet" (click)="cancel()">{{ 'services.cancel' | translate }}</button>
+      </div>
+    </form>
+  </ng-template>
+
+  @if (loadError()) {
+    <p class="sv-note sv-note--box" role="alert">
+      {{ 'services.loadError' | translate }}
+      <button type="button" class="sv-quiet" (click)="retry()">{{ 'vendors.retry' | translate }}</button>
+    </p>
+  } @else if (!loaded()) {
+    <span class="skel sv-skel" aria-hidden="true"></span>
+  } @else {
+    @if (editing() === 'new') {
+      <ng-container [ngTemplateOutlet]="serviceForm" />
+    }
+
+    @if (items().length === 0 && editing() !== 'new') {
+      <div class="sv-empty">
+        <p class="sv-empty__label">{{ 'services.emptyLabel' | translate }}</p>
+        <h2 class="sv-empty__title">{{ 'services.emptyTitle' | translate }}</h2>
+        <p class="sv-empty__body">{{ 'services.emptyBody' | translate }}</p>
+        <div class="sv-empty__actions">
+          <a class="btn btn--primary" routerLink="/vendors">{{ 'services.browse' | translate }}</a>
+          <button type="button" class="sv-quiet" (click)="startAdd()">{{ 'services.add' | translate }}</button>
+        </div>
+      </div>
+    } @else if (items().length) {
+      <div class="sv-filter" role="group" [attr.aria-label]="'services.filterLabel' | translate">
+        <button type="button" [attr.aria-pressed]="filter() === 'all'" (click)="filter.set('all')">
+          {{ 'services.all' | translate }} <span class="num">{{ items().length }}</span>
+        </button>
+        @for (st of sectionOrder; track st) {
+          <button type="button" [attr.aria-pressed]="filter() === st" (click)="filter.set(st)">
+            {{ 'services.statuses.' + st | translate }} <span class="num">{{ count()[st] }}</span>
+          </button>
+        }
+      </div>
+
+      @for (sec of sections(); track sec.status) {
+        <section class="sv-section" [attr.aria-labelledby]="'sv-sec-' + sec.status">
+          <header class="sv-section__head">
+            <h2 class="sv-section__title" [id]="'sv-sec-' + sec.status">
+              {{ 'services.statuses.' + sec.status | translate }}
+            </h2>
+            <span class="sv-section__meta num">{{ sec.items.length }}</span>
+          </header>
+
+          @if (sec.items.length === 0) {
+            <p class="sv-note">{{ 'services.emptyStatus.' + sec.status | translate }}</p>
+          }
+
+          <ul class="sv-list" role="list">
+            @for (s of sec.items; track s.id) {
+              <li class="sv-card" [class.is-editing]="editing() === s.id">
+                @if (editing() === s.id) {
+                  <p class="sv-card__editing">{{ s.name }}</p>
+                  <ng-container [ngTemplateOutlet]="serviceForm" />
+                } @else {
+                  <div class="sv-thumb" aria-hidden="true">
+                    @if (s.vendor?.photoUrl; as photo) {
+                      <img [src]="thumb(photo)" alt="" width="96" height="96" loading="lazy" />
+                    } @else {
+                      <span>{{ initial(s.name) }}</span>
+                    }
+                  </div>
+
+                  <div class="sv-body">
+                    <h3 class="sv-name">
+                      @if (profileLink(s); as link) {
+                        <a [routerLink]="link">{{ s.name }}</a>
+                      } @else {
+                        {{ s.name }}
+                      }
+                    </h3>
+                    <p class="sv-meta">
+                      {{ category(s.categorySlug) | translate }}
+                      @if (s.vendor; as v) {
+                        · {{ v.city }}
+                        @if (v.priceFrom) {
+                          · <span class="num">{{ 'services.from' | translate: { price: format(v.priceFrom) } }}</span>
+                          @if (v.priceUnit !== 'event') {
+                            {{ 'catalog.per.' + v.priceUnit | translate }}
+                          }
+                        }
+                      } @else if (!s.fromCatalog) {
+                        · {{ 'services.handAdded' | translate }}
+                      } @else {
+                        · {{ 'services.unlisted' | translate }}
+                      }
+                    </p>
+
+                    @if (phone(s) || s.vendor?.whatsapp || instagramUrl(s) || s.email) {
+                      <ul class="sv-contacts" role="list">
+                        @if (phone(s); as p) {
+                          <li><a [href]="'tel:' + p" (click)="contacted(s)"><span class="num">{{ p }}</span></a></li>
+                        }
+                        @if (s.vendor?.whatsapp; as wa) {
+                          <li><a [href]="'https://wa.me/' + wa" target="_blank" rel="noopener" (click)="contacted(s)">WhatsApp</a></li>
+                        }
+                        @if (instagramUrl(s); as ig) {
+                          <li><a [href]="ig" target="_blank" rel="noopener" (click)="contacted(s)">{{ instagramLabel(s) }}</a></li>
+                        }
+                        @if (s.email) {
+                          <li><a [href]="'mailto:' + s.email">{{ s.email }}</a></li>
+                        }
+                      </ul>
+                    }
+
+                    @if (s.offer !== null || s.offerNote) {
+                      <p class="sv-offer">
+                        <span class="sv-offer__label">{{ 'services.offerShort' | translate }}</span>
+                        @if (s.offer !== null) {
+                          <span class="num">{{ format(s.offer) }}</span>
+                        }
+                        @if (s.offerNote) {
+                          <span class="sv-offer__note">{{ s.offerNote }}</span>
+                        }
+                      </p>
+                    }
+                    @if (s.note) {
+                      <p class="sv-text">{{ s.note }}</p>
+                    }
+                  </div>
+
+                  <!-- status, actions and the budget form: the full card width on phones -->
+                  <div class="sv-foot">
+                    <div class="sv-status" role="group" [attr.aria-label]="('services.status' | translate) + ' — ' + s.name">
+                      @for (st of statuses; track st) {
+                        <button type="button" [attr.aria-pressed]="s.status === st" (click)="setStatus(s, st)">
+                          {{ 'services.statuses.' + st | translate }}
+                        </button>
+                      }
+                    </div>
+
+                    <div class="sv-actions">
+                      @if (s.status === 'chosen') {
+                        @if (s.budgetItemId !== null) {
+                          <a class="sv-go" routerLink="/budget" [queryParams]="{ view: 'overview' }">✓ {{ 'services.inBudget' | translate }}</a>
+                          <button type="button" class="sv-quiet" (click)="openBudget(s)" [disabled]="budgeting() === s.id">
+                            {{ 'services.toBudgetUpdate' | translate }}
+                          </button>
+                        } @else if (budgeting() !== s.id) {
+                          <button type="button" class="btn btn--primary sv-btn-sm" (click)="openBudget(s)">
+                            {{ 'services.toBudget' | translate }}
+                          </button>
+                        }
+                      }
+                      <span class="sv-actions__icons">
+                        <button type="button" class="sv-icon" (click)="startEdit(s)" [disabled]="editing() !== null"
+                          [attr.aria-label]="'services.edit' | translate: { name: s.name }">
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                        </button>
+                        <button type="button" class="sv-icon" (click)="remove(s)"
+                          [attr.aria-label]="'services.deleteNamed' | translate: { name: s.name }">
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /></svg>
+                        </button>
+                      </span>
+                    </div>
+
+                    @if (budgeting() === s.id) {
+                      <form class="sv-budget" (submit)="$event.preventDefault(); toBudget(s, amount, due)">
+                        <p class="sv-budget__title">{{ 'services.toBudgetTitle' | translate }}</p>
+                        <p class="sv-budget__body">{{ 'services.toBudgetBody' | translate }}</p>
+                        <div class="sv-field">
+                          <label [attr.for]="'svc-amount-' + s.id">{{ 'services.agreed' | translate }}</label>
+                          <div class="sv-amount">
+                            <input #amount [id]="'svc-amount-' + s.id" type="number" min="0" step="10" inputmode="numeric"
+                              autocomplete="off" required [value]="s.offer ?? s.vendor?.priceFrom ?? ''" />
+                            <span aria-hidden="true">₾</span>
+                          </div>
+                        </div>
+                        <div class="sv-field">
+                          <label [attr.for]="'svc-due-' + s.id">{{ 'services.dueDate' | translate }}</label>
+                          <input #due [id]="'svc-due-' + s.id" type="date" [min]="today" />
+                        </div>
+                        <div class="sv-form__actions">
+                          <button type="submit" class="btn btn--primary" [disabled]="budgetBusy()">
+                            {{ (s.budgetItemId !== null ? 'services.toBudgetUpdate' : 'services.toBudget') | translate }}
+                          </button>
+                          <button type="button" class="sv-quiet" (click)="budgeting.set(null)">{{ 'services.later' | translate }}</button>
+                        </div>
+                      </form>
+                    }
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+  }
+</section>

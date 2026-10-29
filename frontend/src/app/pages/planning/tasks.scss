@@ -1,0 +1,416 @@
+// „დავალებები“ on the brand theme: ivory page, white stage panels, Mt headings, Nus text,
+// charcoal ticks (evergreen only on buttons), peach for the overdue mark.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.tk {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 52rem;
+  padding-block: var(--space-10) var(--space-20);
+}
+
+.tk-head {
+  display: grid;
+  gap: var(--space-4);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+
+  > div {
+    display: grid;
+    gap: var(--space-2);
+  }
+}
+
+.tk-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.05;
+}
+
+.tk-lead {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.tk-late {
+  padding: 0.15em 0.6em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  color: var(--ink);
+}
+
+.tk-bar {
+  max-width: 24rem;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--paper-deep);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ink);
+    transition: width var(--dur-base) var(--ease-out);
+  }
+}
+
+.tk-note {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+
+  a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &--box {
+    padding: var(--space-6);
+    border-radius: 20px;
+    background: var(--paper-deep);
+    font-size: 1rem;
+  }
+}
+
+.tk-skel {
+  display: block;
+  height: 320px;
+  border-radius: 20px;
+}
+
+.tk-quiet {
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// ---------------------------------------------------------------- filter
+
+.tk-filter {
+  display: inline-flex;
+  justify-self: start;
+  gap: var(--space-1);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--paper-deep);
+
+  button {
+    min-height: 36px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    font-family: var(--font-body);
+    font-size: var(--fs-small);
+    line-height: 1.4;
+    color: var(--ink-700);
+    cursor: pointer;
+
+    &[aria-pressed='true'] {
+      background: var(--paper-white, #fff);
+      color: var(--ink);
+      box-shadow: 0 1px 2px rgba(34, 30, 32, 0.08);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- the form
+
+.tk-form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.tk-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+
+  @include bp.respond-to(sm) {
+    &--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+
+  input,
+  select {
+    height: 46px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+
+    &.is-invalid {
+      border-color: var(--color-danger-600);
+    }
+  }
+}
+
+.tk-err {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--color-danger-600);
+}
+
+.tk-form__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  @include bp.respond-to(sm) {
+    grid-column: 1 / -1;
+  }
+}
+
+// ---------------------------------------------------------------- stages
+
+.tk-stage {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+}
+
+.tk-stage__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.tk-stage__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.15;
+}
+
+.tk-stage__meta {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-500);
+}
+
+.tk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tk-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--paper-line);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  &.is-editing {
+    display: block;
+    border-bottom: 0;
+  }
+
+  &.is-done .tk-name {
+    color: var(--ink-500);
+    text-decoration: line-through;
+  }
+}
+
+.tk-check {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+}
+
+// a round tick: charcoal when done
+.tk-check__box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border: 1.5px solid var(--paper-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--paper-white, #fff);
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+
+  &::after {
+    content: '';
+    width: 6px;
+    height: 11px;
+    margin-top: -3px;
+    border: solid transparent;
+    border-width: 0 2px 2px 0;
+    rotate: 45deg;
+  }
+}
+
+.tk-check input:checked + .tk-check__box {
+  border-color: var(--ink);
+  background: var(--ink);
+
+  &::after {
+    border-color: var(--paper);
+  }
+}
+
+.tk-check input:focus-visible + .tk-check__box {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.tk-name {
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.tk-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding-left: calc(22px + var(--space-3));
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-500);
+
+  @include bp.respond-to(md) {
+    grid-column: 1;
+  }
+}
+
+.tk-due.is-own {
+  color: var(--ink-700);
+}
+
+.tk-item.is-late .tk-due {
+  padding: 0.1em 0.55em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  color: var(--ink);
+}
+
+.tk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  padding-left: calc(22px + var(--space-3));
+
+  @include bp.respond-to(md) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    padding-left: 0;
+  }
+}
+
+.tk-go {
+  margin-right: var(--space-2);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.tk-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-700);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--paper-line-strong);
+    color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.tk-add-here {
+  justify-self: start;
+  margin-top: var(--space-1);
+}

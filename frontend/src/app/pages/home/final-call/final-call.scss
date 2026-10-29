@@ -31,27 +31,16 @@
   }
 }
 
-// ---- the rings behind the title: the brand's gold ring, drawn as fine lines ----
-.rings {
-  position: absolute;
-  z-index: -1;
-  top: 50%;
-  left: 50%;
-  width: min(100%, 60rem);
-  translate: -50% -58%;
-  overflow: visible;
-  pointer-events: none;
-}
-
+// ---- the gold ring above the title (components/gold-ring): sized to the screen like the rest,
+// close enough to the title to read as one group ----
 .ring {
-  fill: none;
-  stroke: var(--gold);
-  stroke-opacity: 0.7;
-  stroke-width: 1.5px;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  transform-box: fill-box;
-  transform-origin: center;
+  width: clamp(8rem, 34vw, 11rem);
+  margin-bottom: clamp(0.5rem, 2vw, 1rem);
+
+  @include bp.respond-to(md) {
+    width: max(8rem, 230 * var(--u));
+    margin-bottom: max(0.5rem, 16 * var(--u));
+  }
 }
 
 // ---- type ----
@@ -174,10 +163,7 @@
 // ---- the entrance: only once Reveal has armed the block (browser, motion allowed) ----
 // before it scrolls in, everything that will move is held at its start
 .final[data-reveal]:not(.is-in) {
-  .ring {
-    stroke-dashoffset: 1;
-  }
-
+  .ring,
   .w,
   .note,
   .gets-h,
@@ -194,16 +180,8 @@
 .final.is-in {
   $ease: cubic-bezier(0.16, 1, 0.3, 1);
 
-  .rings {
-    animation: rings-turn 90s linear 1.8s infinite;
-  }
-
   .ring {
-    animation: draw 1.8s cubic-bezier(0.65, 0, 0.35, 1) both;
-  }
-
-  .ring--b {
-    animation-delay: 0.25s;
+    animation: ring-in 1.2s $ease both;
   }
 
   .w {
@@ -294,8 +272,14 @@
   }
 }
 
-@keyframes rings-turn {
+@keyframes ring-in {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.92);
+  }
+
   to {
-    rotate: 360deg;
+    opacity: 1;
+    transform: none;
   }
 }

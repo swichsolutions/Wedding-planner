@@ -1,0 +1,83 @@
+<div class="iv">
+  <header class="iv-intro container">
+    <nav class="iv-crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
+      <a routerLink="/">{{ 'nav.g.plan.title' | translate }}</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{{ 'invitationsPage.title' | translate }}</span>
+    </nav>
+    <h1 class="iv-title">{{ 'invitationsPage.title' | translate }}</h1>
+    <p class="iv-lead">{{ 'invitationsPage.lead' | translate }}</p>
+    <div class="iv-cta">
+      <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query">
+        {{ 'invitationsPage.cta' | translate }}
+      </a>
+      <a class="iv-quiet" routerLink="/invitations/find">{{ 'invitationsPage.find' | translate }} →</a>
+    </div>
+  </header>
+
+  <!-- A finished example on a phone, beside what it does. -->
+  <section class="iv-show container" aria-labelledby="iv-show-title">
+    <div class="iv-phone" [attr.aria-label]="'invitationsPage.exampleLabel' | translate" role="img">
+      <div class="iv-phone__screen" inert>
+        <app-wedding-site [data]="example" [template]="shown()">
+          <app-rsvp-form slug="example" [site]="example" />
+        </app-wedding-site>
+      </div>
+    </div>
+    <div class="iv-show__text">
+      <p class="iv-label">{{ 'invitationsPage.exampleLabel' | translate }}</p>
+      <h2 id="iv-show-title" class="iv-h2">{{ 'invitationsPage.showTitle' | translate }}</h2>
+      <ul class="iv-features" role="list">
+        @for (f of features; track f) {
+          <li>
+            <h3>{{ 'invitationsPage.feature.' + f + '.title' | translate }}</h3>
+            <p>{{ 'invitationsPage.feature.' + f + '.body' | translate }}</p>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="iv-designs container" aria-labelledby="iv-designs-title">
+    <h2 id="iv-designs-title" class="iv-h2">{{ 'invitationsPage.designsTitle' | translate: { n: templates.length } }}</h2>
+    <p class="iv-sub">{{ 'invitationsPage.designsLead' | translate }}</p>
+    <ul class="iv-grid" role="list">
+      @for (t of templates; track t) {
+        <li>
+          <button type="button" class="iv-design" [class.is-on]="shown() === t" [attr.aria-pressed]="shown() === t"
+            (click)="show(t)">
+            <span class="iv-design__thumb" aria-hidden="true">
+              <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+            </span>
+            <span class="iv-design__name">{{ 'wsTemplate.' + t | translate }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="iv-how container" aria-labelledby="iv-how-title">
+    <h2 id="iv-how-title" class="iv-h2">{{ 'invitationsPage.howTitle' | translate }}</h2>
+    <ol class="iv-steps">
+      @for (s of steps; track s; let i = $index) {
+        <li>
+          <span class="iv-steps__n num" aria-hidden="true">{{ i + 1 }}</span>
+          <div>
+            <h3>{{ 'invitation.step.' + s | translate }}</h3>
+            <p>{{ 'invitation.hint.' + s | translate }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+  </section>
+
+  <section class="iv-final" aria-labelledby="iv-final-title">
+    <div class="container iv-final__inner">
+      <h2 id="iv-final-title" class="iv-h2">{{ 'invitationsPage.finalTitle' | translate }}</h2>
+      <p class="iv-sub">{{ 'invitationsPage.finalBody' | translate }}</p>
+      <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query">
+        {{ 'invitationsPage.cta' | translate }}
+      </a>
+    </div>
+  </section>
+</div>

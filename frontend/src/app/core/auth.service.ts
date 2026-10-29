@@ -17,6 +17,8 @@ interface AuthResponse {
   email: string;
   roles: string[];
   vendorId: number | null;
+  /** A first Google sign-in just created the account. */
+  isNew?: boolean;
 }
 
 export interface RegisterVendorPayload {
@@ -48,7 +50,7 @@ const USER_KEY = 'weddingplanner.auth.user';
  * when the session changes under it cross-tab; public pages (browse, profiles,
  * home) just re-render from the signals and are left alone.
  */
-const SESSION_ROUTES = ['/dashboard', '/admin', '/account', '/planning', '/budget', '/website', '/saved'];
+const SESSION_ROUTES = ['/dashboard', '/admin', '/account', '/planning', '/budget'];
 
 /**
  * localStorage can THROW on mere access (Chrome "Block all cookies", some embedded
@@ -116,6 +118,16 @@ export function defaultRouteFor(user: AuthUser | null): string {
 }
 
 /**
+ * Where a couple goes right after creating an account (BUILD-PLAN B1, guide §3): the start form,
+ * which then continues to returnUrl — or, for a partner invitation, straight back to it (they're
+ * joining a plan that already has its details).
+ */
+export function afterSignUpRoute(returnUrl: string | null): string {
+  if (returnUrl?.startsWith('/partner/')) return returnUrl;
+  return returnUrl ? `/planning/start?returnUrl=${encodeURIComponent(returnUrl)}` : '/planning/start';
+}
+
+/**
  * Validate a ?returnUrl= before navigating to it. Internal app paths only — never
  * a full URL someone pasted into the query string — and never an auth page:
  * /login, /signup, /join or /register as targets bounce a signed-in user straight
@@ -123,7 +135,7 @@ export function defaultRouteFor(user: AuthUser | null): string {
  */
 export function safeReturnUrl(url: string | null): string | null {
   if (!url || !url.startsWith('/') || url.startsWith('//')) return null;
-  const authPages = ['/login', '/signup', '/join', '/register'];
+  const authPages = ['/login', '/signup', '/join', '/register', '/forgot-password', '/reset-password'];
   return authPages.some((p) => url.startsWith(p)) ? null : url;
 }
 
@@ -188,6 +200,16 @@ export class AuthService {
     }
   }
 
+  /** Set when this tab just created a couple account (sign-up, first Google sign-in). */
+  private newAccount = false;
+
+  /** True once after a new couple account: the caller sends them to the start form. */
+  consumeNewAccount(): boolean {
+    const was = this.newAccount;
+    this.newAccount = false;
+    return was;
+  }
+
   readonly isAuthenticated = computed(() => !!this.user());
   readonly isVendor = computed(() => this.user()?.roles.includes('Vendor') ?? false);
   readonly isAdmin = computed(() => this.user()?.roles.includes('Admin') ?? false);
@@ -212,7 +234,12 @@ export class AuthService {
   googleLogin(credential: string): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.base}/api/auth/google`, { credential })
-      .pipe(tap((r) => this.store(r)));
+      .pipe(
+        tap((r) => {
+          this.store(r);
+          this.newAccount = !!r.isNew && r.roles.includes('Couple');
+        }),
+      );
   }
 
   registerVendor(payload: RegisterVendorPayload): Observable<AuthResponse> {
@@ -224,6 +251,23 @@ export class AuthService {
   registerCouple(payload: RegisterCouplePayload): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.base}/api/auth/register/couple`, payload)
+      .pipe(
+        tap((r) => {
+          this.store(r);
+          this.newAccount = true;
+        }),
+      );
+  }
+
+  /** Ask for a reset link by email. The API answers 202 whether or not the account exists. */
+  requestPasswordReset(email: string, lang: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/auth/forgot-password`, { email, lang });
+  }
+
+  /** Set a new password from an emailed link; signs the user in on success. */
+  resetPassword(userId: string, token: string, newPassword: string): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.base}/api/auth/reset-password`, { userId, token, newPassword })
       .pipe(tap((r) => this.store(r)));
   }
 

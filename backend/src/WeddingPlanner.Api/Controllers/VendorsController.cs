@@ -15,12 +15,34 @@ public class VendorsController : ControllerBase
 
     public VendorsController(AppDbContext db) => _db = db;
 
-    /// <summary>List approved vendors with optional filters. Mirrors the frontend filter shape.</summary>
+    /// <summary>Guest-capacity buckets (P2): key → the range a venue's capacity must overlap.</summary>
+    private static readonly Dictionary<string, (int Lo, int Hi)> GuestBuckets = new()
+    {
+        ["100"] = (1, 100),
+        ["200"] = (100, 200),
+        ["350"] = (200, 350),
+        ["350plus"] = (350, int.MaxValue),
+    };
+
+    /// <summary>
+    /// List approved vendors with optional filters (the catalog, PROPOSALS.md P2). Every filter
+    /// is optional; unknown values are ignored rather than rejected, so an old or hand-edited
+    /// URL still shows results.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VendorDto>>> List(
+        [FromQuery] string? group,
         [FromQuery] string? category,
         [FromQuery] string? city,
+        [FromQuery] string? region,
+        [FromQuery] decimal? minPrice,
         [FromQuery] decimal? maxPrice,
+        [FromQuery] string? styles,
+        [FromQuery] string? guests,
+        [FromQuery] string? setting,
+        [FromQuery] string? venueType,
+        [FromQuery] string? features,
+        [FromQuery] string? q,
         [FromQuery] bool? featured,
         [FromQuery] string? sort)
     {
@@ -28,22 +50,66 @@ public class VendorsController : ControllerBase
             .AsNoTracking()
             .Where(v => v.IsApproved);
 
+        if (!string.IsNullOrWhiteSpace(group))
+            query = query.Where(v => v.Category.GroupKey == group);
+        // A category also matches vendors who list it under "also offers"
+        // (a photographer who films shows up under videographers too).
         if (!string.IsNullOrWhiteSpace(category))
-            query = query.Where(v => v.Category.Slug == category);
+            query = query.Where(v => v.Category.Slug == category || v.AlsoOffers.Contains(category));
         if (!string.IsNullOrWhiteSpace(city))
             query = query.Where(v => v.CitySlug == city);
+        // A region matches the vendor's own region and the regions they travel to.
+        if (CatalogRules.OneOf(region, CatalogRules.Regions) is string r)
+            query = query.Where(v => v.Region == r || v.ServedRegions.Contains(r));
+        if (minPrice.HasValue)
+            query = query.Where(v => v.PriceMin >= minPrice.Value);
         if (maxPrice.HasValue)
             query = query.Where(v => v.PriceMin <= maxPrice.Value);
+
+        var styleList = CatalogRules.Clean(styles?.Split(','), CatalogRules.Styles);
+        if (styleList.Count > 0)
+            query = query.Where(v => v.Styles.Any(s => styleList.Contains(s)));
+
+        // Capacity: the venue's range must overlap the bucket; venues without one don't match.
+        if (guests is not null && GuestBuckets.TryGetValue(guests, out var bucket))
+            query = query.Where(v => v.CapacityMax >= bucket.Lo && (v.CapacityMin ?? 0) <= bucket.Hi);
+        // Indoor/outdoor: "both" venues qualify for either.
+        if (CatalogRules.OneOf(setting, CatalogRules.Settings) is string st && st != "both")
+            query = query.Where(v => v.Setting == st || v.Setting == "both");
+        if (CatalogRules.OneOf(venueType, CatalogRules.VenueTypes) is string vt)
+            query = query.Where(v => v.VenueType == vt);
+
+        var allFeatures = CatalogRules.Features.Values.SelectMany(f => f).ToArray();
+        foreach (var f in CatalogRules.Clean(features?.Split(','), allFeatures))
+            query = query.Where(v => v.Features.Contains(f));
+
+        // Free-text search over name, description and category name (either language).
+        var term = q?.Trim();
+        if (!string.IsNullOrEmpty(term) && term.Length <= 100)
+        {
+            var like = "%" + term.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+            query = query.Where(v =>
+                EF.Functions.ILike(v.Name, like) ||
+                EF.Functions.ILike(v.Bio ?? "", like) ||
+                EF.Functions.ILike(v.Category.NameKa, like) ||
+                EF.Functions.ILike(v.Category.NameEn, like));
+        }
+
         if (featured == true)
             query = query.Where(v => v.IsFeatured);
 
         // sort=popular → lifetime profile views (the silently-tracked VendorStat data),
         // featured breaking the tie so real vendors lead while views are still scarce;
+        // price_asc / price_desc → starting price, unpriced vendors last;
         // default → featured first. Name breaks remaining ties so ordering is stable.
-        var ordered = sort == "popular"
-            ? query.OrderByDescending(v => v.Stats.Sum(s => (int?)s.ProfileViews) ?? 0)
-                .ThenByDescending(v => v.IsFeatured)
-            : query.OrderByDescending(v => v.IsFeatured);
+        var ordered = sort switch
+        {
+            "popular" => query.OrderByDescending(v => v.Stats.Sum(s => (int?)s.ProfileViews) ?? 0)
+                .ThenByDescending(v => v.IsFeatured),
+            "price_asc" => query.OrderBy(v => v.PriceMin == null).ThenBy(v => v.PriceMin),
+            "price_desc" => query.OrderBy(v => v.PriceMin == null).ThenByDescending(v => v.PriceMin),
+            _ => query.OrderByDescending(v => v.IsFeatured),
+        };
 
         // Project in SQL instead of materializing entity graphs: review aggregates are
         // computed by Postgres (bodies never leave the DB), and only the cover photo is
@@ -69,11 +135,22 @@ public class VendorsController : ControllerBase
                 v.MapUrl,
                 FirstPhoto = v.Photos
                     .OrderBy(p => p.SortOrder)
-                    .Select(p => new { p.Url, p.AltText, p.IsRealWedding })
+                    .Select(p => new { p.Id, p.Url, p.AltText, p.IsRealWedding })
                     .FirstOrDefault(),
                 v.IsFeatured,
                 ReviewCount = v.Reviews.Count(),
                 AvgRating = v.Reviews.Average(r => (double?)r.Rating),
+                v.Category.GroupKey,
+                v.PriceUnit,
+                v.Region,
+                v.ServedRegions,
+                v.AlsoOffers,
+                v.Styles,
+                v.Features,
+                v.CapacityMin,
+                v.CapacityMax,
+                v.Setting,
+                v.VenueType,
             })
             .ToListAsync();
 
@@ -95,10 +172,24 @@ public class VendorsController : ControllerBase
             r.MapUrl,
             r.FirstPhoto is null
                 ? Array.Empty<VendorPhotoDto>()
-                : new[] { new VendorPhotoDto(r.FirstPhoto.Url, r.FirstPhoto.AltText, r.FirstPhoto.IsRealWedding) },
+                : new[] { new VendorPhotoDto(r.FirstPhoto.Id, r.FirstPhoto.Url, r.FirstPhoto.AltText, r.FirstPhoto.IsRealWedding) },
             r.IsFeatured,
             r.ReviewCount == 0 || r.AvgRating is null ? null : Math.Round(r.AvgRating.Value, 1),
-            r.ReviewCount)));
+            r.ReviewCount,
+            r.GroupKey,
+            r.PriceUnit ?? CatalogRules.DefaultPriceUnit(r.GroupKey),
+            r.Region,
+            r.ServedRegions.ToArray(),
+            r.AlsoOffers.ToArray(),
+            r.Styles.ToArray(),
+            r.Features.ToArray(),
+            r.CapacityMin,
+            r.CapacityMax,
+            r.Setting,
+            r.VenueType,
+            null,
+            Array.Empty<VendorPackageDto>(),
+            false)));
     }
 
     /// <summary>
@@ -190,13 +281,17 @@ public class VendorsController : ControllerBase
             .Include(v => v.Category)
             .Include(v => v.Photos)
             .Include(v => v.Reviews)
+            .Include(v => v.Packages)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(v =>
                 v.IsApproved &&
                 v.Category.Slug == category &&
                 v.CitySlug == city &&
                 v.Slug == slug);
 
-        return vendor is null ? NotFound() : Ok(ToDto(vendor));
+        if (vendor is null) return NotFound();
+        var hasOwner = await _db.Users.AnyAsync(u => u.VendorId == vendor.Id);
+        return Ok(ToDto(vendor, hasOwner));
     }
 
     /// <summary>
@@ -222,7 +317,7 @@ public class VendorsController : ControllerBase
         return NoContent();
     }
 
-    private static VendorDto ToDto(Vendor v) => new(
+    private static VendorDto ToDto(Vendor v, bool acceptsMessages) => new(
         v.Id,
         v.Name,
         v.Slug,
@@ -239,9 +334,29 @@ public class VendorsController : ControllerBase
         v.Whatsapp,
         v.MapUrl,
         v.Photos.OrderBy(p => p.SortOrder)
-            .Select(p => new VendorPhotoDto(p.Url, p.AltText, p.IsRealWedding))
+            .Select(p => new VendorPhotoDto(p.Id, p.Url, p.AltText, p.IsRealWedding))
             .ToArray(),
         v.IsFeatured,
         v.Reviews.Count == 0 ? null : Math.Round(v.Reviews.Average(r => r.Rating), 1),
-        v.Reviews.Count);
+        v.Reviews.Count,
+        v.Category.GroupKey,
+        v.PriceUnit ?? CatalogRules.DefaultPriceUnit(v.Category.GroupKey),
+        v.Region,
+        v.ServedRegions.ToArray(),
+        v.AlsoOffers.ToArray(),
+        v.Styles.ToArray(),
+        v.Features.ToArray(),
+        v.CapacityMin,
+        v.CapacityMax,
+        v.Setting,
+        v.VenueType,
+        v.DepositTerms is null && v.CancellationTerms is null && v.TravelPolicy is null && v.BookingLeadTime is null
+            ? null
+            : new VendorTermsDto(v.DepositTerms, v.CancellationTerms, v.TravelPolicy, v.BookingLeadTime),
+        v.Packages.OrderBy(p => p.SortOrder)
+            .Select(p => new VendorPackageDto(
+                p.Name, p.Price, p.PriceUnit ?? v.PriceUnit ?? CatalogRules.DefaultPriceUnit(v.Category.GroupKey),
+                p.Included, p.Duration))
+            .ToArray(),
+        acceptsMessages);
 }

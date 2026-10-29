@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { SiteSearchResult, WebsiteService } from '../../core/website.service';
+import { formatDate, monthName } from '../../core/dates';
 import { LanguageService } from '../../i18n/language.service';
 
 /**
@@ -16,6 +17,7 @@ import { LanguageService } from '../../i18n/language.service';
   imports: [RouterLink, TranslatePipe],
   templateUrl: './site-finder.html',
   styleUrl: './site-finder.scss',
+  host: { class: 'theme-brand' },
 })
 export class SiteFinder {
   private readonly websiteSvc = inject(WebsiteService);
@@ -42,12 +44,8 @@ export class SiteFinder {
   })();
 
   protected readonly months = computed(() => {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    const format = new Intl.DateTimeFormat(locale, { month: 'long' });
-    return Array.from({ length: 12 }, (_, i) => ({
-      value: i + 1,
-      label: format.format(new Date(2026, i, 1)),
-    }));
+    const lang = this.lang.current();
+    return Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: monthName(i, lang) }));
   });
 
   constructor() {
@@ -94,11 +92,6 @@ export class SiteFinder {
   }
 
   protected formatDate(iso: string): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.DateTimeFormat(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date(iso + 'T00:00:00'));
+    return formatDate(iso, this.lang.current());
   }
 }

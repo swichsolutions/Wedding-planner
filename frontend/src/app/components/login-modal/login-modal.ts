@@ -14,7 +14,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
-import { AuthService } from '../../core/auth.service';
+import { AuthService, afterSignUpRoute, safeReturnUrl } from '../../core/auth.service';
 import { AuthModalService } from '../../core/auth-modal.service';
 import { trapTabKey } from '../../core/a11y';
 import { focusFirstInvalid } from '../../core/forms';
@@ -175,13 +175,26 @@ export class LoginModal {
 
   /** Vendors/admins go to their workspace. Couples who sign in on the landing page go
    * to their organizer (/planning); anywhere else they stay put, so a couple signing
-   * in on a vendor profile to save or message that vendor isn't pulled away from it. */
+   * in on a vendor profile to save or message that vendor isn't pulled away from it.
+   * A brand-new account (first Google sign-in) goes to the start form first; signing in
+   * from a sign-up page continues to its returnUrl. */
   private redirect(): void {
     const roles = this.auth.user()?.roles ?? [];
     if (roles.includes('Admin')) this.router.navigateByUrl('/admin');
     else if (roles.includes('Vendor')) this.router.navigateByUrl('/dashboard');
-    else if (roles.includes('Couple') && this.router.url.split(/[?#]/)[0] === '/') {
-      this.router.navigateByUrl('/planning');
+    else if (roles.includes('Couple')) {
+      const tree = this.router.parseUrl(this.router.url);
+      const path = this.router.url.split(/[?#]/)[0];
+      const onAuthPage = ['/signup', '/login', '/join', '/register'].includes(path);
+      const returnUrl = onAuthPage ? safeReturnUrl(tree.queryParamMap.get('returnUrl')) : null;
+      if (this.auth.consumeNewAccount()) {
+        const here = path === '/' || onAuthPage ? returnUrl : this.router.url;
+        this.router.navigateByUrl(afterSignUpRoute(here));
+      } else if (path === '/') {
+        this.router.navigateByUrl('/planning');
+      } else if (onAuthPage) {
+        this.router.navigateByUrl(returnUrl ?? '/planning');
+      }
     }
   }
 
@@ -273,9 +286,19 @@ export class LoginModal {
     });
   }
 
+  /** Carry over a typed email via router state — never the URL, where it would hit server logs. */
+  protected goForgot(): void {
+    const email = this.form.controls.email.value?.trim();
+    this.close();
+    this.router.navigateByUrl('/forgot-password', { state: email ? { email } : undefined });
+  }
+
+  /** Sign up, then come back to this page (an invitation, a vendor profile…); home needs no return. */
   protected goSignup(): void {
     this.close();
-    this.router.navigateByUrl('/signup');
+    const here = this.router.url;
+    const returnUrl = safeReturnUrl(here.split(/[?#]/)[0] === '/' ? null : here);
+    this.router.navigate(['/signup'], { queryParams: returnUrl ? { returnUrl } : {} });
   }
 
   protected goVendor(): void {

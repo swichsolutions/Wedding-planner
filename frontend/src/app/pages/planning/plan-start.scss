@@ -1,0 +1,197 @@
+// The start form after sign-up. Brand theme: ivory page, the gold ring above a peach label and
+// the Mt heading, a white card for the fields, evergreen only on the main button.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.ps {
+  max-width: 44rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-4) var(--space-20);
+
+  @include bp.respond-to(md) {
+    padding-top: var(--space-10);
+  }
+}
+
+.ps-head {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+// the ring sits on the page, a little into the label's space
+.ps-ring {
+  width: clamp(9.5rem, 34vw, 13rem);
+  margin-bottom: calc(-1 * var(--space-3));
+}
+
+.ps-label {
+  margin: 0 0 var(--space-4);
+  padding: 0.5em 1.1em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+}
+
+.ps-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.ps-lead {
+  max-width: 32rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--ink-700);
+  text-wrap: balance;
+}
+
+.ps-card {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+
+  @include bp.respond-to(sm) {
+    padding: var(--space-8) var(--space-10);
+  }
+}
+
+.ps-set {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.ps-q {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  line-height: 1.2;
+}
+
+.ps-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 16rem;
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+}
+
+.ps-money {
+  position: relative;
+
+  input {
+    width: 100%;
+    height: 48px;
+    padding: 0 var(--space-10) 0 var(--space-4);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+
+    &:disabled {
+      opacity: 0.5;
+    }
+
+    &.is-invalid {
+      border-color: var(--color-danger-600);
+    }
+  }
+
+  span {
+    position: absolute;
+    right: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-500);
+  }
+}
+
+.ps-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--ink);
+  }
+}
+
+.ps-error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-100, #fdecec);
+  color: var(--color-danger-600);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+.ps-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+// quiet text button: evergreen is reserved for the main button
+.ps-skip {
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ink);
+  }
+}
+
+.ps-note {
+  margin: calc(-1 * var(--space-4)) 0 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink-500);
+}

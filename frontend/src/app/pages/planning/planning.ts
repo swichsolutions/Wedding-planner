@@ -5,15 +5,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { catchError, of } from 'rxjs';
 
 import { AuthService } from '../../core/auth.service';
-import { BudgetReminder, BudgetService, reminderStatus } from '../../core/budget.service';
-import { ChecklistItem, ChecklistService } from '../../core/checklist.service';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CoupleProfile, CoupleService } from '../../core/couple.service';
-import { ContentService } from '../../core/content.service';
-import { ContentArticle } from '../../core/content.models';
+import { ContentApiService } from '../../core/content-api.service';
+import { ContentSummary, contentPath } from '../../core/content.models';
+import { sizedImage } from '../../core/images';
 import { CATEGORIES } from '../../core/catalog';
 import { GUEST_RANGES, PLANNING_STAGES } from '../../core/onboarding';
 import { nameValidator } from '../../core/forms';
@@ -22,9 +22,9 @@ import { LanguageService } from '../../i18n/language.service';
 import { CoupleOverview } from './couple-overview/couple-overview';
 
 interface TipCard {
-  slug: string;
+  path: string;
   title: string;
-  image: string;
+  image: string | null;
   imageAlt: string;
 }
 
@@ -33,12 +33,11 @@ interface TipCard {
   imports: [RouterLink, ReactiveFormsModule, TranslatePipe, CoupleOverview],
   templateUrl: './planning.html',
   styleUrl: './planning.scss',
+  host: { class: 'theme-brand' },
 })
 export class Planning {
   private readonly auth = inject(AuthService);
-  private readonly checklist = inject(ChecklistService);
   private readonly coupleSvc = inject(CoupleService);
-  private readonly budgetSvc = inject(BudgetService);
   private readonly toast = inject(ToastService);
   private readonly confirmSvc = inject(ConfirmService);
   private readonly fb = inject(FormBuilder);
@@ -52,33 +51,26 @@ export class Planning {
 
   // couple profile → the overview's names, date and countdown (and the restart wizard's defaults)
   protected readonly couple = signal<CoupleProfile | null>(null);
+  /** Bumped after "start over" so the overview reads the reseeded plan. */
+  protected readonly reloadTick = signal(0);
 
-  // Guide cards on the explainer (pulled from real content; top 3).
-  private readonly articles = toSignal(inject(ContentService).list(), {
-    initialValue: [] as ContentArticle[],
-  });
+  // Guide cards on the explainer: the 3 newest published articles (the section hides
+  // while there are none, or if the content API is down).
+  private readonly articles = toSignal(
+    inject(ContentApiService)
+      .list('article', undefined, 3)
+      .pipe(catchError(() => of([] as ContentSummary[]))),
+    { initialValue: [] as ContentSummary[] },
+  );
   protected readonly tips = computed<TipCard[]>(() => {
-    const ka = this.lang.current() === 'ka';
-    return this.articles()
-      .slice(0, 3)
-      .map((a) => ({
-        slug: a.slug,
-        title: ka ? a.titleKa : a.titleEn,
-        image: a.image,
-        imageAlt: a.imageAlt,
-      }));
+    const en = this.lang.current() === 'en';
+    return this.articles().map((a) => ({
+      path: contentPath(a.type, a.slug),
+      title: (en && a.titleEn) || a.titleKa,
+      image: sizedImage(a.coverUrl, 700),
+      imageAlt: (en && a.coverAltEn) || a.coverAltKa || '',
+    }));
   });
-  protected readonly items = signal<ChecklistItem[]>([]);
-  protected readonly loaded = signal(false);
-  protected readonly loadError = signal(false);
-  protected readonly adding = signal(false);
-
-  protected readonly doneCount = computed(() => this.items().filter((i) => i.isDone).length);
-
-  // Upcoming budget payment reminders (soonest first from the API); panel shows the top 5.
-  protected readonly reminders = signal<BudgetReminder[]>([]);
-  protected readonly visibleReminders = computed(() => this.reminders().slice(0, 5));
-
   // =============================== restart planning ===============================
   // Re-runs onboarding (names/date/stage/needs/guests) and wipes + reseeds the
   // checklist + budget from the new answers. Gated by a destructive-action confirm
@@ -265,15 +257,8 @@ export class Planning {
           this.restartLoading.set(false);
           this.closeRestart();
           this.toast.success('planning.restartDone');
-          // The old checklist/budget are gone server-side — reload both so this
-          // page (and a subsequent /budget visit) shows the freshly reseeded plan.
-          this.loaded.set(false);
-          this.loadChecklist();
-          this.reminders.set([]);
-          this.budgetSvc.reminders().subscribe({
-            next: (r) => this.reminders.set(r),
-            error: () => {},
-          });
+          // The old checklist/budget are gone server-side: the overview reads the reseeded plan.
+          this.reloadTick.update((n) => n + 1);
         },
         error: () => {
           this.restartLoading.set(false);
@@ -287,21 +272,14 @@ export class Planning {
     inject(Title).setTitle(`${t.instant('planning.title')} | ${t.instant('brand.name')}`);
     inject(Meta).updateTag({ name: 'description', content: t.instant('planning.subtitle') });
 
-    // Load when isCouple() BECOMES true, not only when it already is at
-    // construction — a guest who signs in via the navbar modal on this page
-    // (or a signed-in user whose auth state settles after hydration) must see
-    // their checklist, not an empty one inviting duplicate re-adds. The latch
-    // keeps it a one-time load.
+    // Load when isCouple() BECOMES true, not only when it already is at construction: a guest
+    // who signs in via the navbar modal on this page (or a signed-in user whose auth state
+    // settles after hydration) must get their plan without a refresh. The latch keeps it one load.
     effect(() => {
       if (!this.isBrowser || !this.isCouple() || this.coupleLoadStarted) return;
       this.coupleLoadStarted = true;
-      this.loadChecklist();
       this.coupleSvc.me().subscribe({
         next: (c) => this.couple.set(c),
-        error: () => {},
-      });
-      this.budgetSvc.reminders().subscribe({
-        next: (r) => this.reminders.set(r),
         error: () => {},
       });
     });
@@ -313,83 +291,6 @@ export class Planning {
       setTimeout(() => {
         (this.host.nativeElement.querySelector('.rmodal input, .rmodal button') as HTMLElement | null)?.focus();
       });
-    });
-  }
-
-  private loadChecklist(): void {
-    this.loadError.set(false);
-    this.checklist.list().subscribe({
-      next: (items) => {
-        this.items.set(items);
-        this.loaded.set(true);
-      },
-      error: () => this.loadError.set(true),
-    });
-  }
-
-  protected retryLoad(): void {
-    this.loadChecklist();
-  }
-
-  // ---- reminder panel helpers ----
-
-  protected reminderBadge(r: BudgetReminder): 'overdue' | 'soon' | null {
-    const s = reminderStatus(r.reminderDate);
-    return s === 'overdue' || s === 'soon' ? s : null;
-  }
-
-  /** What's still to pay on the item: (actual, falling back to estimate) minus paid. */
-  protected outstanding(r: BudgetReminder): number {
-    return Math.max(0, (r.actualCost ?? r.estimate ?? 0) - (r.paid ?? 0));
-  }
-
-  protected formatDate(date: string): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(
-      new Date(date + 'T00:00:00'),
-    );
-  }
-
-  protected formatMoney(n: number): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(Math.round(n)) + ' ₾';
-  }
-
-  protected addItem(input: HTMLInputElement): void {
-    const title = input.value.trim();
-    if (!title) return;
-    this.adding.set(true);
-    this.checklist.add(title).subscribe({
-      next: (item) => {
-        this.items.update((list) => [...list, item]);
-        input.value = '';
-        this.adding.set(false);
-      },
-      error: () => {
-        this.adding.set(false);
-        this.toast.error('planning.saveError');
-      },
-    });
-  }
-
-  protected toggle(item: ChecklistItem, event: Event): void {
-    const next = !item.isDone;
-    this.checklist.update(item.id, { title: item.title, isDone: next }).subscribe({
-      next: () =>
-        this.items.update((list) => list.map((i) => (i.id === item.id ? { ...i, isDone: next } : i))),
-      error: () => {
-        // The USER flipped the DOM checkbox, so the [checked] binding (whose bound
-        // value never changed) won't rewrite it — reset the element directly.
-        (event.target as HTMLInputElement).checked = item.isDone;
-        this.toast.error('planning.saveError');
-      },
-    });
-  }
-
-  protected remove(id: number): void {
-    this.checklist.remove(id).subscribe({
-      next: () => this.items.update((list) => list.filter((i) => i.id !== id)),
-      error: () => this.toast.error('planning.saveError'),
     });
   }
 }

@@ -17,6 +17,33 @@ public class VendorEditDto
     [MaxLength(200)] public string? Whatsapp { get; set; }
     [MaxLength(1000)] public string? MapUrl { get; set; }
     [MaxLength(500)] public string? AreasServed { get; set; }
+
+    // ---- catalog attributes (PROPOSALS.md P2–P5); unknown values are dropped server-side ----
+    [MaxLength(10)] public string? PriceUnit { get; set; }
+    [MaxLength(40)] public string? Region { get; set; }
+    [MaxLength(20)] public List<string>? ServedRegions { get; set; }
+    [MaxLength(10)] public List<string>? AlsoOffers { get; set; }
+    [MaxLength(10)] public List<string>? Styles { get; set; }
+    [MaxLength(10)] public List<string>? Features { get; set; }
+    [Range(1, 5000)] public int? CapacityMin { get; set; }
+    [Range(1, 5000)] public int? CapacityMax { get; set; }
+    [MaxLength(10)] public string? Setting { get; set; }
+    [MaxLength(20)] public string? VenueType { get; set; }
+    [MaxLength(200)] public string? DepositTerms { get; set; }
+    [MaxLength(500)] public string? CancellationTerms { get; set; }
+    [MaxLength(10)] public string? TravelPolicy { get; set; }
+    [MaxLength(100)] public string? BookingLeadTime { get; set; }
+    /// <summary>The full package list (replaces what's saved); at most 5.</summary>
+    [MaxLength(5)] public List<VendorPackageEditDto>? Packages { get; set; }
+}
+
+public class VendorPackageEditDto
+{
+    [Required, MaxLength(120)] public string Name { get; set; } = string.Empty;
+    [Range(0, 10_000_000)] public decimal? Price { get; set; }
+    [MaxLength(10)] public string? PriceUnit { get; set; }
+    [MaxLength(1000)] public string? Included { get; set; }
+    [MaxLength(60)] public string? Duration { get; set; }
 }
 
 public record VendorDashboardDto(
@@ -37,7 +64,23 @@ public record VendorDashboardDto(
     string? Whatsapp,
     string? MapUrl,
     string? AreasServed,
-    VendorPhotoDto[] Photos);
+    VendorPhotoDto[] Photos,
+    string Group,
+    string? PriceUnit,
+    string? Region,
+    string[] ServedRegions,
+    string[] AlsoOffers,
+    string[] Styles,
+    string[] Features,
+    int? CapacityMin,
+    int? CapacityMax,
+    string? Setting,
+    string? VenueType,
+    string? DepositTerms,
+    string? CancellationTerms,
+    string? TravelPolicy,
+    string? BookingLeadTime,
+    VendorPackageEditDto[] Packages);
 
 public record InboxMessageDto(
     int Id,
@@ -70,4 +113,9 @@ public record AdminVendorDto(
     string City,
     bool IsApproved,
     bool IsFeatured,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string Slug,
+    string CitySlug,
+    /// <summary>A vendor account manages the profile (false for imported, unclaimed ones).</summary>
+    bool HasOwner,
+    int PhotoCount);

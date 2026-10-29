@@ -55,6 +55,9 @@ services:
         sync: false # same frontend URL (canonical origin for sitemap.xml)
       - key: LocalUploads__PublicBase
         sync: false # https://weddingplanner-api-xxxx.onrender.com/uploads
+      # ---- optional: real "forgot password" emails (without these the API only logs them) ----
+      # Add in the dashboard: Email__Smtp__Host, Email__Smtp__Port (587), Email__Smtp__Username,
+      # Email__Smtp__Password, Email__From (sender address on a domain the provider verified).
 
   # ------------------------------------------------------ Angular 21 SSR frontend
   - type: web

@@ -2,15 +2,15 @@ namespace WeddingPlanner.Domain.Entities;
 
 /// <summary>
 /// One line of a couple's wedding budget (venue, photographer, cake, …). Owned by the
-/// AppUser (couple) via UserId, like <see cref="ChecklistItem"/> — no FK to Identity.
+/// shared plan (<see cref="Couple"/>), like <see cref="ChecklistItem"/>.
 /// A row can point at a directory vendor (VendorId) or a free-text merchant, not both.
 /// </summary>
 public class BudgetItem
 {
     public int Id { get; set; }
 
-    /// <summary>Owning couple user's id (AppUser.Id).</summary>
-    public string UserId { get; set; } = string.Empty;
+    /// <summary>The plan it belongs to (<see cref="Couple"/>).</summary>
+    public int CoupleId { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
@@ -29,7 +29,10 @@ public class BudgetItem
 
     public decimal? Estimate { get; set; }
     public decimal? ActualCost { get; set; }
+
+    /// <summary>The sum of <see cref="Payments"/> (kept here for lists and reminders); null = none.</summary>
     public decimal? Paid { get; set; }
+    public ICollection<BudgetPayment> Payments { get; set; } = new List<BudgetPayment>();
 
     public string? Note { get; set; }
 

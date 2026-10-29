@@ -1,5 +1,6 @@
 import { Component, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
@@ -7,10 +8,15 @@ import { AdminService, AdminVendor } from '../../core/admin.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { categoryKey } from '../../core/catalog';
+import { AdminContent } from './admin-content';
+import { AdminImport } from './admin-import';
+
+type AdminTab = 'vendors' | 'content' | 'import';
+const TABS: AdminTab[] = ['vendors', 'content', 'import'];
 
 @Component({
   selector: 'app-admin',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, RouterLink, AdminContent, AdminImport],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
 })
@@ -18,7 +24,19 @@ export class Admin {
   private readonly admin = inject(AdminService);
   private readonly toast = inject(ToastService);
   private readonly lang = inject(LanguageService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  /** Vendors (moderation), content (editor) or the vendor import; kept in ?tab= so a reload stays put. */
+  protected readonly tab = signal<AdminTab>(
+    TABS.find((t) => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'vendors',
+  );
+
+  protected setTab(tab: AdminTab): void {
+    this.tab.set(tab);
+    this.router.navigate([], { queryParams: { tab: tab === 'vendors' ? null : tab }, replaceUrl: true });
+  }
 
   protected readonly vendors = signal<AdminVendor[]>([]);
   protected readonly pendingOnly = signal(true);

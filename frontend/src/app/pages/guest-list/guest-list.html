@@ -33,7 +33,7 @@
           </svg>
         </span>
         <p>{{ 'guestListPage.emptyTitle' | translate }}</p>
-        <button type="button" class="btn btn--pink" (click)="openSidebar($event)">
+        <button type="button" class="btn btn--primary" (click)="openSidebar($event)">
           {{ 'guestListPage.addGuests' | translate }}
         </button>
       </div>
@@ -48,31 +48,79 @@
           <span class="guests__stat-label">{{ 'guestListPage.statsGuests' | translate }}</span>
         </li>
         <li class="guests__stat">
-          <span class="guests__stat-num num">{{ adultsCount() }}</span>
-          <span class="guests__stat-label">{{ 'guestListPage.statsAdults' | translate }}</span>
+          <span class="guests__stat-num num">{{ attendanceCount().yes }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.attendance.yes' | translate }}</span>
+        </li>
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ attendanceCount().pending }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.attendance.pending' | translate }}</span>
+        </li>
+        <li class="guests__stat">
+          <span class="guests__stat-num num">{{ attendanceCount().no }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.attendance.no' | translate }}</span>
         </li>
         <li class="guests__stat">
           <span class="guests__stat-num num">{{ childrenCount() }}</span>
           <span class="guests__stat-label">{{ 'guestListPage.statsChildren' | translate }}</span>
         </li>
         <li class="guests__stat">
-          <span class="guests__stat-num num">{{ definitelyCount() }}</span>
-          <span class="guests__stat-label">{{ 'guestListPage.invitedDefinitely' | translate }}</span>
-        </li>
-        <li class="guests__stat">
-          <span class="guests__stat-num num">{{ maybeCount() }}</span>
-          <span class="guests__stat-label">{{ 'guestListPage.invitedMaybe' | translate }}</span>
+          <span class="guests__stat-num num">{{ dietaryCount() }}</span>
+          <span class="guests__stat-label">{{ 'guestListPage.statsDietary' | translate }}</span>
         </li>
       </ul>
 
       <div class="guests__toolbar">
-        <p class="guests__count">
-          <span class="num">{{ guests().length }}</span> {{ 'guestListPage.countLabel' | translate }}
-        </p>
-        <button type="button" class="btn btn--pink" (click)="openSidebar($event)">
+        <div class="gfilter" role="group" [attr.aria-label]="'guestListPage.filterLabel' | translate">
+          <button type="button" [attr.aria-pressed]="filter() === 'all'" (click)="filter.set('all')">
+            {{ 'guestListPage.filterAll' | translate }} <span class="num">{{ guests().length }}</span>
+          </button>
+          @for (a of attendances; track a) {
+            <button type="button" [attr.aria-pressed]="filter() === a" (click)="filter.set(a)">
+              {{ 'guestListPage.attendance.' + a | translate }}
+            </button>
+          }
+        </div>
+        <button type="button" class="btn btn--primary" (click)="openSidebar($event)">
           {{ 'guestListPage.addGuests' | translate }}
         </button>
       </div>
+
+      <!-- ---- bulk: put the selected guests into a family (D9) ---- -->
+      @if (selectedIds().size > 0) {
+        <div class="gbulk" role="region" [attr.aria-label]="'guestListPage.bulkLabel' | translate">
+          <span class="gbulk__count">{{ 'guestListPage.selectedCount' | translate: { n: selectedIds().size } }}</span>
+          @if (bulkNewFamily()) {
+            <form class="gbulk__new" (submit)="$event.preventDefault(); bulkCreateFamily(famName)">
+              <label class="ghidden" for="bulk-family-name">{{ 'guestListPage.familyNameLabel' | translate }}</label>
+              <input #famName id="bulk-family-name" type="text" maxlength="120" autocomplete="off"
+                [attr.placeholder]="'guestListPage.familyNamePlaceholder' | translate" />
+              <button type="submit" class="btn btn--primary">{{ 'guestListPage.familyCreate' | translate }}</button>
+              <button type="button" class="gquiet" (click)="bulkNewFamily.set(false)">{{ 'guestListPage.cancel' | translate }}</button>
+            </form>
+          } @else {
+            <label class="ghidden" for="bulk-family">{{ 'guestListPage.addToFamily' | translate }}</label>
+            <select #bulkFam id="bulk-family" class="gbulk__select" (change)="bulkSetFamily(bulkFam)">
+              <option value="">{{ 'guestListPage.addToFamily' | translate }}</option>
+              @for (f of families(); track f.id) {
+                <option [value]="f.id">{{ f.name }}</option>
+              }
+              <option [value]="newFamilyValue">{{ 'guestListPage.newFamilyOption' | translate }}</option>
+            </select>
+            <button type="button" class="gquiet" (click)="bulkRemoveFamily()">{{ 'guestListPage.removeFromFamily' | translate }}</button>
+          }
+          <button type="button" class="gquiet gbulk__clear" (click)="clearSelection()">
+            {{ 'guestListPage.clearSelection' | translate }}
+          </button>
+        </div>
+      } @else if (families().length === 0 && guests().length > 1) {
+        <p class="guests__hint">{{ 'guestListPage.familyHint' | translate }}</p>
+      }
+      @if (guests().length) {
+        <p class="guests__hint">
+          {{ 'guestListPage.rsvpHint' | translate }}
+          <a class="gquiet" routerLink="/planning/invitation" [queryParams]="{ step: 'share' }">{{ 'guestListPage.rsvpLinks' | translate }} →</a>
+        </p>
+      }
 
       <div class="gtable-wrap">
         <table class="gtable">
@@ -84,87 +132,184 @@
               </th>
               <th scope="col" class="gtable__name">{{ 'guestListPage.columnName' | translate }}</th>
               <th scope="col" class="gtable__count">{{ 'guestListPage.columnGuests' | translate }}</th>
-              <th scope="col" class="gtable__contact">{{ 'guestListPage.columnContact' | translate }}</th>
+              <th scope="col" class="gtable__attendance">{{ 'guestListPage.columnAttendance' | translate }}</th>
+              <th scope="col" class="gtable__table">{{ 'guestListPage.columnTable' | translate }}</th>
               <th scope="col" class="gtable__invited">{{ 'guestListPage.columnInvited' | translate }}</th>
               <th scope="col" class="gtable__actions"><span class="ghidden">{{ 'guestListPage.columnActions' | translate }}</span></th>
             </tr>
           </thead>
-          <tbody>
-            @for (guest of guests(); track guest.id) {
-              <tr class="grow">
-                <td class="grow__select" [attr.data-label]="'guestListPage.selectAll' | translate">
-                  <input type="checkbox" [checked]="isSelected(guest.id)" (change)="toggleSelect(guest.id)"
-                    [attr.aria-label]="('guestListPage.selectGuest' | translate) + ' — ' + fullName(guest)" />
-                </td>
-                <td class="grow__name" [attr.data-label]="'guestListPage.columnName' | translate">
-                  <div class="grow__name-wrap">
-                    <span class="grow__fullname">{{ fullName(guest) }}</span>
-                    @if (guest.hasPlusOne) {
-                      <span class="grow__sub">
-                        @if (guest.plusOneNameUnknown) {
-                          {{ 'guestListPage.plusOneRow' | translate: { name: ('guestListPage.unknownNameBadge' | translate) } }}
-                        } @else {
-                          {{ 'guestListPage.plusOneRow' | translate: { name: (guest.plusOneFirstName + ' ' + (guest.plusOneLastName ?? '')).trim() } }}
-                        }
-                      </span>
+          @for (grp of groups().families; track grp.family.id) {
+            <tbody class="gfam">
+              <tr class="gfam__head">
+                <th colspan="7" scope="rowgroup">
+                  <div class="gfam__bar">
+                    @if (renamingFamilyId() === grp.family.id) {
+                      <input class="gfam__rename" type="text" maxlength="120" [value]="grp.family.name"
+                        [attr.aria-label]="'guestListPage.familyNameLabel' | translate"
+                        (blur)="commitRenameFamily(grp.family, $event)" (keydown.enter)="commitRenameFamily(grp.family, $event)" />
+                    } @else {
+                      <span class="gfam__name">{{ grp.family.name }}</span>
                     }
-                    @if (guest.hasChild) {
-                      <span class="grow__sub">
-                        @if (guest.childNameUnknown) {
-                          {{ 'guestListPage.childRow' | translate: { name: ('guestListPage.unknownNameBadge' | translate) } }}
-                        } @else {
-                          {{ 'guestListPage.childRow' | translate: { name: (guest.childFirstName + ' ' + (guest.childLastName ?? '')).trim() } }}
-                        }
-                      </span>
+                    <span class="gfam__meta">{{ 'guestListPage.familyMeta' | translate: { n: familyHeadcount(grp.guests) } }}</span>
+                    @if (grp.family.rsvpAt) {
+                      <span class="grsvp">{{ 'guestListPage.replied' | translate: { date: replyDate(grp.family.rsvpAt) } }}</span>
                     }
+                    <span class="gfam__actions">
+                      <button type="button" class="gicon" (click)="startRenameFamily(grp.family)"
+                        [attr.aria-label]="('guestListPage.familyRename' | translate) + ' — ' + grp.family.name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                      </button>
+                      <button type="button" class="gicon gicon--danger" (click)="askRemoveFamily(grp.family)"
+                        [attr.aria-label]="('guestListPage.familyDelete' | translate) + ' — ' + grp.family.name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16" /><path d="M9 7V4h6v3" /><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /></svg>
+                      </button>
+                    </span>
                   </div>
-                </td>
-                <td class="grow__count" [attr.data-label]="'guestListPage.columnGuests' | translate">{{ partySize(guest) }}</td>
-                <td class="grow__contact" [attr.data-label]="'guestListPage.columnContact' | translate">
-                  <div class="grow__contact-wrap">
-                    @if (guest.email) { <span class="grow__contact-line">{{ guest.email }}</span> }
-                    @if (guest.phone) { <span class="grow__contact-line">{{ guest.phone }}</span> }
-                    @if (!guest.email && !guest.phone) { <span class="grow__contact-empty">—</span> }
-                  </div>
-                </td>
-                <td class="grow__invited" [attr.data-label]="'guestListPage.columnInvited' | translate">
-                  <label class="grow__radio">
-                    <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'definitely'"
-                      (change)="setInvited(guest, 'definitely')" />
-                    {{ 'guestListPage.invitedDefinitely' | translate }}
-                  </label>
-                  <label class="grow__radio">
-                    <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'maybe'"
-                      (change)="setInvited(guest, 'maybe')" />
-                    {{ 'guestListPage.invitedMaybe' | translate }}
-                  </label>
-                </td>
-                <td class="grow__actions" [attr.data-label]="'guestListPage.columnActions' | translate">
-                  <button type="button" class="gicon" (click)="startEdit(guest, $event)"
-                    [attr.aria-label]="('guestListPage.editGuest' | translate) + ' — ' + fullName(guest)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                    </svg>
-                  </button>
-                  <button type="button" class="gicon gicon--danger" (click)="askRemove(guest)"
-                    [attr.aria-label]="('guestListPage.delete' | translate) + ' — ' + fullName(guest)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M4 7h16" />
-                      <path d="M9 7V4h6v3" />
-                      <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
-                      <path d="M10 11v6M14 11v6" />
-                    </svg>
-                  </button>
-                </td>
+                  @if (grp.family.rsvpMessage || grp.family.rsvpAnswer) {
+                    <div class="gfam__note">
+                      @if (grp.family.rsvpMessage) {
+                        <p>„{{ grp.family.rsvpMessage }}“</p>
+                      }
+                      @if (grp.family.rsvpAnswer) {
+                        <p><span class="gfam__note-label">{{ 'guestListPage.rsvpAnswer' | translate }}</span> {{ grp.family.rsvpAnswer }}</p>
+                      }
+                    </div>
+                  }
+                </th>
               </tr>
-            }
-          </tbody>
+              @for (guest of grp.guests; track guest.id) {
+                <ng-container [ngTemplateOutlet]="guestRow" [ngTemplateOutletContext]="{ $implicit: guest }" />
+              } @empty {
+                <tr class="gfam__empty"><td colspan="7">{{ 'guestListPage.familyEmpty' | translate }}</td></tr>
+              }
+            </tbody>
+          }
+          @if (groups().loose.length) {
+            <tbody class="gloose">
+              @if (groups().families.length) {
+                <tr class="gfam__head gfam__head--loose">
+                  <th colspan="7" scope="rowgroup">
+                    <div class="gfam__bar"><span class="gfam__name">{{ 'guestListPage.noFamily' | translate }}</span></div>
+                  </th>
+                </tr>
+              }
+              @for (guest of groups().loose; track guest.id) {
+                <ng-container [ngTemplateOutlet]="guestRow" [ngTemplateOutletContext]="{ $implicit: guest }" />
+              }
+            </tbody>
+          }
         </table>
+        @if (groups().families.length === 0 && groups().loose.length === 0) {
+          <p class="guests__hint">{{ 'guestListPage.filterEmpty' | translate }}</p>
+        }
       </div>
     }
+
+    <!-- one guest row (in a family or not) -->
+    <ng-template #guestRow let-guest>
+      <tr class="grow" [class.is-declined]="guest.attendance === 'no'">
+        <td class="grow__select" [attr.data-label]="'guestListPage.selectAll' | translate">
+          <input type="checkbox" [checked]="isSelected(guest.id)" (change)="toggleSelect(guest.id)"
+            [attr.aria-label]="('guestListPage.selectGuest' | translate) + ' — ' + fullName(guest)" />
+        </td>
+        <td class="grow__name" [attr.data-label]="'guestListPage.columnName' | translate">
+          <div class="grow__name-wrap">
+            <span class="grow__fullname">{{ fullName(guest) }}</span>
+            @if (guest.hasPlusOne) {
+              <span class="grow__sub">
+                @if (guest.plusOneNameUnknown) {
+                  {{ 'guestListPage.plusOneRow' | translate: { name: ('guestListPage.unknownNameBadge' | translate) } }}
+                } @else {
+                  {{ 'guestListPage.plusOneRow' | translate: { name: (guest.plusOneFirstName + ' ' + (guest.plusOneLastName ?? '')).trim() } }}
+                }
+              </span>
+            }
+            @if (guest.hasChild) {
+              <span class="grow__sub">
+                @if (guest.childNameUnknown) {
+                  {{ 'guestListPage.childRow' | translate: { name: ('guestListPage.unknownNameBadge' | translate) } }}
+                } @else {
+                  {{ 'guestListPage.childRow' | translate: { name: (guest.childFirstName + ' ' + (guest.childLastName ?? '')).trim() } }}
+                }
+              </span>
+            }
+            @if (guest.email || guest.phone) {
+              <span class="grow__contact-line">{{ contactLine(guest) }}</span>
+            }
+            @if (guest.dietaryNeeds) {
+              <span class="grow__diet" [attr.title]="'guestListPage.dietaryLabel' | translate">{{ guest.dietaryNeeds }}</span>
+            }
+            @if (guest.rsvpAt && !guest.familyId) {
+              <span class="grsvp">{{ 'guestListPage.replied' | translate: { date: replyDate(guest.rsvpAt) } }}</span>
+            }
+            @if (guest.rsvpMessage) {
+              <span class="grow__note">„{{ guest.rsvpMessage }}“</span>
+            }
+            @if (guest.rsvpAnswer) {
+              <span class="grow__note"><span class="gfam__note-label">{{ 'guestListPage.rsvpAnswer' | translate }}</span> {{ guest.rsvpAnswer }}</span>
+            }
+          </div>
+        </td>
+        <td class="grow__count" [attr.data-label]="'guestListPage.columnGuests' | translate">{{ partySize(guest) }}</td>
+        <td class="grow__attendance" [attr.data-label]="'guestListPage.columnAttendance' | translate">
+          <select class="gselect" [class.is-yes]="guest.attendance === 'yes'" [class.is-no]="guest.attendance === 'no'"
+            (change)="setAttendance(guest, $any($event.target).value)"
+            [attr.aria-label]="('guestListPage.columnAttendance' | translate) + ' — ' + fullName(guest)">
+            @for (a of attendances; track a) {
+              <option [value]="a" [selected]="guest.attendance === a">{{ 'guestListPage.attendance.' + a | translate }}</option>
+            }
+          </select>
+        </td>
+        <td class="grow__table" [attr.data-label]="'guestListPage.columnTable' | translate">
+          @if (tables().length === 0) {
+            <span class="grow__contact-empty">—</span>
+          } @else {
+            <select class="gselect" [disabled]="guest.attendance === 'no'"
+              (change)="seatAt(guest, $any($event.target).value)"
+              [attr.aria-label]="('guestListPage.columnTable' | translate) + ' — ' + fullName(guest)">
+              <option value="" [selected]="!tableOf(guest)">{{ 'guestListPage.noTable' | translate }}</option>
+              @for (t of tables(); track t.id) {
+                <option [value]="t.id" [selected]="tableOf(guest)?.id === t.id" [disabled]="!fits(guest, t)">
+                  {{ 'guestListPage.tableOption' | translate: { name: t.name, free: freeSeats(t) } }}
+                </option>
+              }
+            </select>
+          }
+        </td>
+        <td class="grow__invited" [attr.data-label]="'guestListPage.columnInvited' | translate">
+          <label class="grow__radio">
+            <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'definitely'"
+              (change)="setInvited(guest, 'definitely')" />
+            {{ 'guestListPage.invitedDefinitely' | translate }}
+          </label>
+          <label class="grow__radio">
+            <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'maybe'"
+              (change)="setInvited(guest, 'maybe')" />
+            {{ 'guestListPage.invitedMaybe' | translate }}
+          </label>
+        </td>
+        <td class="grow__actions" [attr.data-label]="'guestListPage.columnActions' | translate">
+          <button type="button" class="gicon" (click)="startEdit(guest, $event)"
+            [attr.aria-label]="('guestListPage.editGuest' | translate) + ' — ' + fullName(guest)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+          </button>
+          <button type="button" class="gicon gicon--danger" (click)="askRemove(guest)"
+            [attr.aria-label]="('guestListPage.delete' | translate) + ' — ' + fullName(guest)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h16" />
+              <path d="M9 7V4h6v3" />
+              <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
+              <path d="M10 11v6M14 11v6" />
+            </svg>
+          </button>
+        </td>
+      </tr>
+    </ng-template>
 
     <!-- Persistent (hidden) file picker — the sidebar's "Upload spreadsheet" option
          forwards a click to this. -->
@@ -328,6 +473,48 @@
                 </select>
               </div>
 
+              <div class="gform__field">
+                <label for="guest-family">{{ 'guestListPage.familyLabel' | translate }}</label>
+                <select #famSel id="guest-family" name="familyId" (change)="onFormFamily(famSel)">
+                  <option value="">{{ 'guestListPage.noFamilyOption' | translate }}</option>
+                  @for (f of families(); track f.id) {
+                    <option [value]="f.id">{{ f.name }}</option>
+                  }
+                  <option [value]="newFamilyValue">{{ 'guestListPage.newFamilyOption' | translate }}</option>
+                </select>
+                @if (formNewFamily()) {
+                  <input id="guest-new-family" name="newFamily" type="text" maxlength="120" autocomplete="off"
+                    [attr.placeholder]="'guestListPage.familyNamePlaceholder' | translate"
+                    [attr.aria-label]="'guestListPage.familyNameLabel' | translate"
+                    [class.ng-invalid]="guestFormAttempted() && fieldEmpty(guestForm, 'newFamily')" />
+                  @if (guestFormAttempted() && fieldEmpty(guestForm, 'newFamily')) {
+                    <small class="gform__err">{{ 'guestListPage.requiredField' | translate }}</small>
+                  }
+                }
+                <small class="gform__hint">{{ 'guestListPage.familyFormHint' | translate }}</small>
+              </div>
+
+              <fieldset class="gform__radios">
+                <legend>{{ 'guestListPage.columnAttendance' | translate }}</legend>
+                @for (a of attendances; track a) {
+                  <label class="gform__radio">
+                    <input type="radio" name="attendance" [value]="a" [checked]="a === 'pending'" />
+                    {{ 'guestListPage.attendance.' + a | translate }}
+                  </label>
+                }
+              </fieldset>
+
+              <div class="gform__field">
+                <label for="guest-diet">{{ 'guestListPage.dietaryLabel' | translate }}</label>
+                <input #dietIn id="guest-diet" name="dietaryNeeds" type="text" maxlength="200" autocomplete="off"
+                  [attr.placeholder]="'guestListPage.dietaryPlaceholder' | translate" />
+                <div class="gform__chips">
+                  @for (d of diets; track d) {
+                    <button type="button" class="gchip" (click)="addDiet(dietIn, d)">+ {{ 'guestListPage.diet.' + d | translate }}</button>
+                  }
+                </div>
+              </div>
+
               <fieldset class="gform__radios">
                 <legend>{{ 'guestListPage.invitedLabel' | translate }}</legend>
                 <label class="gform__radio">
@@ -340,7 +527,7 @@
                 </label>
               </fieldset>
 
-              <button type="submit" class="btn btn--pink gform__submit" [disabled]="savingGuest()">
+              <button type="submit" class="btn btn--primary gform__submit" [disabled]="savingGuest()">
                 {{ (isEditing() ? 'guestListPage.saveChanges' : 'guestListPage.saveGuest') | translate }}
               </button>
             </form>

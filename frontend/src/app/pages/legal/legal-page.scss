@@ -1,0 +1,15 @@
+// Brand theme (theme-brand host): ivory page, charcoal text, Mt capitals for the heading.
+:host {
+  display: block;
+  background: var(--ivory);
+}
+
+.legal h1 {
+  font-size: var(--fs-h2);
+  line-height: 1.15;
+}
+
+.legal__updated {
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+}

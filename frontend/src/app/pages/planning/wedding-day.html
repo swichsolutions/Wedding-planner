@@ -1,0 +1,168 @@
+<section class="wd container">
+  <header class="wd-head">
+    <div>
+      <h1 class="wd-title">{{ 'day.title' | translate }}</h1>
+      <p class="wd-lead">
+        @if (dateLabel(); as d) {
+          <span class="wd-date">{{ d }}</span> ·
+        }
+        {{ 'day.lead' | translate }}
+      </p>
+    </div>
+    @if (loaded() && items().length) {
+      <div class="wd-tools">
+        <button type="button" class="btn btn--primary" (click)="startAdd()" [disabled]="editing() !== null">
+          {{ 'day.add' | translate }}
+        </button>
+        <button type="button" class="btn btn--outline-ink" (click)="showExamples.set(!showExamples())"
+          [attr.aria-expanded]="showExamples()" aria-controls="wd-examples">
+          {{ 'day.fromExample' | translate }}
+        </button>
+      </div>
+    }
+  </header>
+
+  <!-- the add / edit form (also used for the first activity) -->
+  <ng-template #dayForm>
+    <form class="wd-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="wd-form__grid">
+        <div class="wd-field wd-field--time">
+          <label for="day-time">{{ 'day.time' | translate }}</label>
+          <input id="day-time" type="time" formControlName="time" />
+        </div>
+        <div class="wd-field wd-field--wide">
+          <label for="day-activity">{{ 'day.activity' | translate }}</label>
+          <input id="day-activity" type="text" formControlName="activity" maxlength="200" aria-required="true"
+            [attr.placeholder]="'day.activityHint' | translate"
+            [class.is-invalid]="form.controls.activity.invalid && form.controls.activity.touched"
+            [attr.aria-invalid]="form.controls.activity.invalid && form.controls.activity.touched ? 'true' : null" />
+          @if (form.controls.activity.invalid && form.controls.activity.touched) {
+            <span class="wd-err">{{ 'day.activityRequired' | translate }}</span>
+          }
+        </div>
+        <div class="wd-field wd-field--wide">
+          <label for="day-note">{{ 'day.note' | translate }}</label>
+          <input id="day-note" type="text" formControlName="note" maxlength="500" />
+        </div>
+        <div class="wd-field">
+          <label for="day-who">{{ 'day.who' | translate }}</label>
+          <input id="day-who" type="text" formControlName="who" maxlength="120" list="day-who-list" (change)="onWho()" />
+          <datalist id="day-who-list">
+            @for (s of suggestions(); track s.name) {
+              <option [value]="s.name"></option>
+            }
+          </datalist>
+        </div>
+        <div class="wd-field">
+          <label for="day-contact">{{ 'day.contact' | translate }}</label>
+          <input id="day-contact" type="text" formControlName="contact" maxlength="120" inputmode="tel"
+            [attr.placeholder]="'day.contactHint' | translate" />
+        </div>
+      </div>
+      <div class="wd-form__actions">
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ 'day.save' | translate }}</button>
+        <button type="button" class="wd-quiet" (click)="cancel()">{{ 'day.cancel' | translate }}</button>
+      </div>
+    </form>
+  </ng-template>
+
+  @if (loadError()) {
+    <p class="wd-note" role="alert">{{ 'day.loadError' | translate }}</p>
+  } @else if (!loaded()) {
+    <span class="skel wd-skel" aria-hidden="true"></span>
+  } @else {
+    <!-- the examples: the empty state's first choice, or (with a schedule) behind "from an example" -->
+    @if (!items().length || showExamples()) {
+      <section id="wd-examples" class="wd-examples" [attr.aria-labelledby]="'wd-examples-h'">
+        <h2 id="wd-examples-h" class="wd-h2">
+          {{ (items().length ? 'day.examplesReplace' : 'day.examplesTitle') | translate }}
+        </h2>
+        <ul class="wd-cards" role="list">
+          @for (e of examples(); track e.key) {
+            <li class="wd-card">
+              <h3 class="wd-card__title">{{ e.title }}</h3>
+              <p class="wd-card__text">{{ e.summary }}</p>
+              <p class="wd-card__meta"><span class="num">{{ e.span }}</span> · {{ 'schedules.items' | translate: { n: e.count } }}</p>
+              <button type="button" class="btn btn--outline-ink wd-card__use" (click)="useExample(e.key)">
+                {{ 'day.use' | translate }}
+              </button>
+            </li>
+          }
+        </ul>
+        <p class="wd-more"><a routerLink="/schedules">{{ 'day.seeExamples' | translate }}</a></p>
+      </section>
+    }
+
+    @if (!items().length) {
+      <section class="wd-blank" aria-labelledby="wd-blank-h">
+        <h2 id="wd-blank-h" class="wd-h2">{{ 'day.blankTitle' | translate }}</h2>
+        @if (editing() === 'new') {
+          <ng-container [ngTemplateOutlet]="dayForm" />
+        } @else {
+          <button type="button" class="btn btn--primary" (click)="startAdd()">{{ 'day.addFirst' | translate }}</button>
+        }
+      </section>
+    } @else {
+      @if (editing() === 'new') {
+        <ng-container [ngTemplateOutlet]="dayForm" />
+      }
+
+      <ol class="wd-line" role="list">
+        @for (item of items(); track item.id; let i = $index) {
+          <li class="wd-item" [class.is-editing]="editing() === item.id">
+            @if (editing() === item.id) {
+              <ng-container [ngTemplateOutlet]="dayForm" />
+            } @else {
+              <span class="wd-time num">{{ item.time ?? ('day.noTime' | translate) }}</span>
+              <span class="wd-dot" aria-hidden="true"></span>
+              <div class="wd-body">
+                <p class="wd-activity">{{ item.activity }}</p>
+                @if (item.note) {
+                  <p class="wd-text">{{ item.note }}</p>
+                }
+                @if (item.who || item.contact) {
+                  <p class="wd-who">
+                    @if (item.who) {
+                      <span><span class="wd-sr">{{ 'day.who' | translate }}: </span>{{ item.who }}</span>
+                    }
+                    @if (item.contact) {
+                      @if (phoneHref(item.contact); as tel) {
+                        <a class="wd-contact num" [href]="tel">{{ item.contact }}</a>
+                      } @else {
+                        <span class="wd-contact">{{ item.contact }}</span>
+                      }
+                    }
+                  </p>
+                }
+              </div>
+              <div class="wd-actions">
+                @if (canSwap(i, -1)) {
+                  <button type="button" class="wd-icon" (click)="move(i, -1)" [attr.aria-label]="'day.moveUp' | translate: { name: item.activity }">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6" /></svg>
+                  </button>
+                }
+                @if (canSwap(i, 1)) {
+                  <button type="button" class="wd-icon" (click)="move(i, 1)" [attr.aria-label]="'day.moveDown' | translate: { name: item.activity }">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                  </button>
+                }
+                <button type="button" class="wd-icon" (click)="startEdit(item)" [disabled]="editing() !== null"
+                  [attr.aria-label]="'day.edit' | translate: { name: item.activity }">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                </button>
+                <button type="button" class="wd-icon" (click)="remove(item)" [attr.aria-label]="'day.deleteNamed' | translate: { name: item.activity }">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /></svg>
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ol>
+
+      <p class="wd-foot">
+        {{ 'day.orderHint' | translate }}
+        <button type="button" class="wd-quiet" (click)="clearAll()">{{ 'day.clear' | translate }}</button>
+      </p>
+    }
+  }
+</section>

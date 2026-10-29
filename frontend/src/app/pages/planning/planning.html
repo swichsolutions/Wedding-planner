@@ -1,80 +1,7 @@
 @if (isCouple()) {
-  <!-- ============ organizer (logged-in couple): overview, payments, checklist ============ -->
+  <!-- ============ organizer (logged-in couple): the overview (B7) ============ -->
   <section class="planning container">
-    <app-couple-overview [couple]="couple()" [checklistItems]="items()"
-      (editDetails)="confirmRestart($event)" />
-
-    @if (visibleReminders().length) {
-      <aside class="preminders">
-        <div class="preminders__head">
-          <h2>{{ 'planning.remindersTitle' | translate }}</h2>
-          <a class="link-arrow" routerLink="/budget">{{ 'planning.remindersLink' | translate }}</a>
-        </div>
-        <ul class="preminders__list" role="list">
-          @for (r of visibleReminders(); track r.id) {
-            <li class="preminder"
-              [class.is-overdue]="reminderBadge(r) === 'overdue'"
-              [class.is-soon]="reminderBadge(r) === 'soon'">
-              <span class="preminder__date num">{{ formatDate(r.reminderDate) }}</span>
-              <span class="preminder__name">{{ r.name }}</span>
-              @if (reminderBadge(r); as badge) {
-                <span class="preminder__badge">
-                  {{ (badge === 'overdue' ? 'budgetPage.overdue' : 'budgetPage.soon') | translate }}
-                </span>
-              }
-              @if (outstanding(r) > 0) {
-                <span class="preminder__amount num">{{ formatMoney(outstanding(r)) }}</span>
-              }
-            </li>
-          }
-        </ul>
-      </aside>
-    }
-
-    <header class="planning__head" id="checklist">
-      <h1>{{ 'planning.checklistTitle' | translate }}</h1>
-      <div class="planning__head-meta">
-        <p class="planning__progress">
-          <span class="num">{{ doneCount() }}</span> / <span class="num">{{ items().length }}</span>
-          {{ 'planning.completed' | translate }}
-        </p>
-        <button type="button" class="planning__restart" (click)="confirmRestart($event)">
-          {{ 'planning.restartBtn' | translate }}
-        </button>
-      </div>
-    </header>
-
-    <form class="checklist-add" (submit)="$event.preventDefault(); addItem(newTask)">
-      <input #newTask type="text" [attr.placeholder]="'planning.addPlaceholder' | translate"
-        [attr.aria-label]="'planning.addPlaceholder' | translate" />
-      <button type="submit" class="btn btn--pink" [disabled]="adding()">{{ 'planning.add' | translate }}</button>
-    </form>
-
-    @if (loadError()) {
-      <p class="cform__error" role="alert">
-        {{ 'planning.loadError' | translate }}
-        <button type="button" class="btn btn--ghost" (click)="retryLoad()">
-          {{ 'vendors.retry' | translate }}
-        </button>
-      </p>
-    }
-
-    @if (loaded() && items().length === 0) {
-      <p class="planning__empty">{{ 'planning.empty' | translate }}</p>
-    } @else {
-      <ul class="checklist" role="list">
-        @for (item of items(); track item.id) {
-          <li class="checklist__item" [class.is-done]="item.isDone">
-            <label class="checklist__label">
-              <input type="checkbox" [checked]="item.isDone" (change)="toggle(item, $event)" />
-              <span>{{ item.title }}</span>
-            </label>
-            <button type="button" class="checklist__del" (click)="remove(item.id)"
-              [attr.aria-label]="'planning.delete' | translate">×</button>
-          </li>
-        }
-      </ul>
-    }
+    <app-couple-overview [couple]="couple()" [reload]="reloadTick()" (restart)="confirmRestart($event)" />
   </section>
 
   <!-- ============ restart planning (redo onboarding) ============ -->
@@ -192,9 +119,9 @@
             <button type="button" class="ob__skip" (click)="restartSkipNeeds()">{{ 'signup.skip' | translate }}</button>
           }
           @if (restartStep() < restartTotalSteps - 1) {
-            <button type="submit" class="btn btn--pink">{{ 'signup.continue' | translate }}</button>
+            <button type="submit" class="btn btn--primary">{{ 'signup.continue' | translate }}</button>
           } @else {
-            <button type="submit" class="btn btn--pink" [disabled]="restartLoading()">
+            <button type="submit" class="btn btn--primary" [disabled]="restartLoading()">
               {{ 'planning.restartSubmit' | translate }}
             </button>
           }
@@ -215,7 +142,7 @@
       <h1>{{ 'planning.heroTitle' | translate }}</h1>
       <p class="pl-hero__sub">{{ 'planning.heroSubtitle' | translate }}</p>
       <div class="pl-hero__cta">
-        <a class="btn btn--pink btn--pill" routerLink="/signup">{{ 'planning.signup' | translate }}</a>
+        <a class="btn btn--primary btn--pill" routerLink="/signup">{{ 'planning.signup' | translate }}</a>
         <a class="btn btn--ghost-light btn--pill" routerLink="/login">{{ 'planning.login' | translate }}</a>
       </div>
     </div>
@@ -272,11 +199,13 @@
         <p>{{ 'planning.tipsText' | translate }}</p>
       </header>
       <ul class="pl-tips" role="list">
-        @for (t of tips(); track t.slug) {
+        @for (t of tips(); track t.path) {
           <li>
-            <a class="pl-tip" [routerLink]="['/guides', t.slug]">
+            <a class="pl-tip" [routerLink]="t.path">
               <span class="pl-tip__media">
-                <img [src]="t.image" [alt]="t.imageAlt" loading="lazy" width="700" height="470" />
+                @if (t.image) {
+                  <img [src]="t.image" [alt]="t.imageAlt" loading="lazy" width="700" height="470" />
+                }
               </span>
               <h3 class="pl-tip__title">{{ t.title }}</h3>
             </a>
@@ -315,7 +244,7 @@
         <h2>{{ 'planning.finalTitle' | translate }}</h2>
         <p>{{ 'planning.finalText' | translate }}</p>
       </div>
-      <a class="btn btn--pink" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+      <a class="btn btn--primary" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
     </div>
   </section>
 }

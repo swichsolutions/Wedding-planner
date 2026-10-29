@@ -40,9 +40,14 @@
       </p>
     }
     <p class="vendor-card__meta">{{ vendor().categoryKey | translate }} · {{ vendor().city }}</p>
-    <p class="vendor-card__price">
-      <span class="vendor-card__price-label">{{ 'featured.starting' | translate }}</span>
-      <span class="num">{{ formatPrice(vendor().priceFrom) }}</span>
-    </p>
+    @if (vendor().priceFrom > 0) {
+      <p class="vendor-card__price">
+        <span class="vendor-card__price-label">{{ 'featured.starting' | translate }}</span>
+        <span class="num">{{ formatPrice(vendor().priceFrom) }}</span>
+        @if (vendor().priceUnit && vendor().priceUnit !== 'event') {
+          <span class="vendor-card__unit">{{ 'catalog.per.' + vendor().priceUnit | translate }}</span>
+        }
+      </p>
+    }
   </div>
 </article>

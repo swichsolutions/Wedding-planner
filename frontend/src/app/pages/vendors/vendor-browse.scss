@@ -1,112 +1,245 @@
+// /vendors — the catalog. Brand theme (theme-brand host): ivory page, charcoal text and
+// controls, evergreen only on the search button, peach nowhere (no callouts here).
 @use 'breakpoints' as bp;
 
 :host {
   display: block;
+  background: var(--paper);
+  color: var(--ink);
 }
 
-.browse {
-  padding-block: var(--space-12) var(--space-20);
-}
+.cat {
+  padding-block: var(--space-10) var(--space-20);
 
-.browse__head {
-  margin-bottom: var(--space-8);
-
-  h1 {
-    margin: 0;
+  @include bp.respond-to(md) {
+    padding-top: var(--space-16);
   }
 }
 
-.browse__sub {
-  margin-top: var(--space-3);
-  color: var(--color-text-secondary);
-  font-size: var(--fs-lead);
-  max-width: var(--measure);
-}
+// ---------------------------------------------------------------- head + search
 
-// ---- filter bar ----
-.filters {
+.cat__head {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
-  align-items: end;
-  padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-
-  @include bp.respond-to(md) {
-    grid-template-columns: repeat(3, 1fr) auto;
-  }
+  margin-bottom: var(--space-8);
 }
 
-.filters__field {
+.cat__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.cat__lead {
+  margin: 0;
+  max-width: 40rem;
+  font-size: var(--fs-lead, 1.25rem);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.cat__search {
   display: flex;
-  flex-direction: column;
   gap: var(--space-2);
-  min-width: 0;
+  max-width: 36rem;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+  }
 }
 
-.filters__label {
+// Visually hidden: the input's placeholder and the button say what it does.
+.cat__search-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------- groups + categories
+
+.cat__groups,
+.cat__subs {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.cat__groups {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--paper-line);
+
+  // Wide screens show all nine at once; phones scroll the row sideways.
+  @include bp.respond-to(lg) {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+}
+
+.cat__group {
+  flex: none;
+  padding: var(--space-2) var(--space-1);
+  border-bottom: 2px solid transparent;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: none;
+  white-space: nowrap;
+
+  & + & {
+    margin-left: var(--space-3);
+  }
+
+  &:hover {
+    color: var(--ink);
+  }
+
+  &.is-on {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+}
+
+.cat__subs {
+  padding-top: var(--space-4);
+}
+
+.cat__sub,
+.cat__toggle {
+  flex: none;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--paper-line-strong);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  font: inherit;
   font-size: var(--fs-caption);
-  font-weight: var(--fw-medium);
-  color: var(--color-text-secondary);
-}
-
-.filters__select {
-  height: 44px;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: var(--fs-body);
-}
-
-.filters__clear {
-  justify-self: start;
-  min-height: 44px;
-  padding: 0;
-  border: none;
-  background: none;
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
-  font-size: var(--fs-caption);
 
-  // override .link-arrow's trailing arrow with a leading clear affordance
-  &::after {
-    content: none;
-  }
-  &::before {
-    content: '×';
-    margin-inline-end: var(--space-1);
-    font-size: 1.1em;
+  &:hover {
+    color: var(--ink);
+    border-color: var(--ink);
   }
 
-  @include bp.respond-to(md) {
-    align-self: end;
+  &.is-on {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
   }
 }
 
-.browse__count {
+// ---------------------------------------------------------------- filters
+
+.cat__filters {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: #fff;
+}
+
+.cat__row,
+.cat__more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+}
+
+.cat__field {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 10rem;
+  min-width: 0;
+  max-width: 16rem;
+
+  label {
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+
+  select {
+    width: 100%; // long option labels (regions) otherwise widen it past its column
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+  }
+
+  &--sort {
+    @include bp.respond-to(lg) {
+      margin-left: auto;
+    }
+  }
+}
+
+.cat__toggle {
+  align-self: flex-end;
+  min-height: 44px;
+}
+
+.cat__more-btn,
+.cat__clear {
+  justify-self: start;
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+// ---------------------------------------------------------------- results
+
+.cat__count {
   margin: var(--space-8) 0 var(--space-5);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   font-weight: var(--fw-medium);
 }
 
-// ---- empty state ----
-.browse__empty {
+.cat__empty {
   padding: var(--space-16) var(--space-6);
-  text-align: center;
-  background: var(--color-surface-sunken);
   border-radius: var(--radius-lg);
+  background: var(--paper-deep);
+  text-align: center;
 
   h2 {
     margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
   }
 
   p {
     margin: 0 auto var(--space-6);
-    color: var(--color-text-secondary);
+    line-height: 1.5;
+    color: var(--ink-700);
   }
 }

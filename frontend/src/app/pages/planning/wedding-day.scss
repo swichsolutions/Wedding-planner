@@ -1,0 +1,397 @@
+// „ქორწილის დღე“ on the brand theme: ivory page, white panels, Mt headings, Nus text, a fine
+// gold line down the timeline (gold is decoration only), evergreen only on buttons.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.wd {
+  display: grid;
+  gap: var(--space-8);
+  max-width: 52rem;
+  padding-block: var(--space-10) var(--space-20);
+}
+
+.wd-head {
+  display: grid;
+  gap: var(--space-5);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+
+.wd-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.05;
+}
+
+.wd-lead {
+  max-width: 34rem;
+  margin: 0;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.wd-date {
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+
+.wd-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.wd-h2 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-medium);
+  line-height: 1.15;
+}
+
+.wd-note {
+  margin: 0;
+  padding: var(--space-6);
+  border-radius: 20px;
+  background: var(--paper-deep);
+  line-height: 1.5;
+}
+
+.wd-skel {
+  display: block;
+  height: 240px;
+  border-radius: 20px;
+}
+
+.wd-quiet {
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--ink-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ink);
+  }
+}
+
+// ---------------------------------------------------------------- examples
+
+.wd-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.wd-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+}
+
+.wd-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.15;
+}
+
+.wd-card__text {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.wd-card__meta {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-500);
+}
+
+.wd-card__use {
+  align-self: flex-start;
+  margin-top: auto;
+  min-height: 40px;
+  border-radius: var(--radius-pill);
+}
+
+.wd-more {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-small);
+
+  a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.wd-blank {
+  padding: var(--space-6);
+  border: 1px dashed var(--paper-line-strong);
+  border-radius: 20px;
+}
+
+// ---------------------------------------------------------------- the form
+
+.wd-form {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+}
+
+.wd-form__grid {
+  display: grid;
+  gap: var(--space-3);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 9rem 1fr 1fr;
+  }
+}
+
+.wd-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+
+  @include bp.respond-to(sm) {
+    &--wide {
+      grid-column: span 2;
+    }
+
+    // time sits beside the activity; the note gets its own row under them
+    &--time + .wd-field--wide + .wd-field--wide {
+      grid-column: 2 / span 2;
+    }
+  }
+
+  label {
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    line-height: 1.4;
+    color: var(--ink-700);
+  }
+
+  input {
+    height: 46px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--paper-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+
+    &.is-invalid {
+      border-color: var(--color-danger-600);
+    }
+  }
+}
+
+.wd-err {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--color-danger-600);
+}
+
+.wd-form__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+// ---------------------------------------------------------------- the timeline
+
+.wd-line {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+
+  // the fine gold line through the dots
+  &::before {
+    content: '';
+    position: absolute;
+    top: var(--space-6);
+    bottom: var(--space-6);
+    left: calc(4.5rem + 7px);
+    width: 1px;
+    background: var(--gold, #b69a68);
+    opacity: 0.6;
+
+    @include bp.respond-to(sm) {
+      left: calc(5.5rem + 7px);
+    }
+  }
+}
+
+.wd-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.5rem 15px 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: start;
+  padding: var(--space-4) var(--space-3) var(--space-4) 0;
+  border-radius: 16px;
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 5.5rem 15px 1fr auto;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--paper-white, #fff) 70%, transparent);
+  }
+
+  // the form takes the whole row while editing
+  &.is-editing {
+    display: block;
+    padding: 0;
+  }
+}
+
+.wd-time {
+  padding-top: 2px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  text-align: right;
+  color: var(--ink);
+}
+
+.wd-dot {
+  position: relative;
+  z-index: 1;
+  width: 15px;
+  height: 15px;
+  margin-top: 6px;
+  border: 1px solid var(--gold, #b69a68);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+}
+
+.wd-body {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.wd-activity {
+  margin: 0;
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.wd-text {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.wd-who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+.wd-contact {
+  color: var(--ink-700);
+}
+
+a.wd-contact {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wd-actions {
+  display: flex;
+  gap: var(--space-1);
+  grid-column: 3;
+
+  @include bp.respond-to(sm) {
+    grid-column: auto;
+  }
+}
+
+.wd-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-700);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--paper-line-strong);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.wd-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+// read by screen readers, not shown
+.wd-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

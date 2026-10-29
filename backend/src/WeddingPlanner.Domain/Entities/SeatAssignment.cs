@@ -7,7 +7,7 @@ public class SeatAssignment
 {
     public int Id { get; set; }
 
-    public string UserId { get; set; } = string.Empty;
+    public int CoupleId { get; set; }
 
     public int TableId { get; set; }
     public SeatingTable? Table { get; set; }

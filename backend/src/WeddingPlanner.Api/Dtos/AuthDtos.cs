@@ -16,7 +16,8 @@ public class RegisterCoupleDto
     [Required, EmailAddress] public string Email { get; set; } = string.Empty;
     [Required, MinLength(8)] public string Password { get; set; } = string.Empty;
 
-    // Onboarding profile (all optional — steps are skippable, credentials come last).
+    // Optional details for the new plan. Sign-up asks for the account first and the details
+    // afterwards (PUT /api/plan), so these are usually empty.
     [MaxLength(120)] public string? FirstName { get; set; }
     [MaxLength(120)] public string? LastName { get; set; }
     [MaxLength(120)] public string? PartnerFirstName { get; set; }
@@ -27,8 +28,8 @@ public class RegisterCoupleDto
     public List<string>? NeededCategories { get; set; }
 }
 
-/// <summary>Re-run the onboarding wizard for an existing couple — same shape as
-/// registration minus credentials. Wipes and reseeds the checklist + budget.</summary>
+/// <summary>Start the plan over (PUT /api/plan/restart) — same shape as registration minus
+/// credentials. Wipes and reseeds the checklist + budget.</summary>
 public class CoupleRestartDto
 {
     [MaxLength(120)] public string? FirstName { get; set; }
@@ -40,16 +41,6 @@ public class CoupleRestartDto
     [MaxLength(30)] public string? GuestCountRange { get; set; }
     public List<string>? NeededCategories { get; set; }
 }
-
-public record CoupleProfileDto(
-    string? FirstName,
-    string? LastName,
-    string? PartnerFirstName,
-    string? PartnerLastName,
-    DateOnly? WeddingDate,
-    string? PlanningStage,
-    string? GuestCountRange,
-    IReadOnlyList<string> NeededCategories);
 
 public class LoginDto
 {
@@ -63,4 +54,23 @@ public class GoogleLoginDto
     [Required] public string Credential { get; set; } = string.Empty;
 }
 
-public record AuthResponseDto(string Token, string Email, string[] Roles, int? VendorId);
+public class ForgotPasswordDto
+{
+    [Required, EmailAddress, MaxLength(256)] public string Email { get; set; } = string.Empty;
+
+    /// <summary>Language of the email: "ka" (default) or "en".</summary>
+    [MaxLength(5)] public string? Lang { get; set; }
+}
+
+public class ResetPasswordDto
+{
+    [Required, MaxLength(64)] public string UserId { get; set; } = string.Empty;
+
+    /// <summary>The token from the emailed link, still base64url-encoded.</summary>
+    [Required, MaxLength(2048)] public string Token { get; set; } = string.Empty;
+
+    [Required, MinLength(8)] public string NewPassword { get; set; } = string.Empty;
+}
+
+/// <summary>IsNew: a first Google sign-in just created the account (the client shows the start form).</summary>
+public record AuthResponseDto(string Token, string Email, string[] Roles, int? VendorId, bool IsNew = false);

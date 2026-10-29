@@ -1,8 +1,8 @@
 <section class="sf container">
-  <a class="sf__back" routerLink="/website">← {{ 'siteFinder.back' | translate }}</a>
+  <a class="sf__back" routerLink="/invitations">← {{ 'siteFinder.back' | translate }}</a>
 
   <header class="sf__head">
-    <h1>{{ 'siteFinder.title' | translate }}</h1>
+    <h1 class="sf__title">{{ 'siteFinder.title' | translate }}</h1>
     <p class="sf__sub">{{ 'siteFinder.subtitle' | translate }}</p>
   </header>
 
@@ -35,7 +35,7 @@
         }
       </select>
     </div>
-    <button class="btn btn--pink sf-form__submit" type="submit" [disabled]="busy()">
+    <button class="btn btn--primary sf-form__submit" type="submit" [disabled]="busy()">
       {{ 'siteFinder.search' | translate }}
     </button>
   </form>

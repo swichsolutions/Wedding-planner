@@ -1,4 +1,4 @@
-<div #wsRoot [class]="'ws ws--' + template() + ' ws--layout-' + layout()" [class.ws--thumb]="thumb()">
+<div #wsRoot [class]="'ws ws--' + template() + ' ws--layout-' + layout() + fontClass()" [class.ws--thumb]="thumb()">
   <div class="ws__ornament" aria-hidden="true"></div>
 
   @switch (layout()) {
@@ -11,7 +11,11 @@
         <div class="ws-banner__scrim" aria-hidden="true"></div>
         <div class="ws-banner__content">
           <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
-          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          @if (page()) {
+            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          } @else {
+            <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+          }
           <ng-container *ngTemplateOutlet="metaTpl" />
           @if (!thumb()) {
             <ng-container *ngTemplateOutlet="countTpl" />
@@ -22,7 +26,6 @@
         <div class="ws__body">
           <ng-container *ngTemplateOutlet="messageTpl" />
           <ng-container *ngTemplateOutlet="detailsTpl" />
-          <ng-container *ngTemplateOutlet="brandTpl" />
         </div>
       }
     }
@@ -33,13 +36,25 @@
         <div class="ws-split__text">
           <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
           @if (nameA() && nameB()) {
-            <h1 class="ws__names ws__names--stacked">
-              <span>{{ nameA() }}</span>
-              <span class="ws__amp" aria-hidden="true">&</span>
-              <span>{{ nameB() }}</span>
-            </h1>
+            @if (page()) {
+              <h1 class="ws__names ws__names--stacked">
+                <span>{{ nameA() }}</span>
+                <span class="ws__amp" aria-hidden="true">&</span>
+                <span>{{ nameB() }}</span>
+              </h1>
+            } @else {
+              <p class="ws__names ws__names--stacked">
+                <span>{{ nameA() }}</span>
+                <span class="ws__amp" aria-hidden="true">&</span>
+                <span>{{ nameB() }}</span>
+              </p>
+            }
           } @else {
-            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+            @if (page()) {
+              <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+            } @else {
+              <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+            }
           }
           <ng-container *ngTemplateOutlet="metaTpl" />
           @if (!thumb()) {
@@ -47,7 +62,6 @@
             <div class="ws__rule" aria-hidden="true"></div>
             <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
             <ng-container *ngTemplateOutlet="detailsTpl" />
-            <ng-container *ngTemplateOutlet="brandTpl" />
           }
         </div>
         <div class="ws-split__media">
@@ -64,7 +78,11 @@
     @case ('arch') {
       <div class="ws__inner">
         <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
-        <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        @if (page()) {
+          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        } @else {
+          <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+        }
         <ng-container *ngTemplateOutlet="metaTpl" />
 
         <div class="ws-arch" [class.has-photo]="!!data().photoUrl">
@@ -80,7 +98,6 @@
           <div class="ws__rule" aria-hidden="true"></div>
           <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
           <ng-container *ngTemplateOutlet="detailsTpl" />
-          <ng-container *ngTemplateOutlet="brandTpl" />
         }
       </div>
     }
@@ -91,13 +108,25 @@
         <span class="ws-mono" aria-hidden="true">{{ initials() }}</span>
         <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
         @if (nameA() && nameB()) {
-          <h1 class="ws__names ws__names--stacked">
-            <span>{{ nameA() }}</span>
-            <span class="ws__amp" aria-hidden="true">&</span>
-            <span>{{ nameB() }}</span>
-          </h1>
+          @if (page()) {
+            <h1 class="ws__names ws__names--stacked">
+              <span>{{ nameA() }}</span>
+              <span class="ws__amp" aria-hidden="true">&</span>
+              <span>{{ nameB() }}</span>
+            </h1>
+          } @else {
+            <p class="ws__names ws__names--stacked">
+              <span>{{ nameA() }}</span>
+              <span class="ws__amp" aria-hidden="true">&</span>
+              <span>{{ nameB() }}</span>
+            </p>
+          }
         } @else {
-          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          @if (page()) {
+            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          } @else {
+            <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+          }
         }
         <ng-container *ngTemplateOutlet="metaTpl" />
 
@@ -113,7 +142,6 @@
           <div class="ws__rule" aria-hidden="true"></div>
           <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
           <ng-container *ngTemplateOutlet="detailsTpl" />
-          <ng-container *ngTemplateOutlet="brandTpl" />
         }
       </div>
     }
@@ -129,13 +157,16 @@
             <span class="ws-medal__amp" aria-hidden="true">{{ initials() }}</span>
           }
         </div>
-        <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        @if (page()) {
+          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        } @else {
+          <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+        }
         <ng-container *ngTemplateOutlet="metaTpl" />
         @if (!thumb()) {
           <ng-container *ngTemplateOutlet="countTpl" />
           <ng-container *ngTemplateOutlet="messageTpl" />
           <ng-container *ngTemplateOutlet="detailsTpl" />
-          <ng-container *ngTemplateOutlet="brandTpl" />
         }
       </div>
     }
@@ -146,13 +177,25 @@
         <div class="ws-tap__field">
           <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
           @if (nameA() && nameB()) {
-            <h1 class="ws__names ws__names--stacked">
-              <span>{{ nameA() }}</span>
-              <span class="ws__amp" aria-hidden="true">&</span>
-              <span>{{ nameB() }}</span>
-            </h1>
+            @if (page()) {
+              <h1 class="ws__names ws__names--stacked">
+                <span>{{ nameA() }}</span>
+                <span class="ws__amp" aria-hidden="true">&</span>
+                <span>{{ nameB() }}</span>
+              </h1>
+            } @else {
+              <p class="ws__names ws__names--stacked">
+                <span>{{ nameA() }}</span>
+                <span class="ws__amp" aria-hidden="true">&</span>
+                <span>{{ nameB() }}</span>
+              </p>
+            }
           } @else {
-            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+            @if (page()) {
+              <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+            } @else {
+              <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+            }
           }
           <ng-container *ngTemplateOutlet="metaTpl" />
           @if (!thumb()) {
@@ -166,7 +209,6 @@
           @if (!thumb()) {
             <ng-container *ngTemplateOutlet="messageTpl" />
             <ng-container *ngTemplateOutlet="detailsTpl" />
-            <ng-container *ngTemplateOutlet="brandTpl" />
           }
         </div>
       </div>
@@ -176,7 +218,11 @@
     @case ('masthead') {
       <div class="ws-mast">
         <p class="ws__eyebrow ws-mast__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
-        <h1 class="ws__names ws-mast__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        @if (page()) {
+          <h1 class="ws__names ws-mast__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        } @else {
+          <p class="ws__names ws-mast__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+        }
         <div class="ws-mast__row">
           <ng-container *ngTemplateOutlet="metaTpl" />
           @if (!thumb()) {
@@ -192,7 +238,6 @@
           <div class="ws-mast__body">
             <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
             <ng-container *ngTemplateOutlet="detailsTpl" />
-            <ng-container *ngTemplateOutlet="brandTpl" />
           </div>
         }
       </div>
@@ -209,13 +254,16 @@
           }
           <span class="ws-post__mark" aria-hidden="true"></span>
           <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
-          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          @if (page()) {
+            <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+          } @else {
+            <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+          }
           <ng-container *ngTemplateOutlet="metaTpl" />
           @if (!thumb()) {
             <ng-container *ngTemplateOutlet="countTpl" />
             <ng-container *ngTemplateOutlet="messageTpl" />
             <ng-container *ngTemplateOutlet="detailsTpl" />
-            <ng-container *ngTemplateOutlet="brandTpl" />
           }
         </div>
       </div>
@@ -225,7 +273,11 @@
     @default {
       <div class="ws__inner">
         <p class="ws__eyebrow">{{ 'wsite.eyebrow' | translate }}</p>
-        <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        @if (page()) {
+          <h1 class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</h1>
+        } @else {
+          <p class="ws__names">{{ namesLine() || ('wsite.namesFallback' | translate) }}</p>
+        }
         <ng-container *ngTemplateOutlet="metaTpl" />
 
         @if (!thumb()) {
@@ -240,21 +292,99 @@
           <div class="ws__rule" aria-hidden="true"></div>
           <p class="ws__message">{{ data().message || ('wsite.defaultMessage' | translate) }}</p>
           <ng-container *ngTemplateOutlet="detailsTpl" />
-          <ng-container *ngTemplateOutlet="brandTpl" />
         }
       </div>
     }
+  }
+
+  @if (!thumb()) {
+    <!-- ---- what guests need to know (B6): places, schedule, details, photos, the reply ---- -->
+    <div class="ws-more">
+      @if (places().length) {
+        <section class="ws-sec ws-places">
+          @for (p of places(); track p.key) {
+            <article class="ws-place">
+              @if (page()) {
+                <h2 class="ws-sec__title">{{ 'wsite.' + p.key | translate }}</h2>
+              } @else {
+                <p class="ws-sec__title">{{ 'wsite.' + p.key | translate }}</p>
+              }
+              @if (p.time) {
+                <p class="ws-place__time num">{{ p.time }}</p>
+              }
+              @if (p.name) {
+                <p class="ws-place__name">{{ p.name }}</p>
+              }
+              @if (p.address) {
+                <p class="ws-place__addr">{{ p.address }}</p>
+              }
+              <a class="ws-place__map" [href]="p.map" target="_blank" rel="noopener">
+                {{ 'wsite.map' | translate }} <span aria-hidden="true">↗</span>
+              </a>
+            </article>
+          }
+        </section>
+      }
+
+      @if (data().schedule.length) {
+        <section class="ws-sec">
+          @if (page()) {
+            <h2 class="ws-sec__title">{{ 'wsite.schedule' | translate }}</h2>
+          } @else {
+            <p class="ws-sec__title">{{ 'wsite.schedule' | translate }}</p>
+          }
+          <ol class="ws-sched">
+            @for (line of data().schedule; track $index) {
+              <li>
+                <span class="ws-sched__time num">{{ line.time ?? '' }}</span>
+                <span>{{ line.text }}</span>
+              </li>
+            }
+          </ol>
+        </section>
+      }
+
+      @for (n of notes(); track n.key) {
+        <section class="ws-sec ws-note">
+          @if (page()) {
+            <h2 class="ws-sec__title">{{ 'wsite.' + n.key | translate }}</h2>
+          } @else {
+            <p class="ws-sec__title">{{ 'wsite.' + n.key | translate }}</p>
+          }
+          <p>{{ n.text }}</p>
+        </section>
+      }
+
+      @if (data().photos.length) {
+        <section class="ws-gallery" [attr.aria-label]="'wsite.photos' | translate">
+          @for (p of data().photos; track p.id) {
+            <img [src]="p.url" alt="" loading="lazy" width="600" height="750" />
+          }
+        </section>
+      }
+
+      <!-- The reply form (personal link) or the note about personal links (general link). -->
+      <ng-content />
+
+      <ng-container *ngTemplateOutlet="brandTpl" />
+    </div>
   }
 </div>
 
 <!-- ---- shared fragments ---- -->
 <ng-template #metaTpl>
-  @if (dateLine() || data().place) {
+  @if (dateLine() || data().startTime || data().place) {
     <p class="ws__meta">
       @if (dateLine()) {
         <span>{{ dateLine() }}</span>
       }
-      @if (dateLine() && data().place) {
+      @if (dateLine() && data().startTime) {
+        <span class="ws__dot" aria-hidden="true">•</span>
+      }
+      @if (data().startTime) {
+        <span class="num">{{ data().startTime }}</span>
+      }
+      @if ((dateLine() || data().startTime) && data().place) {
         <span class="ws__dot" aria-hidden="true">•</span>
       }
       @if (data().place) {
@@ -280,15 +410,16 @@
 </ng-template>
 
 <ng-template #detailsTpl>
-  @if (dateLine() || data().place) {
+  <!-- With places filled in, "where" is their cards below instead. -->
+  @if (dateLine() || (data().place && !places().length)) {
     <div class="ws__details">
       @if (dateLine()) {
         <div class="ws__detail">
           <span class="ws__detail-label">{{ 'wsite.when' | translate }}</span>
-          <span class="ws__detail-val">{{ dateLine() }}</span>
+          <span class="ws__detail-val">{{ dateLine() }}@if (data().startTime) {, <span class="num">{{ data().startTime }}</span>}</span>
         </div>
       }
-      @if (data().place) {
+      @if (data().place && !places().length) {
         <div class="ws__detail">
           <span class="ws__detail-label">{{ 'wsite.where' | translate }}</span>
           <span class="ws__detail-val">{{ data().place }}</span>

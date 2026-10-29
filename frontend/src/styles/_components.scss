@@ -238,6 +238,26 @@
   color: var(--color-text-muted);
 }
 
+// "Forgot password?" under a password field (sign-in modal, /login, /account) — a quiet
+// right-aligned text link; works as <a> or <button>.
+.auth__forgot {
+  align-self: flex-end;
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
 // Inline, per-field validation message (distinct from the block-level .auth__error banner).
 .auth__err {
   display: block;
@@ -350,6 +370,82 @@
     .btn {
       margin-top: var(--space-4);
     }
+  }
+}
+
+// ---- Long-form text rendered from Markdown (legal pages, articles, stories, and the
+// admin editor's preview). Comes after .static-page so its paragraph size wins there. ----
+.prose {
+  line-height: 1.6;
+
+  h2,
+  h3 {
+    margin: var(--space-8) 0 var(--space-3);
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: var(--fs-h3);
+  }
+
+  h3 {
+    font-size: var(--fs-h4, 1.25rem);
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote {
+    margin: 0 0 var(--space-4);
+    font-size: var(--fs-body);
+    color: var(--color-text);
+  }
+
+  ul,
+  ol {
+    padding-left: var(--space-6);
+  }
+
+  li + li {
+    margin-top: var(--space-1);
+  }
+
+  a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: var(--space-6) 0;
+    border-radius: var(--radius-md);
+  }
+
+  blockquote {
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--color-border-strong);
+    color: var(--color-text-secondary);
+  }
+
+  table {
+    width: 100%;
+    margin: 0 0 var(--space-4);
+    border-collapse: collapse;
+    font-size: var(--fs-caption);
+  }
+
+  th,
+  td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+  }
+
+  > :first-child {
+    margin-top: 0;
   }
 }
 

@@ -123,7 +123,131 @@
 
 <!-- Everything below the stage. -->
 <div class="after-hero">
-<!-- ============================ 02 / START ============================ -->
+<!-- ===================== 02 / CATEGORIES (PEOPLE & PLACE) ===================== -->
+<!-- The guide's order (BUILD-PLAN A5): hero → categories → three steps → organizer → day
+     schedules → FAQ → final call. -->
+<!-- Black stage, one screen tall: compact copy at the top and a
+     card carousel below (after the carousel on Revolut's business page: fixed slots,
+     the centre card full size, its two neighbours each side at 90%, the next ones
+     fading out; the list rotates through the slots on its own and on a swipe; dots
+     underneath). Cards share one dark colour with the visual filling the card and the
+     text at the top. -->
+<section id="find" class="chap chap--orbit">
+  <div class="container">
+    <div class="orbit" appReveal>
+      <div class="orbit__copy">
+        <p class="orbit__overline">{{ 'home.find.overline' | translate }}</p>
+        <h2 class="orbit__title">{{ 'home.find.title' | translate }}</h2>
+        <p class="orbit__lead">{{ 'home.find.leadShort' | translate }}</p>
+        <a class="pill-cta orbit__cta" routerLink="/vendors">
+          <span>{{ 'home.find.cta' | translate }}</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
+      </div>
+
+      <!-- the carousel: cards placed by their slot (--s) relative to the active one -->
+      <div class="orbit__stage"
+        (pointerdown)="onOrbitDown($event)" (pointermove)="onOrbitMove($event)"
+        (pointerup)="onOrbitUp($event)" (pointercancel)="onOrbitUp($event)"
+        (mouseenter)="orbitHover.set(true)" (mouseleave)="orbitHover.set(false)">
+        <ul class="orbit__cards" role="list">
+          @for (g of categoryRows(); track g.key; let i = $index) {
+            @let s = orbitSlot(i);
+            <li class="orbit__item" [style.--s]="s" [class.is-off]="s === null"
+              [class.is-side]="s !== null && s !== 0" [attr.aria-hidden]="s === null">
+              <a class="orbit__card" [class.orbit__card--print]="g.print" routerLink="/vendors"
+                [queryParams]="g.query" [attr.tabindex]="s === null ? -1 : 0"
+                (click)="onOrbitClick($event)">
+                <span class="orbit__card-name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
+                @if (g.count > 0) {
+                  <span class="orbit__card-foot">
+                    <span class="orbit__card-n">{{ g.count }}</span>
+                    <span>{{ 'home.find.count' | translate }}</span>
+                  </span>
+                }
+                <!-- the render fills the card (its backdrop IS the card colour); prints sit at the bottom -->
+                <span class="orbit__card-visual">
+                  <!-- cover-fitted by height: the image is 0.75 x the card height wide -->
+                  <img class="orbit__card-img" [src]="g.img" [attr.srcset]="g.srcset"
+                    sizes="(max-width: 767px) min(39vh, 19.5rem, 76vw), min(39vh, 24rem)"
+                    alt="" loading="lazy" width="720" height="960" />
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="orbit__dots" role="tablist" [attr.aria-label]="'home.find.title' | translate">
+        @for (g of categoryRows(); track g.key; let i = $index) {
+          <button type="button" class="orbit__dot" [class.is-active]="orbitActive() === i"
+            [attr.aria-label]="'home.find.cat.' + g.key + '.name' | translate" (click)="orbitGo(i)"></button>
+        }
+      </div>
+
+    </div>
+
+    <!-- ---- previous version: the editorial index (kept in case the cloud is dropped) ----
+    <header class="chap__head chap__head--row" appReveal>
+      <div>
+        <h2 class="chap__title">{{ 'home.find.title' | translate }}</h2>
+      </div>
+      <p class="chap__lead">{{ 'home.find.lead' | translate }}</p>
+    </header>
+
+    <!~~ Editorial index: eight numbered rows on the left, one stage photo on the right
+         that follows the hovered/focused row. Each row carries live inventory (count,
+         starting price, cities); rows with nothing approved yet show their blurb. ~~>
+    <div class="index" appReveal>
+      <ol class="index__list" role="list">
+        @for (g of categoryRows(); track g.key; let i = $index) {
+          <li class="index__row" [class.is-active]="activeRow() === i">
+            <a class="index__link" routerLink="/vendors" [queryParams]="g.query"
+              (mouseenter)="activeRow.set(i)" (focus)="activeRow.set(i)">
+              <span class="index__num" aria-hidden="true">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
+              <img class="index__thumb" [src]="g.img" alt="" loading="lazy" width="112" height="140" />
+              <span class="index__body">
+                <span class="index__name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
+                <span class="index__meta">{{ 'home.find.cat.' + g.key + '.sub' | translate }}</span>
+              </span>
+              <!~~ the figure column: approved profiles in this group, or "soon" when empty ~~>
+              <span class="index__count" [class.index__count--empty]="g.count === 0">
+                @if (g.count > 0) {
+                  <span class="index__count-n">{{ g.count }}</span>
+                  <span class="index__count-l">{{ 'home.find.count' | translate }}</span>
+                } @else {
+                  <span class="index__count-l">{{ 'home.find.soon' | translate }}</span>
+                }
+              </span>
+              <span class="index__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+              </span>
+              <span class="index__sr">{{ 'home.find.open' | translate }}</span>
+            </a>
+          </li>
+        }
+      </ol>
+
+      <!~~ the stage: all eight photos stacked, the active one fades in ~~>
+      <div class="index__stage" aria-hidden="true">
+        <div class="index__frame">
+          @for (g of categoryRows(); track g.key; let i = $index) {
+            <img class="index__photo" [class.is-active]="activeRow() === i" [src]="g.img" alt=""
+              loading="lazy" width="900" height="1125" />
+          }
+        </div>
+      </div>
+    </div>
+
+    <p class="chap__cta" appReveal>
+      <a class="btn btn--ink" routerLink="/vendors">{{ 'home.find.cta' | translate }}</a>
+    </p>
+  
+    ---- end of previous version ---- -->
+  </div>
+</section>
+
+<!-- ======================= 03 / THREE STEPS (START) ======================= -->
 <!-- Full-screen "slides": the background photo and the floating card rotate on their
      own through the three planning steps of the example wedding. One heading, one
      line, one button. Labels at the bottom only show which step is on screen. -->
@@ -173,128 +297,6 @@
   </ol>
 </section>
 
-<!-- ======================== 03 / PEOPLE & PLACE ======================== -->
-<!-- Black stage, one screen tall: compact copy at the top and a
-     card carousel below (after the carousel on Revolut's business page: fixed slots,
-     the centre card full size, its two neighbours each side at 90%, the next ones
-     fading out; the list rotates through the slots on its own and on a swipe; dots
-     underneath). Cards share one dark colour with the visual filling the card and the
-     text at the top. -->
-<section id="find" class="chap chap--orbit">
-  <div class="container">
-    <div class="orbit" appReveal>
-      <div class="orbit__copy">
-        <p class="orbit__overline">{{ 'home.find.overline' | translate }}</p>
-        <h2 class="orbit__title">{{ 'home.find.title' | translate }}</h2>
-        <p class="orbit__lead">{{ 'home.find.leadShort' | translate }}</p>
-        <a class="pill-cta orbit__cta" routerLink="/vendors">
-          <span>{{ 'home.find.cta' | translate }}</span>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-        </a>
-      </div>
-
-      <!-- the carousel: cards placed by their slot (--s) relative to the active one -->
-      <div class="orbit__stage"
-        (pointerdown)="onOrbitDown($event)" (pointermove)="onOrbitMove($event)"
-        (pointerup)="onOrbitUp($event)" (pointercancel)="onOrbitUp($event)"
-        (mouseenter)="orbitHover.set(true)" (mouseleave)="orbitHover.set(false)">
-        <ul class="orbit__cards" role="list">
-          @for (g of categoryRows(); track g.key; let i = $index) {
-            @let s = orbitSlot(i);
-            <li class="orbit__item" [style.--s]="s" [class.is-off]="s === null"
-              [class.is-side]="s !== null && s !== 0" [attr.aria-hidden]="s === null">
-              <a class="orbit__card" [class.orbit__card--print]="g.print" routerLink="/vendors"
-                [queryParams]="{ category: g.slugs[0] }" [attr.tabindex]="s === null ? -1 : 0"
-                (click)="onOrbitClick($event)">
-                <span class="orbit__card-name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
-                @if (g.count > 0) {
-                  <span class="orbit__card-foot">
-                    <span class="orbit__card-n">{{ g.count }}</span>
-                    <span>{{ 'home.find.count' | translate }}</span>
-                  </span>
-                }
-                <!-- the render fills the card (its backdrop IS the card colour); prints sit at the bottom -->
-                <span class="orbit__card-visual">
-                  <!-- cover-fitted by height: the image is 0.75 x the card height wide -->
-                  <img class="orbit__card-img" [src]="g.img" [attr.srcset]="g.srcset"
-                    sizes="(max-width: 767px) min(39vh, 19.5rem, 76vw), min(39vh, 24rem)"
-                    alt="" loading="lazy" width="720" height="960" />
-                </span>
-              </a>
-            </li>
-          }
-        </ul>
-      </div>
-
-      <div class="orbit__dots" role="tablist" [attr.aria-label]="'home.find.title' | translate">
-        @for (g of categoryRows(); track g.key; let i = $index) {
-          <button type="button" class="orbit__dot" [class.is-active]="orbitActive() === i"
-            [attr.aria-label]="'home.find.cat.' + g.key + '.name' | translate" (click)="orbitGo(i)"></button>
-        }
-      </div>
-
-    </div>
-
-    <!-- ---- previous version: the editorial index (kept in case the cloud is dropped) ----
-    <header class="chap__head chap__head--row" appReveal>
-      <div>
-        <h2 class="chap__title">{{ 'home.find.title' | translate }}</h2>
-      </div>
-      <p class="chap__lead">{{ 'home.find.lead' | translate }}</p>
-    </header>
-
-    <!~~ Editorial index: eight numbered rows on the left, one stage photo on the right
-         that follows the hovered/focused row. Each row carries live inventory (count,
-         starting price, cities); rows with nothing approved yet show their blurb. ~~>
-    <div class="index" appReveal>
-      <ol class="index__list" role="list">
-        @for (g of categoryRows(); track g.key; let i = $index) {
-          <li class="index__row" [class.is-active]="activeRow() === i">
-            <a class="index__link" routerLink="/vendors" [queryParams]="{ category: g.slugs[0] }"
-              (mouseenter)="activeRow.set(i)" (focus)="activeRow.set(i)">
-              <span class="index__num" aria-hidden="true">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
-              <img class="index__thumb" [src]="g.img" alt="" loading="lazy" width="112" height="140" />
-              <span class="index__body">
-                <span class="index__name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
-                <span class="index__meta">{{ 'home.find.cat.' + g.key + '.sub' | translate }}</span>
-              </span>
-              <!~~ the figure column: approved profiles in this group, or "soon" when empty ~~>
-              <span class="index__count" [class.index__count--empty]="g.count === 0">
-                @if (g.count > 0) {
-                  <span class="index__count-n">{{ g.count }}</span>
-                  <span class="index__count-l">{{ 'home.find.count' | translate }}</span>
-                } @else {
-                  <span class="index__count-l">{{ 'home.find.soon' | translate }}</span>
-                }
-              </span>
-              <span class="index__arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-              </span>
-              <span class="index__sr">{{ 'home.find.open' | translate }}</span>
-            </a>
-          </li>
-        }
-      </ol>
-
-      <!~~ the stage: all eight photos stacked, the active one fades in ~~>
-      <div class="index__stage" aria-hidden="true">
-        <div class="index__frame">
-          @for (g of categoryRows(); track g.key; let i = $index) {
-            <img class="index__photo" [class.is-active]="activeRow() === i" [src]="g.img" alt=""
-              loading="lazy" width="900" height="1125" />
-          }
-        </div>
-      </div>
-    </div>
-
-    <p class="chap__cta" appReveal>
-      <a class="btn btn--ink" routerLink="/vendors">{{ 'home.find.cta' | translate }}</a>
-    </p>
-  
-    ---- end of previous version ---- -->
-  </div>
-</section>
-
 <!-- ============================ 04 / ORGANIZE ============================ -->
 <!-- Colour band (zola.com-style, ColorBand): one surface whose colour follows the
      scroll. It holds the organizer alone, in brand ivory (the organizer panel is
@@ -309,65 +311,20 @@
 </div>
 
 <!-- ============================== 05 / DAY ============================== -->
+<!-- Three example schedules (guide §3, PROPOSALS.md P7): a card each, the full schedule in a
+     dialog, and the /schedules page with all of them. -->
 <section id="day" class="chap chap--paper chap--screen">
   <div class="container">
     <div class="tl" appReveal>
-      <!-- Revolut product-block copy: centred, one grotesk -->
       <div class="tl__copy">
         <p class="tl__overline">{{ 'home.day.overline' | translate }}</p>
         <h2 class="tl__title">{{ 'home.day.title' | translate }}</h2>
         <p class="tl__lead">{{ 'home.day.leadShort' | translate }}</p>
       </div>
 
-      <!-- The day as a rail: six moments, a marker that moves from one to the next
-           (dayStep, every 2s), the moments it has passed stay lit. Above the marker, the
-           "now" card shows the current moment like a calendar app and follows it. -->
-      <div class="tl__stage" [style.--n]="schedule.length" [style.--step]="dayStep()">
-        <div class="tl__now" aria-live="polite">
-          @for (s of schedule; track s.key; let i = $index) {
-            @if (i === dayStep()) {
-              <div class="tl__now-in">
-                <span class="tl__now-head">
-                  <span class="tl__now-k">{{ 'home.day.now' | translate }}</span>
-                  @if (s.optional || s.edited) {
-                    <span class="tl__now-tags">
-                      @if (s.optional) {
-                        <span class="tl__now-tag">{{ 'home.day.optional' | translate }}</span>
-                      }
-                      @if (s.edited) {
-                        <span class="tl__now-tag tl__now-tag--edit">{{ 'home.day.editedLabel' | translate }}</span>
-                      }
-                    </span>
-                  }
-                </span>
-                <span class="tl__now-time num">
-                  {{ s.edited ?? s.time }}
-                  @if (s.edited) {
-                    <s>{{ s.time }}</s>
-                  }
-                </span>
-                <span class="tl__now-title">{{ 'home.day.item' + s.key + '.title' | translate }}</span>
-                <span class="tl__now-note">{{ 'home.day.item' + s.key + '.note' | translate }}</span>
-              </div>
-            }
-          }
-        </div>
+      <app-day-schedules />
 
-        <ol class="tl__line" role="list">
-          <span class="tl__track" aria-hidden="true"><span class="tl__fill"></span></span>
-          @for (s of schedule; track s.key; let i = $index) {
-            <li class="tl__stop" [class.is-done]="i < dayStep()" [class.is-now]="i === dayStep()">
-              <span class="tl__dot" aria-hidden="true"></span>
-              <span class="tl__time num">{{ s.edited ?? s.time }}</span>
-              <span class="tl__name">{{ 'home.day.item' + s.key + '.title' | translate }}</span>
-            </li>
-          }
-        </ol>
-
-        <p class="tl__template">{{ 'home.day.templateLabel' | translate }}</p>
-      </div>
-
-      <a class="pill-cta" routerLink="/planning">
+      <a class="pill-cta" routerLink="/schedules">
         <span>{{ 'home.day.cta' | translate }}</span>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
       </a>
@@ -383,8 +340,8 @@
 </section>
 
 <!-- ============================ 07 / START ============================ -->
-<!-- the peach callout: the last stop of the journey, above the evergreen footer.
-     Clipped: the turning rings' box is wider than a phone at 45° -->
+<!-- the peach callout: the last stop of the journey, above the evergreen footer, with the
+     turning gold ring over the title. Clipped so the entrance motion never adds a scrollbar. -->
 <section id="final" class="chap chap--peach chap--screen chap--clip">
   <div class="container">
     <app-final-call [cta]="heroCta()" />

@@ -7,11 +7,13 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { PublicSite, WebsiteService } from '../../core/website.service';
 import { WeddingSite as WeddingSiteView } from '../../components/wedding-site/wedding-site';
+import { RsvpForm } from '../../components/rsvp-form/rsvp-form';
 
-/** Public wedding site at /w/{slug} — the page guests open from the shared link. */
+/** The public invitation at /w/{slug}, and a party's personal copy with its reply form at
+ * /w/{slug}/{code} (B6). */
 @Component({
   selector: 'app-site-view',
-  imports: [RouterLink, TranslatePipe, WeddingSiteView],
+  imports: [RouterLink, TranslatePipe, WeddingSiteView, RsvpForm],
   templateUrl: './site-view.html',
   styleUrl: './site-view.scss',
 })
@@ -21,9 +23,14 @@ export class SiteView {
 
   protected readonly site = signal<PublicSite | null>(null);
   protected readonly notFound = signal(false);
+  protected readonly slug: string;
+  /** The party's code on a personal link; null on the general one. */
+  protected readonly code: string | null;
 
   constructor() {
-    const slug = inject(ActivatedRoute).snapshot.paramMap.get('slug') ?? '';
+    const params = inject(ActivatedRoute).snapshot.paramMap;
+    const slug = (this.slug = params.get('slug') ?? '');
+    this.code = params.get('code');
     const meta = inject(Meta);
     // SSR only (null in the browser) — lets a dead slug answer with a real 404.
     const responseInit = inject(RESPONSE_INIT, { optional: true });
@@ -44,7 +51,9 @@ export class SiteView {
           );
           // The site finder sets noindex and never removes it — a live site
           // reached from there must not inherit the tag.
-          meta.removeTag("name='robots'");
+          // A personal link is one family's copy: never indexed.
+          if (this.code) meta.updateTag({ name: 'robots', content: 'noindex' });
+          else meta.removeTag("name='robots'");
           meta.updateTag({
             name: 'description',
             content: s.message ?? this.translate.instant('wsite.defaultMessage'),

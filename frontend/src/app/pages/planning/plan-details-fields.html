@@ -1,0 +1,83 @@
+<div class="pd" [formGroup]="form()">
+  <!-- who -->
+  <fieldset class="pd-set">
+    <legend class="pd-q">{{ 'plan.who' | translate }}</legend>
+    <!-- tracked by control, not by role: Angular can't re-point a live input at another control,
+         so when the order flips (a partner sees their own name first) the inputs move instead -->
+    @for (p of people(); track p.first) {
+      <div class="pd-pair">
+        <div class="pd-field">
+          <label [for]="idPrefix() + '-' + p.key + '-first'">{{ 'plan.' + p.key + 'First' | translate }}</label>
+          <input [id]="idPrefix() + '-' + p.key + '-first'" type="text" [formControlName]="p.first"
+            [attr.autocomplete]="p.key === 'you' ? 'given-name' : 'off'" maxlength="120"
+            [class.is-invalid]="invalid(p.first)" [attr.aria-invalid]="invalid(p.first) ? 'true' : null" />
+          @if (invalid(p.first)) {
+            <span class="pd-err">{{ 'signup.invalidName' | translate }}</span>
+          }
+        </div>
+        <div class="pd-field">
+          <label [for]="idPrefix() + '-' + p.key + '-last'">{{ 'plan.lastName' | translate }}</label>
+          <input [id]="idPrefix() + '-' + p.key + '-last'" type="text" [formControlName]="p.last"
+            [attr.autocomplete]="p.key === 'you' ? 'family-name' : 'off'" maxlength="120"
+            [class.is-invalid]="invalid(p.last)" [attr.aria-invalid]="invalid(p.last) ? 'true' : null" />
+          @if (invalid(p.last)) {
+            <span class="pd-err">{{ 'signup.invalidName' | translate }}</span>
+          }
+        </div>
+      </div>
+    }
+  </fieldset>
+
+  <!-- when -->
+  <fieldset class="pd-set">
+    <legend class="pd-q">{{ 'plan.when' | translate }}</legend>
+    <div class="pd-field pd-field--narrow">
+      <label [for]="idPrefix() + '-date'">{{ 'plan.date' | translate }}</label>
+      <input [id]="idPrefix() + '-date'" type="date" formControlName="weddingDate" />
+    </div>
+    <label class="pd-check">
+      <input type="checkbox" [checked]="form().controls.dateUnknown.value" (change)="toggleDateUnknown($event)" />
+      <span>{{ 'plan.notYet' | translate }}</span>
+    </label>
+  </fieldset>
+
+  <!-- where -->
+  <fieldset class="pd-set">
+    <legend class="pd-q">{{ 'plan.where' | translate }}</legend>
+    <div class="pd-pair">
+      <div class="pd-field">
+        <label [for]="idPrefix() + '-city'">{{ 'plan.city' | translate }}</label>
+        <input [id]="idPrefix() + '-city'" type="text" formControlName="city" maxlength="120"
+          [attr.placeholder]="'plan.cityHint' | translate" />
+      </div>
+      <div class="pd-field">
+        <label [for]="idPrefix() + '-region'">{{ 'plan.region' | translate }}</label>
+        <select [id]="idPrefix() + '-region'" formControlName="region">
+          <option value="">{{ 'plan.notYet' | translate }}</option>
+          @for (r of regions; track r) {
+            <option [value]="r">{{ 'catalog.regions.' + r | translate }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- how many -->
+  <fieldset class="pd-set">
+    <legend class="pd-q">{{ 'plan.guests' | translate }}</legend>
+    <div class="pd-chips" role="group">
+      @for (g of guestRanges; track g) {
+        <button type="button" class="pd-chip" [class.is-on]="form().controls.guestCountRange.value === g"
+          [attr.aria-pressed]="form().controls.guestCountRange.value === g" (click)="pickGuests(g)">
+          @if (g === 'notSure') {
+            {{ 'plan.notYet' | translate }}
+          } @else if (g === '300plus') {
+            300+
+          } @else {
+            {{ g.replace('-', '–') }}
+          }
+        </button>
+      }
+    </div>
+  </fieldset>
+</div>

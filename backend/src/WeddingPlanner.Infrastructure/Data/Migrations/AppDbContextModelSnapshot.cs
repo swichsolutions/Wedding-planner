@@ -23,6 +23,25 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -196,6 +215,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -232,11 +254,6 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<int?>("VendorId")
                         .HasColumnType("integer");
 
@@ -244,9 +261,41 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.HasIndex("UserId", "SortOrder");
+                    b.HasIndex("CoupleId", "SortOrder");
 
                     b.ToTable("BudgetItems");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.BudgetPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<int>("BudgetItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateOnly>("PaidOn")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetItemId");
+
+                    b.ToTable("BudgetPayments");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Category", b =>
@@ -256,6 +305,11 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GroupKey")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("NameEn")
                         .IsRequired()
@@ -276,6 +330,8 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupKey");
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -300,14 +356,12 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "CategorySlug")
+                    b.HasIndex("CoupleId", "CategorySlug")
                         .IsUnique();
 
                     b.ToTable("CategoryBudgets");
@@ -321,30 +375,83 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsDone")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Link")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Stage")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
+                    b.Property<string>("Who")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "SortOrder");
+                    b.HasIndex("CoupleId", "SortOrder");
 
                     b.ToTable("ChecklistItems");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.ContentCredit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ContentPageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("RoleEn")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("RoleKa")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("VendorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentPageId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("ContentCredits");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.ContentPage", b =>
@@ -355,14 +462,40 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ActionLabelEn")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("ActionLabelKa")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("ActionPath")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<string>("BodyEn")
-                        .HasColumnType("text");
+                        .HasMaxLength(100000)
+                        .HasColumnType("character varying(100000)");
 
                     b.Property<string>("BodyKa")
-                        .HasColumnType("text");
+                        .HasMaxLength(100000)
+                        .HasColumnType("character varying(100000)");
+
+                    b.Property<string>("ConsentNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ExcerptEn")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ExcerptKa")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -375,13 +508,15 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
 
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasMaxLength(220)
-                        .HasColumnType("character varying(220)");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.Property<string>("TitleEn")
-                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
@@ -389,6 +524,10 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Topic")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -398,10 +537,51 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Slug")
+                    b.HasIndex("Type", "Slug")
                         .IsUnique();
 
+                    b.HasIndex("Type", "IsPublished", "PublishedAt");
+
                     b.ToTable("ContentPages");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.ContentPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AltEn")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("AltKa")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("ContentPageId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StorageId")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentPageId", "SortOrder");
+
+                    b.ToTable("ContentPhotos");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Couple", b =>
@@ -412,17 +592,24 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("City")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("FirstName")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<string>("FloorPlanStorageId")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("FloorPlanUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("GuestCountRange")
                         .HasMaxLength(30)
@@ -436,6 +623,10 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
+                    b.Property<string>("PaletteKey")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("PartnerFirstName")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
@@ -448,24 +639,90 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
+                    b.Property<string>("Region")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
                     b.Property<decimal?>("TotalBudget")
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<DateOnly?>("WeddingDate")
                         .HasColumnType("date");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
+                    b.ToTable("Couples");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.CoupleInvite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AcceptedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CoupleId");
+
+                    b.HasIndex("TokenHash")
                         .IsUnique();
 
-                    b.ToTable("Couples");
+                    b.ToTable("CoupleInvites");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.CoupleMember", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPartner")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("CoupleId");
+
+                    b.ToTable("CoupleMembers");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Guest", b =>
@@ -475,6 +732,13 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Attendance")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("pending");
 
                     b.Property<string>("ChildFirstName")
                         .HasMaxLength(120)
@@ -487,12 +751,22 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Property<bool>("ChildNameUnknown")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DietaryNeeds")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<int?>("FamilyId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -504,6 +778,10 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     b.Property<bool>("HasPlusOne")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("InviteCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("InvitedStatus")
                         .IsRequired()
@@ -534,19 +812,74 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
+                    b.Property<string>("RsvpAnswer")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("RsvpAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RsvpMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.HasIndex("CoupleId", "SortOrder");
+
+                    b.ToTable("Guests");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.GuestFamily", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InviteCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("RsvpAnswer")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("RsvpAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RsvpMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "SortOrder");
+                    b.HasIndex("CoupleId");
 
-                    b.ToTable("Guests");
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.ToTable("GuestFamilies");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Message", b =>
@@ -594,6 +927,118 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.PlanPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ContentPhotoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("VendorPhotoId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentPhotoId");
+
+                    b.HasIndex("VendorPhotoId");
+
+                    b.HasIndex("CoupleId", "ContentPhotoId")
+                        .IsUnique()
+                        .HasFilter("\"ContentPhotoId\" IS NOT NULL");
+
+                    b.HasIndex("CoupleId", "VendorPhotoId")
+                        .IsUnique()
+                        .HasFilter("\"VendorPhotoId\" IS NOT NULL");
+
+                    b.ToTable("PlanPhotos");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.PlanService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CategorySlug")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Instagram")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal?>("Offer")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("OfferNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("VendorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId");
+
+                    b.HasIndex("CoupleId", "VendorId")
+                        .IsUnique();
+
+                    b.ToTable("PlanServices");
+                });
+
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Review", b =>
                 {
                     b.Property<int>("Id")
@@ -636,25 +1081,6 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("WeddingPlanner.Domain.Entities.SavedVendor", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<int>("VendorId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId", "VendorId");
-
-                    b.HasIndex("VendorId");
-
-                    b.ToTable("SavedVendors");
-                });
-
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.SeatAssignment", b =>
                 {
                     b.Property<int>("Id")
@@ -668,6 +1094,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("GuestId")
                         .HasColumnType("integer");
 
@@ -677,12 +1106,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Property<int>("TableId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CoupleId");
 
                     b.HasIndex("GuestId", "AttendeeKind")
                         .IsUnique();
@@ -701,11 +1127,18 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<double>("Height")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<double>("PositionX")
                         .HasColumnType("double precision");
@@ -713,22 +1146,20 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Property<double>("PositionY")
                         .HasColumnType("double precision");
 
+                    b.Property<double>("Rotation")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<double>("Width")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CoupleId");
 
                     b.ToTable("SeatingObjects");
                 });
@@ -740,6 +1171,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -755,6 +1189,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Property<double>("PositionY")
                         .HasColumnType("double precision");
 
+                    b.Property<double>("Rotation")
+                        .HasColumnType("double precision");
+
                     b.Property<int>("SeatCount")
                         .HasColumnType("integer");
 
@@ -763,14 +1200,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("CoupleId");
 
                     b.ToTable("SeatingTables");
                 });
@@ -783,11 +1215,31 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<List<string>>("AlsoOffers")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasDefaultValueSql("'{}'::text[]");
+
                     b.Property<string>("AreasServed")
                         .HasColumnType("text");
 
                     b.Property<string>("Bio")
                         .HasColumnType("text");
+
+                    b.Property<string>("BookingLeadTime")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CancellationTerms")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("CapacityMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CapacityMin")
+                        .HasColumnType("integer");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -802,12 +1254,33 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<string>("ConsentBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ConsentMethod")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateOnly?>("ConsentOn")
+                        .HasColumnType("date");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DepositTerms")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Facebook")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<List<string>>("Features")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasDefaultValueSql("'{}'::text[]");
 
                     b.Property<string>("Instagram")
                         .HasMaxLength(200)
@@ -842,10 +1315,42 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<string>("PriceUnit")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<List<string>>("ServedRegions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasDefaultValueSql("'{}'::text[]");
+
+                    b.Property<string>("Setting")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(220)
                         .HasColumnType("character varying(220)");
+
+                    b.Property<List<string>>("Styles")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasDefaultValueSql("'{}'::text[]");
+
+                    b.Property<string>("TravelPolicy")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("VenueType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Whatsapp")
                         .HasColumnType("text");
@@ -856,10 +1361,54 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     b.HasIndex("IsFeatured");
 
+                    b.HasIndex("Region");
+
                     b.HasIndex("CategoryId", "CitySlug", "Slug")
                         .IsUnique();
 
                     b.ToTable("Vendors");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Duration")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Included")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<decimal?>("Price")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("PriceUnit")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VendorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId", "SortOrder");
+
+                    b.ToTable("VendorPackages");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorPhoto", b =>
@@ -930,6 +1479,48 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.ToTable("VendorStats");
                 });
 
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingDayItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Activity")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Contact")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Time")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<string>("Who")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CoupleId");
+
+                    b.ToTable("WeddingDayItems");
+                });
+
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSite", b =>
                 {
                     b.Property<int>("Id")
@@ -942,12 +1533,43 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
+                    b.Property<string>("Accommodation")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("CeremonyAddress")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("CeremonyMapUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("CeremonyName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CeremonyTime")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DressCode")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("FirstName")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<string>("FontKey")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("InkColor")
                         .HasMaxLength(7)
@@ -990,35 +1612,140 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("ReceptionAddress")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("ReceptionMapUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ReceptionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ReceptionTime")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<bool>("RsvpAskDiet")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("RsvpAskMessage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateOnly?>("RsvpDeadline")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("RsvpEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("RsvpQuestion")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("Slug")
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
+
+                    b.Property<string>("StartTime")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
 
                     b.Property<string>("TemplateKey")
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
+                    b.Property<string>("Transport")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<DateOnly?>("WeddingDate")
                         .HasColumnType("date");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CoupleId")
+                        .IsUnique();
+
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
                     b.ToTable("WeddingSites");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSitePhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StorageId")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("WeddingSiteId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WeddingSiteId", "SortOrder");
+
+                    b.ToTable("WeddingSitePhotos");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSiteScheduleItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Time")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<int>("WeddingSiteId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WeddingSiteId", "SortOrder");
+
+                    b.ToTable("WeddingSiteScheduleItems");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Infrastructure.Identity.AppUser", b =>
@@ -1155,12 +1882,123 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.BudgetItem", b =>
                 {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("VendorId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.BudgetPayment", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.BudgetItem", "BudgetItem")
+                        .WithMany("Payments")
+                        .HasForeignKey("BudgetItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BudgetItem");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.CategoryBudget", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.ChecklistItem", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.ContentCredit", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.ContentPage", "ContentPage")
+                        .WithMany("Credits")
+                        .HasForeignKey("ContentPageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ContentPage");
+
+                    b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.ContentPhoto", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.ContentPage", "ContentPage")
+                        .WithMany("Photos")
+                        .HasForeignKey("ContentPageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContentPage");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.CoupleInvite", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", "Couple")
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Couple");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.CoupleMember", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", "Couple")
+                        .WithMany("Members")
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Couple");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.Guest", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WeddingPlanner.Domain.Entities.GuestFamily", "Family")
+                        .WithMany()
+                        .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Family");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.GuestFamily", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Message", b =>
@@ -1181,6 +2019,45 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Navigation("Vendor");
                 });
 
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.PlanPhoto", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.ContentPhoto", "ContentPhoto")
+                        .WithMany()
+                        .HasForeignKey("ContentPhotoId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WeddingPlanner.Domain.Entities.VendorPhoto", "VendorPhoto")
+                        .WithMany()
+                        .HasForeignKey("VendorPhotoId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("ContentPhoto");
+
+                    b.Navigation("VendorPhoto");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.PlanService", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Vendor");
+                });
+
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Review", b =>
                 {
                     b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
@@ -1192,19 +2069,14 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Navigation("Vendor");
                 });
 
-            modelBuilder.Entity("WeddingPlanner.Domain.Entities.SavedVendor", b =>
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.SeatAssignment", b =>
                 {
-                    b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
                         .WithMany()
-                        .HasForeignKey("VendorId")
+                        .HasForeignKey("CoupleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Vendor");
-                });
-
-            modelBuilder.Entity("WeddingPlanner.Domain.Entities.SeatAssignment", b =>
-                {
                     b.HasOne("WeddingPlanner.Domain.Entities.Guest", "Guest")
                         .WithMany()
                         .HasForeignKey("GuestId")
@@ -1222,6 +2094,24 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Navigation("Table");
                 });
 
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.SeatingObject", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.SeatingTable", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Vendor", b =>
                 {
                     b.HasOne("WeddingPlanner.Domain.Entities.Category", "Category")
@@ -1231,6 +2121,17 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorPackage", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
+                        .WithMany("Packages")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorPhoto", b =>
@@ -1255,20 +2156,82 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Navigation("Vendor");
                 });
 
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingDayItem", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSite", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Couple", null)
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSitePhoto", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.WeddingSite", null)
+                        .WithMany("Photos")
+                        .HasForeignKey("WeddingSiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSiteScheduleItem", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.WeddingSite", null)
+                        .WithMany("Schedule")
+                        .HasForeignKey("WeddingSiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.BudgetItem", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Vendors");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.ContentPage", b =>
+                {
+                    b.Navigation("Credits");
+
+                    b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.Couple", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.Vendor", b =>
                 {
                     b.Navigation("Messages");
 
+                    b.Navigation("Packages");
+
                     b.Navigation("Photos");
 
                     b.Navigation("Reviews");
 
                     b.Navigation("Stats");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.WeddingSite", b =>
+                {
+                    b.Navigation("Photos");
+
+                    b.Navigation("Schedule");
                 });
 #pragma warning restore 612, 618
         }

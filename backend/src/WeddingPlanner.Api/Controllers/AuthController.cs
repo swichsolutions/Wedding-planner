@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Google.Apis.Auth;
 using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
+using WeddingPlanner.Api.Planning;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
 using WeddingPlanner.Infrastructure.Identity;
@@ -135,25 +136,21 @@ public class AuthController : ControllerBase
 
         await _users.AddToRoleAsync(user, Roles.Couple);
 
-        // Persist the onboarding profile (one row per couple), linked by AppUser id.
-        _db.Couples.Add(new Couple
-        {
-            UserId = user.Id,
-            FirstName = dto.FirstName?.Trim(),
-            LastName = dto.LastName?.Trim(),
-            PartnerFirstName = dto.PartnerFirstName?.Trim(),
-            PartnerLastName = dto.PartnerLastName?.Trim(),
-            Email = dto.Email,
-            WeddingDate = dto.WeddingDate,
-            PlanningStage = dto.PlanningStage?.Trim(),
-            GuestCountRange = dto.GuestCountRange?.Trim(),
-            NeededCategories = (dto.NeededCategories ?? new List<string>())
-                .Select(c => c.Trim())
-                .Where(c => c.Length > 0)
-                .Distinct()
-                .ToList(),
-            CreatedAt = DateTimeOffset.UtcNow,
-        });
+        // The account's own plan (B1): details given now, or later in the start form.
+        var plan = CoupleScope.NewPlan(user.Id);
+        plan.FirstName = dto.FirstName?.Trim();
+        plan.LastName = dto.LastName?.Trim();
+        plan.PartnerFirstName = dto.PartnerFirstName?.Trim();
+        plan.PartnerLastName = dto.PartnerLastName?.Trim();
+        plan.WeddingDate = dto.WeddingDate;
+        plan.PlanningStage = dto.PlanningStage?.Trim();
+        plan.GuestCountRange = dto.GuestCountRange?.Trim();
+        plan.NeededCategories = (dto.NeededCategories ?? new List<string>())
+            .Select(c => c.Trim())
+            .Where(c => c.Length > 0)
+            .Distinct()
+            .ToList();
+        _db.Couples.Add(plan);
         await _db.SaveChangesAsync();
 
         var roles = await _users.GetRolesAsync(user);
@@ -223,6 +220,8 @@ public class AuthController : ControllerBase
 
         var email = payload.Email.Trim();
         var user = await _users.FindByEmailAsync(email);
+        // A first Google sign-in is a sign-up: the client then shows the start form.
+        var isNew = false;
         if (user is null)
         {
             // First Google sign-in → create an external-only (passwordless) Couple account.
@@ -250,31 +249,28 @@ public class AuthController : ControllerBase
             if (!created.Succeeded)
                 return BadRequest(created.Errors.Select(e => e.Description));
 
-            if (await _db.Couples.FirstOrDefaultAsync(c => c.UserId == user.Id) is null)
+            if (!await _db.CoupleMembers.AnyAsync(m => m.UserId == user.Id))
             {
                 await _users.AddToRoleAsync(user, Roles.Couple);
-                _db.Couples.Add(new Couple
-                {
-                    UserId = user.Id,
-                    FirstName = payload.GivenName,
-                    LastName = payload.FamilyName,
-                    Email = email,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                });
+                var plan = CoupleScope.NewPlan(user.Id);
+                plan.FirstName = payload.GivenName;
+                plan.LastName = payload.FamilyName;
+                _db.Couples.Add(plan);
                 try
                 {
                     await _db.SaveChangesAsync();
                 }
                 catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
                 {
-                    // The racing request inserted the Couple row first — theirs stands.
+                    // The racing request started the plan first — theirs stands.
                     _db.ChangeTracker.Clear();
                 }
+                isNew = true;
             }
         }
 
         var roles = await _users.GetRolesAsync(user);
-        return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
+        return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId, isNew));
     }
 
 }

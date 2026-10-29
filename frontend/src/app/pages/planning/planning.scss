@@ -1,97 +1,17 @@
 @use 'breakpoints' as bp;
 
+// /planning on the brand theme (CLAUDE.md): the couple's overview, the "start over" wizard and the
+// signed-out explainer. Evergreen only on buttons.
 :host {
   display: block;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .planning {
-  padding-block: var(--space-12) var(--space-20);
+  padding-block: var(--space-8) var(--space-20);
 }
 
-// upcoming budget payment reminders (couple view)
-.preminders {
-  margin-bottom: var(--space-10);
-  padding: var(--space-5) var(--space-6);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
-.preminders__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-
-  h2 {
-    margin: 0;
-    font-size: var(--fs-h5);
-  }
-}
-
-.preminders__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.preminder {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2) var(--space-3);
-  padding-block: var(--space-3);
-
-  & + & {
-    border-top: 1px solid var(--color-border);
-  }
-}
-
-.preminder__date {
-  flex: none;
-  min-width: 4.5rem;
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  color: var(--color-text-secondary);
-}
-
-.preminder__name {
-  flex: 1;
-  min-width: 10rem;
-  font-weight: var(--fw-medium);
-}
-
-.preminder__amount {
-  font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
-}
-
-.preminder__badge {
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-pill);
-  font-size: 0.75rem;
-  font-weight: var(--fw-semibold);
-}
-
-.preminder.is-soon {
-  .preminder__badge {
-    background: var(--color-warning-100);
-    color: var(--color-warning-600);
-  }
-}
-
-.preminder.is-overdue {
-  .preminder__date {
-    color: var(--color-danger-600);
-  }
-
-  .preminder__badge {
-    background: var(--color-danger-100);
-    color: var(--color-danger-600);
-  }
-}
 
 // ============ explainer (guest) ============
 // full-bleed photo hero with overlaid text
@@ -154,7 +74,7 @@
 
 // cream "make it easy" band
 .pl-easy {
-  background: var(--color-surface-sunken);
+  background: var(--paper-deep);
   padding-block: var(--space-16);
 }
 
@@ -174,7 +94,7 @@
 }
 .pl-easy__copy p {
   margin: 0 0 var(--space-6);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   font-size: var(--fs-lead);
   max-width: 48ch;
 }
@@ -205,7 +125,7 @@
   }
   p {
     margin: 0;
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
   }
 }
 
@@ -220,8 +140,8 @@
 }
 
 .pl-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--paper-white, #fff);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
   overflow: hidden;
   padding-bottom: var(--space-6);
@@ -244,7 +164,7 @@
   }
   p {
     margin: 0 var(--space-6) var(--space-5);
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
   }
   .btn {
     margin-inline: var(--space-6);
@@ -266,7 +186,7 @@
 
 .pl-tip {
   display: block;
-  color: var(--color-text);
+  color: var(--ink);
 
   &__media {
     display: block;
@@ -291,7 +211,8 @@
     transform: scale(1.04);
   }
   &:hover &__title {
-    color: var(--color-action);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 
@@ -311,7 +232,7 @@
 }
 
 .pl-faq__item {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--paper-line);
   padding: var(--space-4) 0;
 
   summary {
@@ -325,7 +246,7 @@
 
     &::after {
       content: '+';
-      color: var(--color-brand-600);
+      color: var(--ink);
     }
   }
 
@@ -335,7 +256,7 @@
 
   p {
     margin: var(--space-3) 0 0;
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
     max-width: var(--measure);
   }
 }
@@ -384,126 +305,6 @@
   }
 }
 
-// ---- checklist ----
-// Also the #checklist jump target from the overview: clear the sticky header.
-.planning__head {
-  scroll-margin-top: var(--space-20);
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
-
-  h1 {
-    margin: 0;
-  }
-}
-
-.planning__head-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.planning__progress {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-weight: var(--fw-medium);
-}
-
-.planning__restart {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-medium);
-  color: var(--color-text-secondary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--color-text);
-  }
-}
-
-.checklist-add {
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
-  max-width: 40rem;
-
-  input {
-    flex: 1;
-    height: 48px;
-    padding: 0 var(--space-4);
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: inherit;
-  }
-}
-
-.checklist {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-2);
-  max-width: 40rem;
-}
-
-.checklist__item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-
-  &.is-done .checklist__label span {
-    text-decoration: line-through;
-    color: var(--color-text-muted);
-  }
-}
-
-.checklist__label {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  cursor: pointer;
-
-  input {
-    width: 20px;
-    height: 20px;
-    accent-color: var(--color-brand-500);
-    flex: 0 0 auto;
-  }
-}
-
-.checklist__del {
-  border: none;
-  background: none;
-  color: var(--color-text-muted);
-  font-size: 1.4rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 var(--space-2);
-
-  &:hover {
-    color: var(--color-danger-600);
-  }
-}
-
-.planning__empty {
-  color: var(--color-text-secondary);
-}
-
 // =============================================================================
 // Restart planning — a mini re-run of the onboarding wizard (names → date →
 // stage → needs → guests), reusing the same visual language as /signup's
@@ -529,7 +330,7 @@
   max-width: 34rem;
   margin: 0 auto;
   padding: var(--space-8) var(--space-7) var(--space-7);
-  background: var(--color-surface);
+  background: var(--paper-white, #fff);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
 
@@ -549,28 +350,28 @@
   border: none;
   border-radius: var(--radius-pill);
   background: none;
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
 
   &:hover {
-    background: var(--color-ink-100);
-    color: var(--color-text);
+    background: var(--paper-deep);
+    color: var(--ink);
   }
 }
 
 .rmodal__progress {
   height: 4px;
   border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   overflow: hidden;
   margin-bottom: var(--space-6);
 }
 
 .rmodal__progress-fill {
   height: 100%;
-  background: var(--color-brand-500);
+  background: var(--ink);
   border-radius: inherit;
   transition: width var(--dur-base) var(--ease-out);
 }
@@ -583,7 +384,7 @@
 
 .rmodal__sub {
   margin: 0 0 var(--space-6);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 // ---- shared step-wizard bits (mirrors /signup's .ob__*) ----
@@ -601,7 +402,7 @@
   margin: 0 0 var(--space-3);
   font-family: var(--font-display);
   font-size: var(--fs-h4);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 .ob__check {
@@ -609,12 +410,12 @@
   align-items: center;
   gap: var(--space-2);
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 
   input {
     width: 18px;
     height: 18px;
-    accent-color: var(--color-brand-500);
+    accent-color: var(--ink);
   }
 }
 
@@ -636,23 +437,23 @@
 .ob__option {
   padding: var(--space-4);
   text-align: left;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--paper-line-strong);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--paper-white, #fff);
+  color: var(--ink);
   font: inherit;
   font-weight: var(--fw-medium);
   cursor: pointer;
   transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-400);
+    border-color: var(--ink-700);
   }
 
   &.is-on {
-    border-color: var(--color-brand-500);
-    background: color-mix(in srgb, var(--color-brand-500) 8%, var(--color-surface));
-    box-shadow: inset 0 0 0 1px var(--color-brand-500);
+    border-color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 8%, var(--paper-white, #fff));
+    box-shadow: inset 0 0 0 1px var(--ink);
   }
 }
 
@@ -668,10 +469,10 @@
 
 .ob__chip {
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--paper-line-strong);
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--paper-white, #fff);
+  color: var(--ink);
   font: inherit;
   font-weight: var(--fw-medium);
   cursor: pointer;
@@ -679,12 +480,12 @@
     color var(--dur-fast) var(--ease-out);
 
   &:hover {
-    border-color: var(--color-brand-500);
+    border-color: var(--ink);
   }
 
   &.is-on {
-    border-color: var(--color-brand-500);
-    background: var(--color-brand-500);
+    border-color: var(--ink);
+    background: var(--ink);
     color: #fff;
   }
 }
@@ -707,11 +508,11 @@
   cursor: pointer;
   font: inherit;
   font-weight: var(--fw-medium);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   padding: var(--space-2);
 
   &:hover {
-    color: var(--color-text);
+    color: var(--ink);
   }
 }
 

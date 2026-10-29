@@ -1,256 +1,381 @@
-<section class="overview">
-  <div class="overview__hero">
-    <img class="overview__hero-bg" [src]="heroPhoto()" alt="" aria-hidden="true" width="1200" height="500" />
-    <div class="overview__hero-scrim" aria-hidden="true"></div>
+<section class="ov">
+  <!-- ================= the banner: it grows with the couple's choices ================= -->
+  <header class="ovb" [class.has-collage]="collage().length > 0">
+    <img class="ovb__bg" [src]="bannerPhoto()" alt="" width="1600" height="900" />
+    <div class="ovb__scrim" [style.background]="scrim()" aria-hidden="true"></div>
 
-    <div class="overview__hero-content">
-      @if (greetingNames()) {
-        <span class="overview__hero-eyebrow">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
-            <path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4z" />
-          </svg>
-          {{ 'planning.ov.heroEyebrow' | translate }}
-        </span>
-        <!-- not a heading: the checklist title below stays the page's one <h1> -->
-        <p class="overview__hero-names">
-          {{ couple()?.firstName }} <span class="overview__hero-heart">♥</span> {{ couple()?.partnerFirstName }}
+    <div class="ovb__text">
+      <p class="ovb__eyebrow">{{ 'overview.eyebrow' | translate }}</p>
+      <h1 class="ovb__names">{{ names() || ('overview.namesFallback' | translate) }}</h1>
+      @if (dateLine() || place() || venueName()) {
+        <p class="ovb__meta">
+          @if (dateLine()) {
+            <span>{{ dateLine() }}</span>
+          }
+          @if (venueName()) {
+            <span>{{ venueName() }}</span>
+          } @else if (place()) {
+            <span>{{ place() }}</span>
+          }
         </p>
       }
-      @if (couple()?.weddingDate; as date) {
-        <p class="overview__hero-date">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="16" rx="2" />
-            <path d="M8 3v4M16 3v4M3 10h18" />
-          </svg>
-          {{ formatFullDate(date) }}
-        </p>
+      @if (days() !== null && days()! > 0) {
+        <p class="ovb__count"><span class="num">{{ days() }}</span> {{ 'overview.daysLeft' | translate }}</p>
+      } @else if (days() === 0) {
+        <p class="ovb__count">{{ 'overview.today' | translate }}</p>
       }
+      @if (palette(); as p) {
+        <ul class="ovb__palette" role="list" [attr.aria-label]="'palette.' + p.key | translate">
+          @for (c of p.colors; track c) {
+            <li [style.background]="c"></li>
+          }
+        </ul>
+      }
+      <div class="ovb__actions">
+        <button type="button" class="ovb__btn" (click)="toggleCustomize()" [attr.aria-expanded]="customizing()"
+          aria-controls="ov-customize">
+          {{ 'overview.customize' | translate }}
+        </button>
+        <a class="ovb__link" routerLink="/planning/settings">{{ 'overview.editDetails' | translate }}</a>
+      </div>
     </div>
 
-    @if (daysToWedding() !== null && daysToWedding()! > 0) {
-      <div class="overview__hero-countdown">
-        <span class="overview__hero-countdown-num num">{{ daysToWedding() }}</span>
-        <span class="overview__hero-countdown-label">{{ 'planning.countdown' | translate }}</span>
-      </div>
-    } @else if (daysToWedding() === 0) {
-      <div class="overview__hero-countdown">
-        <span class="overview__hero-countdown-label">{{ 'planning.countdownToday' | translate }}</span>
-      </div>
+    @if (collage().length) {
+      <ul class="ovb__collage" role="list" [attr.data-count]="collage().length">
+        @for (p of collage(); track p.id) {
+          <li><img [src]="p.url" alt="" loading="lazy" width="600" height="600" /></li>
+        }
+      </ul>
     }
+  </header>
 
-    <div class="overview__hero-actions">
-      @if (!site()?.photoUrl) {
-        <a class="overview__hero-upload" routerLink="/website">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 16V4M12 4l-4 4M12 4l4 4" />
-            <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
-          </svg>
-          {{ 'planning.ov.uploadPhoto' | translate }}
-        </a>
-      }
-      <button type="button" class="overview__hero-edit" (click)="editDetails.emit($event)"
-        [attr.aria-label]="'planning.ov.heroEdit' | translate">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
-          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-        </svg>
-      </button>
-    </div>
-  </div>
+  <!-- ================= customize: the four stages, the palette, the marked photos ================= -->
+  @if (customizing()) {
+    <section class="ovc" id="ov-customize" aria-labelledby="ovc-title">
+      <div class="ovc__head">
+        <h2 id="ovc-title" class="ov-h2">{{ 'overview.customizeTitle' | translate }}</h2>
+        <button type="button" class="ov-quiet" (click)="toggleCustomize()">{{ 'overview.close' | translate }}</button>
+      </div>
+      <ol class="ovc__stages">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <li [class.is-done]="stage() >= n" [class.is-now]="stage() === n">
+            <span class="ovc__n num" aria-hidden="true">{{ n }}</span>
+            <span>{{ 'overview.stage.' + n | translate }}</span>
+          </li>
+        }
+      </ol>
 
-  @if (nextStep(); as step) {
-    <a class="overview__next" [routerLink]="step.link" [fragment]="step.fragment">
-      <span class="overview__next-eyebrow">{{ 'planning.ov.nextLabel' | translate }}</span>
-      <span class="overview__next-title">{{ step.key | translate }}</span>
-      <span class="overview__next-arrow" aria-hidden="true">→</span>
-    </a>
-  }
+      <div class="ovc__part">
+        <h3 class="ov-h3">{{ 'overview.venueTitle' | translate }}</h3>
+        @if (venueName()) {
+          <p class="ov-note">{{ 'overview.venueChosen' | translate: { name: venueName() } }}</p>
+        } @else {
+          <p class="ov-note">
+            {{ 'overview.venueHint' | translate }}
+            <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'venues' }">{{ 'overview.venueBrowse' | translate }} →</a>
+          </p>
+        }
+      </div>
 
-  <ul class="overview__grid" role="list">
-    @if (daysToWedding() !== null) {
-      <li class="ov-card ov-card--countdown">
-        <div class="ov-card__link ov-card__link--countdown">
-          <svg class="ov-countdown__icon" viewBox="0 0 24 24" width="28" height="28" fill="none"
-            stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-            aria-hidden="true">
-            <rect x="3" y="5" width="18" height="16" rx="2" />
-            <path d="M8 3v4M16 3v4M3 10h18" />
-          </svg>
-          <span class="ov-countdown__text">
-            <span class="ov-countdown__label">{{ 'planning.ov.countdownLabel' | translate }}</span>
-            @if (daysToWedding()! > 0) {
-              <span class="ov-countdown__value">
-                <span class="ov-countdown__num num">{{ daysToWedding() }}</span>
-                <span class="ov-countdown__unit">{{ 'planning.countdown' | translate }}</span>
+      <div class="ovc__part">
+        <h3 class="ov-h3">{{ 'overview.paletteTitle' | translate }}</h3>
+        <div class="ovc__palettes" role="radiogroup" [attr.aria-label]="'overview.paletteTitle' | translate">
+          @for (p of palettes; track p.key) {
+            <button type="button" role="radio" class="ovc__pal" [class.is-on]="palette()?.key === p.key"
+              [attr.aria-checked]="palette()?.key === p.key" [disabled]="paletteBusy()" (click)="pickPalette(p.key)">
+              <span class="ovc__sw" aria-hidden="true">
+                @for (c of p.colors; track c) {
+                  <span [style.background]="c"></span>
+                }
               </span>
-            } @else {
-              <span class="ov-countdown__today">{{ 'planning.countdownToday' | translate }}</span>
-            }
-          </span>
+              <span class="ovc__pal-name">{{ 'palette.' + p.key | translate }}</span>
+            </button>
+          }
         </div>
-      </li>
-    }
-
-    <li class="ov-card">
-      <a class="ov-card__link" routerLink="/planning" fragment="checklist">
-        <span class="ov-card__icon ov-card__icon--checklist" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="4" width="14" height="17" rx="2" />
-            <path d="M9 11.5l2 2 4-4.5" />
-          </svg>
-        </span>
-        <span class="ov-card__label">{{ 'planning.ov.checklist' | translate }}</span>
-        <span class="ov-card__value num">{{ checklistDone() }} / {{ checklistItems().length }}</span>
-        <span class="ov-card__track" aria-hidden="true">
-          <span class="ov-card__fill"
-            [style.width.%]="checklistItems().length ? (checklistDone() / checklistItems().length) * 100 : 0"></span>
-        </span>
-        <span class="link-arrow ov-card__cta">{{ 'planning.ov.checklistCta' | translate }}</span>
-      </a>
-    </li>
-
-    <li class="ov-card">
-      <a class="ov-card__link" routerLink="/budget">
-        <span class="ov-card__icon ov-card__icon--budget" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="7" width="18" height="12" rx="2" />
-            <path d="M3 10h18" />
-            <circle cx="15.5" cy="14.5" r="1.5" />
-          </svg>
-        </span>
-        <span class="ov-card__label">{{ 'planning.ov.budget' | translate }}</span>
-        @if (budgetStarted()) {
-          <span class="ov-card__value num">{{ formatGel(budgetPaid()) }} / {{ formatGel(budget()!.totalBudget!) }}</span>
-          <span class="ov-card__track" aria-hidden="true">
-            <span class="ov-card__fill" [style.width.%]="budgetScale()"></span>
-          </span>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.budgetCta' | translate }}</span>
-        } @else {
-          <span class="ov-card__empty">{{ 'planning.ov.budgetEmpty' | translate }}</span>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.budgetStartCta' | translate }}</span>
+        @if (palette()) {
+          <button type="button" class="ov-quiet" (click)="pickPalette(null)" [disabled]="paletteBusy()">
+            {{ 'overview.paletteNone' | translate }}
+          </button>
         }
-      </a>
-    </li>
+      </div>
 
-    <li class="ov-card">
-      <a class="ov-card__link" routerLink="/guests">
-        <span class="ov-card__icon ov-card__icon--guests" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="8" r="3" />
-            <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
-            <path d="M16 4.3a3 3 0 0 1 0 5.8" />
-            <path d="M21 20c0-2.8-1.9-5.2-4.5-5.9" />
-          </svg>
-        </span>
-        <span class="ov-card__label">{{ 'planning.ov.guests' | translate }}</span>
-        @if (guestCount() > 0) {
-          <span class="ov-card__value num">{{ guestCount() }}</span>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.guestsCta' | translate }}</span>
-        } @else {
-          <span class="ov-card__empty">{{ 'planning.ov.guestsEmpty' | translate }}</span>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.guestsStartCta' | translate }}</span>
-        }
-      </a>
-    </li>
-
-    <li class="ov-card">
-      <a class="ov-card__link" routerLink="/seating">
-        <span class="ov-card__icon ov-card__icon--seating" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <ellipse cx="12" cy="9" rx="8" ry="4" />
-            <path d="M4 9v4c0 2.2 3.6 4 8 4s8-1.8 8-4V9" />
-            <path d="M12 13v6" />
-          </svg>
-        </span>
-        <span class="ov-card__label">{{ 'planning.ov.seating' | translate }}</span>
-        @if (seatingStarted()) {
-          <span class="ov-card__status" [class.is-live]="seatingComplete()">
-            @if (seatingComplete()) {
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
-                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M4 10.5l4 4 8-9" />
-              </svg>
-              {{ 'planning.ov.seatingDone' | translate }}
-            } @else {
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
-                stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v5l3 2" />
-              </svg>
-              {{ 'planning.ov.seatingInProgress' | translate }}
-            }
-          </span>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.seatingCta' | translate }}</span>
-        } @else {
-          <span class="ov-card__empty">{{ 'planning.ov.seatingEmpty' | translate }}</span>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.seatingStartCta' | translate }}</span>
-        }
-      </a>
-    </li>
-
-    <li class="ov-card">
-      <a class="ov-card__link" routerLink="/website">
-        <span class="ov-card__icon ov-card__icon--website" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-          </svg>
-        </span>
-        <span class="ov-card__label">{{ 'planning.ov.website' | translate }}</span>
-        <span class="ov-card__status" [class.is-live]="siteStatus() === 'published'">
-          {{ 'planning.ov.websiteStatus.' + siteStatus() | translate }}
-        </span>
-        <span class="link-arrow ov-card__cta">
-          {{ (siteStatus() === 'none' ? 'planning.ov.websiteStartCta' : 'planning.ov.websiteCta') | translate }}
-        </span>
-      </a>
-    </li>
-
-    <li class="ov-card">
-      <a class="ov-card__link" routerLink="/saved">
-        <span class="ov-card__icon ov-card__icon--saved" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7Z" />
-          </svg>
-        </span>
-        <span class="ov-card__label">{{ 'planning.ov.saved' | translate }}</span>
-        <span class="ov-card__value num">{{ wishlist.count() }}</span>
-        <span class="link-arrow ov-card__cta">{{ 'planning.ov.savedCta' | translate }}</span>
-      </a>
-    </li>
-
-    <!-- sitemap §06 "ჩემი მომსახურებები": what is already settled, per category
-         (was the "added" badge on Rati's home category tiles) -->
-    @if (chosenVendors().length) {
-      <li class="ov-card ov-card--wide">
-        <a class="ov-card__link" routerLink="/budget">
-          <span class="ov-card__icon ov-card__icon--vendors" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
-              stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 10.5l4 4 8-9" />
-            </svg>
-          </span>
-          <span class="ov-card__label">{{ 'planning.ov.myVendors' | translate }}</span>
-          <ul class="ov-vendors" role="list">
-            @for (v of chosenVendors(); track v.slug) {
-              <li class="ov-vendors__row">
-                <span class="ov-vendors__cat">{{ v.categoryKey | translate }}</span>
-                <span class="ov-vendors__name">{{ v.name }}</span>
+      <div class="ovc__part">
+        <h3 class="ov-h3">{{ 'overview.photosTitle' | translate }}</h3>
+        <p class="ov-note">
+          {{ 'overview.photosHint' | translate }}
+          <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'decor' }">{{ 'overview.photosDecor' | translate }}</a> ·
+          <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'cake' }">{{ 'overview.photosCake' | translate }}</a> ·
+          <a class="ov-quiet" routerLink="/guides/inspiration">{{ 'overview.photosIdeas' | translate }}</a>
+        </p>
+        @if (photos().length) {
+          <ul class="ovc__photos" role="list">
+            @for (p of photos(); track p.id) {
+              <li>
+                <img [src]="p.url" alt="" loading="lazy" width="300" height="300" />
+                <span class="ovc__kind">{{ 'overview.kind.' + p.kind | translate }}</span>
+                @if (p.sourcePath) {
+                  <a class="ovc__src" [routerLink]="p.sourcePath">{{ sourceName(p) }}</a>
+                }
+                <button type="button" class="ovc__remove" (click)="planPhotos.unmark(p.id)" [disabled]="planPhotos.busy()"
+                  [attr.aria-label]="('overview.photoRemove' | translate) + ' — ' + sourceName(p)">✕</button>
               </li>
             }
           </ul>
-          <span class="link-arrow ov-card__cta">{{ 'planning.ov.myVendorsCta' | translate }}</span>
-        </a>
-      </li>
-    }
-  </ul>
+        }
+      </div>
+    </section>
+  }
+
+  @if (loadError()) {
+    <p class="ov-note ov-note--box" role="alert">
+      {{ 'overview.loadError' | translate }}
+      <button type="button" class="ov-quiet" (click)="retry()">{{ 'vendors.retry' | translate }}</button>
+    </p>
+  }
+
+  <!-- ================= the next step ================= -->
+  @if (nextStep(); as step) {
+    <a class="ovn" [routerLink]="step.link" [queryParams]="step.query ?? null">
+      <span class="ovn__label">{{ 'overview.nextLabel' | translate }}</span>
+      <span class="ovn__text">{{ step.key | translate: { n: overdue() } }}</span>
+      <span class="ovn__arrow" aria-hidden="true">→</span>
+    </a>
+  }
+
+  @if (!data() && !loadError()) {
+    <div class="ovg" aria-hidden="true">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <span class="ov-skel skel"></span>
+      }
+    </div>
+  } @else if (data(); as o) {
+    <div class="ovg">
+      <!-- ---- tasks ---- -->
+      <section class="ovk ovk--wide" aria-labelledby="ovk-tasks">
+        <div class="ovk__head">
+          <h2 id="ovk-tasks" class="ov-h2">{{ 'overview.tasks.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/planning/tasks">{{ 'overview.tasks.all' | translate }} →</a>
+        </div>
+        <div class="ovk__stat">
+          <span class="ovk__big num">{{ taskPct() }}%</span>
+          <span class="ov-note">{{ 'overview.tasks.done' | translate: { done: done(), total: tasks().length } }}</span>
+          @if (overdue() > 0) {
+            <span class="ov-chip">{{ 'overview.tasks.overdue' | translate: { n: overdue() } }}</span>
+          }
+        </div>
+        <span class="ov-bar" aria-hidden="true"><span [style.width.%]="taskPct()"></span></span>
+        @if (tasksLoaded() && !nextTasks().length) {
+          <p class="ov-note">{{ (tasks().length ? 'overview.tasks.allDone' : 'overview.tasks.empty') | translate }}</p>
+        } @else {
+          <ul class="ovt" role="list">
+            @for (t of nextTasks(); track t.id) {
+              <li class="ovt__item">
+                <label class="ovt__label">
+                  <input type="checkbox" [checked]="t.isDone" (change)="toggleTask(t, $event)" />
+                  <span>{{ t.title }}</span>
+                </label>
+                @if (taskDue(t); as d) {
+                  <span class="ovt__due num" [class.is-late]="taskLate(t)">{{ d }}</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+        <button type="button" class="ov-quiet ovk__restart" (click)="restart.emit($event)">
+          {{ 'planning.restartBtn' | translate }}
+        </button>
+      </section>
+
+      <!-- ---- budget and payments ---- -->
+      <section class="ovk" aria-labelledby="ovk-budget">
+        <div class="ovk__head">
+          <h2 id="ovk-budget" class="ov-h2">{{ 'overview.budget.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/budget">{{ 'overview.open' | translate }} →</a>
+        </div>
+        @if (o.budget.total == null) {
+          <p class="ov-note">{{ 'overview.budget.empty' | translate }}</p>
+          <a class="btn btn--primary ovk__cta" routerLink="/budget">{{ 'overview.budget.start' | translate }}</a>
+        } @else {
+          <dl class="ovk__nums">
+            <div><dt>{{ 'overview.budget.total' | translate }}</dt><dd class="num">{{ money(o.budget.total) }}</dd></div>
+            <div><dt>{{ 'overview.budget.agreed' | translate }}</dt><dd class="num">{{ money(o.budget.agreed) }}</dd></div>
+            <div><dt>{{ 'overview.budget.paid' | translate }}</dt><dd class="num">{{ money(o.budget.paid) }}</dd></div>
+            <div><dt>{{ 'overview.budget.left' | translate }}</dt><dd class="num">{{ money(o.budget.left) }}</dd></div>
+          </dl>
+          <span class="ov-bar" aria-hidden="true"><span [style.width.%]="paidPct()"></span></span>
+          @if (o.budget.total > 0 && o.budget.planned > o.budget.total) {
+            <p class="ov-note">{{ 'overview.budget.over' | translate: { n: money(o.budget.planned - o.budget.total) } }}</p>
+          }
+          <h3 class="ov-h3">{{ 'overview.budget.nextTitle' | translate }}</h3>
+          @if (o.budget.nextPayments.length) {
+            <ul class="ovp" role="list">
+              @for (p of o.budget.nextPayments; track p.id) {
+                <li>
+                  <span class="ovp__date num">{{ date(p.date) }}</span>
+                  <span class="ovp__name">{{ p.name }}</span>
+                  @if (payBadge(p.date); as b) {
+                    <span class="ov-chip">{{ 'budgetPage.' + b | translate }}</span>
+                  }
+                  @if (p.left > 0) {
+                    <span class="ovp__amount num">{{ money(p.left) }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="ov-note">{{ 'overview.budget.noPayments' | translate }}</p>
+          }
+        }
+      </section>
+
+      <!-- ---- services ---- -->
+      <section class="ovk" aria-labelledby="ovk-services">
+        <div class="ovk__head">
+          <h2 id="ovk-services" class="ov-h2">{{ 'overview.services.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/planning/services">{{ 'overview.open' | translate }} →</a>
+        </div>
+        <ul class="ov-pills" role="list">
+          <li><span class="num">{{ o.services.saved }}</span> {{ 'services.statuses.saved' | translate }}</li>
+          <li><span class="num">{{ o.services.shortlist }}</span> {{ 'services.statuses.shortlist' | translate }}</li>
+          <li class="is-strong"><span class="num">{{ o.services.chosen }}</span> {{ 'services.statuses.chosen' | translate }}</li>
+        </ul>
+        @if (o.services.chosenList.length) {
+          <ul class="ovs" role="list">
+            @for (c of o.services.chosenList; track $index) {
+              <li>
+                <span class="ovs__cat">{{ categoryLabel(c.categorySlug) | translate }}</span>
+                <span class="ovs__name">{{ c.name }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="ov-note">{{ 'overview.services.empty' | translate }}</p>
+          <a class="ov-quiet" routerLink="/vendors">{{ 'overview.services.browse' | translate }} →</a>
+        }
+      </section>
+
+      <!-- ---- guests and replies ---- -->
+      <section class="ovk" aria-labelledby="ovk-guests">
+        <div class="ovk__head">
+          <h2 id="ovk-guests" class="ov-h2">{{ 'overview.guests.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/guests">{{ 'overview.open' | translate }} →</a>
+        </div>
+        @if (o.guests.parties === 0) {
+          <p class="ov-note">{{ 'overview.guests.empty' | translate }}</p>
+          <a class="btn btn--primary ovk__cta" routerLink="/guests">{{ 'overview.guests.start' | translate }}</a>
+        } @else {
+          <div class="ovk__stat">
+            <span class="ovk__big num">{{ o.guests.people }}</span>
+            <span class="ov-note">{{ 'overview.guests.people' | translate }}</span>
+          </div>
+          <ul class="ov-pills" role="list">
+            <li class="is-strong"><span class="num">{{ o.guests.yes }}</span> {{ 'guestListPage.attendance.yes' | translate }}</li>
+            <li><span class="num">{{ o.guests.pending }}</span> {{ 'guestListPage.attendance.pending' | translate }}</li>
+            <li><span class="num">{{ o.guests.no }}</span> {{ 'guestListPage.attendance.no' | translate }}</li>
+          </ul>
+          @if (o.guests.dietary) {
+            <p class="ov-note">{{ 'overview.guests.dietary' | translate: { n: o.guests.dietary } }}</p>
+          }
+          @if (o.invitation.status === 'published' && o.guests.invitees) {
+            <h3 class="ov-h3">{{ 'overview.guests.replies' | translate: { n: o.guests.replied, total: o.guests.invitees } }}</h3>
+            <span class="ov-bar" aria-hidden="true"><span [style.width.%]="replyPct()"></span></span>
+            @if (o.guests.recent.length) {
+              <ul class="ovr" role="list">
+                @for (r of o.guests.recent; track $index) {
+                  <li>
+                    <span class="ovr__name">{{ r.name }}</span>
+                    <span class="ov-note">{{ 'overview.guests.said' | translate: { yes: r.yes, no: r.no } }} · {{ date(r.at) }}</span>
+                    @if (r.message) {
+                      <span class="ovr__msg">„{{ r.message }}“</span>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          }
+        }
+      </section>
+
+      <!-- ---- seating ---- -->
+      <section class="ovk" aria-labelledby="ovk-seating">
+        <div class="ovk__head">
+          <h2 id="ovk-seating" class="ov-h2">{{ 'overview.seating.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/seating">{{ 'overview.open' | translate }} →</a>
+        </div>
+        @if (o.seating.tables === 0) {
+          <p class="ov-note">{{ 'overview.seating.empty' | translate }}</p>
+        } @else {
+          <div class="ovk__stat">
+            <span class="ovk__big num">{{ o.seating.seated }} / {{ o.seating.toSeat }}</span>
+            <span class="ov-note">{{ 'overview.seating.seated' | translate }}</span>
+          </div>
+          <span class="ov-bar" aria-hidden="true"><span [style.width.%]="seatedPct()"></span></span>
+          <p class="ov-note">{{ 'overview.seating.tables' | translate: { tables: o.seating.tables, seats: o.seating.seats } }}</p>
+        }
+      </section>
+
+      <!-- ---- invitation ---- -->
+      <section class="ovk" aria-labelledby="ovk-invitation">
+        <div class="ovk__head">
+          <h2 id="ovk-invitation" class="ov-h2">{{ 'overview.invitation.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/planning/invitation">{{ 'overview.open' | translate }} →</a>
+        </div>
+        <span class="ov-status" [class.is-live]="o.invitation.status === 'published'">
+          {{ 'overview.invitation.' + o.invitation.status | translate }}
+        </span>
+        @if (o.invitation.status === 'published' && o.invitation.slug) {
+          <a class="ovi__link num" [href]="'/w/' + o.invitation.slug" target="_blank" rel="noopener">{{ origin }}/w/{{ o.invitation.slug }}</a>
+          @if (o.invitation.rsvpDeadline) {
+            <p class="ov-note">{{ 'overview.invitation.deadline' | translate: { date: date(o.invitation.rsvpDeadline) } }}</p>
+          }
+          <a class="ov-quiet" routerLink="/planning/invitation" [queryParams]="{ step: 'share' }">{{ 'overview.invitation.links' | translate }} →</a>
+        } @else {
+          <p class="ov-note">{{ 'overview.invitation.hint' | translate }}</p>
+        }
+      </section>
+
+      <!-- ---- wedding day ---- -->
+      <section class="ovk" aria-labelledby="ovk-day">
+        <div class="ovk__head">
+          <h2 id="ovk-day" class="ov-h2">{{ 'overview.day.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/planning/day">{{ 'overview.open' | translate }} →</a>
+        </div>
+        @if (o.day.items === 0) {
+          <p class="ov-note">{{ 'overview.day.empty' | translate }}</p>
+          <a class="ov-quiet" routerLink="/schedules">{{ 'overview.day.examples' | translate }} →</a>
+        } @else {
+          <ol class="ovd" role="list">
+            @for (d of o.day.first; track $index) {
+              <li><span class="num">{{ d.time ?? '—' }}</span> <span>{{ d.activity }}</span></li>
+            }
+          </ol>
+          <p class="ov-note">
+            {{ 'overview.day.count' | translate: { n: o.day.items } }}
+            @if (o.day.lastTime) {
+              · {{ 'overview.day.until' | translate: { time: o.day.lastTime } }}
+            }
+          </p>
+        }
+      </section>
+
+      <!-- ---- planning together ---- -->
+      <section class="ovk" aria-labelledby="ovk-together">
+        <div class="ovk__head">
+          <h2 id="ovk-together" class="ov-h2">{{ 'overview.together.title' | translate }}</h2>
+          <a class="ov-more" routerLink="/planning/settings">{{ 'overview.open' | translate }} →</a>
+        </div>
+        @if (partnerJoined()) {
+          <p class="ov-note">{{ 'overview.together.both' | translate }}</p>
+          <ul class="ovm" role="list">
+            @for (m of members(); track $index) {
+              <li>{{ m.name || m.email }}@if (m.isMe) { <span class="ov-note">({{ 'overview.together.you' | translate }})</span> }</li>
+            }
+          </ul>
+        } @else {
+          <p class="ov-note">{{ 'overview.together.invite' | translate }}</p>
+          <a class="ov-quiet" routerLink="/planning/settings">{{ 'overview.together.inviteCta' | translate }} →</a>
+        }
+      </section>
+    </div>
+  }
 </section>

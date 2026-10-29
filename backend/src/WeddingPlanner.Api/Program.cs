@@ -2,10 +2,13 @@ using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
 using WeddingPlanner.Api.Auth;
+using WeddingPlanner.Api.Email;
 using WeddingPlanner.Infrastructure.Data;
+using WeddingPlanner.Infrastructure.Email;
 using WeddingPlanner.Infrastructure.Identity;
 using WeddingPlanner.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
@@ -38,8 +41,49 @@ builder.Services
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     })
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>();
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders(); // password-reset tokens
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<WeddingPlanner.Api.Planning.CoupleScope>();
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
+    o.TokenLifespan = PasswordResetEmail.LinkLifetime);
+// The key ring that signs reset tokens lives in the database: on local disk it would vanish
+// with every restart (Render's free tier sleeps), killing links already sent.
+builder.Services.AddDataProtection()
+    .SetApplicationName("weddingplanner")
+    .PersistKeysToDbContext<AppDbContext>();
+
+// ---- Email (SMTP when configured, else a log-only fallback that delivers nothing) ----
+var smtp = builder.Configuration.GetSection("Email:Smtp");
+var smtpConfigured = !string.IsNullOrWhiteSpace(smtp["Host"]);
+if (smtpConfigured)
+{
+    var from = builder.Configuration["Email:From"];
+    if (string.IsNullOrWhiteSpace(from))
+        throw new InvalidOperationException("Email:From is required when Email:Smtp:Host is set.");
+    builder.Services.AddSingleton<IEmailSender>(new SmtpEmailSender(new SmtpSettings(
+        smtp["Host"]!,
+        smtp.GetValue("Port", 587),
+        smtp["Username"],
+        smtp["Password"],
+        smtp.GetValue("EnableSsl", true),
+        from,
+        builder.Configuration["Email:FromName"])));
+}
+else
+{
+    // Development logs the whole mail (copy the reset link from the console); elsewhere
+    // only that a mail was dropped, since the body holds a live reset token.
+    var logContent = builder.Environment.IsDevelopment();
+    builder.Services.AddSingleton<IEmailSender>(sp =>
+        new LogEmailSender(sp.GetRequiredService<ILogger<LogEmailSender>>(), logContent));
+}
+// Whether mail actually goes out: partner invites offer email only then (the link always works).
+builder.Services.AddSingleton(new EmailDelivery(smtpConfigured));
+builder.Services.AddSingleton<EmailOutbox>();
+builder.Services.AddHostedService<EmailOutboxWorker>();
+builder.Services.AddMemoryCache();
 
 // ---- JWT bearer auth ----
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -134,6 +178,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+if (!smtpConfigured && !app.Environment.IsDevelopment())
+    app.Logger.LogWarning("Email:Smtp:Host is not set — password-reset emails will NOT be delivered.");
+
 // ---- Forwarded headers (only with an explicit trusted-proxy list) ----
 // Behind a reverse proxy, Connection.RemoteIpAddress is the proxy's address, so
 // every client shares ONE rate-limit partition — a single spammer exhausts the
@@ -169,26 +216,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Startup seeding. Roles run in EVERY environment — registration's AddToRoleAsync
-// throws without them, so a fresh production DB would 500 on every sign-up.
-// Dev additionally auto-migrates, seeds demo data, and creates the configured admin.
-// Guarded so the API still boots if the database isn't up yet.
+// Startup seeding. Roles and the category taxonomy run in EVERY environment — registration's
+// AddToRoleAsync throws without roles, and vendor sign-up and the catalog need the categories,
+// so a fresh production DB would otherwise break both. Dev additionally auto-migrates, seeds
+// demo vendors, and creates the configured admin. Guarded so the API still boots if the
+// database isn't up yet.
 using (var scope = app.Services.CreateScope())
 {
     try
     {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (app.Environment.IsDevelopment())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await db.Database.MigrateAsync();
-            await DbSeeder.SeedAsync(db);
-        }
 
+        // Roles first: they predate every recent migration, so they still seed on a
+        // production DB whose newest migration hasn't been applied yet.
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         await IdentitySeeder.SeedRolesAsync(roleManager);
 
+        await CategoryCatalog.SyncAsync(db);
+
         if (app.Environment.IsDevelopment())
         {
+            await DbSeeder.SeedAsync(db);
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
         }

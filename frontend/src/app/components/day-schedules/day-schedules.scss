@@ -1,0 +1,309 @@
+// Example day schedules: cards + the full schedule in a dialog. Brand theme (the host page
+// carries .theme-brand): white panels on ivory, charcoal text, Mt for headings, Nus for text,
+// peach only for the small "example N" label, evergreen only on buttons.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.ds {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+.ds-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--paper-line);
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+  color: var(--ink);
+  text-align: left;
+}
+
+.ds-label {
+  // a pill, not a bar: in the card (flex) and the dialog head (grid)
+  align-self: flex-start;
+  justify-self: start;
+  margin: 0;
+  padding: 0.45em 0.95em;
+  border-radius: var(--radius-pill);
+  background: var(--peach);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+}
+
+.ds-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.ds-card__summary {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.ds-card__preview {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3) 0 0;
+  display: grid;
+  gap: var(--space-2);
+  border-top: 1px solid var(--paper-line);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+
+  li {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: var(--space-3);
+  }
+}
+
+.ds-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-700);
+}
+
+.ds-card__span {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink-500);
+}
+
+.ds-card__open {
+  align-self: flex-start;
+  margin-top: auto;
+  min-height: 42px;
+  padding-inline: var(--space-5);
+  border-radius: var(--radius-pill);
+}
+
+// ---------------------------------------------------------------- dialog
+
+.ds-dialog {
+  width: min(42rem, calc(100vw - 2rem));
+  max-height: min(88dvh, 52rem);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: var(--paper-white, #fff);
+  color: var(--ink);
+  box-shadow: 0 24px 60px rgba(34, 30, 32, 0.28);
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--charcoal, #302b2d) 55%, transparent);
+  }
+
+  &[open] {
+    animation: ds-in 220ms var(--ease-out) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &[open] {
+      animation: none;
+    }
+  }
+}
+
+@keyframes ds-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ds-dialog__panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-5) var(--space-6);
+
+  @include bp.respond-to(md) {
+    padding: var(--space-8);
+  }
+}
+
+.ds-dialog__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--space-4);
+
+  > div {
+    display: grid;
+    gap: var(--space-3);
+  }
+}
+
+.ds-dialog__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.125rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.ds-dialog__summary {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.ds-dialog__x {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--paper);
+  }
+}
+
+// column names over the rows (md+; on phones each row reads on its own)
+.ds-cols {
+  display: none;
+
+  @include bp.respond-to(md) {
+    display: grid;
+    grid-template-columns: 4rem 1fr 11rem;
+    gap: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--paper-line);
+    font-size: var(--fs-caption);
+    line-height: 1.4;
+    color: var(--ink-500);
+  }
+}
+
+.ds-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// the column names sit right on the list, not a panel gap away
+.ds-cols + .ds-rows {
+  @include bp.respond-to(md) {
+    margin-top: calc(-1 * var(--space-4));
+  }
+}
+
+.ds-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: var(--space-1) var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--paper-line);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 4rem 1fr 11rem;
+    gap: var(--space-4);
+  }
+}
+
+.ds-row__body {
+  display: grid;
+  gap: 2px;
+}
+
+.ds-row__activity {
+  font-weight: var(--fw-medium);
+}
+
+.ds-row__note {
+  color: var(--ink-700);
+}
+
+// phones: under the activity; md+: its own column
+.ds-row__who {
+  grid-column: 2;
+  font-size: var(--fs-caption);
+  color: var(--ink-500);
+
+  @include bp.respond-to(md) {
+    grid-column: 3;
+    font-size: var(--fs-small);
+    color: var(--ink-700);
+  }
+}
+
+.ds-dialog__note {
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+
+.ds-dialog__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+
+  .ds-dialog__hint {
+    flex: 1 1 14rem;
+  }
+}
+
+.ds-dialog__hint {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+// read by screen readers, not shown
+.ds-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

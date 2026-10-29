@@ -4,7 +4,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 import { environment } from '../../environments/environment';
 import { SILENT_AUTH_401 } from './auth.interceptor';
-import { AuthService } from './auth.service';
+import { AuthService, safeSessionGet, safeSessionRemove, safeSessionSet } from './auth.service';
+import { ToastService } from './toast.service';
+
+/** A guest's "save" tap, kept while they sign up or sign in (guide §9: return to the action). */
+const PENDING_SAVE_KEY = 'weddingplanner.pendingSave';
+/** After this long the tap is stale (an abandoned sign-up) and isn't carried out. */
+const PENDING_SAVE_TTL_MS = 60 * 60 * 1000;
 
 /**
  * Couple wishlist of saved vendor ids — now server-backed and gated behind a couple
@@ -18,6 +24,7 @@ import { AuthService } from './auth.service';
 export class WishlistService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly base = environment.apiBaseUrl;
 
@@ -70,6 +77,7 @@ export class WishlistService {
             if (seq !== this.loadSeq) return; // a newer auth state owns the list
             this._ids.set(ids);
             this.loaded.set(true);
+            this.savePending();
           },
           error: () => {
             if (seq !== this.loadSeq) return;
@@ -84,6 +92,29 @@ export class WishlistService {
         this.loadError.set(false);
       }
     });
+  }
+
+  /**
+   * A guest tapped save: remember the vendor while they sign up (or sign in), and save it as
+   * soon as they're a couple — the guide's "return to the action that started it".
+   */
+  rememberSave(id: number): void {
+    safeSessionSet(PENDING_SAVE_KEY, JSON.stringify({ id, at: Date.now() }));
+  }
+
+  /** Carry out a remembered save once the couple's list has loaded (so it isn't toggled off). */
+  private savePending(): void {
+    const raw = safeSessionGet(PENDING_SAVE_KEY);
+    if (!raw) return;
+    safeSessionRemove(PENDING_SAVE_KEY);
+    try {
+      const { id, at } = JSON.parse(raw) as { id: number; at: number };
+      if (!Number.isInteger(id) || Date.now() - at > PENDING_SAVE_TTL_MS) return;
+      if (!this.isSaved(id)) this.toggle(id);
+      this.toast.success('wishlist.savedAfterSignIn');
+    } catch {
+      // unreadable — drop it
+    }
   }
 
   isSaved(id: number): boolean {
@@ -112,8 +143,10 @@ export class WishlistService {
 
     request.subscribe({
       next: () => this.inFlight.delete(id),
-      error: () => {
+      error: (err: { status?: number }) => {
         this.inFlight.delete(id);
+        // Shortlisted, chosen or with an offer/note: a heart tap doesn't throw that away.
+        if (err?.status === 409) this.toast.show('wishlist.inUse', 'info', 6000);
         // Revert only THIS id — restoring a whole snapshot would erase other
         // vendors' toggles that succeeded while this request was in flight.
         this._ids.update((list) =>

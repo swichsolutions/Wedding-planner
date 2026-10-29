@@ -128,6 +128,7 @@
   &.is-dark {
     .wordmark,
     .hdr__group,
+    .hdr__chev-btn,
     .hdr__text-btn,
     .lang__btn,
     .icon-link {
@@ -230,6 +231,26 @@
   &__item.is-open &__group {
     color: var(--ink);
     background: var(--paper-deep);
+  }
+
+  // The title opens the section's page; the arrow beside it opens the dropdown.
+  &__group-row {
+    display: flex;
+    align-items: center;
+  }
+
+  &__chev-btn {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink-700);
+    cursor: pointer;
   }
 
   &__chev {
@@ -431,7 +452,8 @@
   }
 
   &__nav &__group {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     justify-content: space-between;
     min-height: 0;
     padding: var(--space-5) 0;
@@ -562,9 +584,30 @@
       background: var(--paper-deep);
     }
 
-    // Revolut: plain titles, no chevrons (the panel itself is the affordance)
-    &__nav &__chev {
-      display: none;
+    // Revolut: plain titles, no chevrons (hover opens the panel). The arrow button stays
+    // for keyboards (it appears when focused) and touch screens (always shown).
+    &__nav &__chev-btn {
+      width: 28px;
+      height: 28px;
+      margin-left: calc(var(--space-1) * -1);
+
+      &:not(:focus-visible) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+
+      @media (hover: none) {
+        &:not(:focus-visible) {
+          position: static;
+          width: 28px;
+          height: 28px;
+          overflow: visible;
+          clip-path: none;
+        }
+      }
     }
 
     &__nav &__panel {
