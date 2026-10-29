@@ -195,3 +195,21 @@
   line-height: 1.5;
   color: var(--ink-500);
 }
+
+// Wide screens: the heading (ring, title) on the left, the form on the right.
+@include bp.respond-to(lg) {
+  .ps {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 6rem);
+    align-items: start;
+    max-width: var(--container-max);
+    padding-inline: var(--gutter);
+  }
+
+  .ps-head {
+    position: sticky;
+    top: calc(var(--hdr-h) + var(--space-8));
+    margin-bottom: 0;
+  }
+}

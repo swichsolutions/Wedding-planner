@@ -1,7 +1,7 @@
 import { Component, ElementRef, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor } from '../../core/auth.service';
@@ -95,7 +95,7 @@ interface ScatterPhoto {
             @if (error()) {
               <p class="auth__error" role="alert">{{ 'auth.registerError' | translate }}</p>
             }
-            <button class="btn btn--pink" type="submit" [disabled]="loading()">
+            <button class="btn btn--primary" type="submit" [disabled]="loading()">
               {{ 'auth.signUp' | translate }}
             </button>
           </form>
@@ -107,6 +107,7 @@ interface ScatterPhoto {
     </section>
   `,
   styleUrl: './register.scss',
+  host: { class: 'theme-brand' },
 })
 export class Register {
   private readonly fb = inject(FormBuilder);
@@ -145,6 +146,8 @@ export class Register {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('auth.registerTitle')} | ${t.instant('brand.name')}`);
+    // A sign-up form has nothing to rank for.
+    inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
     // Signed-in users have no business on the vendor registration form. Without this,
     // a couple who signs in via the navbar modal while on this page could still submit

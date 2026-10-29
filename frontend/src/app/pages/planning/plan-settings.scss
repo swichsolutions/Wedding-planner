@@ -11,7 +11,6 @@
 .st {
   display: grid;
   gap: var(--space-6);
-  max-width: 46rem;
   padding-block: var(--space-10) var(--space-20);
 }
 
@@ -252,4 +251,29 @@
   display: block;
   height: 96px;
   border-radius: 14px;
+}
+
+// Wide screens: the details form on the left, partner access and the account on the right.
+@include bp.respond-to(lg) {
+  .st {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    // header, then the right column's two cards; the last row takes the form's extra height,
+    // so partner access and the account sit right under each other.
+    grid-template-rows: auto auto 1fr;
+    align-items: start;
+  }
+
+  .st-head,
+  .st > .st-note {
+    grid-column: 1 / -1;
+  }
+
+  .st > form.st-card {
+    grid-column: 1;
+    grid-row: span 2;
+  }
+
+  .st > section.st-card {
+    grid-column: 2;
+  }
 }

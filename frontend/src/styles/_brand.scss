@@ -12,9 +12,9 @@
 // callouts. Headings that were set in --font-statement opt into --font-display.
 // Aliases that :root defines in terms of other tokens (--color-text: var(--ink),
 // --ring, ...) are resolved at :root, so they are re-declared here as well.
-// Applied as the global class .theme-brand (styles.scss): on the home page host, and
-// on the header, footer and overlays while on the home page. Elements that set their
-// own text colour (the footer's ivory) keep it: component styles outrank this class.
+// Applied as the global class .theme-brand (styles.scss): on <body> for every page but a
+// couple's invitation (App), and on page hosts, the header and the footer. Elements that set
+// their own text colour (the footer's ivory) keep it: component styles outrank this class.
 // =============================================================================
 @mixin theme {
   font-family: var(--font-brand-text);
@@ -101,4 +101,18 @@
   --tracking-tight: 0;
   --lh-display: 1;
   --lh-heading: 1.06;
+}
+
+// Links inside running text: charcoal and underlined. Evergreen is for buttons only, and colour
+// alone mustn't be what marks a link (WCAG 1.4.1). Specificity (0,1,1) / (0,2,1) on hover: above
+// the base `a` / `a:hover` rules whatever the stylesheet order, below any component's own link
+// styles. Links with a class (including one routerLinkActive adds) are styled by their component.
+:where(.theme-brand) :where(p, li, dd, td, span, figcaption, label) a:not([class]) {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:where(.theme-brand) :where(p, li, dd, td, span, figcaption, label) a:not([class]):hover {
+  color: var(--ink-700);
 }

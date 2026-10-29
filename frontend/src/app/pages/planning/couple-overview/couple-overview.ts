@@ -14,6 +14,7 @@ import { reminderStatus } from '../../../core/budget.service';
 import { byDeadline, isOverdue, taskDue } from '../../../core/task-stages';
 import { ToastService } from '../../../core/toast.service';
 import { LanguageService } from '../../../i18n/language.service';
+import { formatGel } from '../../../core/money';
 
 /** The standard banner visual (stage 1) until Taso's (BUILD-PLAN B7 "You provide"). */
 const DEFAULT_BANNER = '/media/hero-wide.webp';
@@ -260,7 +261,6 @@ export class CoupleOverview {
   }
 
   protected money(n: number): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(n)) + ' ₾';
+    return formatGel(n, this.lang.current());
   }
 }

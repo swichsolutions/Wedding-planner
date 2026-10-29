@@ -53,7 +53,7 @@
         </div>
 
         <!-- ---------- info rail ---------- -->
-        <aside class="info">
+        <div class="info">
           <p class="info__cat">{{ v.categoryKey | translate }} · {{ v.city }}</p>
           <h1 class="info__name">{{ v.name }}</h1>
 
@@ -81,7 +81,7 @@
 
           <div class="info__contact">
             @if (v.acceptsMessages) {
-              <button type="button" class="btn btn--pink info__cta" (click)="openContact()">{{ 'profile.contactCta' | translate }}</button>
+              <button type="button" class="btn btn--primary info__cta" (click)="openContact()">{{ 'profile.contactCta' | translate }}</button>
             }
 
             <button type="button" class="btn btn--ghost info__save" [class.is-saved]="wishlist.isSaved(v.id)"
@@ -158,7 +158,7 @@
               </div>
             }
           </div>
-        </aside>
+        </div>
       </div>
 
       <!-- ---------- about ---------- -->
@@ -341,7 +341,7 @@
               <p class="rform__success" role="status">{{ 'reviews.success' | translate }}</p>
             }
 
-            <button class="btn btn--pink rform__submit" type="submit" [disabled]="submitBusy()">
+            <button class="btn btn--primary rform__submit" type="submit" [disabled]="submitBusy()">
               {{ (myReview() ? 'reviews.update' : 'reviews.submit') | translate }}
             </button>
           </form>

@@ -33,6 +33,8 @@ import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { MARKABLE_CATEGORIES, PlanPhotosService } from '../../core/plan-photos.service';
+import { formatGel } from '../../core/money';
+import { formatDate } from '../../core/dates';
 
 const JSON_LD_ID = 'vendor-jsonld';
 
@@ -346,8 +348,7 @@ export class VendorProfile implements OnDestroy {
   }
 
   protected formatPrice(amount: number): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(amount) + ' ₾';
+    return formatGel(amount, this.lang.current());
   }
 
   /** „შეინახე ჩემს ქორწილში" (guide §4): saving is a couple-account feature, so anyone else
@@ -455,13 +456,9 @@ export class VendorProfile implements OnDestroy {
     return Math.round(value ?? 0);
   }
 
+  /** Georgian month names spelled out, the same on server and browser (core/dates). */
   protected formatDate(iso: string): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.DateTimeFormat(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date(iso));
+    return formatDate(iso, this.lang.current());
   }
 
   /** Build a social URL from a handle or a full URL. */

@@ -1,13 +1,14 @@
 import { Component, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AdminService, AdminVendor } from '../../core/admin.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { categoryKey } from '../../core/catalog';
+import { formatDate } from '../../core/dates';
 import { AdminContent } from './admin-content';
 import { AdminImport } from './admin-import';
 
@@ -19,6 +20,7 @@ const TABS: AdminTab[] = ['vendors', 'content', 'import'];
   imports: [TranslatePipe, RouterLink, AdminContent, AdminImport],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
+  host: { class: 'theme-brand' },
 })
 export class Admin {
   private readonly admin = inject(AdminService);
@@ -49,6 +51,8 @@ export class Admin {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('adminPage.title')} | ${t.instant('brand.name')}`);
+    // Private: the admin panel.
+    inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
     if (this.isBrowser) this.load();
   }
 
@@ -86,9 +90,9 @@ export class Admin {
     return categoryKey(slug);
   }
 
+  /** Georgian month names spelled out, the same on server and browser (core/dates). */
   protected formatDate(iso: string): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(iso));
+    return formatDate(iso, this.lang.current(), 'medium');
   }
 
   protected retry(): void {

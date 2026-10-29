@@ -4,7 +4,7 @@
   } @else if (vendor(); as v) {
     <div class="dash-shell">
       <!-- ===================== SIDEBAR: identity + nav ===================== -->
-      <aside class="dash-side">
+      <div class="dash-side">
         <div class="dash-id">
           <span class="dash-id__avatar">
             @if (photos()[0]; as p) {
@@ -90,7 +90,7 @@
             </a>
           }
         </div>
-      </aside>
+      </div>
 
       <!-- ===================== MAIN: active section ===================== -->
       <div class="dash-main" id="dash-panel" role="tabpanel" tabindex="0"
@@ -124,10 +124,10 @@
 
               <div class="strength">
                 <div class="strength__head">
-                  <h2 class="strength__title">{{ 'dash.strengthTitle' | translate }}</h2>
+                  <h2 class="strength__title" id="dash-strength-title">{{ 'dash.strengthTitle' | translate }}</h2>
                   <span class="strength__count num">{{ strength().done }}/{{ strength().total }}</span>
                 </div>
-                <div class="strength__bar" role="progressbar"
+                <div class="strength__bar" role="progressbar" aria-labelledby="dash-strength-title"
                   [attr.aria-valuenow]="strength().pct" aria-valuemin="0" aria-valuemax="100">
                   <span class="strength__fill" [style.width.%]="strength().pct"></span>
                 </div>
@@ -407,7 +407,7 @@
                 </fieldset>
 
                 <div class="dash__save-row">
-                  <button class="btn btn--pink" type="submit" [disabled]="saving()">{{ 'dash.save' | translate }}</button>
+                  <button class="btn btn--primary" type="submit" [disabled]="saving()">{{ 'dash.save' | translate }}</button>
                   @if (saved()) {
                     <span class="dash__saved" role="status">{{ 'dash.saved' | translate }}</span>
                   }
@@ -423,7 +423,7 @@
                 <h2 class="panel__title">{{ 'dash.photosTitle' | translate }}</h2>
                 <!-- A real button drives the hidden input — a label wrapping a
                      display:none input is unreachable by keyboard. -->
-                <button type="button" class="btn btn--pink photos__add" (click)="photoInput.click()">
+                <button type="button" class="btn btn--primary photos__add" (click)="photoInput.click()">
                   {{ 'dash.addPhotos' | translate }}
                 </button>
                 <input #photoInput type="file" accept="image/jpeg,image/png,image/webp" multiple hidden

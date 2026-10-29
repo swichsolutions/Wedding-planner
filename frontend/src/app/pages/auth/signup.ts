@@ -2,7 +2,7 @@ import { Component, ElementRef, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, afterSignUpRoute, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
@@ -50,6 +50,8 @@ export class Signup {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('signup.title')} | ${t.instant('brand.name')}`);
+    // A sign-up form has nothing to rank for.
+    inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
     // Already signed in: nothing to sign up for. (Signing in from here through the sign-in
     // window is routed by the window itself, see LoginModal.redirect.)

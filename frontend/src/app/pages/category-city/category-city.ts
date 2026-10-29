@@ -19,6 +19,7 @@ import { VendorService, Pairing } from '../../core/vendor.service';
 import { Vendor } from '../../core/vendor.models';
 import { CATEGORIES, categoryKey, cityName } from '../../core/catalog';
 import { cityDisplayEn, cityLocativeKa } from '../../core/city-name';
+import { formatGel } from '../../core/money';
 
 const JSON_LD_ID = 'landing-jsonld';
 
@@ -36,6 +37,7 @@ type LoadParams = { category: string; city: string };
   imports: [RouterLink, TranslatePipe, VendorCard],
   templateUrl: './category-city.html',
   styleUrl: './category-city.scss',
+  host: { class: 'theme-brand' },
 })
 export class CategoryCity implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
@@ -226,8 +228,7 @@ export class CategoryCity implements OnDestroy {
   }
 
   protected formatPrice(amount: number): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(amount) + ' ₾';
+    return formatGel(amount, this.lang.current());
   }
 
   // ---- SEO ----

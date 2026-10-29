@@ -1,6 +1,7 @@
 import { DOCUMENT, Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { safeStorageGet, safeStorageSet } from '../core/auth.service';
 import { DEFAULT_LANG, LANG_STORAGE_KEY, LangCode, SUPPORTED_LANGS } from './languages';
@@ -18,8 +19,10 @@ export class LanguageService {
   readonly current = signal<LangCode>(DEFAULT_LANG);
   readonly supported = SUPPORTED_LANGS;
 
-  /** Called once at app startup. Picks the stored language, else the default. */
-  init(): void {
+  /** Called once at app startup. Picks the stored language, else the default. English loads on
+   * demand (see StaticTranslateLoader), so startup waits for it: the first render is already in
+   * the visitor's language. */
+  init(): Promise<unknown> {
     // safeStorageGet: this runs in the app initializer — a SecurityError from
     // blocked storage here would abort bootstrap to a blank page.
     const stored = this.isBrowser
@@ -27,17 +30,19 @@ export class LanguageService {
       : null;
     const lang = stored && this.isSupported(stored) ? stored : DEFAULT_LANG;
     this.translate.addLangs(SUPPORTED_LANGS.map((l) => l.code));
-    this.use(lang);
+    return this.use(lang);
   }
 
-  use(lang: LangCode): void {
-    if (!this.isSupported(lang)) return;
-    this.translate.use(lang);
+  /** Settles once the language's strings are loaded. */
+  use(lang: LangCode): Promise<unknown> {
+    if (!this.isSupported(lang)) return Promise.resolve();
+    const loaded = firstValueFrom(this.translate.use(lang));
     this.current.set(lang);
     this.document.documentElement.lang = lang;
     if (this.isBrowser) {
       safeStorageSet(LANG_STORAGE_KEY, lang);
     }
+    return loaded;
   }
 
   private isSupported(lang: string): lang is LangCode {

@@ -7,7 +7,7 @@
 .fv-hero {
   background:
     radial-gradient(110% 90% at 90% 0%, rgba(184, 145, 84, 0.12), transparent 60%),
-    var(--color-surface-sunken);
+    var(--paper-deep);
   padding-block: var(--space-16) var(--space-16);
 
   @include bp.respond-to(md) {
@@ -20,7 +20,7 @@
 }
 
 .fv-hero__overline {
-  color: var(--color-action);
+  color: var(--ink);
 }
 
 .fv-hero__title {
@@ -33,7 +33,7 @@
 .fv-hero__sub {
   margin-top: var(--space-5);
   font-size: var(--fs-lead);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   max-width: 46ch;
 }
 
@@ -46,8 +46,13 @@
 
 .fv-hero__free {
   margin-top: var(--space-5);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   font-size: var(--fs-caption);
+}
+
+// `.section` is the home page's own class (scoped there), so the rhythm is declared here.
+.section {
+  padding-block: var(--space-16) var(--space-20);
 }
 
 .fv-how__title {
@@ -73,8 +78,8 @@
   width: 3rem;
   height: 3rem;
   border-radius: var(--radius-pill);
-  background: var(--color-brand-50);
-  color: var(--color-action);
+  background: var(--paper-deep);
+  color: var(--ink);
   font-family: var(--font-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-bold);
@@ -87,5 +92,5 @@
 
 .fv-step__body {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }

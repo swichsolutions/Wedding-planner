@@ -11,7 +11,7 @@
 }
 
 .ai-intro {
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   line-height: 1.5;
 
   p {
@@ -36,7 +36,7 @@
 
 .ai-filename {
   font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   overflow-wrap: anywhere;
 }
 
@@ -50,7 +50,7 @@
 .ai-note {
   margin: 0;
   font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 .ai-alert,
@@ -68,8 +68,8 @@
 }
 
 .ai-warn {
-  background: var(--color-surface-sunken);
-  color: var(--color-text-secondary);
+  background: var(--paper-deep);
+  color: var(--ink-700);
 }
 
 .ai-alert__title {
@@ -83,9 +83,9 @@
   display: grid;
   gap: var(--space-4);
   padding: var(--space-5);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  background: var(--paper-white, #fff);
 }
 
 .ai-summary__title {
@@ -110,13 +110,13 @@
     flex-direction: column;
     gap: var(--space-1);
     font-size: var(--fs-caption);
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
   }
 
   .num {
     font-size: var(--fs-h4);
     font-weight: var(--fw-semibold);
-    color: var(--color-text);
+    color: var(--ink);
   }
 
   .is-error .num {
@@ -159,10 +159,10 @@
   display: grid;
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--paper-line);
   border-left-width: 4px;
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  background: var(--paper-white, #fff);
 
   &.is-create,
   &.is-update {
@@ -170,7 +170,7 @@
   }
 
   &.is-skip {
-    border-left-color: var(--color-border);
+    border-left-color: var(--paper-line);
   }
 
   &.is-error {
@@ -187,7 +187,7 @@
 
 .ai-row__where {
   font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 .ai-row__name {
@@ -199,7 +199,7 @@
 .ai-row__sub {
   margin: 0;
   font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 .ai-badge {
@@ -208,8 +208,8 @@
   border-radius: var(--radius-pill);
   font-size: var(--fs-caption);
   font-weight: var(--fw-medium);
-  background: var(--color-surface-sunken);
-  color: var(--color-text-secondary);
+  background: var(--paper-deep);
+  color: var(--ink-700);
 
   &.is-create,
   &.is-update {
@@ -230,7 +230,7 @@
   gap: var(--space-1);
   font-size: var(--fs-caption);
   line-height: 1.5;
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 
   &.is-error {
     color: var(--color-warning-600);

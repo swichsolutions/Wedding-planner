@@ -26,6 +26,7 @@ import {
   imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   templateUrl: './account.html',
   styleUrl: './account.scss',
+  host: { class: 'theme-brand' },
 })
 export class Account implements OnInit {
   private readonly fb = inject(FormBuilder);

@@ -37,7 +37,6 @@ import { LoginModal } from './components/login-modal/login-modal';
 import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
 import { Toasts } from './components/toasts/toasts';
 import { ORGANIZER_PATHS, OrganizerNav } from './components/organizer-nav/organizer-nav';
-import { CATEGORIES } from './core/catalog';
 
 @Component({
   selector: 'app-root',
@@ -127,34 +126,12 @@ export class App {
     { initialValue: inject(PlatformLocation).pathname },
   );
   protected readonly chromeless = computed(() => this.currentUrl().startsWith('/w/'));
-  /** Pages already on the brand theme also get the themed header, footer and overlays, so
-   * the chrome doesn't switch fonts against the page. Home is first; others join as they're
-   * redesigned (CLAUDE.md "Putting a page on the theme"). */
-  protected readonly brandChrome = computed(() => {
-    const path = this.currentUrl().split(/[?#]/)[0];
-    const parts = path.split('/').filter(Boolean);
-    // A vendor profile: /{category}/{city}/{slug} with a known category slug.
-    const isProfile = parts.length === 3 && CATEGORIES.some((c) => c.slug === parts[0]);
-    return (
-      path === '/' ||
-      path === '/vendors' ||
-      path === '/schedules' ||
-      path === '/invitations' ||
-      path === '/invitations/find' ||
-      path === '/guides' ||
-      path.startsWith('/guides/') ||
-      isProfile ||
-      path.startsWith('/partner/') ||
-      ['/terms', '/privacy', '/forgot-password', '/reset-password', '/signup', '/planning', '/planning/start', '/planning/settings', '/planning/day', '/planning/tasks', '/planning/services', '/planning/invitation', '/budget', '/guests', '/seating'].includes(path)
-    );
-  });
   /** On one of the organizer's working pages (shows its inner menu to couples). */
   protected readonly inOrganizer = computed(() =>
     ORGANIZER_PATHS.includes(this.currentUrl().split(/[?#]/)[0]),
   );
 
-  /** The landing page runs on the brand theme (Mint & Peach + GF Aisi); the header and
-   * footer follow it there, and keep the default palette on every other page. */
+  /** The landing page: its header sits over the full-screen hero photo (see overlay). */
   protected readonly onHome = computed(() => this.currentUrl().split(/[?#]/)[0] === '/');
 
   /** On the landing page the header sits transparently over the full-screen hero photo
@@ -166,9 +143,21 @@ export class App {
     // account page, and not-found/error states all set it). Pages assert robots
     // in constructors or load handlers — both run after NavigationStart — so
     // clearing here lets every destination start indexable and re-assert as needed.
+    // Likewise the description: a page that doesn't set its own gets the site's default
+    // (index.html's), not the one the previous page left behind.
     const meta = inject(Meta);
+    const defaultDescription = meta.getTag("name='description'")?.content ?? '';
     this.router.events.subscribe((e) => {
-      if (e instanceof NavigationStart) meta.removeTag("name='robots'");
+      if (!(e instanceof NavigationStart)) return;
+      meta.removeTag("name='robots'");
+      if (defaultDescription) meta.updateTag({ name: 'description', content: defaultDescription });
+    });
+
+    // Every page is on the brand theme (CLAUDE.md), so it sits on <body>: pages, overlays and
+    // CDK drag previews (appended to body) all get it. A couple's invitation (/w/…) has its own
+    // design and fonts, so it stays off there.
+    effect(() => {
+      this.doc.body?.classList.toggle('theme-brand', !this.chromeless());
     });
 
     // The mobile menu is a full-screen sheet: lock page scroll while it is open.

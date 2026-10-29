@@ -348,6 +348,23 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   image).
 
 ### C2. Review passes
+- **Status (2026-10-29): first round done.** The `web-design-guidelines` and `impeccable` skills weren't
+  available, so axe-core (WCAG 2.1 A/AA + best practice) ran on 43 surfaces as visitor, couple,
+  vendor and admin, plus phone widths and screenshots. From 5 rule types on 9 pages to none, apart
+  from two accepted: the calligraphy design's decorative monogram in thumbnails, and axe not seeing
+  the photo behind the signed-out `/planning` hero. Fixes: home carousel dots; invitation designs'
+  muted text raised to 4.5:1 (9 of 14 designs), countdown and labels off the accent colour; links in
+  text charcoal and underlined; nested asides; the dashboard's progress label; the warning badge
+  colour; long arrow links wrap on phones. Look: every page is on the brand theme now (login,
+  about, contact, 404, category × city, for vendors, account, vendor dashboard, admin), applied on
+  `<body>`; no pink buttons left; ivory page background. SEO/SSR: every public page arrives
+  server-rendered (title, one h1, content); numbers and dates format the same on server and browser
+  (`core/money.ts`, `core/dates.ts`); about and contact have their own descriptions; login, sign-up,
+  vendor sign-up, dashboard and admin are noindex; descriptions no longer carry over between pages.
+  Speed: English loads on demand (first load 860 → 778 kB, 155 kB transferred). Code review (high)
+  of the C2 changes: 9 findings, all fixed; the committed B1–B7 code was only spot-checked (a full
+  review of the branch is the `max`/`ultra` level). Left for C3: canonical links and the sitemap
+  line in robots.txt need the domain.
 - `web-design-guidelines` (accessibility) and `impeccable` (generic look) per surface, code
   review, tests, SSR and SEO checks. Nothing needed from you.
 

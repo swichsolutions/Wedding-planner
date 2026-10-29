@@ -21,6 +21,7 @@ import { ToastService } from '../../core/toast.service';
 import { VendorService } from '../../core/vendor.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { LanguageService } from '../../i18n/language.service';
+import { formatGel } from '../../core/money';
 
 type Filter = 'all' | ServiceStatus;
 
@@ -325,8 +326,7 @@ export class Services {
   }
 
   protected format(n: number | null): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(Math.round(n ?? 0)) + ' ₾';
+    return formatGel(n, this.lang.current());
   }
 
   private replace(saved: PlanService): void {

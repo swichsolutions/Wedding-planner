@@ -97,7 +97,7 @@
             <p class="auth__error" role="alert">{{ 'account.saveError' | translate }}</p>
           }
 
-          <button class="btn btn--pink" type="submit" [disabled]="saving()">
+          <button class="btn btn--primary" type="submit" [disabled]="saving()">
             {{ (account()?.hasPassword ? 'account.changePwCta' : 'account.setPwCta') | translate }}
           </button>
         </form>

@@ -12,8 +12,8 @@
 .dash__loading {
   padding: var(--space-8);
   border-radius: var(--radius-lg);
-  background: var(--color-surface-sunken);
-  color: var(--color-text-secondary);
+  background: var(--paper-deep);
+  color: var(--ink-700);
 }
 
 // ============================ SHELL: sidebar + main ============================
@@ -30,8 +30,8 @@
 
 // ------------------------------- SIDEBAR -------------------------------
 .dash-side {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--paper-white, #fff);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   padding: var(--space-5);
@@ -60,7 +60,7 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: var(--color-brand-50);
+  background: var(--paper-deep);
 
   img {
     width: 100%;
@@ -73,7 +73,7 @@
   font-family: var(--font-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-semibold);
-  color: var(--color-brand-700);
+  color: var(--ink);
   text-transform: uppercase;
 }
 
@@ -91,7 +91,7 @@
 .dash-id__cat {
   margin: var(--space-1) 0 0;
   font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 // an admin editing a vendor's profile (/admin/vendors/:id)
@@ -99,10 +99,10 @@
   margin: 0;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  background: var(--color-brand-50);
+  background: var(--paper-deep);
   font-size: var(--fs-caption);
   line-height: 1.5;
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 // status chip
@@ -149,7 +149,7 @@
     background: none;
     font: inherit;
     font-weight: var(--fw-medium);
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
     cursor: pointer;
     transition: background var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out);
@@ -159,13 +159,13 @@
     }
 
     &:hover {
-      background: var(--color-ink-100);
-      color: var(--color-text);
+      background: var(--paper-deep);
+      color: var(--ink);
     }
 
     &.is-active {
-      background: var(--color-brand-50);
-      color: var(--color-brand-700);
+      background: var(--paper-deep);
+      color: var(--ink);
       font-weight: var(--fw-semibold);
     }
   }
@@ -179,14 +179,14 @@
   display: inline-grid;
   place-items: center;
   border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
-  color: var(--color-text-secondary);
+  background: var(--paper-deep);
+  color: var(--ink-700);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
 
   &.is-unread {
-    background: var(--color-brand-500);
+    background: var(--ink);
     color: #fff;
   }
 }
@@ -197,7 +197,7 @@
   flex-direction: column;
   gap: var(--space-1);
   padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--paper-line);
 }
 
 .dash-link {
@@ -206,21 +206,21 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  color: var(--color-text);
+  color: var(--ink);
   font-size: var(--fs-caption);
   font-weight: var(--fw-medium);
 
   svg {
     flex: none;
-    color: var(--color-text-muted);
+    color: var(--ink-500);
   }
 
   &:hover {
-    background: var(--color-ink-100);
-    color: var(--color-brand-700);
+    background: var(--paper-deep);
+    color: var(--ink);
 
     svg {
-      color: var(--color-brand-600);
+      color: var(--ink-700);
     }
   }
 }
@@ -231,8 +231,8 @@
 }
 
 .panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--paper-white, #fff);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   padding: var(--space-6);
@@ -276,14 +276,14 @@
 
 .stat {
   padding: var(--space-5);
-  background: var(--color-surface-sunken);
+  background: var(--paper-deep);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 
   &.is-alert {
-    background: var(--color-brand-50);
+    background: var(--paper-deep);
   }
 }
 
@@ -294,21 +294,21 @@
   line-height: 1;
 
   .stat.is-alert & {
-    color: var(--color-brand-700);
+    color: var(--ink);
   }
 }
 
 .stat__label {
   font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 // ---- overview: profile strength ----
 .strength {
   padding: var(--space-6);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
-  background: var(--color-canvas);
+  background: var(--paper);
 }
 
 .strength__head {
@@ -326,13 +326,13 @@
 
 .strength__count {
   font-weight: var(--fw-semibold);
-  color: var(--color-brand-700);
+  color: var(--ink);
 }
 
 .strength__bar {
   height: 8px;
   border-radius: var(--radius-pill);
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   overflow: hidden;
   margin-bottom: var(--space-5);
 }
@@ -341,7 +341,7 @@
   display: block;
   height: 100%;
   border-radius: var(--radius-pill);
-  background: var(--color-brand-500);
+  background: var(--ink);
   transition: width var(--dur-slow) var(--ease-out);
 }
 
@@ -358,10 +358,10 @@
   align-items: center;
   gap: var(--space-3);
   font-size: var(--fs-body);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 
   &.is-done {
-    color: var(--color-text-muted);
+    color: var(--ink-500);
   }
 }
 
@@ -369,7 +369,7 @@
   flex: none;
   width: 1.15rem;
   height: 1.15rem;
-  border: 1.5px solid var(--color-border-strong);
+  border: 1.5px solid var(--paper-line-strong);
   border-radius: var(--radius-pill);
   transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 
@@ -387,7 +387,7 @@
   background: none;
   padding: 0;
   font: inherit;
-  color: var(--color-brand-700);
+  color: var(--ink);
   font-weight: var(--fw-medium);
   cursor: pointer;
   text-align: start;
@@ -410,10 +410,10 @@
   textarea {
     width: 100%;
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--paper-line-strong);
     border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-text);
+    background: var(--paper-white, #fff);
+    color: var(--ink);
     font: inherit;
     resize: vertical;
   }
@@ -438,7 +438,7 @@
 .dash__set {
   margin: var(--space-6) 0;
   padding: var(--space-5);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
   display: grid;
   gap: var(--space-4);
@@ -454,7 +454,7 @@
   margin: 0;
   font-size: var(--fs-caption);
   line-height: 1.5;
-  color: var(--color-text-muted);
+  color: var(--ink-500);
 }
 
 .dash__checks {
@@ -467,7 +467,7 @@
   flex-basis: 100%;
   font-size: var(--fs-caption);
   font-weight: var(--fw-medium);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 .dash__check {
@@ -489,7 +489,7 @@
   gap: var(--space-3);
   padding: var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
+  background: var(--paper-deep);
 }
 
 .dash__link {
@@ -516,7 +516,7 @@
 
 .dash__empty {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
 }
 
 // ---- messages / inbox ----
@@ -530,13 +530,13 @@
 
 .inbox__item {
   padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--paper-white, #fff);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
 
   &.is-unread {
-    background: var(--color-brand-50);
-    border-color: var(--color-brand-200);
+    background: var(--paper-deep);
+    border-color: var(--peach);
   }
 }
 
@@ -553,7 +553,7 @@
   }
 
   time {
-    color: var(--color-text-muted);
+    color: var(--ink-500);
     font-size: var(--fs-caption);
     white-space: nowrap;
   }
@@ -561,7 +561,7 @@
 
 .inbox__body {
   margin: 0 0 var(--space-3);
-  color: var(--color-text);
+  color: var(--ink);
   // The couple's message renders as plain text: keep their line breaks, and
   // wrap long unbroken strings (pasted URLs) instead of overflowing the card.
   white-space: pre-line;
@@ -583,8 +583,8 @@
 
 .inbox__read {
   margin-inline-start: auto;
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface);
+  border: 1px solid var(--paper-line-strong);
+  background: var(--paper-white, #fff);
   border-radius: var(--radius-md);
   padding: var(--space-1) var(--space-3);
   cursor: pointer;
@@ -592,7 +592,7 @@
   font-size: var(--fs-caption);
 
   &:hover {
-    background: var(--color-ink-100);
+    background: var(--paper-deep);
   }
 }
 
@@ -603,13 +603,13 @@
 
 .photos__hint {
   margin: 0 0 var(--space-5);
-  color: var(--color-text-muted);
+  color: var(--ink-500);
   font-size: var(--fs-caption);
 }
 
 .photos__status {
   margin: 0 0 var(--space-4);
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   font-size: var(--fs-caption);
 }
 
@@ -624,15 +624,15 @@
 
 .photos__reorder-hint {
   margin: 0 0 var(--space-4);
-  color: var(--color-text-muted);
+  color: var(--ink-500);
   font-size: var(--fs-caption);
 }
 
 .photo-card {
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--paper-white, #fff);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
   overflow: hidden;
 
@@ -681,7 +681,7 @@
     right: var(--space-2);
     padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-pill);
-    background: var(--color-brand-500);
+    background: var(--ink);
     color: #fff;
     font-size: var(--fs-caption);
     font-weight: var(--fw-semibold);
@@ -698,7 +698,7 @@
     width: 100%;
     height: 38px;
     padding: 0 var(--space-3);
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--paper-line-strong);
     border-radius: var(--radius-md);
     font: inherit;
     font-size: var(--fs-caption);
@@ -709,7 +709,7 @@
     align-items: center;
     gap: var(--space-2);
     font-size: var(--fs-caption);
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
   }
 
   &__actions {
@@ -720,8 +720,8 @@
     button {
       min-width: 32px;
       height: 32px;
-      border: 1px solid var(--color-border-strong);
-      background: var(--color-surface);
+      border: 1px solid var(--paper-line-strong);
+      background: var(--paper-white, #fff);
       border-radius: var(--radius-md);
       cursor: pointer;
       font: inherit;

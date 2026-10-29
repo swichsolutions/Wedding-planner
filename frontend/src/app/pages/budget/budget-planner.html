@@ -181,7 +181,7 @@
             @if (categoryItems().length === 0) {
               <div class="bguide__empty">
                 <p>{{ 'budgetPage.noItemsInCategory' | translate }}</p>
-                <button type="button" class="btn btn--pink" [disabled]="guidedAddBusy()"
+                <button type="button" class="btn btn--primary" [disabled]="guidedAddBusy()"
                   (click)="addFirstVendor(cat)">
                   {{ 'budgetPage.addFirstVendor' | translate }}
                 </button>
@@ -318,7 +318,7 @@
             <form class="bguide__add" (submit)="$event.preventDefault(); addGuidedItem(gName); gName.value = ''">
               <input #gName type="text" maxlength="200" autocomplete="off"
                 [attr.placeholder]="'budgetPage.addAnotherPlaceholder' | translate: { category: categoryLabel(cat) | translate }" />
-              <button type="submit" class="btn btn--pink" [disabled]="guidedAddBusy()">
+              <button type="submit" class="btn btn--primary" [disabled]="guidedAddBusy()">
                 {{ 'budgetPage.addAnother' | translate }}
               </button>
             </form>
@@ -356,7 +356,7 @@
               autocomplete="off" placeholder="0" />
           </div>
           <div class="badd__actions">
-            <button type="submit" class="btn btn--pink" [disabled]="addBusy()">{{ 'budgetPage.add' | translate }}</button>
+            <button type="submit" class="btn btn--primary" [disabled]="addBusy()">{{ 'budgetPage.add' | translate }}</button>
             <button type="button" class="btn btn--ghost" (click)="showAdd.set(false)">{{ 'budgetPage.cancel' | translate }}</button>
           </div>
         </form>
@@ -599,15 +599,15 @@
     <p class="budget__note">{{ 'budgetPage.note' | translate }}</p>
 
     @if (!otherRole()) {
-      <aside class="bcta">
+      <div class="bcta">
         <div class="bcta__copy">
           <h2>{{ 'budgetPage.guestCtaTitle' | translate }}</h2>
           <p>{{ 'budgetPage.guestCtaBody' | translate }}</p>
         </div>
-        <button type="button" class="btn btn--pink" (click)="goSignupWithDraft()">
+        <button type="button" class="btn btn--primary" (click)="goSignupWithDraft()">
           {{ 'budgetPage.guestCtaBtn' | translate }}
         </button>
-      </aside>
+      </div>
     }
 
     <!-- the rest of the public landing (features, tips, FAQ, final CTA). The sign-up

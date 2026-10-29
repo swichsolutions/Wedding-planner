@@ -65,7 +65,7 @@
   // ---- Semantic -------------------------------------------------------------
   --success-600: #2f6b4a;
   --success-100: #dfeee5;
-  --warning-600: #9c6a12;
+  --warning-600: #8a5d10; // 4.77:1 on --warning-100 (was #9c6a12, 3.89:1 — under WCAG AA)
   --warning-100: #f6e9cc;
   --danger-600:  #a8311f;
   --danger-100:  #f6dcd6;
@@ -73,7 +73,7 @@
   --info-100:    #dde9f0;
 
   // ---- Semantic aliases (use these in components) ---------------------------
-  --color-bg:              var(--paper);
+  --color-bg:              var(--ivory); // every page is on the brand theme: the page behind it is ivory
   --color-surface:         var(--paper-white);
   --color-surface-sunken:  var(--paper-deep);
   --color-text:            var(--ink);
@@ -167,10 +167,10 @@
   --ring: 0 0 0 2px var(--paper), 0 0 0 4px var(--color-focus);
 
   // ---- Layout ---------------------------------------------------------------
-  --container-max: 78rem;   // 1248
+  --container-max: 120rem;  // 1920: pages use wide screens (only bigger screens get side space)
   --container-wide: 92rem;
   --measure: 62ch;
-  --gutter: var(--space-4); // 16px phone gutter
+  --gutter: clamp(1rem, 4vw, 5rem); // side margin: 16px on phones, growing to 80px on wide screens
   --hdr-h: 68px;            // header bar height (the hero pulls up under it)
 
   // ---- Motion ---------------------------------------------------------------

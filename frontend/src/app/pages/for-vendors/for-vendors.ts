@@ -8,6 +8,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
   imports: [RouterLink, TranslatePipe],
   templateUrl: './for-vendors.html',
   styleUrl: './for-vendors.scss',
+  host: { class: 'theme-brand' },
 })
 export class ForVendors {
   protected readonly steps = [

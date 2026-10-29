@@ -178,9 +178,11 @@
         </ul>
       </div>
 
-      <div class="orbit__dots" role="tablist" [attr.aria-label]="'home.find.title' | translate">
+      <!-- Carousel controls (a group, not tabs: there are no tab panels); the shown one is current. -->
+      <div class="orbit__dots" role="group" [attr.aria-label]="'home.find.title' | translate">
         @for (g of categoryRows(); track g.key; let i = $index) {
           <button type="button" class="orbit__dot" [class.is-active]="orbitActive() === i"
+            [attr.aria-current]="orbitActive() === i ? 'true' : null"
             [attr.aria-label]="'home.find.cat.' + g.key + '.name' | translate" (click)="orbitGo(i)"></button>
         }
       </div>

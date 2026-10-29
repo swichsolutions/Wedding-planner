@@ -10,7 +10,7 @@ import {
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { EMPTY, catchError, concatMap, finalize, from, tap } from 'rxjs';
 
@@ -42,6 +42,7 @@ import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { NotificationService } from '../../core/notification.service';
+import { formatDate } from '../../core/dates';
 
 type DashSection = 'overview' | 'profile' | 'photos' | 'messages';
 
@@ -50,6 +51,7 @@ type DashSection = 'overview' | 'profile' | 'photos' | 'messages';
   imports: [ReactiveFormsModule, RouterLink, TranslatePipe, CdkDropList, CdkDrag, CdkDragHandle],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
+  host: { class: 'theme-brand' },
 })
 export class Dashboard {
   private readonly fb = inject(FormBuilder);
@@ -187,6 +189,8 @@ export class Dashboard {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant(this.adminMode ? 'dash.adminTitle' : 'dash.title')} | ${t.instant('brand.name')}`);
+    // Private: a vendor's own dashboard (or the admin's view of it).
+    inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
     // Editing any field makes the "Saved" badge a lie — clear it (and the
     // WhatsApp error, which the vendor is presumably correcting) on any change.
@@ -543,9 +547,9 @@ export class Dashboard {
     });
   }
 
+  /** Georgian month names spelled out, the same on server and browser (core/dates). */
   protected formatDate(iso: string): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(iso));
+    return formatDate(iso, this.lang.current(), 'medium');
   }
 
   protected setSection(section: DashSection): void {

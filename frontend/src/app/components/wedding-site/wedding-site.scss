@@ -17,6 +17,9 @@
   --wsbg: #fdfbf7;
   --wsink: #22201d;
   --wsaccent: #a08b5f;
+  // Muted text must stay readable (WCAG AA, 4.5:1) on the design's background: each design's
+  // muted opacity is the lowest that passes on its background — on a gradient, its darkest stop
+  // (measured in a browser, 2026-10-29).
   --wsmuted: rgba(34, 32, 29, 0.62);
   --wsfont: var(--font-display);
   --wsradius: 10px;
@@ -118,12 +121,14 @@
   font-size: 0.92rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--wsaccent);
+  // Small text: the muted colour (the accent is too light for it in several designs).
+  color: var(--wsmuted);
 
   .num {
     font-family: var(--wsfont);
     font-size: 1.4rem;
     font-weight: var(--fw-bold);
+    color: var(--wsink);
   }
 }
 
@@ -171,7 +176,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--wsaccent);
+  color: var(--wsmuted);
 }
 
 .ws__detail-val {
@@ -909,7 +914,7 @@
   --wsbg: #fcfaf5;
   --wsink: #2b2724;
   --wsaccent: #8a7e72;
-  --wsmuted: rgba(43, 39, 36, 0.6);
+  --wsmuted: rgba(43, 39, 36, 0.65);
   --wsname-weight: 250;
   --wsname-scale: 1.12;
 
@@ -963,7 +968,7 @@
   --wsbg: #f2fafa;
   --wsink: #274954;
   --wsaccent: #4f93a3;
-  --wsmuted: rgba(39, 73, 84, 0.6);
+  --wsmuted: rgba(39, 73, 84, 0.75);
   --wsfont: var(--font-body);
   --wsname-weight: 300;
   --wsname-style: normal;
@@ -982,7 +987,7 @@
   --wsbg: #ffffff;
   --wsink: #111111;
   --wsaccent: #111111;
-  --wsmuted: rgba(17, 17, 17, 0.55);
+  --wsmuted: rgba(17, 17, 17, 0.58);
   --wsradius: 0;
   --wsfont: var(--font-body);
   --wsname-weight: 200;
@@ -1002,7 +1007,7 @@
   --wsbg: #fbeeea;
   --wsink: #5d3a34;
   --wsaccent: #c26d54;
-  --wsmuted: rgba(93, 58, 52, 0.6);
+  --wsmuted: rgba(93, 58, 52, 0.76);
   --wsfont: var(--font-body);
   --wsname-weight: 600;
   --wsname-track: 0;
@@ -1018,7 +1023,7 @@
   --wsbg: #e9ede2;
   --wsink: #3c4636;
   --wsaccent: #75855f;
-  --wsmuted: rgba(60, 70, 54, 0.62);
+  --wsmuted: rgba(60, 70, 54, 0.78);
   --wsname-weight: 500;
   --wsname-style: normal;
   --wsname-track: 0;
@@ -1060,7 +1065,7 @@
   --wspaper: #fdf7f1;
   --wsink: #6a4632;
   --wsaccent: #d07a4a;
-  --wsmuted: rgba(106, 70, 50, 0.6);
+  --wsmuted: rgba(106, 70, 50, 0.86); // passes on the darkest stop of the gradient (#fddcc0)
   --wsfont: var(--font-body);
   --wsname-weight: 800;
   --wsname-style: normal;
@@ -1117,7 +1122,7 @@
   --wsbg: #802b26;
   --wsink: #f6e8d4;
   --wsaccent: #e0b15c;
-  --wsmuted: rgba(246, 232, 212, 0.62);
+  --wsmuted: rgba(246, 232, 212, 0.71);
   --wsfont: var(--font-body);
   --wsname-weight: 900;
   --wsname-style: normal;
@@ -1141,7 +1146,7 @@
   --wsbg: #f4f1eb;
   --wsink: #45413b;
   --wsaccent: #9d968a;
-  --wsmuted: rgba(69, 65, 59, 0.58);
+  --wsmuted: rgba(69, 65, 59, 0.76);
   --wsname-weight: 250;
   --wsname-scale: 1.1;
 
@@ -1160,7 +1165,7 @@
   --wsbg: #f7ead6;
   --wsink: #4c3526;
   --wsaccent: #3e7d76;
-  --wsmuted: rgba(76, 53, 38, 0.6);
+  --wsmuted: rgba(76, 53, 38, 0.74);
   --wsname-weight: 500;
   --wsname-style: normal;
   --wsname-track: 0.02em;

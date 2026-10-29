@@ -4,8 +4,8 @@
 @use './styles/components';
 @use './styles/brand';
 
-// Brand theme (Mint & Peach + GF Aisi): the home page host, and the header and footer
-// while on the home page. One global class, so the tokens ship once.
+// The brand theme (styles/_brand.scss). App puts it on <body> for every page except a couple's
+// invitation (/w/…); pages also carry it on their host, and the header and footer on themselves.
 .theme-brand {
   @include brand.theme;
 

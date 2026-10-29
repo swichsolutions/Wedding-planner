@@ -46,6 +46,7 @@ import { VendorService } from '../../core/vendor.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { FeatureLanding } from '../../components/feature-landing/feature-landing';
 import { LanguageService } from '../../i18n/language.service';
+import { formatGel } from '../../core/money';
 
 type DrawerKind = 'vendor' | 'details' | 'payments';
 type DetailsTrigger = 'bell' | 'note';
@@ -1063,8 +1064,7 @@ export class BudgetPlanner {
   }
 
   protected format(n: number | null): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(Math.round(n ?? 0)) + ' ₾';
+    return formatGel(n, this.lang.current());
   }
 
   /** Width (0–100) of a summary meter bar relative to the total budget. */

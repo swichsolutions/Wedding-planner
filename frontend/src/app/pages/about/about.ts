@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -13,10 +13,13 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
       <p>{{ 'about.body3' | translate }}</p>
     </section>
   `,
+  host: { class: 'theme-brand' },
 })
 export class About {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('about.title')} | ${t.instant('brand.name')}`);
+    // The page's own first paragraph, not the site-wide default.
+    inject(Meta).updateTag({ name: 'description', content: t.instant('about.body1') });
   }
 }

@@ -7,6 +7,7 @@ import { Vendor } from '../../core/vendor.models';
 import { WishlistService } from '../../core/wishlist.service';
 import { BudgetVendorsService } from '../../core/budget-vendors.service';
 import { AuthService } from '../../core/auth.service';
+import { formatGel } from '../../core/money';
 
 /** Photo-forward vendor card — the workhorse pattern reused on home + browse. */
 @Component({
@@ -55,7 +56,6 @@ export class VendorCard {
   }
 
   protected formatPrice(amount: number): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(amount) + ' ₾';
+    return formatGel(amount, this.lang.current());
   }
 }

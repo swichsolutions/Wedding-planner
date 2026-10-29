@@ -32,7 +32,7 @@
 .admin__tabs {
   display: flex;
   gap: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--paper-line);
 
   button {
     padding: var(--space-2) 0;
@@ -42,12 +42,12 @@
     background: none;
     font: inherit;
     font-weight: var(--fw-medium);
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
     cursor: pointer;
 
     &[aria-current='page'] {
-      color: var(--color-text);
-      border-bottom-color: var(--color-text);
+      color: var(--ink);
+      border-bottom-color: var(--ink);
     }
   }
 }
@@ -60,7 +60,7 @@
   display: inline-flex;
   gap: var(--space-1);
   padding: 3px;
-  background: var(--color-ink-100);
+  background: var(--paper-deep);
   border-radius: var(--radius-pill);
 
   button {
@@ -70,13 +70,13 @@
     font: inherit;
     font-size: var(--fs-caption);
     font-weight: var(--fw-medium);
-    color: var(--color-text-secondary);
+    color: var(--ink-700);
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-pill);
 
     &[aria-pressed='true'] {
-      background: var(--color-surface);
-      color: var(--color-text);
+      background: var(--paper-white, #fff);
+      color: var(--ink);
       box-shadow: var(--shadow-xs);
     }
   }
@@ -86,8 +86,8 @@
 .admin__empty {
   padding: var(--space-8);
   border-radius: var(--radius-lg);
-  background: var(--color-surface-sunken);
-  color: var(--color-text-secondary);
+  background: var(--paper-deep);
+  color: var(--ink-700);
 }
 
 .admin__list {
@@ -102,8 +102,8 @@
   display: grid;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--paper-white, #fff);
+  border: 1px solid var(--paper-line);
   border-radius: var(--radius-lg);
 
   @include bp.respond-to(md) {
@@ -121,7 +121,7 @@
 }
 
 .admin__sub {
-  color: var(--color-text-secondary);
+  color: var(--ink-700);
   font-size: var(--fs-caption);
 }
 
@@ -145,13 +145,13 @@
   }
 
   &--feat {
-    background: var(--color-gold-100);
-    color: var(--color-gold-600);
+    background: var(--peach);
+    color: var(--ink);
   }
 
   &--plain {
-    background: var(--color-surface-sunken);
-    color: var(--color-text-secondary);
+    background: var(--paper-deep);
+    color: var(--ink-700);
   }
 }
 

@@ -6,9 +6,9 @@
   </header>
 
   @if (failed()) {
-    <p class="gd__note container" role="alert">{{ 'guides.loadError' | translate }}</p>
+    <div class="container"><p class="gd__note" role="alert">{{ 'guides.loadError' | translate }}</p></div>
   } @else if (empty()) {
-    <p class="gd__note container">{{ 'guides.hubEmpty' | translate }}</p>
+    <div class="container"><p class="gd__note">{{ 'guides.hubEmpty' | translate }}</p></div>
   }
 
   @if (articles().length) {

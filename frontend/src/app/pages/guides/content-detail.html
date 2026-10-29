@@ -2,7 +2,7 @@
   <app-not-found />
 } @else if (failed()) {
   <div class="gd">
-    <p class="gd__note container" role="alert">{{ 'guides.loadError' | translate }}</p>
+    <div class="container"><p class="gd__note" role="alert">{{ 'guides.loadError' | translate }}</p></div>
   </div>
 } @else if (page(); as p) {
   <article class="gd cd" [class.cd--idea]="kind === 'inspiration'">

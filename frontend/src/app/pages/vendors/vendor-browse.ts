@@ -22,6 +22,7 @@ import {
   stylesFor,
 } from '../../core/catalog';
 import { LanguageService } from '../../i18n/language.service';
+import { formatGel } from '../../core/money';
 
 /** Max-price options per price unit (a venue's 80 ₾ is per guest; a photographer's 1500 per event). */
 const PRICE_BUCKETS: Record<string, number[]> = {
@@ -209,8 +210,7 @@ export class VendorBrowse {
   }
 
   protected formatPrice(amount: number): string {
-    const locale = this.lang.current() === 'en' ? 'en-US' : 'ka-GE';
-    return new Intl.NumberFormat(locale).format(amount) + ' ₾';
+    return formatGel(amount, this.lang.current());
   }
 
   private currentParams(): Params {

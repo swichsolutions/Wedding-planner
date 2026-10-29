@@ -63,7 +63,7 @@
         @if (error()) {
           <p class="auth__error" role="alert">{{ 'auth.invalidCredentials' | translate }}</p>
         }
-        <button class="btn btn--pink lm-submit" type="submit" [disabled]="loading()">
+        <button class="btn btn--primary lm-submit" type="submit" [disabled]="loading()">
           {{ 'auth.signIn' | translate }}
         </button>
       </form>

@@ -127,8 +127,9 @@ generous whitespace, mobile-first. Vendor portfolios are the showcase — invest
 
 ### Brand palette & type (decided 2026-10-12 by Beka + Taso, the designer; supersedes the PDF brandbook)
 Tokens live in `frontend/src/styles/_tokens.scss`, and the theme lives in `_brand.scss`.
-The theme is applied with the `.theme-brand` class, so far only on the home page and its
-header, footer and overlays. New or redesigned pages should follow the same rules:
+The theme is applied with the `.theme-brand` class. Since C2 (2026-10-29) every page is on it: App
+puts it on `<body>` (so overlays and drag previews get it too) everywhere except a couple's
+invitation at `/w/…`, which keeps its own design. New pages follow the same rules:
 - **Large backgrounds:** always ivory `#FAF7F2`. White `#FFF` is for panels and forms.
 - **Warm charcoal `#302B2D`:** text, cards and dark surfaces (footer, scrims). Secondary
   text `#585454`, muted text `#6d6868`, small fills `#f0ece6`.
@@ -140,6 +141,11 @@ header, footer and overlays. New or redesigned pages should follow the same rule
 - **Type:** GF Aisi 2025 **Mt** (capitals) only for headings and large text;
   GF Aisi 2025 **Nus** Medium (lowercase, `size-adjust: 120%`) for all other text.
   Nus needs line-height ≥ ~1.4 on wrapping text.
+- **Width:** pages fill wide screens (decided 2026-10-29). Use `.container` (up to
+  `--container-max`, 1920px, with `--gutter` at the sides); don't cap a whole page at a narrow
+  max-width. Only running text keeps a readable line length (~46rem); on wide screens put
+  side-by-side columns next to it rather than empty space. Short pages still end with the footer at
+  the bottom of the window (App is a flex column).
 - **Putting a page on the theme:** add `host: { class: 'theme-brand' }` to the page component
   (see `pages/home/home.ts`). Style it with the v2 tokens the theme re-points: `--paper`,
   `--paper-deep`, `--ink`, `--spruce`, `--color-action`, `--font-display`, `--font-body`. The

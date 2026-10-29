@@ -26,11 +26,11 @@
         @if (!otherRole()) {
           <div class="fl-hero__cta">
             @if (act) {
-              <button type="button" class="btn btn--pink btn--pill" (click)="act()">
+              <button type="button" class="btn btn--primary btn--pill" (click)="act()">
                 {{ 'featureLanding.signupFree' | translate }}
               </button>
             } @else {
-              <a class="btn btn--pink btn--pill" routerLink="/signup">{{ 'featureLanding.signupFree' | translate }}</a>
+              <a class="btn btn--primary btn--pill" routerLink="/signup">{{ 'featureLanding.signupFree' | translate }}</a>
             }
             <a class="btn btn--ghost btn--pill" routerLink="/login">{{ 'featureLanding.login' | translate }}</a>
           </div>
@@ -105,11 +105,11 @@
           <p>{{ p + '.finalText' | translate }}</p>
         </div>
         @if (act) {
-          <button type="button" class="btn btn--pink btn--pill" (click)="act()">
+          <button type="button" class="btn btn--primary btn--pill" (click)="act()">
             {{ 'featureLanding.signupFree' | translate }}
           </button>
         } @else {
-          <a class="btn btn--pink btn--pill" routerLink="/signup">{{ 'featureLanding.signupFree' | translate }}</a>
+          <a class="btn btn--primary btn--pill" routerLink="/signup">{{ 'featureLanding.signupFree' | translate }}</a>
         }
       </div>
     </section>

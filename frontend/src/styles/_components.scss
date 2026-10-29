@@ -160,7 +160,8 @@
   gap: var(--space-2);
   font-weight: var(--fw-semibold);
   color: var(--color-action);
-  white-space: nowrap;
+  // Wraps when it must (a long „ნახე ყველა …“ ran off phone screens); the arrow stays at the end.
+  max-width: 100%;
 
   &::after {
     content: '→';
@@ -187,6 +188,28 @@
   h1 {
     margin: 0 0 var(--space-2);
     font-size: var(--fs-h3);
+  }
+}
+
+// Wide screens: a photo beside the form instead of a lone card in the middle. Only the
+// section-level pages (sign in, sign up, forgot / reset password); the vendor sign-up has its
+// own photo collage. The photo is decoration, so it's a CSS background.
+@media (min-width: 1024px) {
+  section.auth {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(24rem, 30rem);
+    gap: clamp(2rem, 5vw, 6rem);
+    align-items: center;
+    max-width: var(--container-max);
+    padding-inline: var(--gutter);
+
+    &::before {
+      content: '';
+      align-self: stretch;
+      min-height: 34rem;
+      border-radius: 28px;
+      background: url('/media/hero-tall.webp') center 60% / cover no-repeat;
+    }
   }
 }
 
@@ -348,6 +371,12 @@
   text-align: center;
 }
 
+// The link in "no account yet? …" must not be marked by colour alone (WCAG 1.4.1).
+.auth__alt a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 // ---- Simple prose page (about / contact / 404). ----
 .static-page {
   max-width: 46rem;
@@ -369,6 +398,31 @@
 
     .btn {
       margin-top: var(--space-4);
+    }
+  }
+}
+
+// Wide screens: the title on the left, the text on the right at a readable width, so a text
+// page uses the screen without stretching its lines.
+@media (min-width: 1024px) {
+  .static-page:not(.static-page--center) {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 8rem);
+    align-items: start;
+    max-width: var(--container-max);
+    padding-inline: var(--gutter);
+
+    > h1 {
+      grid-column: 1;
+      grid-row: 1 / span 40;
+      position: sticky;
+      top: calc(var(--hdr-h) + var(--space-8));
+    }
+
+    > :not(h1) {
+      grid-column: 2;
+      max-width: 46rem;
     }
   }
 }

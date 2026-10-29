@@ -1,7 +1,7 @@
 import { Component, ElementRef, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor, safeReturnUrl } from '../../core/auth.service';
@@ -42,7 +42,7 @@ import { focusFirstInvalid } from '../../core/forms';
           @if (error()) {
             <p class="auth__error" role="alert">{{ 'auth.invalidCredentials' | translate }}</p>
           }
-          <button class="btn btn--pink" type="submit" [disabled]="loading()">
+          <button class="btn btn--primary" type="submit" [disabled]="loading()">
             {{ 'auth.signIn' | translate }}
           </button>
         </form>
@@ -52,6 +52,7 @@ import { focusFirstInvalid } from '../../core/forms';
       </div>
     </section>
   `,
+  host: { class: 'theme-brand' },
 })
 export class Login {
   private readonly fb = inject(FormBuilder);
@@ -77,6 +78,8 @@ export class Login {
   constructor() {
     const t = inject(TranslateService);
     inject(Title).setTitle(`${t.instant('auth.loginTitle')} | ${t.instant('brand.name')}`);
+    // A sign-in form has nothing to rank for.
+    inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
     // Signed-in users have no business here — whether they arrived signed in or
     // signed in mid-page via the navbar modal (which would otherwise strand them on

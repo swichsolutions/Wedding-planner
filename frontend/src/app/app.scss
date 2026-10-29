@@ -1,7 +1,15 @@
 @use 'breakpoints' as bp;
 
+// The page area fills the window, so on a short page the footer still sits at the bottom
+// instead of floating up with empty ivory below it.
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+main {
+  flex: 1 0 auto;
 }
 
 // ---- skip link (visible on focus) ----

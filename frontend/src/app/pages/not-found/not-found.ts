@@ -13,6 +13,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
       <a class="btn btn--primary" routerLink="/">{{ 'notFound.home' | translate }}</a>
     </section>
   `,
+  host: { class: 'theme-brand' },
 })
 export class NotFound {
   constructor() {
