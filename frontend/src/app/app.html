@@ -131,7 +131,8 @@
   </div>
 
   <div class="container ftr__bottom">
-    <span>© {{ year }} <span translate="no">{{ 'brand.name' | translate }}</span> · {{ 'footer.rights' | translate }}</span>
+    <span>© {{ year }} <span translate="no">{{ 'brand.name' | translate }}</span> · {{ 'footer.rights' | translate }}
+      <span class="ftr__by">· {{ 'footer.madeByPrefix' | translate }}<a href="https://swichsolutions.ge" target="_blank" rel="noopener" translate="no">Swich</a>{{ 'footer.madeBySuffix' | translate }}</span></span>
     <div class="lang lang--footer" role="group" [attr.aria-label]="'common.language' | translate">
       @for (l of lang.supported; track l.code) {
         <button type="button" class="lang__btn" (click)="setLang(l.code)"

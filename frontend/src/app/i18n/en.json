@@ -2019,7 +2019,9 @@
     "vendors": "For vendors",
     "terms": "Terms & conditions",
     "privacy": "Privacy",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "madeByPrefix": "Built by ",
+    "madeBySuffix": ""
   },
   "featureLanding": {
     "signupFree": "Sign up free",

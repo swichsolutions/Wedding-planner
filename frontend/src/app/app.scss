@@ -835,3 +835,18 @@ main {
     }
   }
 }
+
+// "created by Swich" in the footer's bottom bar: same colour as the copyright line, underlined link
+.ftr__by {
+  white-space: nowrap;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
