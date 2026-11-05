@@ -1,12 +1,16 @@
 // Brand theme (theme-brand host): ivory page, charcoal text, Mt capitals for the heading.
 :host {
   display: block;
-  background: var(--ivory);
+  background: var(--paper); // white pages everywhere (Beka, 2026-11-03)
 }
 
+// Long Georgian titles („კონფიდენციალურობის პოლიტიკა") must wrap inside the side column instead
+// of running over the text column: a tighter size and breaking inside words when needed.
 .legal h1 {
-  font-size: var(--fs-h2);
-  line-height: 1.15;
+  font-size: clamp(1.75rem, 1.2rem + 1.8vw, var(--fs-h2));
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .legal__updated {
