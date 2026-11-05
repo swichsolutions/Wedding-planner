@@ -1,0 +1,5 @@
+node_modules/
+out/
+.remotion/
+capture/.demo-auth.json
+public/cap/

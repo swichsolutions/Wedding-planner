@@ -1,0 +1,39 @@
+<!doctype html>
+<!-- A fictional hall floor plan for the clips: the kind of drawing a venue sends. Rendered to PNG by seed.mjs. -->
+<html><head><meta charset="utf-8"><style>
+  html,body{margin:0;background:#fff}
+  svg{display:block}
+  text{font-family:'Noto Sans Georgian','Segoe UI',sans-serif;fill:#302b2d}
+</style></head><body>
+<svg width="1000" height="1100" viewBox="0 0 1000 1100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#302b2d" stroke-opacity=".07" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1000" height="1100" fill="#fff"/>
+  <rect x="40" y="40" width="920" height="1020" fill="url(#grid)"/>
+  <!-- walls, with the entrance gap at the bottom -->
+  <path d="M430 1060H40V40H960V1060H570" fill="none" stroke="#302b2d" stroke-width="10"/>
+  <!-- double doors -->
+  <path d="M430 1060a70 70 0 0 1 70-70M570 1060a70 70 0 0 0-70-70" fill="none" stroke="#302b2d" stroke-width="2"/>
+  <path d="M430 1060V990M570 1060V990" stroke="#302b2d" stroke-width="3"/>
+  <!-- windows -->
+  <g stroke="#fff" stroke-width="12"><path d="M40 170V290M40 450V570M40 730V850M960 170V290M960 450V570M960 730V850"/></g>
+  <g stroke="#302b2d" stroke-width="2"><path d="M35 170V290M45 170V290M35 450V570M45 450V570M35 730V850M45 730V850M955 170V290M965 170V290M955 450V570M965 450V570M955 730V850M965 730V850"/></g>
+  <!-- stage -->
+  <rect x="330" y="62" width="340" height="96" rx="4" fill="#f4efe6" stroke="#302b2d" stroke-width="3"/>
+  <text x="500" y="120" font-size="26" text-anchor="middle">სცენა</text>
+  <!-- dance floor -->
+  <rect x="360" y="460" width="280" height="220" fill="none" stroke="#302b2d" stroke-width="3" stroke-dasharray="14 8"/>
+  <text x="500" y="562" font-size="24" text-anchor="middle">საცეკვაო</text>
+  <text x="500" y="596" font-size="24" text-anchor="middle">მოედანი</text>
+  <!-- table places -->
+  <g fill="none" stroke="#302b2d" stroke-width="2.5" stroke-dasharray="7 7">
+    <circle cx="190" cy="300" r="46"/><circle cx="500" cy="300" r="46"/><circle cx="810" cy="300" r="46"/>
+    <circle cx="190" cy="570" r="46"/><circle cx="810" cy="570" r="46"/>
+    <circle cx="190" cy="850" r="46"/><circle cx="500" cy="850" r="46"/><circle cx="810" cy="850" r="46"/>
+  </g>
+  <!-- bar -->
+  <rect x="68" y="962" width="230" height="70" rx="4" fill="#f4efe6" stroke="#302b2d" stroke-width="3"/>
+  <text x="183" y="1006" font-size="24" text-anchor="middle">ბარი</text>
+  <text x="500" y="972" font-size="20" text-anchor="middle">შესასვლელი</text>
+</svg></body></html>

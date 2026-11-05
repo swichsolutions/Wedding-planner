@@ -1,0 +1,909 @@
+{
+ "banner": {
+  "w": 395.625,
+  "h": 400,
+  "pad": 0,
+  "radius": 28,
+  "bg": {
+   "src": "/media/hero-wide.webp",
+   "fit": "cover",
+   "pos": "50% 50%"
+  },
+  "days": {
+   "x": 24,
+   "y": 331.203125,
+   "w": 54.921875,
+   "h": 43,
+   "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+   "size": 32,
+   "weight": "400",
+   "color": "rgb(255, 255, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": 0,
+   "align": "start",
+   "lineHeight": 44.8,
+   "paddingLeft": 0,
+   "text": "317"
+  }
+ },
+ "banner-notext": {
+  "w": 395.625,
+  "h": 400,
+  "pad": 0
+ },
+ "wordmark": {
+  "w": 183.953125,
+  "h": 27.203125,
+  "pad": 2
+ },
+ "tasks": {
+  "checks": [
+   {
+    "x": 21,
+    "y": 76.59375,
+    "w": 22,
+    "h": 22,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 21,
+    "y": 149.828125,
+    "w": 22,
+    "h": 22,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   }
+  ],
+  "bar": [
+   {
+    "x": 0,
+    "y": 78.546875,
+    "w": 101.640625,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(48, 43, 45)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 0,
+    "y": 78.546875,
+    "w": 112.9375,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(48, 43, 45)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 0,
+    "y": 78.546875,
+    "w": 124.234375,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(48, 43, 45)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   }
+  ],
+  "barTrack": {
+   "x": 0,
+   "y": 78.546875,
+   "w": 384,
+   "h": 6,
+   "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+   "size": 17,
+   "weight": "400",
+   "color": "rgb(48, 43, 45)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": 999,
+   "align": "start",
+   "lineHeight": 27.2,
+   "paddingLeft": 0,
+   "text": ""
+  },
+  "stageRadius": 20
+ },
+ "tasks-head-0": {
+  "w": 395.625,
+  "h": 84.546875,
+  "pad": 0
+ },
+ "tasks-stage-0": {
+  "w": 395.625,
+  "h": 401.171875,
+  "pad": 0
+ },
+ "tasks-head-1": {
+  "w": 395.625,
+  "h": 84.546875,
+  "pad": 0
+ },
+ "tasks-stage-1": {
+  "w": 395.625,
+  "h": 401.171875,
+  "pad": 0
+ },
+ "tasks-head-2": {
+  "w": 395.625,
+  "h": 84.546875,
+  "pad": 0
+ },
+ "tasks-stage-2": {
+  "w": 395.625,
+  "h": 401.171875,
+  "pad": 0
+ },
+ "budget": {
+  "total": {
+   "x": 0,
+   "y": 54.390625,
+   "w": 256,
+   "h": 56,
+   "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+   "size": 24,
+   "weight": "600",
+   "color": "rgb(48, 43, 45)",
+   "bg": "rgb(255, 255, 255)",
+   "radius": 4,
+   "align": "start",
+   "lineHeight": 0,
+   "paddingLeft": 16,
+   "text": "25000"
+  },
+  "values": [
+   {
+    "x": 0,
+    "y": 168.78125,
+    "w": 185.8125,
+    "h": 38.390625,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 24,
+    "weight": "600",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": 0,
+    "align": "start",
+    "lineHeight": 38.4,
+    "paddingLeft": 0,
+    "text": "25 000 ₾"
+   },
+   {
+    "x": 209.8125,
+    "y": 168.78125,
+    "w": 185.8125,
+    "h": 38.390625,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 24,
+    "weight": "600",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": 0,
+    "align": "start",
+    "lineHeight": 38.4,
+    "paddingLeft": 0,
+    "text": "0 ₾"
+   },
+   {
+    "x": 0,
+    "y": 271.5625,
+    "w": 185.8125,
+    "h": 38.390625,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 24,
+    "weight": "600",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": 0,
+    "align": "start",
+    "lineHeight": 38.4,
+    "paddingLeft": 0,
+    "text": "0 ₾"
+   },
+   {
+    "x": 209.8125,
+    "y": 293.953125,
+    "w": 185.8125,
+    "h": 38.390625,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 24,
+    "weight": "600",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": 0,
+    "align": "start",
+    "lineHeight": 38.4,
+    "paddingLeft": 0,
+    "text": "0 ₾"
+   }
+  ],
+  "fills": [
+   {
+    "x": 0,
+    "y": 215.171875,
+    "w": 185.8125,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(169, 165, 163)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 209.8125,
+    "y": 215.171875,
+    "w": 0,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(109, 104, 104)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 0,
+    "y": 317.953125,
+    "w": 0,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(48, 43, 45)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   }
+  ],
+  "tracks": [
+   {
+    "x": 0,
+    "y": 215.171875,
+    "w": 185.8125,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(240, 236, 230)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 209.8125,
+    "y": 215.171875,
+    "w": 185.8125,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(240, 236, 230)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   },
+   {
+    "x": 0,
+    "y": 317.953125,
+    "w": 185.8125,
+    "h": 6,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(240, 236, 230)",
+    "radius": 999,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 0,
+    "text": ""
+   }
+  ],
+  "tabs": [
+   {
+    "name": "budget-tab-0",
+    "x": 0,
+    "y": 0,
+    "w": 115.90625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(255, 255, 255)",
+    "bg": "rgb(48, 43, 45)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "სივრცე 1"
+   },
+   {
+    "name": "budget-tab-1",
+    "x": 123.90625,
+    "y": 0,
+    "w": 155.578125,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "ფოტოგრაფი 1"
+   },
+   {
+    "name": "budget-tab-2",
+    "x": 0,
+    "y": 46,
+    "w": 158.015625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "ვიდეოგრაფი 1"
+   },
+   {
+    "name": "budget-tab-3",
+    "x": 166.015625,
+    "y": 46,
+    "w": 163.390625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "დეკორატორი 1"
+   },
+   {
+    "name": "budget-tab-4",
+    "x": 0,
+    "y": 92,
+    "w": 148.3125,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "ფლორისტი 1"
+   },
+   {
+    "name": "budget-tab-5",
+    "x": 156.3125,
+    "y": 92,
+    "w": 149.625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "ბენდი და DJ 1"
+   },
+   {
+    "name": "budget-tab-6",
+    "x": 0,
+    "y": 138,
+    "w": 209.40625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "საქორწილო ტორტი 1"
+   },
+   {
+    "name": "budget-tab-7",
+    "x": 0,
+    "y": 184,
+    "w": 188.953125,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "საქორწილო კაბა 1"
+   },
+   {
+    "name": "budget-tab-8",
+    "x": 196.953125,
+    "y": 184,
+    "w": 134.234375,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "კოსტიუმი 1"
+   },
+   {
+    "name": "budget-tab-9",
+    "x": 0,
+    "y": 230,
+    "w": 224.40625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "ბეჭდები და სამკაული 1"
+   },
+   {
+    "name": "budget-tab-10",
+    "x": 232.40625,
+    "y": 230,
+    "w": 119.375,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "მაკიაჟი 1"
+   },
+   {
+    "name": "budget-tab-11",
+    "x": 0,
+    "y": 276,
+    "w": 182.140625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "თმის სტილისტი 1"
+   },
+   {
+    "name": "budget-tab-12",
+    "x": 190.140625,
+    "y": 276,
+    "w": 159.328125,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "ტრანსპორტი 1"
+   },
+   {
+    "name": "budget-tab-13",
+    "x": 0,
+    "y": 322,
+    "w": 94.765625,
+    "h": 38,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 14,
+    "weight": "500",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 999,
+    "align": "center",
+    "lineHeight": 0,
+    "paddingLeft": 16,
+    "text": "სხვა 1"
+   }
+  ],
+  "final": {
+   "values": [
+    "25 000 ₾",
+    "10 000 ₾",
+    "3 000 ₾",
+    "7 000 ₾"
+   ],
+   "fills": [
+    185.8125,
+    74.3125,
+    22.296875
+   ]
+  }
+ },
+ "budget-tabs": {
+  "w": 395.625,
+  "h": 360,
+  "pad": 0
+ },
+ "budget-tab-0": {
+  "w": 115.90625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-1": {
+  "w": 155.578125,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-2": {
+  "w": 158.015625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-3": {
+  "w": 163.390625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-4": {
+  "w": 148.3125,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-5": {
+  "w": 149.625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-6": {
+  "w": 209.40625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-7": {
+  "w": 188.953125,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-8": {
+  "w": 134.234375,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-9": {
+  "w": 224.40625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-10": {
+  "w": 119.375,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-11": {
+  "w": 182.140625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-12": {
+  "w": 159.328125,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-tab-13": {
+  "w": 94.765625,
+  "h": 38,
+  "pad": 0
+ },
+ "budget-sum": {
+  "w": 395.625,
+  "h": 364.34375,
+  "pad": 0
+ },
+ "guests": {
+  "stats": [
+   {
+    "x": 203.8125,
+    "y": 0,
+    "w": 191.8125,
+    "h": 88.875,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 16,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 16,
+    "text": "12მოდის"
+   },
+   {
+    "x": 0,
+    "y": 100.875,
+    "w": 191.8125,
+    "h": 88.875,
+    "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+    "size": 17,
+    "weight": "400",
+    "color": "rgb(48, 43, 45)",
+    "bg": "rgb(255, 255, 255)",
+    "radius": 16,
+    "align": "start",
+    "lineHeight": 27.2,
+    "paddingLeft": 16,
+    "text": "4პასუხს ველოდებით"
+   }
+  ],
+  "select": {
+   "x": 18,
+   "y": 47.1875,
+   "w": 194,
+   "h": 36,
+   "font": "\"Noto Sans Georgian\", \"Noto Sans\", system-ui, sans-serif",
+   "size": 15,
+   "weight": "400",
+   "color": "rgb(48, 43, 45)",
+   "bg": "rgb(255, 255, 255)",
+   "radius": 4,
+   "align": "start",
+   "lineHeight": 0,
+   "paddingLeft": 8,
+   "text": "მოდისპასუხს ველოდებითარ მოდის"
+  },
+  "options": [
+   {
+    "value": "yes",
+    "text": "მოდის"
+   },
+   {
+    "value": "pending",
+    "text": "პასუხს ველოდებით"
+   },
+   {
+    "value": "no",
+    "text": "არ მოდის"
+   }
+  ]
+ },
+ "guests-stats-0": {
+  "w": 395.625,
+  "h": 290.625,
+  "pad": 0
+ },
+ "guests-row-0": {
+  "w": 395.625,
+  "h": 101.1875,
+  "pad": 0
+ },
+ "guests-row-b": {
+  "w": 395.625,
+  "h": 101.1875,
+  "pad": 0
+ },
+ "guests-row-c": {
+  "w": 395.625,
+  "h": 127.578125,
+  "pad": 0
+ },
+ "guests-stats-1": {
+  "w": 395.625,
+  "h": 290.625,
+  "pad": 0
+ },
+ "guests-row-1": {
+  "w": 395.625,
+  "h": 101.1875,
+  "pad": 0
+ },
+ "seating": {
+  "tables": [
+   {
+    "x": 144,
+    "y": 254,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 454,
+    "y": 254,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 764,
+    "y": 254,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 144,
+    "y": 524,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 764,
+    "y": 524,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 144,
+    "y": 804,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 454,
+    "y": 804,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   },
+   {
+    "x": 764,
+    "y": 804,
+    "w": 92,
+    "h": 92,
+    "pad": 48
+   }
+  ],
+  "plan": {
+   "w": 1000,
+   "h": 1100
+  },
+  "chipName": "ლუკა ხარაიშვილი",
+  "seat": {
+   "x": 46,
+   "y": -22
+  }
+ },
+ "table-0": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-1": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-2": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-3": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-4": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-5": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-6": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "table-7": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ },
+ "guest-chip": {
+  "w": 240,
+  "h": 40.390625,
+  "pad": 0
+ },
+ "plan": {
+  "w": 1000,
+  "h": 1100,
+  "pad": 0
+ },
+ "table-1-seated": {
+  "w": 188,
+  "h": 188,
+  "pad": 48
+ }
+}
