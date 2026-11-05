@@ -452,6 +452,11 @@
   display: grid;
   gap: var(--space-5);
 
+  // a <select> with a long option must shrink with the column, not widen the page
+  > * {
+    min-width: 0;
+  }
+
   @include bp.respond-to(sm) {
     grid-template-columns: 1fr 1fr;
   }
@@ -472,6 +477,11 @@
   display: grid;
   gap: var(--space-4);
   min-width: 0;
+
+  // grid children default to min-width:auto and would size the fieldset to the widest control
+  > * {
+    min-width: 0;
+  }
 
   legend {
     padding: 0 var(--space-2);

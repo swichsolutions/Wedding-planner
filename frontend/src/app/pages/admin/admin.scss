@@ -31,7 +31,8 @@
 // Section tabs: Vendors · Content.
 .admin__tabs {
   display: flex;
-  gap: var(--space-5);
+  flex-wrap: wrap; // four tabs do not fit a phone in one row
+  gap: var(--space-1) var(--space-5);
   border-bottom: 1px solid var(--paper-line);
 
   button {
@@ -190,6 +191,7 @@
 
 .admin__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 

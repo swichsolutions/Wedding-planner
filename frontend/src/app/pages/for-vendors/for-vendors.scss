@@ -24,6 +24,8 @@
 }
 
 .fv-hero__title {
+  overflow-wrap: anywhere; // long Georgian words at display size must break, not widen the page
+  hyphens: auto;
   margin: var(--space-4) 0 0;
   font-size: var(--fs-display);
   line-height: var(--lh-display);

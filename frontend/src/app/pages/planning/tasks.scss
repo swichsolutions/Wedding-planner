@@ -118,7 +118,9 @@
 
 .tk-filter {
   display: inline-flex;
+  flex-wrap: wrap; // three Georgian labels do not fit a phone in one row
   justify-self: start;
+  max-width: 100%;
   gap: var(--space-1);
   padding: 3px;
   border-radius: var(--radius-pill);
@@ -127,6 +129,10 @@
   button {
     min-height: 36px;
     padding: 0 var(--space-4);
+
+    @media (max-width: 420px) {
+      padding: 0 var(--space-3);
+    }
     border: 0;
     border-radius: var(--radius-pill);
     background: none;

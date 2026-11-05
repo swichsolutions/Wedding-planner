@@ -645,3 +645,12 @@
     margin-top: var(--space-2);
   }
 }
+
+// Phones: a select whose longest option is wider than the screen, or a long placeholder, must
+// never widen the layout. Form controls shrink with their field.
+.auth__field > input,
+.auth__field > select,
+.auth__field > textarea {
+  min-width: 0;
+  max-width: 100%;
+}
