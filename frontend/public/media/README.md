@@ -8,6 +8,11 @@ Served as-is at `/media/...`.
   e.g. a stock site's "small"/540p variant, or a clip from a seeded
   videographer. A CSS crossfade montage of three stills runs underneath as the
   fallback while it loads and for reduced-motion users.
+- `organizer.mp4` — the home page's organizer section (`organizer-hero`): a silent 18 s loop of the
+  planning tool, 692×1536 to fit the phone's screen, H.264, ~1.3 MB. Made in `video/` (see its
+  README), with the interface in Georgian whatever the site's language. Fetched only when the
+  section nears the screen and paused once it has left.
+- `organizer-poster.jpg` — its poster (frame 52), shown until it plays and under reduced motion.
 - `gold-ring.webm` — a gold wedding band turning slowly, 5 s loop, 1920×1080, VP9 with a
   transparent background, no sound (provided 2026-10-27, Downloads/Gold_Ring_Web.webm). Shown by
   `components/gold-ring` in the home page's final section (above „დაიწყე შენი ქორწილის დაგეგმვა“,

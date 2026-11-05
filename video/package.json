@@ -9,7 +9,6 @@
     "capture": "node capture/capture.mjs",
     "studio": "remotion studio src/index.tsx",
     "render:instagram": "remotion render src/index.tsx Instagram out/weddingplanner-instagram.mp4 --codec=h264 --crf=17 --pixel-format=yuv420p --color-space=bt709",
-    "render:web:webm": "remotion render src/index.tsx Website out/organizer.webm --codec=vp9 --crf=38 --pixel-format=yuv420p",
     "render:web:mp4": "remotion render src/index.tsx Website out/organizer.mp4 --codec=h264 --crf=29 --pixel-format=yuv420p --color-space=bt709",
     "poster": "remotion still src/index.tsx Website out/organizer-poster.jpg --frame=52 --image-format=jpeg --jpeg-quality=82"
   },

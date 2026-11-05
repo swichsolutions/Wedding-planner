@@ -10,7 +10,7 @@ Swich has up to 3 employees; above that it needs a paid company license.
 | Clip | Composition | Output | Size target |
 |---|---|---|---|
 | Instagram, 1080x1920, with hook, captions and call to action | `Instagram` | `out/weddingplanner-instagram.mp4` | none |
-| Website organizer section, 720x1536, silent seamless loop | `Website` | `out/organizer.webm`, `out/organizer.mp4`, `out/organizer-poster.jpg` | under 3 MB each |
+| Website organizer section, 692x1536 (the phone's screen), silent seamless loop | `Website` | `out/organizer.mp4`, `out/organizer-poster.jpg` | under 3 MB each |
 
 ## Remaking the clips
 
@@ -23,7 +23,8 @@ couple (ნინო & გიორგი) that is created fresh each time. Neve
 3. In this folder: `npm run seed`, then `npm run capture`.
 4. Render, passing a Chrome Headless Shell (Playwright's works, so Remotion downloads nothing):
    `npm run render:instagram -- --browser-executable="$LOCALAPPDATA/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-win64/chrome-headless-shell.exe"`
-   and likewise `render:web:webm`, `render:web:mp4`, `poster`.
+   and likewise `render:web:mp4`, `poster`.
+5. Copy `out/organizer.mp4` and `out/organizer-poster.jpg` to `frontend/public/media/` for the site.
 
 `npm run studio` opens Remotion's preview, for scrubbing through the timeline.
 

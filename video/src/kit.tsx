@@ -39,7 +39,7 @@ export type Fmt = {
 /** Instagram: vertical; text stays clear of the top and bottom edges, where Instagram's own buttons sit. */
 export const IG: Fmt = { id: 'ig', W: 1080, H: 1920, captions: true, cardW: 930, regionTop: 500, regionBottom: 1790, u: 1 };
 /** Website: fills the phone on the home page's organizer section. */
-export const WEB: Fmt = { id: 'web', W: 720, H: 1536, captions: false, cardW: 664, regionTop: 90, regionBottom: 1450, u: 0.667 };
+export const WEB: Fmt = { id: 'web', W: 692, H: 1536, captions: false, cardW: 636, regionTop: 90, regionBottom: 1450, u: 0.667 };
 
 export const centre = (fmt: Fmt) => (fmt.regionTop + fmt.regionBottom) / 2;
 

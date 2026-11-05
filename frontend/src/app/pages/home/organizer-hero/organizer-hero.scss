@@ -1,6 +1,6 @@
 // =============================================================================
 // Organizer hero ("როგორ ვაკონტროლო ყველაფერი?"): copy on the left, a tilted phone
-// running a small plan demo on the right, on one ivory panel (brandbook: white panels
+// playing a clip of the planning tool on the right, on one ivory panel (brandbook: white panels
 // on ivory, evergreen for actions, mint for subtle highlights). Colours and type come
 // from the home page's brand theme.
 // =============================================================================
@@ -12,10 +12,6 @@
   --frame: #2c3532; // phone body: a near-black with the evergreen in it
   --frame-deep: #161c1a;
   --screen: #fff;
-  --screen-line: var(--paper-line);
-  --screen-muted: var(--ink-500);
-  --screen-faint: var(--ink-300);
-  --accent: var(--ink); // progress fill, ticks, selected nav
   font-family: var(--font-statement);
   color: var(--ink);
 }
@@ -149,7 +145,7 @@
   border: calc(5 * var(--u)) solid var(--frame);
   border-radius: calc(47 * var(--u));
   background: var(--frame-deep);
-  transform: rotate(-5deg); // the phone stays still; only the screen animates
+  transform: rotate(-5deg);
   box-shadow:
     0 calc(27 * var(--u)) calc(54 * var(--u)) rgba(34, 30, 32, 0.26),
     calc(5 * var(--u)) calc(4 * var(--u)) calc(5 * var(--u)) rgba(255, 255, 255, 0.23) inset;
@@ -170,7 +166,6 @@
 .phone__screen {
   position: relative;
   height: 100%;
-  padding: calc(43 * var(--u)) calc(14 * var(--u)) 0;
   overflow: hidden;
   border-radius: calc(36 * var(--u));
   background: var(--screen);
@@ -178,11 +173,15 @@
   color: var(--ink);
 }
 
+// solid, in the clip's ivory: the clip's cards slide under it, as they would on a real phone
 .phone__status {
   position: absolute;
-  top: calc(14 * var(--u));
-  left: calc(20 * var(--u));
-  right: calc(18 * var(--u));
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(36 * var(--u));
+  padding: calc(14 * var(--u)) calc(18 * var(--u)) 0 calc(20 * var(--u));
+  background: #faf7f2;
   display: flex;
   justify-content: space-between;
   font-size: calc(9 * var(--u));
@@ -199,192 +198,20 @@
   transform: translateX(-50%);
 }
 
-.app__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: calc(7 * var(--u)) 0 calc(18 * var(--u));
-}
-
-.app__logo {
-  font-family: var(--font-display); // the wordmark, as in the site header
-  font-size: calc(22 * var(--u));
-  font-weight: var(--fw-medium);
-  letter-spacing: 0;
-}
-
-.app__logo-dot {
-  color: var(--screen-faint);
-}
-
-.app__heart {
-  display: grid;
-  place-items: center;
-  width: calc(30 * var(--u));
-  height: calc(30 * var(--u));
-  border-radius: 50%;
-  background: var(--paper-deep);
-  color: var(--ink-700);
-  font-size: calc(19 * var(--u));
-}
-
-.card {
-  padding: calc(15 * var(--u));
-  border: calc(1 * var(--u)) solid var(--screen-line);
-  border-radius: calc(16 * var(--u));
-  background: #fff;
-  box-shadow: 0 calc(5 * var(--u)) calc(16 * var(--u)) rgba(34, 30, 32, 0.06);
-}
-
-.card__numbers {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-
-.card__value {
-  display: block;
-  font-family: var(--font-display); // large figures in the capitals face
-  font-size: calc(34 * var(--u));
-  line-height: 1.1;
-}
-
-// the counting figure: the face has no tabular digits, so a fixed box keeps the %
-// from jittering while it counts (the widest two digits are ~0.85em)
-.card__pct {
-  display: inline-block;
-  min-width: 0.86em;
-  text-align: right;
-  letter-spacing: 0;
-}
-
-.card__days {
-  text-align: right;
-
-  strong {
-    font-family: var(--font-display);
-    font-size: calc(26 * var(--u));
-    line-height: 1.1;
-    letter-spacing: 0;
-  }
-}
-
-.card__label {
-  display: block;
-  margin-top: calc(6 * var(--u));
-  font-size: calc(9 * var(--u));
-  color: var(--screen-muted);
-}
-
-.card__track {
-  height: calc(6 * var(--u));
-  margin-top: calc(17 * var(--u));
-  border-radius: calc(8 * var(--u));
-  background: var(--paper-deep);
-  overflow: hidden;
-}
-
-.card__fill {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--accent);
-  transition: width 350ms var(--ease-out);
-}
-
-.tasks__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: calc(25 * var(--u)) calc(3 * var(--u)) calc(12 * var(--u));
-
-  strong {
-    font-size: calc(12 * var(--u));
-  }
-
-  span {
-    font-size: calc(9 * var(--u));
-    color: var(--screen-muted);
-  }
-}
-
-.tasks {
-  display: flex;
-  flex-direction: column;
-  gap: calc(5 * var(--u));
-}
-
-.task {
-  display: flex;
-  align-items: center;
-  gap: calc(11 * var(--u));
-  min-height: calc(42 * var(--u));
-  padding: calc(9 * var(--u));
-  border: calc(1 * var(--u)) solid transparent;
-  border-radius: calc(10 * var(--u));
-  transition:
-    background 300ms var(--ease-out),
-    border-color 300ms var(--ease-out),
-    transform 300ms var(--ease-out);
-
-  &.is-active {
-    background: var(--paper-deep);
-    border-color: var(--paper-line-strong);
-    transform: translateX(calc(3 * var(--u)));
-  }
-}
-
-.task__check {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: calc(19 * var(--u));
-  height: calc(19 * var(--u));
-  border: calc(1.5 * var(--u)) solid var(--paper-line-strong);
-  border-radius: 50%;
-  background: #fff;
-  color: #fff;
-  font-size: calc(11 * var(--u));
-  transition:
-    background 300ms var(--ease-out),
-    border-color 300ms var(--ease-out);
-}
-
-.task__label {
-  font-size: calc(10 * var(--u));
-  font-weight: var(--fw-medium);
-  color: var(--ink-700);
-  white-space: nowrap;
-}
-
-.task.is-done {
-  .task__check {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-
-  .task__label {
-    color: var(--screen-faint);
-    text-decoration: line-through;
-  }
-}
-
-.phone__nav {
+.phone__media {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: calc(46 * var(--u));
-  padding: 0 calc(27 * var(--u)) calc(8 * var(--u));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: calc(1 * var(--u)) solid var(--screen-line);
-  background: #fff;
-  color: var(--screen-faint);
-  font-size: calc(18 * var(--u));
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-  .is-selected {
-    color: var(--accent);
+.phone__film {
+  opacity: 0;
+  transition: opacity 400ms ease;
+
+  &.is-on {
+    opacity: 1;
   }
 }
 
@@ -503,10 +330,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__cta,
-  .card__fill,
-  .task,
-  .task__check {
+  .hero__cta {
     transition: none;
   }
 }

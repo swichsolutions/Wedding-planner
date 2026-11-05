@@ -294,37 +294,6 @@
         "daysLeft": "125 days to go",
         "progress": "Progress"
       },
-      "tasks": {
-        "title": "Tasks",
-        "t1": {
-          "text": "Reserve the venue",
-          "due": "Done"
-        },
-        "t2": {
-          "text": "Choose the photographer",
-          "due": "Done"
-        },
-        "t3": {
-          "text": "Choose the band",
-          "due": "15 Oct"
-        },
-        "t4": {
-          "text": "Order invitations",
-          "due": "1 Nov"
-        },
-        "t5": {
-          "text": "Choose the cake",
-          "due": "20 Nov"
-        },
-        "t6": {
-          "text": "Book the videographer",
-          "due": "5 Dec"
-        },
-        "t7": {
-          "text": "Arrange transport",
-          "due": "15 Dec"
-        }
-      },
       "budget": {
         "title": "Budget",
         "r1": {
@@ -360,13 +329,6 @@
       },
       "overline": "Personal organizer",
       "leadShort": "One plan — tasks, budget and guests. You only ever see the next step.",
-      "plan": {
-        "progressLabel": "of the plan done",
-        "daysLabel": "days to the wedding",
-        "next": "Next step",
-        "myTasks": "My tasks",
-        "doneOf": "done"
-      },
       "modules": {
         "m1": "Tasks & deadlines",
         "m2": "Budget & payments",

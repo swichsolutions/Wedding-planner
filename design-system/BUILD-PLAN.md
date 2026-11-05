@@ -359,6 +359,9 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   screen captures of the real app once Phase B is done; Taso edits and brands them.
 - **You provide:** who produces them; the final files (MP4/WebM, under ~3 MB each, plus a poster
   image).
+- **Status (2026-11-05):** made in `video/` instead (animated captures, Remotion). The organizer clip
+  plays in the phone on the home page, replacing the animated demo. An Instagram cut exists too. The
+  invitation creation clip isn't made yet, and `/invitations` has no video spot.
 
 ### C2. Review passes
 - **Status (2026-10-29): first round done.** The `web-design-guidelines` and `impeccable` skills weren't
