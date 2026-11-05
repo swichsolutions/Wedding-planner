@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- WeddingPlanner mark: a gold knot (infinity loop) on the brand's evergreen tile. The PNG/ICO
+  <!-- WeddingPlanner mark: an evergreen knot (infinity loop) filling the box, no tile. The PNG/ICO
        files next to this are rendered from it (docs/DEPLOY.md, "Icons"). -->
-  <rect width="64" height="64" rx="14" fill="#29483F"/>
-  <path d="M32 32 C26 20 14 22 14 32 C14 42 26 44 32 32 C38 20 50 22 50 32 C50 42 38 44 32 32 Z" fill="none" stroke="#B69A68" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M32 32 C23.3 14.6 5.9 17.5 5.9 32 C5.9 46.5 23.3 49.4 32 32 C40.7 14.6 58.1 17.5 58.1 32 C58.1 46.5 40.7 49.4 32 32 Z" fill="none" stroke="#29483F" stroke-width="8" stroke-linejoin="round"/>
 </svg>
