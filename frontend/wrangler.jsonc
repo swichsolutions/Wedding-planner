@@ -1,0 +1,40 @@
+// Cloudflare Workers config for the live frontend (docs/DEPLOY.md).
+//   npm run build:live      → dist/frontend/{server,browser} built for Workers + api.weddingplanner.ge
+//   npm run preview:cf      → the same bundle against the local API, served by `wrangler dev`
+//   npm run deploy:preview  → env "preview": weddingplanner-web-preview.<account>.workers.dev
+//   npm run deploy:live     → env "live": weddingplanner.ge + www (zone must be active on Cloudflare)
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "weddingplanner-web",
+  "main": "./dist/frontend/server/server.mjs",
+  "compatibility_date": "2026-10-01",
+  // Everything the Angular build put in /browser is served straight from Cloudflare's edge;
+  // only requests that match no file reach server.mjs (Angular SSR).
+  "assets": {
+    "directory": "./dist/frontend/browser",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "workers_dev": false,
+  // Always deploy with --env (the npm scripts do): a bare `wrangler deploy` would create a
+  // Worker with no address at all.
+  "env": {
+    "live": {
+      "name": "weddingplanner-web",
+      "workers_dev": false,
+      // `wrangler deploy --env live` creates the DNS records and certificates for these itself.
+      // The hostnames must not already have DNS records in the zone, and the zone must be active.
+      "routes": [
+        { "pattern": "weddingplanner.ge", "custom_domain": true },
+        { "pattern": "www.weddingplanner.ge", "custom_domain": true }
+      ]
+    },
+    "preview": {
+      // The same bundle on a workers.dev URL, for checking a build before it goes to the domain.
+      "name": "weddingplanner-web-preview",
+      "workers_dev": true
+    }
+  }
+}

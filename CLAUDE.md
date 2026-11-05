@@ -130,7 +130,13 @@ Tokens live in `frontend/src/styles/_tokens.scss`, and the theme lives in `_bran
 The theme is applied with the `.theme-brand` class. Since C2 (2026-10-29) every page is on it: App
 puts it on `<body>` (so overlays and drag previews get it too) everywhere except a couple's
 invitation at `/w/…`, which keeps its own design. New pages follow the same rules:
-- **Large backgrounds:** always ivory `#FAF7F2`. White `#FFF` is for panels and forms.
+- **Large backgrounds:** plain white `#FFF` everywhere (Beka, 2026-11-03; the earlier ivory
+  `#FAF7F2` read as a "warm" page). Ivory-deep `#f0ece6` stays for small fills and sunken panels.
+  The home final call is white too (no large peach section any more).
+- **Buttons:** every `.btn` is a pill (Beka, 2026-11-03); the one exception is the catalog's
+  search button (`.btn--square`). Every carousel has one "next" control in its far right corner
+  (`components/carousel-arrow`, host class `.car-arrow`): the gold ring, which fills while the
+  carousel waits to move on its own, with a thin arrow inside. No "previous" arrow.
 - **Warm charcoal `#302B2D`:** text, cards and dark surfaces (footer, scrims). Secondary
   text `#585454`, muted text `#6d6868`, small fills `#f0ece6`.
 - **Evergreen `#29483F`:** buttons ONLY (hover `#1D352E`), through `--color-action`.
@@ -138,9 +144,10 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
 - **Peach `#F2CEBB`:** small callouts (chapter labels). The home final call is the one
   large peach section, kept by choice.
 - **Gold `#B69A68`:** decorative only (fine lines, the rings). Never text.
-- **Type:** GF Aisi 2025 **Mt** (capitals) only for headings and large text;
-  GF Aisi 2025 **Nus** Medium (lowercase, `size-adjust: 120%`) for all other text.
-  Nus needs line-height ≥ ~1.4 on wrapping text.
+- **Type:** Noto Sans Georgian for everything (Beka, 2026-11-03: GF Aisi was not readable at
+  text sizes). Headings and large text are heavy (700–800) and slightly condensed
+  (`--stretch-display: 87.5%`, the variable font's width axis); running text is the normal width.
+  The GF Aisi `@font-face` rules stay in `_base.scss` for the invitation designs only.
 - **Width:** pages fill wide screens (decided 2026-10-29). Use `.container` (up to
   `--container-max`, 1920px, with `--gutter` at the sides); don't cap a whole page at a narrow
   max-width. Only running text keeps a readable line length (~46rem); on wide screens put
@@ -266,3 +273,11 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
    link-signing keys live in the `DataProtectionKeys` table (migration
    `AddDataProtectionKeys`), so links survive restarts.
 
+## Deployment (live site)
+
+`weddingplanner.ge` = Cloudflare Workers (Angular SSR, `frontend/wrangler.jsonc`, entry
+`frontend/src/server.cloudflare.ts`, build `npm run build:live` = configurations
+`production,cloudflare,live`); `api.weddingplanner.ge` = Render (`render.yaml`, Starter, Production env,
+`Database__MigrateOnStartup=true`); DB Neon; photos Cloudinary; mail via SMTP (Resend). Runbook and
+the one-time dashboard steps: `docs/DEPLOY.md`. The Express `src/server.ts` + `frontend/Dockerfile`
+remain for the old Render demo. Local Workers check: `npm run preview:cf` → http://localhost:8787.

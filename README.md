@@ -209,6 +209,9 @@ the real URLs (table above). Then:
 
 ## ⚠️ Going to production (read before deploy)
 
+**The live setup (Cloudflare Workers + Render + Neon) is in [docs/DEPLOY.md](docs/DEPLOY.md).**
+Items 1–2 below are handled there by the `cloudflare` and `live` build configurations.
+
 1. **`allowedHosts`** — set `frontend` → `architect.build.options.security.allowedHosts` in
    `angular.json` to your real domain(s). Angular 21 rejects unknown hosts and silently falls
    back to client-side rendering (kills SEO). Currently localhost only.

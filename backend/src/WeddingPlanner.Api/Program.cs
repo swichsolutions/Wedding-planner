@@ -216,17 +216,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Startup seeding. Roles and the category taxonomy run in EVERY environment — registration's
-// AddToRoleAsync throws without roles, and vendor sign-up and the catalog need the categories,
-// so a fresh production DB would otherwise break both. Dev additionally auto-migrates, seeds
-// demo vendors, and creates the configured admin. Guarded so the API still boots if the
-// database isn't up yet.
+// Startup migrate + seeding. Roles and the category taxonomy run in EVERY environment —
+// registration's AddToRoleAsync throws without roles, and vendor sign-up and the catalog need
+// the categories, so a fresh production DB would otherwise break both. The admin account is
+// created wherever Seed:AdminEmail/AdminPassword are configured (idempotent: only if missing).
+// Migrations run in Development, or anywhere with Database:MigrateOnStartup=true (the live API
+// on Render — docs/DEPLOY.md — has no other migration step). Demo vendors are Development only.
+// Guarded so the API still boots if the database isn't up yet.
 using (var scope = app.Services.CreateScope())
 {
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        if (app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
             await db.Database.MigrateAsync();
 
         // Roles first: they predate every recent migration, so they still seed on a
@@ -237,11 +239,10 @@ using (var scope = app.Services.CreateScope())
         await CategoryCatalog.SyncAsync(db);
 
         if (app.Environment.IsDevelopment())
-        {
             await DbSeeder.SeedAsync(db);
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-            await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
-        }
+
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+        await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
     }
     catch (Exception ex)
     {

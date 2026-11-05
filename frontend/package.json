@@ -7,7 +7,11 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:frontend": "node dist/frontend/server/server.mjs"
+    "serve:ssr:frontend": "node dist/frontend/server/server.mjs",
+    "build:live": "ng build --configuration production,cloudflare,live",
+    "preview:cf": "ng build --configuration development,cloudflare && wrangler dev",
+    "deploy:preview": "npm run build:live && wrangler deploy --env preview",
+    "deploy:live": "npm run build:live && wrangler deploy --env live"
   },
   "prettier": {
     "printWidth": 100,
@@ -49,6 +53,7 @@
     "jsdom": "^27.1.0",
     "playwright": "^1.61.1",
     "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.8",
+    "wrangler": "^4.157.0"
   }
 }

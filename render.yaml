@@ -1,21 +1,20 @@
-# Render Blueprint — free demo deploy (README → "Free demo deploy (Render + Neon)").
+# Render Blueprint — the live API behind https://api.weddingplanner.ge (docs/DEPLOY.md).
 #
-# Dashboard: New + → Blueprint → pick this repo. Render creates both web services and
-# prompts for every `sync: false` value. Postgres is NOT defined here on purpose: Render's
-# free Postgres expires after 30 days; use a free Neon database instead (persistent).
+# The live frontend is NOT here: it runs on Cloudflare Workers (frontend/wrangler.jsonc,
+# `npm run deploy:live`). The frontend service at the bottom is the old free demo, kept for
+# anyone who wants the whole thing on Render; `frontend/Dockerfile` still builds it.
 #
-# Two-pass start (service URLs aren't known until Render creates them):
-#   1st pass: enter placeholders for the URL variables and let both services deploy.
-#   2nd pass: copy the two *.onrender.com URLs into API_BASE_URL, Cors__AllowedOrigins__0,
-#             Site__PublicOrigin, LocalUploads__PublicBase → "Manual deploy" on both services.
-#   (API_BASE_URL is baked into the frontend bundle at build time, so it needs a redeploy.)
+# Postgres is NOT defined here on purpose: Render's free Postgres expires after 30 days; the
+# database lives on Neon (Frankfurt). Values marked `sync: false` are entered in the dashboard.
 
 services:
   # ---------------------------------------------------------------- .NET 8 API
   - type: web
     name: weddingplanner-api
     runtime: docker
-    plan: free
+    # Starter: no sleeping after 15 min idle (the free tier wakes in ~1 min, which is fine for a
+    # demo and not for a site people use).
+    plan: starter
     region: frankfurt
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
@@ -25,10 +24,13 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
-      # "Development" on purpose for the demo: auto-migrates, seeds demo vendors and the
-      # admin account on startup, and turns on Swagger (see Program.cs + README).
+      # Production: no Swagger, no demo vendors, no detailed error pages. Migrations still run
+      # on startup because of Database__MigrateOnStartup (Program.cs), and the admin account
+      # is created if missing from Seed__AdminEmail/Seed__AdminPassword.
       - key: ASPNETCORE_ENVIRONMENT
-        value: Development
+        value: Production
+      - key: Database__MigrateOnStartup
+        value: "true"
       # Neon → Connection details → ".NET" format (Host=...;Username=...;Password=...;SSL Mode=Require)
       - key: ConnectionStrings__Default
         sync: false
@@ -48,18 +50,42 @@ services:
       # X-Forwarded-* headers; otherwise every visitor shares one IP for rate limiting.
       - key: ForwardedHeaders__TrustAll
         value: "true"
-      # ---- fill these with the real URLs after the first deploy (2nd pass) ----
+      # ---- the site ----
       - key: Cors__AllowedOrigins__0
-        sync: false # https://weddingplanner-web-xxxx.onrender.com
+        value: https://weddingplanner.ge
+      - key: Cors__AllowedOrigins__1
+        value: https://www.weddingplanner.ge
       - key: Site__PublicOrigin
-        sync: false # same frontend URL (canonical origin for sitemap.xml)
-      - key: LocalUploads__PublicBase
-        sync: false # https://weddingplanner-api-xxxx.onrender.com/uploads
-      # ---- optional: real "forgot password" emails (without these the API only logs them) ----
-      # Add in the dashboard: Email__Smtp__Host, Email__Smtp__Port (587), Email__Smtp__Username,
-      # Email__Smtp__Password, Email__From (sender address on a domain the provider verified).
+        value: https://weddingplanner.ge # canonical origin for sitemap.xml and e-mail links
+      # ---- photos: Cloudinary (persistent). Without it uploads land on the container's disk
+      #      and vanish on every deploy. Dashboard → Environment: ----
+      - key: Cloudinary__CloudName
+        sync: false
+      - key: Cloudinary__ApiKey
+        sync: false
+      - key: Cloudinary__ApiSecret
+        sync: false
+      # ---- "forgot password" e-mails (SMTP). Without these the API only logs them. ----
+      - key: Email__Smtp__Host
+        sync: false # e.g. smtp.resend.com
+      - key: Email__Smtp__Port
+        value: "587"
+      - key: Email__Smtp__Username
+        sync: false
+      - key: Email__Smtp__Password
+        sync: false
+      - key: Email__From
+        value: no-reply@weddingplanner.ge
+      - key: Email__FromName
+        value: WeddingPlanner
+      # ---- Google sign-in: the same OAuth client id as frontend/src/environments/environment.live.ts
+      - key: Google__ClientId
+        sync: false
 
-  # ------------------------------------------------------ Angular 21 SSR frontend
+  # ------------------------------------------------------ Angular 21 SSR frontend (demo only)
+  # The live site is served by Cloudflare Workers. This free service is the old demo deploy
+  # (weddingplanner-web.onrender.com); delete it once the Workers site is up, or keep it as a
+  # second preview. Two-pass start: deploy with placeholders, then put the real URLs in.
   - type: web
     name: weddingplanner-web
     runtime: docker
@@ -76,7 +102,7 @@ services:
       # Build arg (Render passes env vars to Docker builds): the API origin compiled into
       # the bundle. Change → "Manual deploy → Clear build cache & deploy".
       - key: API_BASE_URL
-        sync: false # https://weddingplanner-api-xxxx.onrender.com
+        value: https://api.weddingplanner.ge
       # Angular SSR host allowlist (runtime, comma-separated, wildcards allowed). Without a
       # match the server silently falls back to client-side rendering.
       - key: NG_ALLOWED_HOSTS
