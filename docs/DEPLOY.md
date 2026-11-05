@@ -117,5 +117,4 @@ run on startup (`Database__MigrateOnStartup`). Watch the first deploy's logs for
 - Sign up a couple, log in, upload a vendor photo (lands on Cloudinary), request a password
   reset (the mail arrives), Google sign-in.
 - Admin login with `Seed__AdminEmail`.
-- The demo on `weddingplanner-web.onrender.com` can be deleted once the Workers site is up
-  (Render → service → Settings → Delete), or kept as a second preview.
+- The old demo on `weddingplanner-web.onrender.com` was deleted on 2026-11-05; Render now hosts only the API.
