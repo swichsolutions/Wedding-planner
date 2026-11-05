@@ -59,7 +59,7 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
 ## Phase A — Public site (brings couple traffic, CLAUDE.md §3)
 
 ### A1. Header, footer, legal pages
-- **Status (2026-10-21): done**, apart from the legal text itself. Header per D1–D3: three sections
+- **Status (2026-10-21): done.** Legal text: short default terms + privacy seeded on startup when missing (`LegalPagesSeeder`, 2026-11-05); edit further in the admin content editor. Header per D1–D3: three sections
   whose titles open home, the catalog and the tips hub; dropdowns on hover (desktop), on the arrow
   (phones, keyboards); no „ჩემი ქორწილი" group. The organizer got a minimal inner menu instead
   (B1 builds it out). `/terms` and `/privacy` show their text once it's published in the admin

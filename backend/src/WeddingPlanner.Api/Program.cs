@@ -237,6 +237,7 @@ using (var scope = app.Services.CreateScope())
         await IdentitySeeder.SeedRolesAsync(roleManager);
 
         await CategoryCatalog.SyncAsync(db);
+        await LegalPagesSeeder.SeedAsync(db); // /terms and /privacy, only when missing
 
         if (app.Environment.IsDevelopment())
             await DbSeeder.SeedAsync(db);
