@@ -1,0 +1,39 @@
+// The home chapter's day preview: the picker, the day bar on a white board, two buttons.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.dp {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+
+  @include bp.respond-to(md) {
+    gap: var(--space-6);
+  }
+}
+
+.dp__board {
+  width: 100%;
+  padding: var(--space-5) var(--space-2) var(--space-4);
+  border: 1px solid var(--paper-line);
+  border-radius: 24px;
+  background: #fff;
+
+  @include bp.respond-to(md) {
+    padding: var(--space-6) var(--space-6) var(--space-5);
+  }
+}
+
+.dp__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}

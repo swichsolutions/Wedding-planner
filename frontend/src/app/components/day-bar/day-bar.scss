@@ -1,0 +1,234 @@
+// The day bar: labels above and below, the axis, hour ticks, a legend. The three phases keep
+// one colour each everywhere (the picker's mini bars, the pins, the list): getting ready =
+// ivory-deep, ceremony / reception = peach, party = charcoal.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.db {
+  --above: 4.25rem; // room for the labels over the axis
+  --below: 4.25rem; // ... and under the ticks
+  --axis: 14px;
+  --ticks: 1.5rem;
+  --pin: 44px; // the icon pins (Beka, 2026-11-03: bigger)
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: var(--above) var(--space-2) 0;
+
+  @include bp.respond-to(md) {
+    --above: 5.25rem;
+    --below: 5.25rem;
+    --axis: 16px;
+    --pin: 54px;
+    padding-inline: var(--space-4);
+  }
+}
+
+// ---- the axis ----
+.db__axis {
+  position: relative;
+  height: var(--axis);
+  border-radius: 999px;
+  background: var(--ivory-deep);
+  overflow: hidden;
+}
+
+// the phases are told apart by colour alone on the axis; the legend names them
+.db__seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--ivory-deep);
+
+  &--ceremony,
+  &--reception {
+    background: var(--peach);
+  }
+
+  &--party {
+    background: var(--ink);
+  }
+}
+
+// ---- hour ticks ----
+.db__ticks {
+  position: relative;
+  height: var(--ticks);
+  margin-bottom: var(--below);
+}
+
+.db__tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 6px;
+  background: var(--paper-line-strong);
+  transform: translateX(-50%);
+
+  span {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--ink-500);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  // on narrow screens only every other hour is labelled
+  @media (max-width: 767px) {
+    &--odd span {
+      display: none;
+    }
+  }
+}
+
+// ---- the key moments ----
+.db__marks {
+  position: absolute;
+  top: 0;
+  right: var(--space-2);
+  bottom: 0;
+  left: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+
+  @include bp.respond-to(md) {
+    right: var(--space-4);
+    left: var(--space-4);
+  }
+}
+
+.db__mark {
+  position: absolute;
+  top: calc(var(--above) + var(--axis) / 2);
+  left: calc(var(--x) * 1%);
+  width: 0;
+  height: 0;
+}
+
+.db__pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--pin);
+  height: var(--pin);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--ivory-deep);
+  color: var(--ink);
+  font-size: 24px; // the icon is 1em
+  box-shadow: 0 2px 10px rgba(48, 43, 45, 0.18);
+  transform: translate(-50%, -50%);
+
+  &--ceremony,
+  &--reception {
+    background: var(--peach);
+  }
+
+  &--party {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  @include bp.respond-to(md) {
+    font-size: 30px;
+  }
+}
+
+// the label: above the pin, or below the ticks for every other moment
+.db__label {
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--pin) / 2 + 6px);
+  display: grid;
+  gap: 1px;
+  width: max-content;
+  max-width: 7.5rem;
+  text-align: center;
+  transform: translateX(-50%);
+
+  .db__mark--below & {
+    top: calc(var(--pin) / 2 + var(--ticks) + 8px);
+    bottom: auto;
+  }
+
+  // the first and last moments keep their labels inside the bar
+  .db__mark--first & {
+    text-align: left;
+    transform: none;
+  }
+
+  .db__mark--last & {
+    left: auto;
+    right: 0;
+    text-align: right;
+    transform: none;
+  }
+
+  @include bp.respond-to(md) {
+    max-width: 9.5rem;
+  }
+}
+
+.db__time {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.db__act {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--ink-700);
+
+  // phones: time only, the list below says what happens
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+// ---- legend ----
+.db__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  font-size: var(--fs-caption);
+  color: var(--ink-700);
+}
+
+.db__key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.db__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ivory-deep);
+  box-shadow: inset 0 0 0 1px rgba(48, 43, 45, 0.12);
+
+  &--ceremony,
+  &--reception {
+    background: var(--peach);
+  }
+
+  &--party {
+    background: var(--ink);
+  }
+}

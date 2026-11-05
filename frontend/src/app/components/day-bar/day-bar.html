@@ -1,0 +1,36 @@
+@let d = day();
+<figure class="db" [attr.aria-label]="'schedules.barLabel' | translate">
+  <!-- the key moments, above and below the axis at their real times -->
+  <ol class="db__marks" role="list">
+    @for (m of d.marks; track m.time) {
+      <li class="db__mark" [class.db__mark--below]="m.below" [class.db__mark--last]="$last" [class.db__mark--first]="$first"
+        [style.--x]="m.left">
+        <span class="db__pin" [class]="'db__pin db__pin--' + m.phase"><app-day-icon [name]="m.icon" /></span>
+        <span class="db__label">
+          <span class="db__time num">{{ m.time }}</span>
+          <span class="db__act">{{ m.activity }}</span>
+        </span>
+      </li>
+    }
+  </ol>
+
+  <!-- the axis: the day from its first moment to its last, coloured by phase -->
+  <div class="db__axis" aria-hidden="true">
+    @for (seg of d.segments; track $index) {
+      <div [class]="'db__seg db__seg--' + seg.phase" [style.left.%]="seg.left" [style.width.%]="seg.width"></div>
+    }
+  </div>
+
+  <!-- hour ticks -->
+  <div class="db__ticks" aria-hidden="true">
+    @for (t of d.ticks; track t.label) {
+      <span class="db__tick" [class.db__tick--odd]="t.odd" [style.left.%]="t.left"><span class="num">{{ t.label }}</span></span>
+    }
+  </div>
+
+  <figcaption class="db__legend">
+    @for (p of d.phases; track p) {
+      <span class="db__key"><span [class]="'db__swatch db__swatch--' + p"></span>{{ 'schedules.phase.' + p | translate }}</span>
+    }
+  </figcaption>
+</figure>

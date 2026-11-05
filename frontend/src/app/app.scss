@@ -110,10 +110,6 @@ main {
 
   // brand theme (Nus): its tall ascenders/descenders need more room between lines,
   // and its capital N reads as a Π at 12px, so the language codes stay lowercase
-  &.theme-brand .hdr__panel-d {
-    line-height: 1.45;
-  }
-
   &.theme-brand .hdr__lang,
   &.theme-brand .lang__btn {
     text-transform: none;
@@ -338,13 +334,6 @@ main {
     font-size: var(--fs-small);
     font-weight: var(--fw-medium);
     line-height: 1.3;
-  }
-
-  &__panel-d {
-    font-family: var(--font-statement);
-    font-size: var(--fs-caption);
-    line-height: 1.35;
-    color: var(--ink-500);
   }
 
   &__actions {

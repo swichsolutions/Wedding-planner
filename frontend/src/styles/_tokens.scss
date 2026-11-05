@@ -101,8 +101,12 @@
   // Brand faces: GF Aisi 2025 (Merab Getsadze, typeface.ge), Medium, see _base.scss.
   // Display = Mt, condensed Mtavruli capitals, for headings and large text only.
   // Text = Nus, its lowercase companion, for everything else.
-  --font-brand-display: 'GF Aisi Mt', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
-  --font-brand-text: 'GF Aisi Nus', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  // 2026-11-03 (Beka): GF Aisi read badly at text sizes, so the brand faces are now Noto Sans
+  // Georgian for everything — the variable font index.html already loads (weights 100–900 and a
+  // width axis). Headings use it heavy and slightly condensed (see _brand.scss); the GF Aisi
+  // @font-face rules in _base.scss stay for the invitation designs.
+  --font-brand-display: 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  --font-brand-text: 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
   --stretch-display: 70%;
   --stretch-ui: 100%;
 

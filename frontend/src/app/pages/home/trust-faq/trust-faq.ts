@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { CarouselArrow } from '../../../components/carousel-arrow/carousel-arrow';
+
 /**
  * "ნამდვილად დამეხმარება?" — the doubts chapter of the home page, after Revolut's
  * Bills page: the promise on the left, a carousel of question cards on the right that
@@ -15,7 +17,7 @@ import { TranslatePipe } from '@ngx-translate/core';
  */
 @Component({
   selector: 'app-trust-faq',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, CarouselArrow],
   templateUrl: './trust-faq.html',
   styleUrl: './trust-faq.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

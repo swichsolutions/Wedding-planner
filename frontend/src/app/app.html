@@ -34,7 +34,6 @@
                     <a class="hdr__panel-link" [routerLink]="it.link" [queryParams]="it.query ?? null"
                       [fragment]="it.fragment" (click)="closeMenu()">
                       <span class="hdr__panel-t">{{ 'nav.g.' + g.key + '.i.' + it.key + '.t' | translate }}</span>
-                      <span class="hdr__panel-d">{{ 'nav.g.' + g.key + '.i.' + it.key + '.d' | translate }}</span>
                     </a>
                   </li>
                 }

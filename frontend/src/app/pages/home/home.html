@@ -20,11 +20,12 @@
       <!-- Product preview (Revolut's "Personal · £6,012 · Accounts" slot): the centre card's
            text — "where do I start?" → plan your wedding (sitemap §2, the section that
            follows the banner). -->
-      <div class="chip chip--center" aria-hidden="true">
+      <!-- a real link (Beka, 2026-11-03): the organizer for a signed-in couple, sign-up otherwise -->
+      <a class="chip chip--center chip--link" [routerLink]="stepLink('organize')">
         <span class="chip__label">{{ 'home.stage.center.label' | translate }}</span>
         <span class="chip__value">{{ 'home.stage.center.value' | translate }}</span>
-        <span class="chip__sub">{{ 'home.stage.center.sub' | translate }}</span>
-      </div>
+        <span class="chip__sub">{{ heroCta().key | translate }}</span>
+      </a>
     </div>
 
     <!-- The frame (Revolut's hero outline, the step card's hairline): at rest a tall
@@ -51,7 +52,10 @@
     </div>
 
     <!-- left card: venues & services (sitemap §3); the centre card is planning (§2) -->
-    <div class="stage__card stage__card--l" aria-hidden="true">
+    <!-- The cards are links (Beka, 2026-11-03): the catalog on the left, the organizer on the
+         right (sign-up first for a visitor). Hidden from assistive tech until the stage has
+         run (they are duplicates of the header links until then). -->
+    <a class="stage__card stage__card--l" [routerLink]="stepLink('find')" tabindex="-1" aria-hidden="true">
       <img [src]="venueImg" alt="" loading="lazy" width="600" height="800" />
       <div class="stage__card-scrim"></div>
       <div class="chip">
@@ -59,10 +63,10 @@
         <span class="chip__value">{{ 'home.stage.left.value' | translate }}</span>
         <span class="chip__sub">{{ 'home.stage.left.sub' | translate }}</span>
       </div>
-    </div>
+    </a>
 
     <!-- right card: the personal organizer (sitemap: "help me organize everything") -->
-    <div class="stage__card stage__card--r" aria-hidden="true">
+    <a class="stage__card stage__card--r" [routerLink]="stepLink('organize')" tabindex="-1" aria-hidden="true">
       <img [src]="organizerImg" alt="" loading="lazy" width="600" height="800" />
       <div class="stage__card-scrim"></div>
       <div class="chip">
@@ -70,7 +74,7 @@
         <span class="chip__value">{{ 'home.stage.right.chipLabel' | translate }}</span>
         <span class="chip__sub">{{ 'home.stage.right.sub' | translate }}</span>
       </div>
-    </div>
+    </a>
 
     <a class="hero__down" href="#start" [attr.aria-label]="'home.hero.scroll' | translate">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6 6-6"/></svg>
@@ -85,7 +89,7 @@
     <p class="strip__title">{{ 'home.stage.title' | translate }}</p>
     <p class="strip__lead">{{ 'home.stage.lead' | translate }}</p>
     <div class="strip__track" #stripTrack (scroll)="onStripScroll(stripTrack)">
-      <div class="strip__card" [class.is-active]="stripActive() === 0">
+      <a class="strip__card" [class.is-active]="stripActive() === 0" [routerLink]="stepLink('find')" tabindex="-1">
         <img [src]="venueImg" alt="" loading="lazy" width="600" height="800" />
         <div class="stage__card-scrim"></div>
         <div class="chip">
@@ -93,17 +97,17 @@
           <span class="chip__value">{{ 'home.stage.left.value' | translate }}</span>
           <span class="chip__sub">{{ 'home.stage.left.sub' | translate }}</span>
         </div>
-      </div>
-      <div class="strip__card" [class.is-active]="stripActive() === 1">
+      </a>
+      <a class="strip__card" [class.is-active]="stripActive() === 1" [routerLink]="stepLink('organize')" tabindex="-1">
         <img src="/media/hero-tall.webp" alt="" loading="lazy" width="1024" height="1536" />
         <div class="stage__card-scrim"></div>
         <div class="chip">
           <span class="chip__label">{{ 'home.stage.center.label' | translate }}</span>
           <span class="chip__value">{{ 'home.stage.center.value' | translate }}</span>
-          <span class="chip__sub">{{ 'home.stage.center.sub' | translate }}</span>
+          <span class="chip__sub">{{ heroCta().key | translate }}</span>
         </div>
-      </div>
-      <div class="strip__card" [class.is-active]="stripActive() === 2">
+      </a>
+      <a class="strip__card" [class.is-active]="stripActive() === 2" [routerLink]="stepLink('organize')" tabindex="-1">
         <img [src]="organizerImg" alt="" loading="lazy" width="600" height="800" />
         <div class="stage__card-scrim"></div>
         <div class="chip">
@@ -111,7 +115,7 @@
           <span class="chip__value">{{ 'home.stage.right.chipLabel' | translate }}</span>
           <span class="chip__sub">{{ 'home.stage.right.sub' | translate }}</span>
         </div>
-      </div>
+      </a>
     </div>
     <div class="strip__dots">
       @for (i of [0, 1, 2]; track i) {
@@ -176,6 +180,10 @@
             </li>
           }
         </ul>
+
+        <!-- the ring in the far right corner: fills while the carousel waits, one card forward on click -->
+        <app-car-arrow class="orbit__arrow" [label]="'home.carousel.next' | translate" [interval]="3800"
+          [paused]="orbitHover()" [tick]="orbitActive()" (next)="orbitStep(1)" />
       </div>
 
       <!-- Carousel controls (a group, not tabs: there are no tab panels); the shown one is current. -->
@@ -263,7 +271,7 @@
   <div class="container start__copy">
     <h2 class="start__title">{{ 'home.start.title' | translate }}</h2>
     <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
-    <a class="pill-cta pill-cta--white" routerLink="/planning">
+    <a class="pill-cta pill-cta--white" [routerLink]="stepLink('organize')">
       <span>{{ 'home.start.cta' | translate }}</span>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
     </a>
@@ -280,11 +288,20 @@
             <span class="start__card-label">{{ 'home.start.' + s.key + '.title' | translate }}</span>
             <span class="start__card-value">{{ 'home.start.' + s.key + '.value' | translate }}</span>
           </div>
-          <span class="start__card-sub">{{ 'home.start.' + s.key + '.sub' | translate }}</span>
+          <!-- the pill is a link (Beka, 2026-11-03): define → the organizer (sign-up first),
+               choose → the catalog, plan the details → the day schedules -->
+          <a class="start__card-sub" [routerLink]="stepLink(s.to)">
+            {{ 'home.start.' + s.key + '.sub' | translate }}
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </a>
         </div>
       }
     }
   </div>
+
+  <!-- the ring in the far right corner: fills while the slide waits, one step forward on click -->
+  <app-car-arrow class="start__arrow car-arrow--light" [label]="'home.carousel.next' | translate"
+    [interval]="10400" [tick]="slide()" (next)="stepSlide(1)" />
 
   <!-- step labels: show which step is on screen and switch to it on click -->
   <ol class="start__dots" [attr.aria-label]="'home.start.title' | translate">
@@ -304,7 +321,7 @@
      scroll. It holds the organizer alone, in brand ivory (the organizer panel is
      ivory, between the mint categories and the mint day); add a second section +
      colour to get the blend back. -->
-<div class="band" [appColorBand]="['#faf7f2']">
+<div class="band" [appColorBand]="['#ffffff']">
 <section id="organize" class="chap chap--spruce chap--charcoal chap--screen chap--organizer">
   <!-- copy + a tilted phone running a small demo of the plan; the cream panel IS the
        screen (full height and width, no frame), like every other chapter -->
@@ -319,17 +336,14 @@
   <div class="container">
     <div class="tl" appReveal>
       <div class="tl__copy">
-        <p class="tl__overline">{{ 'home.day.overline' | translate }}</p>
+        <!-- just the question (Beka, 2026-11-03): no overline pill, no lead line — the picture
+             cards below say the rest -->
         <h2 class="tl__title">{{ 'home.day.title' | translate }}</h2>
-        <p class="tl__lead">{{ 'home.day.leadShort' | translate }}</p>
       </div>
 
-      <app-day-schedules />
-
-      <a class="pill-cta" routerLink="/schedules">
-        <span>{{ 'home.day.cta' | translate }}</span>
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-      </a>
+      <!-- pick a scenario, see the day's key moments; the full timeline is on /schedules
+           (the three text cards went on 2026-11-03: hard to take in) -->
+      <app-day-preview />
     </div>
   </div>
 </section>

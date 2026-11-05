@@ -6,10 +6,60 @@
       <span aria-current="page">{{ 'schedules.title' | translate }}</span>
     </nav>
     <h1 class="sc__title">{{ 'schedules.title' | translate }}</h1>
-    <p class="sc__lead">{{ 'schedules.lead' | translate }}</p>
+    <p class="sc__lead">{{ 'schedules.leadShort' | translate }}</p>
   </header>
 
-  <div class="container">
-    <app-day-schedules [headingLevel]="2" />
+  @let s = active();
+  <div class="container sc__flow">
+    <!-- 1 · which kind of day: three picture cards -->
+    <section class="sc__step">
+      <h2 class="sc__step-h"><span class="sc__n" aria-hidden="true">1</span>{{ 'schedules.step1' | translate }}</h2>
+      <app-day-scenarios [active]="s.key" (pick)="pick($event)" />
+    </section>
+
+    <!-- 2 · the day as a picture: the axis with the big moments on it -->
+    <section class="sc__step">
+      <h2 class="sc__step-h"><span class="sc__n" aria-hidden="true">2</span>{{ 'schedules.step2' | translate }}</h2>
+      <div class="sc__board">
+        <app-day-bar [scenario]="s.key" />
+      </div>
+      <p class="sc__summary">{{ s.summary }}</p>
+    </section>
+
+    <!-- 3 · every moment, for whoever wants the detail -->
+    <section class="sc__step">
+      <h2 class="sc__step-h"><span class="sc__n" aria-hidden="true">3</span>{{ 'schedules.step3' | translate }}</h2>
+      <ol class="tl" role="list">
+        @for (r of s.rows; track $index; let i = $index) {
+          @if (i === 0 || r.phase !== s.rows[i - 1].phase) {
+            <li class="tl__phase"><span [class]="'tl__phase-pill tl__phase-pill--' + r.phase">{{ 'schedules.phase.' + r.phase | translate }}</span></li>
+          }
+          <li class="tl__row">
+            <span class="tl__time num">{{ r.time }}</span>
+            <span [class]="'tl__pin tl__pin--' + r.phase" aria-hidden="true"><app-day-icon [name]="r.icon" /></span>
+            <span class="tl__body">
+              <span class="tl__act">{{ r.activity }}</span>
+              @if (r.note) {
+                <span class="tl__note">{{ r.note }}</span>
+              }
+            </span>
+            @if (r.who) {
+              <span class="tl__who"><span class="sc__sr">{{ 'schedules.who' | translate }}: </span>{{ r.who }}</span>
+            }
+          </li>
+        }
+      </ol>
+      @if (s.note) {
+        <p class="sc__note">{{ s.note }}</p>
+      }
+    </section>
+
+    <div class="sc__cta">
+      <!-- vendors and admins have no wedding day to fill -->
+      @if (!auth.isAuthenticated() || auth.isCouple()) {
+        <button type="button" class="btn btn--primary btn--lg" (click)="use()">{{ 'schedules.use' | translate }}</button>
+      }
+      <p class="sc__hint">{{ 'schedules.hint' | translate }}</p>
+    </div>
   </div>
 </div>

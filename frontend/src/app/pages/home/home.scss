@@ -40,8 +40,10 @@
     background: var(--paper-deep);
   }
 
+  // 2026-11-03 (Beka): the final call is on the white page like everything else; the peach
+  // stays in the small callouts only.
   &--peach {
-    background: var(--peach);
+    background: var(--paper);
   }
 
   // a carousel runs off the screen edge: clip it here, not at the container
@@ -397,6 +399,9 @@
     z-index: 1;
     overflow: hidden;
     border-radius: 18px;
+    color: inherit; // the cards are links now
+    text-decoration: none;
+    cursor: pointer;
     background: var(--spruce);
     box-shadow: var(--shadow-lg);
     opacity: var(--slide);
@@ -1043,13 +1048,40 @@
     grid-row: 3;
     align-self: end;
     justify-self: center;
-    padding: var(--space-1) var(--space-3);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 36px;
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4);
     border-radius: var(--radius-pill);
-    background: rgba(250, 247, 242, 0.94);
+    background: rgba(255, 255, 255, 0.94);
     color: var(--ink);
     font-family: var(--font-ui);
-    font-size: 0.875rem; // 14px: the theme's floor for Nus; fits every card width
+    font-size: 0.875rem; // 14px; fits every card width
     font-weight: var(--fw-semibold);
+    text-decoration: none;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+    // a link (2026-11-03): the hover makes that visible before the pointer does
+    &:hover,
+    &:focus-visible {
+      background: var(--color-action);
+      color: #fff;
+    }
+  }
+
+  // the one arrow, in the section's far right corner, vertically centred (the section is a
+  // flex column, so it is taken out of the flow explicitly)
+  &__arrow {
+    position: absolute;
+    top: 50%;
+    right: var(--space-3);
+    left: auto;
+    z-index: 2;
+
+    @include bp.respond-to(lg) {
+      right: var(--space-8);
+    }
   }
 
   // labels at the bottom: which step is on screen (not controls)
@@ -1445,6 +1477,16 @@
     -webkit-user-select: none;
   }
 
+  // the one arrow, in the stage's far right corner (Beka, 2026-11-03), at card height
+  &__arrow {
+    top: calc(var(--ch) / 2);
+    right: var(--space-2);
+
+    @include bp.respond-to(md) {
+      right: var(--space-4);
+    }
+  }
+
   &__cards {
     position: absolute;
     left: 50%;
@@ -1780,7 +1822,7 @@
 // the organizer alone (forest green); the categories moved to light grey.
 // =============================================================================
 .band {
-  background: var(--band, #faf7f2);
+  background: var(--band, #fff);
 }
 
 // the organizer chapter is the cream panel itself: no chapter padding, no centring box

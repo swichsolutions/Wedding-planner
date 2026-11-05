@@ -22,7 +22,9 @@
   color: var(--charcoal);
 
   // ---- surfaces ----
-  --paper: var(--ivory);
+  // 2026-11-03 (Beka): large backgrounds are plain white everywhere (the ivory read as a
+  // "warm" page next to the home hero). Ivory-deep stays for small fills and sunken panels.
+  --paper: #fff;
   --paper-deep: var(--ivory-deep);
   --paper-white: #fff;
   --paper-line: color-mix(in srgb, var(--charcoal) 14%, transparent);
@@ -44,7 +46,7 @@
   --spruce-line: color-mix(in srgb, var(--ivory) 16%, transparent);
 
   // ---- semantic aliases ----
-  --color-bg: var(--ivory);
+  --color-bg: #fff;
   --color-surface: #fff;
   --color-surface-sunken: var(--ivory-deep);
   --color-text: var(--charcoal);
@@ -56,7 +58,7 @@
   --color-action: var(--evergreen); // buttons
   --color-action-hover: var(--evergreen-700);
   --color-focus: var(--charcoal);
-  --ring: 0 0 0 2px var(--ivory), 0 0 0 4px var(--charcoal);
+  --ring: 0 0 0 2px #fff, 0 0 0 4px var(--charcoal);
 
   // ---- the old clay accent: the brand has no orange. Its button uses (.btn--clay,
   // .btn--pink, --color-accent) become evergreen buttons; its tints go neutral. ----
@@ -83,24 +85,23 @@
   --color-ink-600: var(--charcoal-600);
   --color-ink-700: var(--charcoal-600);
   --color-ink-900: var(--charcoal);
-  --color-canvas: var(--ivory);
+  --color-canvas: #fff;
 
-  // ---- type: Mt capitals for display, Nus lowercase for text. Neither has a width
-  // axis; no negative tracking (the condensed capitals touch). Nus is scaled in its
-  // @font-face (size-adjust), so the site's type scale mostly stays as it is; its
-  // tall ascenders/descenders need line-height ≥ ~1.4 on wrapping text, and the
-  // smallest role is raised a step (13px Nus has a 5px letter body). ----
+  // ---- type (2026-11-03): Noto Sans Georgian throughout, for readability. Headings and
+  // large text are heavy and slightly condensed (the variable font's width axis) so they
+  // keep a poster feel without the GF Aisi capitals; running text is the normal width.
+  // The smallest role stays a step up (14px) for Georgian letterforms. ----
   --fs-caption: 0.875rem; // 14
   --font-display: var(--font-brand-display);
   --font-body: var(--font-brand-text);
   --font-ui: var(--font-brand-text);
   --font-statement: var(--font-brand-text);
-  --stretch-display: normal;
+  --stretch-display: 87.5%;
   --stretch-ui: normal;
-  --tracking-display: 0;
-  --tracking-tight: 0;
-  --lh-display: 1;
-  --lh-heading: 1.06;
+  --tracking-display: -0.01em;
+  --tracking-tight: -0.005em;
+  --lh-display: 1.02;
+  --lh-heading: 1.12;
 }
 
 // Links inside running text: charcoal and underlined. Evergreen is for buttons only, and colour

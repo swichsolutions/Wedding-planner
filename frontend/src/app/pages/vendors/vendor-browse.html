@@ -9,7 +9,7 @@
         <label class="cat__search-label" for="cat-q">{{ 'vendors.searchLabel' | translate }}</label>
         <input id="cat-q" #q type="search" name="q" autocomplete="off" enterkeyhint="search"
           [value]="filter().q ?? ''" [placeholder]="'vendors.searchPlaceholder' | translate" />
-        <button class="btn btn--primary" type="submit">{{ 'vendors.searchCta' | translate }}</button>
+        <button class="btn btn--primary btn--square" type="submit">{{ 'vendors.searchCta' | translate }}</button>
       </form>
     </header>
 

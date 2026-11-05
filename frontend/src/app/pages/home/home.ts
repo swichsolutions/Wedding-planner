@@ -11,7 +11,8 @@ import { ColorBand } from '../../core/color-band.directive';
 import { OrganizerHero } from './organizer-hero/organizer-hero';
 import { TrustFaq } from './trust-faq/trust-faq';
 import { FinalCall } from './final-call/final-call';
-import { DaySchedules } from '../../components/day-schedules/day-schedules';
+import { DayPreview } from '../../components/day-preview/day-preview';
+import { CarouselArrow } from '../../components/carousel-arrow/carousel-arrow';
 import { img } from '../../core/catalog';
 import { CategoryStat, VendorService } from '../../core/vendor.service';
 
@@ -40,7 +41,7 @@ interface CategoryRow extends CategoryGroup {
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, TranslatePipe, Reveal, ScrollStage, ColorBand, OrganizerHero, TrustFaq, FinalCall, DaySchedules],
+  imports: [RouterLink, TranslatePipe, Reveal, ScrollStage, ColorBand, OrganizerHero, TrustFaq, FinalCall, DayPreview, CarouselArrow],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   // brand theme (Mint & Peach + GF Aisi) for the whole page, see styles/_brand.scss
@@ -161,13 +162,13 @@ export class Home {
   /** 03 — the three planning steps, each a full-bleed photo + the step card.
    * Rotates on its own (browser only, not under reduced motion); the bottom labels
    * also switch slides directly. */
-  protected readonly startSlides: { key: string; img: string; pos?: string }[] = [
+  protected readonly startSlides: { key: string; img: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
     // couple in a convertible under cypresses, b&w, portrait (Beka's photo 156.jpg);
     // the couple sits low in the frame, so wide screens anchor the crop there
-    { key: 's1', img: '/media/plan-define-2.webp', pos: 'center 78%' },
-    { key: 's2', img: img('photo-1583939003579-730e3918a45a', 2400) },
+    { key: 's1', img: '/media/plan-define-2.webp', pos: 'center 78%', to: 'organize' },
+    { key: 's2', img: img('photo-1583939003579-730e3918a45a', 2400), to: 'find' },
     // Beka's photo (OneDrive Desktop/9411badc...jpg), portrait, 1067 px wide source
-    { key: 's3', img: '/media/plan-details-3.webp', pos: 'center 55%' },
+    { key: 's3', img: '/media/plan-details-3.webp', pos: 'center 55%', to: 'day' },
   ];
   protected readonly slide = signal(0);
 
@@ -214,9 +215,22 @@ export class Home {
     // the hero: the orientation-specific render (same files as the <picture>)
     add({ as: 'image', type: 'image/webp', href: '/media/hero-wide.webp', media: '(orientation: landscape)' });
     add({ as: 'image', type: 'image/webp', href: '/media/hero-tall.webp', media: '(orientation: portrait)' });
-    for (const file of ['GFAisi2025Mt-Medium', 'GFAisi2025Nus-Medium']) {
-      add({ as: 'font', type: 'font/woff2', crossorigin: 'anonymous', href: `/fonts/${file}.woff2` });
-    }
+    // (the brand faces are Noto Sans Georgian since 2026-11-03, loaded by index.html's font link)
+  }
+
+  /** Where a stage card or a step pill leads (Beka, 2026-11-03): the catalog for "find the
+   * people", the day schedules for "the day", and the organizer for everything else — which
+   * means sign-up (or sign-in) first for a visitor, and their own page for a signed-in user. */
+  protected stepLink(key: 'find' | 'organize' | 'day'): string {
+    if (key === 'find') return '/vendors';
+    if (key === 'day') return '/schedules';
+    return this.heroCta().link;
+  }
+
+  /** One step forward or back through the planning slides (the arrow buttons). */
+  protected stepSlide(dir: 1 | -1): void {
+    const n = this.startSlides.length;
+    this.goToSlide((this.slide() + dir + n) % n);
   }
 
   /** Which row the stage photo shows; follows hover/focus, keeps the last one on leave.

@@ -201,6 +201,7 @@
     "dismiss": "Dismiss"
   },
   "home": {
+    "carousel": { "prev": "Previous", "next": "Next" },
     "hero": {
       "title": "Your dream",
       "titleEm": "wedding",
@@ -380,7 +381,8 @@
     },
     "day": {
       "overline": "Wedding-day schedule",
-      "leadShort": "Three common ways the day runs: what happens when, and who looks after it.",
+      "leadShort": "Pick a scenario and see the key moments of the day, in order.",
+      "full": "See the full schedule",
       "title": "What happens after what?",
       "cta": "See all schedules"
     },
@@ -425,7 +427,7 @@
       "center": {
         "label": "Where do I start?",
         "value": "Plan your wedding",
-        "sub": "Wedding-day schedule"
+        "sub": "Start planning"
       },
       "right": {
         "title": "How do I keep control?",
@@ -440,6 +442,15 @@
     }
   },
   "schedules": {
+    "hours": "{{n}} hours",
+    "barLabel": "The day on a time axis",
+    "step1": "Choose what your day looks like",
+    "step2": "This is how that day goes",
+    "step3": "The full schedule",
+    "leadShort": "Pick the scenario closest to your day and see what happens when.",
+    "pick": "Pick a scenario",
+    "tabs": {"one-venue": "All in one place", "church-restaurant": "Church + restaurant", "reception-only": "Party only"},
+    "phase": {"prep": "Getting ready", "ceremony": "Ceremony and reception", "reception": "Reception", "party": "Party"},
     "title": "Wedding-day schedules",
     "lead": "Three common ways the day runs: all in one place, a church wedding and then a restaurant, or an evening party only. Each shows the time, the activity and who’s responsible.",
     "meta": "Example wedding-day schedules: {{names}}. Time, activity and who’s responsible at every step.",

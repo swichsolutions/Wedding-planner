@@ -1,0 +1,160 @@
+// Three scenario cards: an icon in a peach disc, the name, the span, a mini phase bar. The
+// chosen card gets a charcoal border and a check. On phones they stack; from md up they sit
+// side by side.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.sn {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+
+  @include bp.respond-to(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+.sn__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'icon title' 'icon span' 'bar bar';
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  align-items: center;
+  width: 100%;
+  padding: var(--space-4);
+  border: 1.5px solid var(--paper-line);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    border-color: var(--paper-line-strong);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+  }
+
+  &.is-active {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 1px var(--ink);
+
+    .sn__check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .sn__icon {
+      background: var(--ink);
+      color: #fff;
+    }
+  }
+
+  @include bp.respond-to(md) {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'icon' 'title' 'span' 'bar';
+    row-gap: var(--space-2);
+    padding: var(--space-5);
+  }
+}
+
+.sn__icon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--peach);
+  color: var(--ink);
+  font-size: 24px; // the icon is 1em
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  @include bp.respond-to(md) {
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+}
+
+.sn__title {
+  grid-area: title;
+  align-self: end;
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  text-wrap: balance;
+
+  @include bp.respond-to(md) {
+    margin-top: var(--space-1);
+    font-size: 1.0625rem;
+  }
+}
+
+.sn__span {
+  grid-area: span;
+  align-self: start;
+  display: flex;
+  gap: var(--space-1);
+  font-size: var(--fs-caption);
+  color: var(--ink-500);
+}
+
+.sn__sep {
+  color: var(--ink-300);
+}
+
+// the mini bar: three segments, same colours as the day bar
+.sn__bar {
+  grid-area: bar;
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  margin-top: var(--space-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sn__seg {
+  height: 100%;
+  background: var(--ivory-deep);
+
+  &--ceremony,
+  &--reception {
+    background: var(--peach);
+  }
+
+  &--party {
+    background: var(--ink);
+  }
+}
+
+.sn__check {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}

@@ -1,0 +1,20 @@
+<div class="dp">
+  <!-- which kind of day: three picture cards -->
+  <app-day-scenarios [active]="activeKey()" (pick)="activeKey.set($event)" />
+
+  <!-- that day drawn on a time axis -->
+  <div class="dp__board">
+    <app-day-bar [scenario]="activeKey()" />
+  </div>
+
+  <div class="dp__cta">
+    <a class="btn btn--ink" routerLink="/schedules" [queryParams]="{ s: activeKey() }">
+      {{ 'home.day.full' | translate }}
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+    </a>
+    <!-- vendors and admins have no wedding day to fill -->
+    @if (!auth.isAuthenticated() || auth.isCouple()) {
+      <button type="button" class="btn btn--outline-ink" (click)="use()">{{ 'schedules.use' | translate }}</button>
+    }
+  </div>
+</div>

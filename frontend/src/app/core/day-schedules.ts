@@ -45,6 +45,63 @@ export function scheduleRows(key: string, lang: LangCode) {
   }));
 }
 
+/** The phases of a wedding day, for the timeline views (/schedules and the home chapter). */
+export type Phase = 'prep' | 'ceremony' | 'reception' | 'party';
+
+/** Where each example's rows change phase: row index → the phase that starts there. */
+const PHASES: Record<string, [number, Phase][]> = {
+  'one-venue': [[0, 'prep'], [3, 'ceremony'], [6, 'party']],
+  'church-restaurant': [[0, 'prep'], [3, 'ceremony'], [6, 'party']],
+  'reception-only': [[0, 'prep'], [1, 'reception'], [3, 'party']],
+};
+
+export function phaseOf(key: string, i: number): Phase {
+  let phase: Phase = 'prep';
+  for (const [from, p] of PHASES[key] ?? []) if (i >= from) phase = p;
+  return phase;
+}
+
+/** The rows that start a phase (for the key moments on the day bar). */
+export function phaseStarts(key: string): number[] {
+  return (PHASES[key] ?? [[0, 'prep']]).map(([i]) => i);
+}
+
+/** The icons the day views draw (components/day-icon). */
+export type DayIcon =
+  | 'mirror' | 'camera' | 'people' | 'rings' | 'car' | 'glasses' | 'music' | 'cake' | 'moon'
+  | 'door' | 'home' | 'church' | 'arch' | 'dot';
+
+/** A scenario's own icon (the picker cards). */
+export const SCENARIO_ICON: Record<string, DayIcon> = {
+  'one-venue': 'arch',
+  'church-restaurant': 'church',
+  'reception-only': 'glasses',
+};
+
+/** The icon for a row, from its Georgian activity text (the rows are fixed content). */
+export function iconFor(activityKa: string): DayIcon {
+  const a = activityKa;
+  if (a.includes('მომზადება')) return 'mirror';
+  if (a.includes('მაყრიონი')) return 'home';
+  if (a.includes('კორტეჟი')) return 'car';
+  if (a.includes('ჯვრისწერა') || a.includes('ცერემონია')) return 'rings';
+  if (a.includes('ფოტო')) return 'camera';
+  if (a.includes('სტუმრ')) return 'people';
+  if (a.includes('შემოსვლა')) return 'door';
+  if (a.includes('სუფრა')) return 'glasses';
+  if (a.includes('ცეკვ') || a.includes('ანსამბლ')) return 'music';
+  if (a.includes('ტორტი')) return 'cake';
+  if (a.includes('დასასრული')) return 'moon';
+  return 'dot';
+}
+
+/** "HH:MM" → minutes from the day's start; a time past midnight counts as the next day. */
+export function minutesOf(time: string, firstMinutes = 0): number {
+  const [h, m] = time.split(':').map(Number);
+  const t = h * 60 + m;
+  return t < firstMinutes ? t + 24 * 60 : t;
+}
+
 const T = (ka: string, en: string): LocalText => ({ ka, en });
 
 const STYLIST = T('სტილისტი', 'Stylist');

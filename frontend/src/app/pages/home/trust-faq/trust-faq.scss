@@ -252,6 +252,12 @@
   }
 }
 
+// ---- the one arrow, in the stage's far right corner (Beka, 2026-11-03), at card height ----
+.faq-arrow {
+  top: calc(var(--h) / 2);
+  right: var(--space-2);
+}
+
 // ---- dots, under the active card ----
 .dots {
   display: flex;

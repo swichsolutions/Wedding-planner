@@ -58,6 +58,10 @@
           </li>
         }
       </ul>
+
+      <!-- the ring in the far right corner: fills while the cards wait, one card forward on click -->
+      <app-car-arrow class="faq-arrow" [label]="'home.carousel.next' | translate" [interval]="4000"
+        [paused]="hover() || flipped() !== null" [tick]="active()" (next)="go(active() + 1)" />
     </div>
 
     <div class="dots">

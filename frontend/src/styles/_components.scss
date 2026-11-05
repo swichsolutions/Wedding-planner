@@ -10,7 +10,7 @@
   min-height: 44px; // touch target
   padding: 0 var(--space-6);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill); // every button is a pill (Beka, 2026-11-03); .btn--square opts out
   font-family: var(--font-ui);
   font-stretch: var(--stretch-ui);
   font-size: var(--fs-ui);
@@ -26,9 +26,53 @@
   }
 }
 
-// Pill variant — fully rounded ends; combine with any color modifier.
+// Pill variant — kept for older templates; every .btn is a pill now.
 .btn--pill {
   border-radius: var(--radius-pill);
+}
+
+// The one square button on the site: the catalog's search button, which sits flush
+// against its input (Beka, 2026-11-03).
+.btn--square {
+  border-radius: var(--radius-md);
+}
+
+// ---- Carousel arrow (Beka, 2026-11-03): every carousel has one round "next" button in its
+// far right corner, on top of the automatic rotation (no "previous"). The carousel's own box
+// is `position: relative`; the arrow sits at its vertical middle. ----
+// The class sits on the <app-car-arrow> host (components/carousel-arrow): this rule places and
+// sizes it and sets its colours; the component draws the gold ring, the fill and the arrow.
+.car-arrow {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  z-index: 3;
+  width: 56px;
+  height: 56px;
+  transform: translateY(-50%);
+
+  // colours on the white page: charcoal arrow, gold track, evergreen on hover
+  --ca-ink: var(--ink);
+  --ca-track: color-mix(in srgb, var(--gold) 70%, transparent);
+  --ca-disc: rgba(255, 255, 255, 0.72);
+  --ca-hover-bg: var(--color-action);
+  --ca-hover-ring: var(--color-action);
+  --ca-hover-ink: #fff;
+
+  // on dark photos: white arrow and fill, a faint white disc, white on hover
+  &--light {
+    --ca-ink: #fff;
+    --ca-track: rgba(255, 255, 255, 0.45);
+    --ca-disc: rgba(255, 255, 255, 0.14);
+    --ca-hover-bg: #fff;
+    --ca-hover-ring: #fff;
+    --ca-hover-ink: var(--ink);
+  }
+
+  @media (max-width: 767px) {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .btn--primary {
