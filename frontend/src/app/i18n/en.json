@@ -872,6 +872,11 @@
     "strengthContact": "Add a contact method",
     "strengthDone": "Your profile looks great — couples can see everything they need.",
     "statusPending": "Pending — visible after moderation",
+    "claimPendingTitle": "Request under review",
+    "claimPending": "Your account will be linked to this profile after a check. We'll call the number on the listing, usually within 1–2 working days.",
+    "claimRelogin": "Once approved, sign in again and the profile appears here.",
+    "claimRejectedTitle": "Request not confirmed",
+    "claimRejected": "We couldn't confirm this profile is yours. If that's a mistake, write to us from the help page.",
     "statusApproved": "Published",
     "views": "Views",
     "contacts": "Contacts",
@@ -974,7 +979,18 @@
     "tabImport": "Import",
     "noOwner": "No owner",
     "noPhotos": "No photos",
-    "edit": "Edit"
+    "edit": "Edit",
+    "tabClaims": "Requests",
+    "claimsHint": "At sign-up the vendor said an imported profile is theirs. Call the number on the listing and confirm.",
+    "noClaims": "No requests.",
+    "claimBy": "requested by",
+    "emailMatches": "Email matches",
+    "reject": "Reject",
+    "claimStatus": {
+      "Pending": "Pending",
+      "Approved": "Approved",
+      "Rejected": "Rejected"
+    }
   },
   "adminImport": {
     "intro": "Upload the filled-in vendor spreadsheet (vendor-collection.xlsx). One row is one vendor.",
@@ -1305,6 +1321,11 @@
     "invalidCredentials": "Email or password is incorrect.",
     "sessionExpired": "Your session has expired. Sign in again to continue.",
     "registerError": "Registration failed. This email may already be in use.",
+    "claimPrompt": "Already listed on WeddingPlanner? If this is your profile, pick it:",
+    "claimThis": "That's mine",
+    "claimChosen": "Your profile:",
+    "claimChange": "Change",
+    "claimNote": "We link the account to the profile after a check — we'll call the number on the listing.",
     "required": "This field is required",
     "forgotPassword": "Forgot password?",
     "or": "or"

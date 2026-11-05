@@ -15,6 +15,30 @@ public class VendorsController : ControllerBase
 
     public VendorsController(AppDbContext db) => _db = db;
 
+    /// <summary>
+    /// Imported profiles nobody owns yet, by name: the vendor registration form offers them so a
+    /// vendor claims their listing instead of creating a second one (A3 takeover). Names, categories
+    /// and cities are public on the profiles anyway.
+    /// </summary>
+    [HttpGet("claimable")]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<IEnumerable<ClaimableVendorDto>>> Claimable([FromQuery] string? q)
+    {
+        q = q?.Trim();
+        if (string.IsNullOrEmpty(q) || q.Length < 2)
+            return Ok(Array.Empty<ClaimableVendorDto>());
+
+        // ILIKE wildcards in the typed text are literal; "\\" is the escape character below.
+        var pattern = "%" + q.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+        var rows = await _db.Vendors.AsNoTracking()
+            .Where(v => EF.Functions.ILike(v.Name, pattern, "\\") && !_db.Users.Any(u => u.VendorId == v.Id))
+            .OrderBy(v => v.Name)
+            .Take(8)
+            .Select(v => new ClaimableVendorDto(v.Id, v.Name, v.Category.Slug, v.City, v.IsApproved))
+            .ToListAsync();
+        return Ok(rows);
+    }
+
     /// <summary>Guest-capacity buckets (P2): key → the range a venue's capacity must overlap.</summary>
     private static readonly Dictionary<string, (int Lo, int Hi)> GuestBuckets = new()
     {

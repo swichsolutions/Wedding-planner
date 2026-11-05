@@ -25,8 +25,20 @@ export interface RegisterVendorPayload {
   email: string;
   password: string;
   vendorName: string;
-  categorySlug: string;
+  /** Required unless claimVendorId is set: the claimed profile has a category already. */
+  categorySlug?: string;
   city?: string;
+  /** An imported profile the vendor says is theirs (A3 takeover); the account then waits for admin approval. */
+  claimVendorId?: number;
+}
+
+/** An imported profile nobody owns yet, offered on the vendor sign-up form. */
+export interface ClaimableVendor {
+  id: number;
+  name: string;
+  categorySlug: string;
+  city: string;
+  isApproved: boolean;
 }
 
 export interface RegisterCouplePayload {
@@ -240,6 +252,11 @@ export class AuthService {
           this.newAccount = !!r.isNew && r.roles.includes('Couple');
         }),
       );
+  }
+
+  /** Imported profiles nobody owns yet whose name matches `q` (A3 takeover). */
+  claimableVendors(q: string): Observable<ClaimableVendor[]> {
+    return this.http.get<ClaimableVendor[]>(`${this.base}/api/vendors/claimable`, { params: { q } });
   }
 
   registerVendor(payload: RegisterVendorPayload): Observable<AuthResponse> {

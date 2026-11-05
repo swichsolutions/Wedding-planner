@@ -38,3 +38,75 @@
   border: 5px solid #fff;
   box-shadow: 0 10px 30px -12px rgba(20, 12, 14, 0.45);
 }
+
+// A3 takeover: imported listings matching the typed name, and the one picked as "mine"
+.auth__claims,
+.auth__claim {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-small);
+}
+
+.auth__claims {
+  border: 1px solid var(--paper-line);
+  background: var(--paper-deep);
+}
+
+.auth__claims-title {
+  margin: 0 0 var(--space-2);
+  font-weight: var(--fw-semibold);
+}
+
+.auth__claims-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+}
+
+.auth__claims-sub {
+  color: var(--ink-500);
+}
+
+.auth__claim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  background: var(--peach);
+}
+
+.auth__claim-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-caption);
+  color: var(--ink-700);
+}
+
+.auth__claim-btn {
+  flex: 0 0 auto;
+  padding: 0.35em 0.9em;
+  border: 1px solid var(--color-action);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-action);
+  font: inherit;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-action);
+    color: #fff;
+  }
+}

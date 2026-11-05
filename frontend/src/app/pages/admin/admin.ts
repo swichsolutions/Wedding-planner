@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AdminService, AdminVendor } from '../../core/admin.service';
+import { AdminClaim, AdminService, AdminVendor } from '../../core/admin.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { categoryKey } from '../../core/catalog';
@@ -12,8 +12,8 @@ import { formatDate } from '../../core/dates';
 import { AdminContent } from './admin-content';
 import { AdminImport } from './admin-import';
 
-type AdminTab = 'vendors' | 'content' | 'import';
-const TABS: AdminTab[] = ['vendors', 'content', 'import'];
+type AdminTab = 'vendors' | 'content' | 'import' | 'claims';
+const TABS: AdminTab[] = ['vendors', 'content', 'import', 'claims'];
 
 @Component({
   selector: 'app-admin',
@@ -30,13 +30,14 @@ export class Admin {
   private readonly route = inject(ActivatedRoute);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  /** Vendors (moderation), content (editor) or the vendor import; kept in ?tab= so a reload stays put. */
+  /** Vendors (moderation), content (editor), the vendor import or takeover requests; kept in ?tab= so a reload stays put. */
   protected readonly tab = signal<AdminTab>(
     TABS.find((t) => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'vendors',
   );
 
   protected setTab(tab: AdminTab): void {
     this.tab.set(tab);
+    if (tab === 'claims' && this.isBrowser) this.loadClaims();
     this.router.navigate([], { queryParams: { tab: tab === 'vendors' ? null : tab }, replaceUrl: true });
   }
 
@@ -53,7 +54,10 @@ export class Admin {
     inject(Title).setTitle(`${t.instant('adminPage.title')} | ${t.instant('brand.name')}`);
     // Private: the admin panel.
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
-    if (this.isBrowser) this.load();
+    if (this.isBrowser) {
+      this.load();
+      if (this.tab() === 'claims') this.loadClaims();
+    }
   }
 
   protected setPending(pending: boolean): void {
@@ -82,6 +86,47 @@ export class Admin {
         this.vendors.update((list) =>
           list.map((v) => (v.id === id ? { ...v, isFeatured: res.isFeatured } : v)),
         ),
+      error: () => this.toast.error('adminPage.saveError'),
+    });
+  }
+
+  // ---- Takeover requests (A3): vendor accounts asking for an imported profile ----
+  protected readonly claims = signal<AdminClaim[]>([]);
+  protected readonly claimsPendingOnly = signal(true);
+  protected readonly claimsLoading = signal(false);
+  protected readonly claimsError = signal(false);
+
+  protected setClaimsPending(pending: boolean): void {
+    this.claimsPendingOnly.set(pending);
+    this.loadClaims();
+  }
+
+  protected loadClaims(): void {
+    this.claimsLoading.set(true);
+    this.claimsError.set(false);
+    this.admin.listClaims(this.claimsPendingOnly()).subscribe({
+      next: (list) => {
+        this.claims.set(list);
+        this.claimsLoading.set(false);
+      },
+      error: () => {
+        this.claimsLoading.set(false);
+        this.claimsError.set(true);
+      },
+    });
+  }
+
+  /** Links the account to the profile (the vendor signs in again afterwards); the list reloads. */
+  protected approveClaim(id: number): void {
+    this.admin.approveClaim(id).subscribe({
+      next: () => this.loadClaims(),
+      error: () => this.toast.error('adminPage.saveError'),
+    });
+  }
+
+  protected rejectClaim(id: number): void {
+    this.admin.rejectClaim(id).subscribe({
+      next: () => this.loadClaims(),
       error: () => this.toast.error('adminPage.saveError'),
     });
   }

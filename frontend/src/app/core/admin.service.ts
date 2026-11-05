@@ -19,6 +19,21 @@ export interface AdminVendor {
   photoCount: number;
 }
 
+/** A vendor account's request to take over an imported profile (A3). */
+export interface AdminClaim {
+  id: number;
+  vendorId: number;
+  vendorName: string;
+  categorySlug: string;
+  city: string;
+  userEmail: string;
+  /** The sign-up email equals the listing's contact email: a hint, not proof. */
+  emailMatches: boolean;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  createdAt: string;
+  decidedAt: string | null;
+}
+
 /** A problem in one spreadsheet row or cell; the code is translated under adminImport.issue. */
 export interface ImportIssue {
   code: string;
@@ -65,6 +80,20 @@ export class AdminService {
     let params = new HttpParams();
     if (pendingOnly) params = params.set('pending', 'true');
     return this.http.get<AdminVendor[]>(`${this.base}/api/admin/vendors`, { params });
+  }
+
+  listClaims(pendingOnly: boolean): Observable<AdminClaim[]> {
+    let params = new HttpParams();
+    if (pendingOnly) params = params.set('pending', 'true');
+    return this.http.get<AdminClaim[]>(`${this.base}/api/admin/claims`, { params });
+  }
+
+  approveClaim(id: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/claims/${id}/approve`, {});
+  }
+
+  rejectClaim(id: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/claims/${id}/reject`, {});
   }
 
   approve(id: number): Observable<void> {

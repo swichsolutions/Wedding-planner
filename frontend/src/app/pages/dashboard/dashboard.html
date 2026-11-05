@@ -1,5 +1,21 @@
 <section class="dash container">
-  @if (loadError()) {
+  @if (claim(); as c) {
+    <!-- A3 takeover: the account waits for an admin to link it to the imported profile -->
+    <div class="dash__claim" role="status">
+      <h1 class="dash__claim-title">
+        {{ (c.status === 'Rejected' ? 'dash.claimRejectedTitle' : 'dash.claimPendingTitle') | translate }}
+      </h1>
+      <p class="dash__claim-name">
+        <strong>{{ c.vendorName }}</strong>
+        @if (categoryKey(c.categorySlug); as ck) { · {{ ck | translate }} }
+        @if (c.city) { · {{ c.city }} }
+      </p>
+      <p>{{ (c.status === 'Rejected' ? 'dash.claimRejected' : 'dash.claimPending') | translate }}</p>
+      @if (c.status !== 'Rejected') {
+        <p class="dash__claim-hint">{{ 'dash.claimRelogin' | translate }}</p>
+      }
+    </div>
+  } @else if (loadError()) {
     <div class="dash__error" role="alert">{{ 'dash.loadError' | translate }}</div>
   } @else if (vendor(); as v) {
     <div class="dash-shell">

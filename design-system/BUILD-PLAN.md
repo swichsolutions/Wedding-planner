@@ -109,7 +109,11 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   account, so they show phone and links but **no message form** (a message would go unread).
   Not imported yet: the English description and the notes column. Deploy: migration
   `VendorConsent`.
-- **Open (next step for imported vendors):** a way for a vendor to take over their imported
+- **Done (2026-11-05): takeover.** The vendor sign-up form offers imported listings matching the typed
+  name (`GET /api/vendors/claimable`); picking one registers the account with `claimVendorId` and no
+  category. The account has no vendor until an admin approves the request on the admin „მოთხოვნები“
+  tab (`/api/admin/claims`, approve/reject; the dashboard shows the request's state meanwhile, and the
+  vendor signs in again after approval). Original note: a way for a vendor to take over their imported
   profile (e.g. the admin enters their email, the platform links an account and sends a
   set-password link). Until then, a vendor who signs up themselves gets a second profile, and the
   import skips rows that match a vendor who manages their own profile.

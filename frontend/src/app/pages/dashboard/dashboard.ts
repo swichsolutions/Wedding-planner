@@ -36,7 +36,7 @@ import {
   VendorDashboard,
   VendorPackageEdit,
   VendorPhotoAdmin,
-  VendorStats,
+  VendorStats, MyVendorClaim,
 } from '../../core/dashboard.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
@@ -78,6 +78,8 @@ export class Dashboard {
   protected readonly stats = signal<VendorStats | null>(null);
   protected readonly messages = signal<InboxMessage[]>([]);
   protected readonly loadError = signal(false);
+  /** The account claimed an imported profile and waits for an admin (A3): shown instead of the dashboard. */
+  protected readonly claim = signal<MyVendorClaim | null>(null);
   /** Per-panel fetch failures — shown as error notes, never as fake zeros / "no messages". */
   protected readonly statsError = signal(false);
   protected readonly messagesError = signal(false);
@@ -250,7 +252,18 @@ export class Dashboard {
           this.form.markAsPristine();
           this.saved.set(false);
         },
-        error: () => this.loadError.set(true),
+        error: () => {
+          // A vendor account that claimed an imported profile has no vendor until an admin
+          // approves (A3): show the request's state instead of an error.
+          if (this.adminMode) {
+            this.loadError.set(true);
+            return;
+          }
+          this.dashboard.getMyClaim().subscribe({
+            next: (c) => this.claim.set(c),
+            error: () => this.loadError.set(true),
+          });
+        },
       });
       if (!this.adminMode) {
         this.dashboard.getStats().subscribe({

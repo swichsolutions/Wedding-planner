@@ -8,6 +8,35 @@
   padding-block: var(--space-12) var(--space-20);
 }
 
+// A3 takeover: the request's state, shown instead of the dashboard until an admin approves
+.dash__claim {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  background: var(--paper-deep);
+  color: var(--ink-700);
+
+  p {
+    margin: 0;
+  }
+}
+
+.dash__claim-title {
+  margin: 0;
+  font-size: var(--fs-h3, 1.5rem);
+  color: var(--ink);
+}
+
+.dash__claim-name {
+  color: var(--ink);
+}
+
+.dash__claim-hint {
+  font-size: var(--fs-small);
+}
+
 .dash__error,
 .dash__loading {
   padding: var(--space-8);

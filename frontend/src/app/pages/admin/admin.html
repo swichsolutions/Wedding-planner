@@ -11,6 +11,9 @@
       <button type="button" (click)="setTab('import')" [attr.aria-current]="tab() === 'import' ? 'page' : null">
         {{ 'adminPage.tabImport' | translate }}
       </button>
+      <button type="button" (click)="setTab('claims')" [attr.aria-current]="tab() === 'claims' ? 'page' : null">
+        {{ 'adminPage.tabClaims' | translate }}
+      </button>
     </nav>
   </header>
 
@@ -18,6 +21,71 @@
     <app-admin-content />
   } @else if (tab() === 'import') {
     <app-admin-import />
+  } @else if (tab() === 'claims') {
+    <!-- A3 takeover requests: a registered vendor says an imported profile is theirs -->
+    <div class="admin__subhead">
+      <div class="admin__filter" role="group">
+        <button type="button" (click)="setClaimsPending(true)" [attr.aria-pressed]="claimsPendingOnly()">
+          {{ 'adminPage.pendingOnly' | translate }}
+        </button>
+        <button type="button" (click)="setClaimsPending(false)" [attr.aria-pressed]="!claimsPendingOnly()">
+          {{ 'adminPage.all' | translate }}
+        </button>
+      </div>
+      <p class="admin__hint">{{ 'adminPage.claimsHint' | translate }}</p>
+    </div>
+
+    @if (claimsError()) {
+      <div class="admin__error" role="alert">
+        {{ 'dash.loadError' | translate }}
+        <button type="button" class="btn btn--ghost" (click)="loadClaims()">
+          {{ 'vendors.retry' | translate }}
+        </button>
+      </div>
+    } @else if (claimsLoading()) {
+      <ul class="admin__list" role="list" aria-hidden="true">
+        @for (i of skeletons; track i) {
+          <li class="admin__row"><span class="skel admin__skel"></span></li>
+        }
+      </ul>
+    } @else if (claims().length === 0) {
+      <p class="admin__empty">{{ 'adminPage.noClaims' | translate }}</p>
+    } @else {
+      <ul class="admin__list" role="list">
+        @for (c of claims(); track c.id) {
+          <li class="admin__row">
+            <div class="admin__info">
+              <strong class="admin__name">{{ c.vendorName }}</strong>
+              <span class="admin__sub">
+                {{ catKey(c.categorySlug) | translate }} · {{ c.city }}
+                · {{ 'adminPage.claimBy' | translate }} {{ c.userEmail }} · {{ formatDate(c.createdAt) }}
+              </span>
+            </div>
+            <div class="admin__badges">
+              <span class="admin__badge" [class.is-approved]="c.status === 'Approved'">
+                {{ 'adminPage.claimStatus.' + c.status | translate }}
+              </span>
+              @if (c.emailMatches) {
+                <span class="admin__badge admin__badge--feat">{{ 'adminPage.emailMatches' | translate }}</span>
+              }
+            </div>
+            <div class="admin__actions">
+              <a class="btn btn--ghost admin__btn" [routerLink]="['/admin/vendors', c.vendorId]">
+                {{ 'adminPage.edit' | translate }}
+              </a>
+              @if (c.status === 'Pending') {
+                <button type="button" class="btn btn--primary admin__btn" (click)="approveClaim(c.id)">
+                  {{ 'adminPage.approve' | translate }}
+                </button>
+                <button type="button" class="btn btn--ghost admin__btn" (click)="rejectClaim(c.id)">
+                  {{ 'adminPage.reject' | translate }}
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
   } @else {
   <div class="admin__subhead">
     <div class="admin__filter" role="group">

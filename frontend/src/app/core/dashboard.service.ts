@@ -84,6 +84,16 @@ export interface VendorEdit {
   packages?: VendorPackageEdit[];
 }
 
+/** The signed-in vendor's takeover request (A3), for an account that has no vendor yet. */
+export interface MyVendorClaim {
+  vendorId: number;
+  vendorName: string;
+  categorySlug: string;
+  city: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  createdAt: string;
+}
+
 export interface InboxMessage {
   id: number;
   senderName: string | null;
@@ -125,6 +135,11 @@ export class DashboardService {
 
   getMyVendor(vendorId?: number): Observable<VendorDashboard> {
     return this.http.get<VendorDashboard>(this.root(vendorId));
+  }
+
+  /** 404 when the account has no takeover request. */
+  getMyClaim(): Observable<MyVendorClaim> {
+    return this.http.get<MyVendorClaim>(`${this.base}/api/vendor/me/claim`);
   }
 
   updateMyVendor(dto: VendorEdit, vendorId?: number): Observable<VendorDashboard> {

@@ -165,3 +165,11 @@
   padding: 0 var(--space-4);
   font-size: var(--fs-caption);
 }
+
+// one-line explanation under the filter on the takeover-requests tab
+.admin__hint {
+  max-width: 46rem;
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-small);
+  color: var(--ink-700);
+}

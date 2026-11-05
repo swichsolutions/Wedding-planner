@@ -7,8 +7,14 @@ public class RegisterVendorDto
     [Required, EmailAddress] public string Email { get; set; } = string.Empty;
     [Required, MinLength(8)] public string Password { get; set; } = string.Empty;
     [Required, MaxLength(200)] public string VendorName { get; set; } = string.Empty;
-    [Required] public string CategorySlug { get; set; } = string.Empty;
+    /// <summary>Required unless the vendor claims an imported profile (ClaimVendorId), which has one already.</summary>
+    public string? CategorySlug { get; set; }
     [MaxLength(120)] public string? City { get; set; }
+    /// <summary>
+    /// An imported profile the vendor says is theirs (A3 takeover). The account is then created
+    /// without a vendor and an admin links the two after checking (AdminClaimsController).
+    /// </summary>
+    public int? ClaimVendorId { get; set; }
 }
 
 public class RegisterCoupleDto

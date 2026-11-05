@@ -1369,6 +1369,50 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.ToTable("Vendors");
                 });
 
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("EmailMatches")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("VendorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("VendorClaims");
+                });
+
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorPackage", b =>
                 {
                     b.Property<int>("Id")
@@ -2121,6 +2165,17 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorClaim", b =>
+                {
+                    b.HasOne("WeddingPlanner.Domain.Entities.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("WeddingPlanner.Domain.Entities.VendorPackage", b =>

@@ -27,6 +27,7 @@ public class AppDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContex
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<VendorStat> VendorStats => Set<VendorStat>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<VendorClaim> VendorClaims => Set<VendorClaim>();
     public DbSet<Availability> Availabilities => Set<Availability>();
     public DbSet<ContentPage> ContentPages => Set<ContentPage>();
     public DbSet<ContentPhoto> ContentPhotos => Set<ContentPhoto>();
@@ -137,6 +138,20 @@ public class AppDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContex
             e.Property(x => x.Body).HasMaxLength(4000);
             e.HasOne(x => x.Vendor)
                 .WithMany(v => v.Reviews)
+                .HasForeignKey(x => x.VendorId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ---- VendorClaim: a registered vendor asking to take over an imported profile (A3) ----
+        b.Entity<VendorClaim>(e =>
+        {
+            e.HasIndex(x => x.VendorId);
+            e.HasIndex(x => x.UserId);
+            e.Property(x => x.UserId).HasMaxLength(450).IsRequired();
+            e.Property(x => x.UserEmail).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
+            e.HasOne(x => x.Vendor)
+                .WithMany()
                 .HasForeignKey(x => x.VendorId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

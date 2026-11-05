@@ -36,6 +36,26 @@ public class VendorDashboardController : ControllerBase
         return v is null ? NotFound() : Ok(ToDashboard(v));
     }
 
+    /// <summary>
+    /// The signed-in vendor's takeover request (A3), for an account that has no vendor yet. 404
+    /// when there is none; the dashboard then shows a plain load error.
+    /// </summary>
+    [HttpGet("vendor/me/claim")]
+    public async Task<ActionResult<MyVendorClaimDto>> GetMyClaim()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId)) return Forbid();
+
+        var claim = await _db.VendorClaims.AsNoTracking()
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new MyVendorClaimDto(
+                c.VendorId, c.Vendor.Name, c.Vendor.Category.Slug, c.Vendor.City, c.Status.ToString(), c.CreatedAt))
+            .FirstOrDefaultAsync();
+        return claim is null ? NotFound() : Ok(claim);
+    }
+
     [HttpPut("vendor/me")]
     [HttpPut("admin/vendors/{vendorId:int}")]
     public async Task<ActionResult<VendorDashboardDto>> UpdateMe([FromBody] VendorEditDto dto)

@@ -1,11 +1,13 @@
 import { Component, ElementRef, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 
-import { AuthService, defaultRouteFor } from '../../core/auth.service';
-import { GROUPS, categoriesIn, img } from '../../core/catalog';
+import { AuthService, ClaimableVendor, defaultRouteFor } from '../../core/auth.service';
+import { GROUPS, categoriesIn, categoryKey, img } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 
 interface ScatterPhoto {
@@ -44,6 +46,30 @@ interface ScatterPhoto {
                 <span class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
+            <!-- A3 takeover: listings the platform imported that match the typed name -->
+            @if (claim(); as c) {
+              <div class="auth__claim" role="status">
+                <span>{{ 'auth.claimChosen' | translate }} <strong>{{ c.name }}</strong>
+                  · {{ categoryKey(c.categorySlug) | translate }}@if (c.city) { · {{ c.city }} }</span>
+                <button type="button" class="auth__claim-btn" (click)="clearClaim()">{{ 'auth.claimChange' | translate }}</button>
+                <p class="auth__claim-note">{{ 'auth.claimNote' | translate }}</p>
+              </div>
+            } @else if (matches().length) {
+              <div class="auth__claims">
+                <p class="auth__claims-title">{{ 'auth.claimPrompt' | translate }}</p>
+                <ul class="auth__claims-list" role="list">
+                  @for (m of matches(); track m.id) {
+                    <li>
+                      <span>{{ m.name }}
+                        <span class="auth__claims-sub">· {{ categoryKey(m.categorySlug) | translate }}@if (m.city) { · {{ m.city }} }</span>
+                      </span>
+                      <button type="button" class="auth__claim-btn" (click)="pickClaim(m)">{{ 'auth.claimThis' | translate }}</button>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+            @if (!claim()) {
             <div class="auth__field">
               <label for="r-cat">{{ 'auth.category' | translate }}</label>
               <select id="r-cat" formControlName="categorySlug" aria-required="true"
@@ -62,6 +88,7 @@ interface ScatterPhoto {
                 <span class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
+            }
             <div class="auth__field">
               <label for="r-email">{{ 'auth.email' | translate }}</label>
               <input id="r-email" type="email" formControlName="email" autocomplete="email" spellcheck="false" aria-required="true"
@@ -117,6 +144,10 @@ export class Register {
 
   protected readonly groups = GROUPS;
   protected readonly categoriesIn = categoriesIn;
+  protected readonly categoryKey = categoryKey;
+  /** Imported listings matching the typed business name, and the one the vendor says is theirs. */
+  protected readonly matches = signal<ClaimableVendor[]>([]);
+  protected readonly claim = signal<ClaimableVendor | null>(null);
   protected readonly error = signal(false);
   protected readonly loading = signal(false);
   /** Set on a failed submit — reveals the inline email/password validation messages. */
@@ -157,6 +188,35 @@ export class Register {
       const user = this.auth.user();
       if (user && !this.loading()) this.router.navigateByUrl(defaultRouteFor(user));
     });
+
+    // As the name is typed, offer imported listings with that name (A3 takeover). Quiet on
+    // failure: the form still works as a plain sign-up.
+    this.form.controls.vendorName.valueChanges
+      .pipe(
+        map((v) => (v ?? '').trim()),
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((q) =>
+          q.length < 2 || this.claim() ? of([]) : this.auth.claimableVendors(q).pipe(catchError(() => of([]))),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((list) => this.matches.set(list));
+  }
+
+  /** The vendor picked an imported listing as theirs: no category to choose, the listing has one. */
+  protected pickClaim(v: ClaimableVendor): void {
+    this.claim.set(v);
+    this.matches.set([]);
+    this.form.controls.vendorName.setValue(v.name);
+    this.form.controls.categorySlug.clearValidators();
+    this.form.controls.categorySlug.updateValueAndValidity();
+  }
+
+  protected clearClaim(): void {
+    this.claim.set(null);
+    this.form.controls.categorySlug.setValidators([Validators.required]);
+    this.form.controls.categorySlug.updateValueAndValidity();
   }
 
   /** Live per-rule state for the password requirements checklist (updates as the user types). */
@@ -174,12 +234,13 @@ export class Register {
     this.loading.set(true);
     this.error.set(false);
     const v = this.form.getRawValue();
+    const claim = this.claim();
     this.auth
       .registerVendor({
         email: v.email!,
         password: v.password!,
         vendorName: v.vendorName!,
-        categorySlug: v.categorySlug!,
+        ...(claim ? { claimVendorId: claim.id } : { categorySlug: v.categorySlug! }),
       })
       .subscribe({
         next: () => this.router.navigateByUrl('/dashboard'),

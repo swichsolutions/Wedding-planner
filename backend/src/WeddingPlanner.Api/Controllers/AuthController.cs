@@ -39,12 +39,17 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
+        if (await _users.FindByEmailAsync(dto.Email) is not null)
+            return Conflict("Email already registered.");
+
+        // A3 takeover: the vendor says an imported profile is theirs. The account is created
+        // without a vendor of its own; an admin links the two after checking (AdminClaimsController).
+        if (dto.ClaimVendorId is int claimVendorId)
+            return await RegisterClaim(dto, claimVendorId);
+
         var category = await _db.Categories.FirstOrDefaultAsync(c => c.Slug == dto.CategorySlug);
         if (category is null)
             return BadRequest("Unknown category.");
-
-        if (await _users.FindByEmailAsync(dto.Email) is not null)
-            return Conflict("Email already registered.");
 
         // Create the vendor first (unapproved) so we have an id for a unique slug.
         // The placeholder must itself be unique: a constant ("pending") violates the
@@ -101,6 +106,54 @@ public class AuthController : ControllerBase
         await _users.AddToRoleAsync(user, Roles.Vendor);
         var roles = await _users.GetRolesAsync(user);
         return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
+    }
+
+    /// <summary>
+    /// Vendor registration that claims an imported profile instead of creating one: a Vendor-role
+    /// user with no VendorId plus a pending VendorClaim. The dashboard shows the request's state
+    /// until an admin approves it (the vendor then signs in again for a token with the vendorId).
+    /// </summary>
+    private async Task<ActionResult<AuthResponseDto>> RegisterClaim(RegisterVendorDto dto, int vendorId)
+    {
+        var vendor = await _db.Vendors.AsNoTracking().FirstOrDefaultAsync(v => v.Id == vendorId);
+        if (vendor is null)
+            return BadRequest("Unknown vendor.");
+        if (await _db.Users.AnyAsync(u => u.VendorId == vendorId))
+            return Conflict("This profile already has an owner.");
+
+        var user = new AppUser
+        {
+            UserName = dto.Email,
+            Email = dto.Email,
+            DisplayName = vendor.Name,
+            VendorId = null,
+        };
+        IdentityResult created;
+        try
+        {
+            created = await _users.CreateAsync(user, dto.Password);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
+        {
+            return Conflict("Email already registered.");
+        }
+        if (!created.Succeeded)
+            return BadRequest(created.Errors.Select(e => e.Description));
+
+        await _users.AddToRoleAsync(user, Roles.Vendor);
+        _db.VendorClaims.Add(new VendorClaim
+        {
+            VendorId = vendorId,
+            UserId = user.Id,
+            UserEmail = dto.Email.Trim(),
+            EmailMatches = !string.IsNullOrWhiteSpace(vendor.MessageEmail)
+                && string.Equals(vendor.MessageEmail.Trim(), dto.Email.Trim(), StringComparison.OrdinalIgnoreCase),
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        await _db.SaveChangesAsync();
+
+        var roles = await _users.GetRolesAsync(user);
+        return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), null));
     }
 
     /// <summary>Couple self-registration (planning tools, wishlist sync, etc.).</summary>
