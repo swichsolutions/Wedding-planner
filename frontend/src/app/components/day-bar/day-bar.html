@@ -1,10 +1,10 @@
 @let d = day();
-<figure class="db" [attr.aria-label]="'schedules.barLabel' | translate">
+<figure #figure class="db" [attr.aria-label]="'schedules.barLabel' | translate">
   <!-- the key moments, above and below the axis at their real times -->
   <ol class="db__marks" role="list">
-    @for (m of d.marks; track m.time) {
+    @for (m of d.marks; track m.time; let i = $index) {
       <li class="db__mark" [class.db__mark--below]="m.below" [class.db__mark--last]="$last" [class.db__mark--first]="$first"
-        [style.--x]="m.left">
+        [style.--x]="pinLeft()[i]">
         <span class="db__pin" [class]="'db__pin db__pin--' + m.phase"><app-day-icon [name]="m.icon" /></span>
         <span class="db__label">
           <span class="db__time num">{{ m.time }}</span>

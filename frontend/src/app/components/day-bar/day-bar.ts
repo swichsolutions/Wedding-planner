@@ -1,14 +1,20 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { DAY_SCHEDULES, iconFor, local, minutesOf, phaseOf, phaseStarts } from '../../core/day-schedules';
 import { LanguageService } from '../../i18n/language.service';
 import { DayIcon } from '../day-icon/day-icon';
+import { spreadApart } from './spread-apart';
+
+/** The least space between two pins, in px. */
+const PIN_SPACE = 8;
 
 /**
  * The day as a picture: a time axis from the first moment to the last, coloured by phase, with
  * the big moments (the start of each phase, the first dance, the end) sitting at their real
  * times as icons. Hour ticks under the axis give the scale. Nothing here needs reading first.
+ * Where the screen is too narrow for that (phones), close pins move apart just enough not to
+ * overlap; each keeps its own time as its label.
  */
 @Component({
   selector: 'app-day-bar',
@@ -18,6 +24,7 @@ import { DayIcon } from '../day-icon/day-icon';
 })
 export class DayBar {
   private readonly lang = inject(LanguageService);
+  private readonly figure = viewChild.required<ElementRef<HTMLElement>>('figure');
 
   /** Which example day to draw. */
   readonly scenario = input.required<string>();
@@ -59,4 +66,28 @@ export class DayBar {
 
     return { key: s.key, segments, ticks, marks, phases: segments.map((g) => g.phase) };
   });
+
+  /** How far apart pins must sit, as a share of the axis: one pin and a little space. */
+  private readonly pinGap = signal(0);
+  /** Where the pins sit, in %: their real times, unless that would make them overlap. */
+  protected readonly pinLeft = computed(() => spreadApart(this.day().marks.map((m) => m.left), this.pinGap()));
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const figure = this.figure().nativeElement;
+      const axis = figure.querySelector<HTMLElement>('.db__axis');
+      const pin = figure.querySelector<HTMLElement>('.db__pin');
+      if (!axis || !pin) return;
+      const measure = () => {
+        // not laid out (a hidden tab): nothing to work from until it shows
+        if (axis.offsetWidth) this.pinGap.set(((pin.offsetWidth + PIN_SPACE) / axis.offsetWidth) * 100);
+      };
+      measure();
+      if (!('ResizeObserver' in window)) return;
+      const ro = new ResizeObserver(measure);
+      ro.observe(axis);
+      destroyRef.onDestroy(() => ro.disconnect());
+    });
+  }
 }
