@@ -3,10 +3,12 @@
 // configuration in angular.json (ssr.entry + a platform-neutral server bundle).
 //
 // Files in dist/frontend/browser are served by Workers Static Assets before this code runs,
-// so only page requests reach the handler below. See wrangler.jsonc and docs/DEPLOY.md.
+// so only page requests reach the handler below, plus the videos that need byte ranges
+// (server.video.ts). See wrangler.jsonc and docs/DEPLOY.md.
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 
 import { APEX, redirectFor } from './server.redirects';
+import { AssetFetcher, isVideoPath, serveVideo } from './server.video';
 
 const angularApp = new AngularAppEngine({
   // Hosts the engine renders for; any other Host header falls back to client-side rendering.
@@ -28,4 +30,8 @@ export const reqHandler = createRequestHandler(async (req) => {
   return res ?? new Response('Not found', { status: 404 });
 });
 
-export default { fetch: reqHandler };
+export default {
+  fetch(req: Request, env: { ASSETS: AssetFetcher }) {
+    return isVideoPath(new URL(req.url).pathname) ? serveVideo(req, env.ASSETS) : reqHandler(req);
+  },
+};
