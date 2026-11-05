@@ -986,6 +986,12 @@
     "claimBy": "requested by",
     "emailMatches": "Email matches",
     "reject": "Reject",
+    "add": "Add vendor",
+    "addHint": "One vendor by hand; many via Import. After saving, the editor opens for photos and the rest. The vendor claims the profile at sign-up with \"That's mine\".",
+    "addPhone": "Phone",
+    "addSave": "Save and edit",
+    "addCancel": "Cancel",
+    "addError": "Could not add the vendor. Check the name and category.",
     "claimStatus": {
       "Pending": "Pending",
       "Approved": "Approved",

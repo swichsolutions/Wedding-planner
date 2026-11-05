@@ -19,6 +19,15 @@ export interface AdminVendor {
   photoCount: number;
 }
 
+/** One vendor added by hand from the admin panel. */
+export interface AdminCreateVendor {
+  name: string;
+  categorySlug: string;
+  city?: string;
+  phone?: string;
+  instagram?: string;
+}
+
 /** A vendor account's request to take over an imported profile (A3). */
 export interface AdminClaim {
   id: number;
@@ -80,6 +89,11 @@ export class AdminService {
     let params = new HttpParams();
     if (pendingOnly) params = params.set('pending', 'true');
     return this.http.get<AdminVendor[]>(`${this.base}/api/admin/vendors`, { params });
+  }
+
+  /** Creates an unapproved, ownerless vendor; the caller opens the editor on the returned id. */
+  createVendor(dto: AdminCreateVendor): Observable<AdminVendor> {
+    return this.http.post<AdminVendor>(`${this.base}/api/admin/vendors`, dto);
   }
 
   listClaims(pendingOnly: boolean): Observable<AdminClaim[]> {

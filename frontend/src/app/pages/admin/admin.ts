@@ -1,13 +1,14 @@
 import { Component, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AdminClaim, AdminService, AdminVendor } from '../../core/admin.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
-import { categoryKey } from '../../core/catalog';
+import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
 import { formatDate } from '../../core/dates';
 import { AdminContent } from './admin-content';
 import { AdminImport } from './admin-import';
@@ -17,7 +18,7 @@ const TABS: AdminTab[] = ['vendors', 'content', 'import', 'claims'];
 
 @Component({
   selector: 'app-admin',
-  imports: [TranslatePipe, RouterLink, AdminContent, AdminImport],
+  imports: [TranslatePipe, RouterLink, ReactiveFormsModule, AdminContent, AdminImport],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
   host: { class: 'theme-brand' },
@@ -29,6 +30,52 @@ export class Admin {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly fb = inject(FormBuilder);
+
+  // ---- Add one vendor by hand (bulk goes through the import tab) ----
+  protected readonly groups = GROUPS;
+  protected readonly categoriesIn = categoriesIn;
+  protected readonly showAdd = signal(false);
+  protected readonly adding = signal(false);
+  protected readonly addAttempted = signal(false);
+  protected readonly addForm = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    categorySlug: ['', [Validators.required]],
+    city: [''],
+    phone: [''],
+    instagram: [''],
+  });
+
+  protected toggleAdd(): void {
+    this.showAdd.update((v) => !v);
+    this.addAttempted.set(false);
+  }
+
+  /** Creates the vendor and opens the editor on it, where photos and the rest are added. */
+  protected createVendor(): void {
+    if (this.addForm.invalid) {
+      this.addAttempted.set(true);
+      this.addForm.markAllAsTouched();
+      return;
+    }
+    const v = this.addForm.getRawValue();
+    this.adding.set(true);
+    this.admin
+      .createVendor({
+        name: v.name!,
+        categorySlug: v.categorySlug!,
+        city: v.city || undefined,
+        phone: v.phone || undefined,
+        instagram: v.instagram || undefined,
+      })
+      .subscribe({
+        next: (created) => this.router.navigate(['/admin/vendors', created.id]),
+        error: () => {
+          this.adding.set(false);
+          this.toast.error('adminPage.addError');
+        },
+      });
+  }
 
   /** Vendors (moderation), content (editor), the vendor import or takeover requests; kept in ?tab= so a reload stays put. */
   protected readonly tab = signal<AdminTab>(

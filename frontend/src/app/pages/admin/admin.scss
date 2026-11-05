@@ -53,7 +53,40 @@
 }
 
 .admin__subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
   margin-bottom: var(--space-6);
+}
+
+// the "add one vendor" form under the filter
+.admin__form {
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: #fff;
+}
+
+.admin__form-hint {
+  margin: 0 0 var(--space-4);
+  font-size: var(--fs-small);
+  color: var(--ink-700);
+}
+
+.admin__form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+.admin__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .admin__filter {
@@ -168,6 +201,7 @@
 
 // one-line explanation under the filter on the takeover-requests tab
 .admin__hint {
+  flex-basis: 100%;
   max-width: 46rem;
   margin: var(--space-2) 0 0;
   font-size: var(--fs-small);

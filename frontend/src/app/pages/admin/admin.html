@@ -96,7 +96,54 @@
         {{ 'adminPage.all' | translate }}
       </button>
     </div>
+    <button type="button" class="btn btn--primary admin__btn" (click)="toggleAdd()" [attr.aria-expanded]="showAdd()">
+      {{ 'adminPage.add' | translate }}
+    </button>
   </div>
+
+  @if (showAdd()) {
+    <!-- one vendor by hand; the editor opens on it after saving -->
+    <form class="admin__form" [formGroup]="addForm" (ngSubmit)="createVendor()" novalidate>
+      <p class="admin__form-hint">{{ 'adminPage.addHint' | translate }}</p>
+      <div class="admin__form-grid">
+        <div class="auth__field">
+          <label for="a-name">{{ 'auth.vendorName' | translate }}</label>
+          <input id="a-name" type="text" formControlName="name" autocomplete="off"
+            [class.is-invalid]="addAttempted() && addForm.controls.name.invalid" />
+        </div>
+        <div class="auth__field">
+          <label for="a-cat">{{ 'auth.category' | translate }}</label>
+          <select id="a-cat" formControlName="categorySlug"
+            [class.is-invalid]="addAttempted() && addForm.controls.categorySlug.invalid">
+            <option value="">{{ 'auth.selectCategory' | translate }}</option>
+            @for (g of groups; track g) {
+              <optgroup [label]="'catalog.groups.' + g | translate">
+                @for (c of categoriesIn(g); track c.slug) {
+                  <option [value]="c.slug">{{ c.key | translate }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        </div>
+        <div class="auth__field">
+          <label for="a-city">{{ 'adminPage.city' | translate }}</label>
+          <input id="a-city" type="text" formControlName="city" autocomplete="off" />
+        </div>
+        <div class="auth__field">
+          <label for="a-phone">{{ 'adminPage.addPhone' | translate }}</label>
+          <input id="a-phone" type="tel" formControlName="phone" autocomplete="off" />
+        </div>
+        <div class="auth__field">
+          <label for="a-ig">Instagram</label>
+          <input id="a-ig" type="text" formControlName="instagram" autocomplete="off" placeholder="@" />
+        </div>
+      </div>
+      <div class="admin__form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="adding()">{{ 'adminPage.addSave' | translate }}</button>
+        <button type="button" class="btn btn--ghost" (click)="toggleAdd()">{{ 'adminPage.addCancel' | translate }}</button>
+      </div>
+    </form>
+  }
 
   @if (loadError()) {
     <div class="admin__error" role="alert">
