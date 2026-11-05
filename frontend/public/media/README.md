@@ -19,9 +19,11 @@ Served as-is at `/media/...`.
   replacing the drawn rings), on the welcome form after sign-up and on the partner-invitation
   page. ~3.6 MB, so the video is fetched only when the ring comes near the screen; the poster
   shows until then.
+- `gold-ring-turn.webp` — the same turn as an animated image, for browsers that can't show
+  transparent video (Safari, iOS, Firefox). Made from `gold-ring.webm`: 400×400, 12 fps, transparent
+  (webp q70), starting on the poster's frame. ~0.85 MB, fetched the same way.
 - `gold-ring.webp` — its poster: the centre 1080×1080 of the frame at 3.6 s, 720 px, transparent
-  (webp q86). Shown first, and instead of the video in Safari and iOS browsers (no alpha video)
-  and under reduced motion.
+  (webp q86). Shown first, and on its own under reduced motion.
 - `plan-details-3.webp` — background of the third "საიდან დავიწყო?" slide
   ("დაგეგმე დეტალები"), referenced from `startSlides` in `home.ts`. Beka's own
   photo (OneDrive Desktop/9411badc3c9c0017093c677b8c55a4cb.jpg), portrait, only

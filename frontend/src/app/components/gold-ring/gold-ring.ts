@@ -13,10 +13,10 @@ import {
 /**
  * A gold wedding band turning slowly (public/media/gold-ring.webm, transparent background).
  * Decorative only (aria-hidden), like the brand's gold. The server renders the still
- * (gold-ring.webp); the browser swaps in the video where it can show it: not in Safari or any
- * iOS browser (WebKit has no alpha video and would paint a black box), not under reduced
- * motion. The video is fetched only when the ring nears the screen. Size it from the outside
- * (width); the box is square.
+ * (gold-ring.webp). When the ring nears the screen the browser swaps in the video, or, where it
+ * can't show transparent video (Safari and every iOS browser, whose WebKit would paint a black
+ * box), the same turn as an animated image (gold-ring-turn.webp). Under reduced motion the
+ * still stays. Size it from the outside (width); the box is square.
  */
 @Component({
   selector: 'app-gold-ring',
@@ -25,7 +25,10 @@ import {
   template: `
     <img class="still" [class.is-hidden]="playing()" src="/media/gold-ring.webp" alt="" width="720" height="720"
       loading="lazy" fetchpriority="low" />
-    @if (useVideo()) {
+    @if (motion() === 'image') {
+      <img class="film" [class.is-on]="playing()" src="/media/gold-ring-turn.webp" alt="" width="400" height="400"
+        decoding="async" (load)="playing.set(true)" />
+    } @else if (motion() === 'video') {
       <!-- [muted] as a property: the attribute alone doesn't mute a video made by script, and
            browsers only autoplay muted video (it stayed a still in Chrome) -->
       <video #video class="film" [class.is-on]="playing()" [muted]="true" loop playsinline preload="auto"
@@ -68,32 +71,15 @@ import {
         opacity: 1;
       }
     }
-
-    // no video (Safari / iOS): the still floats gently instead
-    @media (prefers-reduced-motion: no-preference) {
-      :host(.is-still) .still {
-        animation: ring-float 6s ease-in-out infinite;
-      }
-    }
-
-    @keyframes ring-float {
-      0%,
-      100% {
-        transform: translateY(0) rotate(0deg);
-      }
-
-      50% {
-        transform: translateY(-4%) rotate(-3deg);
-      }
-    }
   `,
 })
 export class GoldRing {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly video = viewChild<ElementRef<HTMLVideoElement>>('video');
 
-  protected readonly useVideo = signal(false);
-  /** The video has started: fade it in over the still. */
+  /** What replaces the still: nothing until the ring nears the screen. */
+  protected readonly motion = signal<'video' | 'image' | null>(null);
+  /** The video or image has started: fade it in over the still. */
   protected readonly playing = signal(false);
 
   constructor() {
@@ -101,21 +87,18 @@ export class GoldRing {
     afterNextRender(() => {
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (reduced) return;
-      if (!GoldRing.alphaVideo()) {
-        this.host.nativeElement.classList.add('is-still');
-        return;
-      }
-      // The video is ~3.6 MB: fetch it only when the ring comes near the screen (the home page's
-      // final section is far down; page speed counts for search).
+      const motion = GoldRing.alphaVideo() ? 'video' : 'image';
+      // Up to ~3.6 MB: fetch it only when the ring comes near the screen (the home page's final
+      // section is far down; page speed counts for search).
       if (!('IntersectionObserver' in window)) {
-        this.useVideo.set(true);
+        this.motion.set(motion);
         return;
       }
       const io = new IntersectionObserver(
         (entries) => {
           if (!entries.some((e) => e.isIntersecting)) return;
           io.disconnect();
-          this.useVideo.set(true);
+          this.motion.set(motion);
         },
         { rootMargin: '300px 0px' },
       );
