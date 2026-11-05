@@ -73,8 +73,18 @@ export interface SeatingState {
   tables: SeatingTable[];
   assignments: SeatAssignment[];
   objects: SeatingObject[];
-  /** The venue's floor plan under the chart, if uploaded. */
+  /** The floor plan under the chart: the couple's upload or their copy of the venue's. */
   floorPlanUrl: string | null;
+  /** The venue the plan was copied from; null for the couple's own upload. */
+  floorPlanVendorId: number | null;
+  /** The couple's venue (chosen first, else shortlisted or saved) when it has a floor plan. */
+  venuePlan: VenuePlan | null;
+}
+
+export interface VenuePlan {
+  vendorId: number;
+  name: string;
+  floorPlanUrl: string;
 }
 
 /** The table payload that keeps everything as it is (spread changes over it). */
@@ -141,5 +151,10 @@ export class SeatingService {
 
   removeFloorPlan(): Observable<SeatingState> {
     return this.http.delete<SeatingState>(`${this.base}/api/planning/seating/floor-plan`);
+  }
+
+  /** Puts a copy of the venue's own floor plan under the chart. */
+  useVenuePlan(vendorId: number): Observable<SeatingState> {
+    return this.http.put<SeatingState>(`${this.base}/api/planning/seating/floor-plan/from-venue`, { vendorId });
   }
 }

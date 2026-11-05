@@ -63,6 +63,8 @@ export interface Vendor {
   capacityMax: number | null;
   setting: string | null;
   venueType: string | null;
+  /** Profile only: the venue's floor plan image, when it has one. */
+  floorPlanUrl: string | null;
   /** Profile only. */
   terms: VendorTerms | null;
   /** Profile only. */

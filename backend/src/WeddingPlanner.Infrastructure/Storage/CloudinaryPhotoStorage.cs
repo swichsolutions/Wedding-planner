@@ -32,9 +32,27 @@ public class CloudinaryPhotoStorage : IPhotoStorage
         return new StoredPhoto(result.SecureUrl.ToString(), result.PublicId);
     }
 
+    /// <summary>Cloudinary fetches the source's own CDN URL and stores it as a new asset.</summary>
+    public async Task<StoredPhoto> CopyAsync(StoredPhoto source, CancellationToken ct = default)
+    {
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(source.Url),
+            Folder = _folder,
+            Transformation = new Transformation().Quality("auto").FetchFormat("auto"),
+        };
+
+        var result = await _cloudinary.UploadAsync(uploadParams);
+        if (result.Error is not null)
+            throw new InvalidOperationException($"Cloudinary copy failed: {result.Error.Message}");
+
+        return new StoredPhoto(result.SecureUrl.ToString(), result.PublicId);
+    }
+
     public async Task DeleteAsync(string? storageId, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(storageId)) return;
-        await _cloudinary.DestroyAsync(new DeletionParams(storageId));
+        // Invalidate: the CDN stops serving the old URL too, not only the origin.
+        await _cloudinary.DestroyAsync(new DeletionParams(storageId) { Invalidate = true });
     }
 }

@@ -41,6 +41,9 @@ public class Couple
     /// <summary>The venue's floor plan (an image the couple uploads), drawn under the seating chart.</summary>
     public string? FloorPlanUrl { get; set; }
     public string? FloorPlanStorageId { get; set; }
+    /// <summary>The venue whose plan this is a copy of (<see cref="Vendor.FloorPlanUrl"/>); null when
+    /// the couple uploaded their own.</summary>
+    public int? FloorPlanVendorId { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
     public ICollection<CoupleMember> Members { get; set; } = new List<CoupleMember>();

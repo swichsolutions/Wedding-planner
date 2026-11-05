@@ -799,3 +799,38 @@
 .cdk-drag-animating {
   transition: transform var(--dur-base) cubic-bezier(0.2, 0, 0, 1);
 }
+
+// ---- the venue's floor plan (venues fieldset, B5) ----
+.dash__plan {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.dash__plan-hint {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+.dash__plan-thumb {
+  display: block;
+  width: min(100%, 20rem);
+  overflow: hidden;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: #fff;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.dash__plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}

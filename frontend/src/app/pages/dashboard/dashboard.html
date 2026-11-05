@@ -343,6 +343,31 @@
                         </select>
                       </div>
                     </div>
+                    <!-- the floor plan: a PDF, an image or a screenshot of the tables; couples copy it
+                         under their seating chart (B5). Saved on pick, like photos. -->
+                    <div class="dash__plan">
+                      <span class="dash__checks-label">{{ 'dash.floorPlan' | translate }}</span>
+                      <p class="dash__plan-hint">{{ 'dash.floorPlanHint' | translate }}</p>
+                      @if (floorPlanUrl(); as planUrl) {
+                        <a class="dash__plan-thumb" [href]="planUrl" target="_blank" rel="noopener">
+                          <img [src]="planUrl" alt="" loading="lazy" />
+                        </a>
+                      }
+                      <div class="dash__plan-actions">
+                        <button type="button" class="btn btn--ghost" (click)="planInput.click()" [disabled]="planBusy()">
+                          {{ (floorPlanUrl() ? 'dash.floorPlanReplace' : 'dash.floorPlanUpload') | translate }}
+                        </button>
+                        @if (floorPlanUrl()) {
+                          <button type="button" class="btn btn--ghost" (click)="removeFloorPlan()" [disabled]="planBusy()">
+                            {{ 'dash.floorPlanRemove' | translate }}
+                          </button>
+                        }
+                        @if (planBusy()) {
+                          <span class="photos__status" role="status">{{ 'dash.uploading' | translate }}</span>
+                        }
+                      </div>
+                      <input #planInput type="file" [accept]="planAccept" hidden (change)="onFloorPlanSelected($event)" />
+                    </div>
                   </fieldset>
                 }
 

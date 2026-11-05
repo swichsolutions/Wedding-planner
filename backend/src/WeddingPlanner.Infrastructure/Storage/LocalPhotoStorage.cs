@@ -37,6 +37,20 @@ public class LocalPhotoStorage : IPhotoStorage
         return new StoredPhoto($"{_publicBase}/{name}", name);
     }
 
+    public Task<StoredPhoto> CopyAsync(StoredPhoto source, CancellationToken ct = default)
+    {
+        // Keeps the source's extension (vetted when it was uploaded); nothing from the caller.
+        if (string.IsNullOrEmpty(source.StorageId))
+            throw new ArgumentException("The source has no storage id to copy.", nameof(source));
+        var from = Path.Combine(_root, source.StorageId);
+        if (!File.Exists(from))
+            throw new FileNotFoundException("The source photo is missing.", from);
+
+        var name = $"{Guid.NewGuid():N}{Path.GetExtension(source.StorageId).ToLowerInvariant()}";
+        File.Copy(from, Path.Combine(_root, name));
+        return Task.FromResult(new StoredPhoto($"{_publicBase}/{name}", name));
+    }
+
     public Task DeleteAsync(string? storageId, CancellationToken ct = default)
     {
         if (!string.IsNullOrEmpty(storageId))

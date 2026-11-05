@@ -46,6 +46,8 @@ export interface VendorDashboard {
   travelPolicy: string | null;
   bookingLeadTime: string | null;
   packages: VendorPackageEdit[];
+  /** The venue's floor plan image, if one was uploaded (venues only). */
+  floorPlanUrl: string | null;
 }
 
 export interface VendorPackageEdit {
@@ -183,5 +185,16 @@ export class DashboardService {
 
   deletePhoto(id: number, vendorId?: number): Observable<void> {
     return this.http.delete<void>(`${this.root(vendorId)}/photos/${id}`);
+  }
+
+  // ---- the venue's floor plan (venues only, B5) ----
+  uploadFloorPlan(file: File, vendorId?: number): Observable<{ floorPlanUrl: string | null }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ floorPlanUrl: string | null }>(`${this.root(vendorId)}/floor-plan`, form);
+  }
+
+  removeFloorPlan(vendorId?: number): Observable<{ floorPlanUrl: string | null }> {
+    return this.http.delete<{ floorPlanUrl: string | null }>(`${this.root(vendorId)}/floor-plan`);
   }
 }

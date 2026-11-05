@@ -77,6 +77,8 @@ public class AppDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContex
             e.Property(x => x.PriceUnit).HasMaxLength(10);
             e.Property(x => x.Setting).HasMaxLength(10);
             e.Property(x => x.VenueType).HasMaxLength(20);
+            e.Property(x => x.FloorPlanUrl).HasMaxLength(1000);
+            e.Property(x => x.FloorPlanStorageId).HasMaxLength(300);
             e.Property(x => x.DepositTerms).HasMaxLength(200);
             e.Property(x => x.CancellationTerms).HasMaxLength(500);
             e.Property(x => x.TravelPolicy).HasMaxLength(10);

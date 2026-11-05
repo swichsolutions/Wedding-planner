@@ -54,6 +54,10 @@ public class Vendor
     public string? Setting { get; set; }
     /// <summary>restaurant, hall, openAir, winery or hotel.</summary>
     public string? VenueType { get; set; }
+    /// <summary>The venue's floor plan as an image (a PDF is rendered to an image in the browser
+    /// before upload; BUILD-PLAN B5). Shown on the profile; couples' seating charts take a copy.</summary>
+    public string? FloorPlanUrl { get; set; }
+    public string? FloorPlanStorageId { get; set; }
 
     // ---- terms (information only: payments stay between couple and vendor, CLAUDE.md §4) ----
     public string? DepositTerms { get; set; }

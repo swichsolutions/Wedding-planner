@@ -49,8 +49,19 @@ public record SeatingStateDto(
     IEnumerable<SeatingTableDto> Tables,
     IEnumerable<SeatAssignmentDto> Assignments,
     IEnumerable<SeatingObjectDto> Objects,
-    /// <summary>The venue's floor plan under the chart, if the couple uploaded one.</summary>
-    string? FloorPlanUrl);
+    /// <summary>The floor plan under the chart: the couple's own upload or their copy of the venue's.</summary>
+    string? FloorPlanUrl,
+    /// <summary>The venue the plan was copied from; null for the couple's own upload.</summary>
+    int? FloorPlanVendorId,
+    /// <summary>The couple's venue (chosen first, else shortlisted or saved) when it has a floor plan to offer.</summary>
+    VenuePlanDto? VenuePlan);
+
+public record VenuePlanDto(int VendorId, string Name, string FloorPlanUrl);
+
+public class UseVenuePlanDto
+{
+    [Required] public int VendorId { get; set; }
+}
 
 /// <summary>Seat a guest's whole party at a table (free seats, in order), or unseat it (TableId null).</summary>
 public class SeatGuestDto

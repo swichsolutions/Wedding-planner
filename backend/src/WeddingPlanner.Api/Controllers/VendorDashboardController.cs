@@ -246,5 +246,6 @@ public class VendorDashboardController : ControllerBase
                 Included = p.Included,
                 Duration = p.Duration,
             })
-            .ToArray());
+            .ToArray(),
+        v.FloorPlanUrl);
 }

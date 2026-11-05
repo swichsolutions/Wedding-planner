@@ -264,6 +264,10 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
 6. **Cloudinary** (`Cloudinary:CloudName/ApiKey/ApiSecret`) for photo storage — without
    it the API falls back to local-disk uploads (then set `LocalUploads:PublicBase` to
    the public URL and persist the uploads folder).
+   Venue floor plans (B5) arrive as PDFs, photos or screenshots; a PDF's first page is drawn to
+   a PNG in the browser (`core/floor-plan-file.ts`, pdf.js lazy-loaded; its worker is an
+   angular.json asset served at `/pdfjs/`), so storage only ever holds images. A couple's
+   seating chart takes its own copy of the venue's plan (`IPhotoStorage.CopyAsync`).
 7. **`Cors:AllowedOrigins`** = the production origin; **`Google:ClientId`** in BOTH
    backend config and the frontend environment for Google sign-in (omitting it just
    hides the button — password auth still works).

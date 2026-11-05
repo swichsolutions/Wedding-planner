@@ -80,7 +80,11 @@ public record VendorDashboardDto(
     string? CancellationTerms,
     string? TravelPolicy,
     string? BookingLeadTime,
-    VendorPackageEditDto[] Packages);
+    VendorPackageEditDto[] Packages,
+    /// <summary>The venue's floor plan image, if one was uploaded (venues only).</summary>
+    string? FloorPlanUrl);
+
+public record VendorFloorPlanDto(string? FloorPlanUrl);
 
 public record InboxMessageDto(
     int Id,

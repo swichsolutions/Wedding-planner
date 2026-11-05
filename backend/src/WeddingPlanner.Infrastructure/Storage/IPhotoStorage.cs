@@ -11,4 +11,8 @@ public interface IPhotoStorage
 {
     Task<StoredPhoto> UploadAsync(Stream content, string fileName, CancellationToken ct = default);
     Task DeleteAsync(string? storageId, CancellationToken ct = default);
+
+    /// <summary>A second, independent copy of a stored photo, so two records can each keep and
+    /// delete their own (a couple's copy of a venue's floor plan).</summary>
+    Task<StoredPhoto> CopyAsync(StoredPhoto source, CancellationToken ct = default);
 }

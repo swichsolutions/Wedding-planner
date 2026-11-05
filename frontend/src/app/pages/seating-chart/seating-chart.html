@@ -6,7 +6,7 @@
     </header>
 
     <!-- the venue's floor plan picker (hidden; the toolbar's button opens it) -->
-    <input #planInput type="file" accept="image/jpeg,image/png,image/webp" class="seat__file"
+    <input #planInput type="file" [accept]="planAccept" class="seat__file"
       [attr.aria-label]="'seatingPage.planUpload' | translate" (change)="uploadPlan(planInput)" />
 
     @if (loadError()) {
@@ -30,6 +30,12 @@
           <button type="button" class="btn btn--primary" (click)="openAddModal()">
             {{ 'seatingPage.addItemCta' | translate }}
           </button>
+          @if (venueSuggestion(); as venue) {
+            <!-- the venue's own plan, one click (B5) -->
+            <button type="button" class="btn btn--ghost" (click)="useVenuePlan()" [disabled]="planBusy()">
+              {{ 'seatingPage.planFromVenue' | translate: { name: venue.name } }}
+            </button>
+          }
           <button type="button" class="seat-quiet" (click)="planInput.click()" [disabled]="planBusy()">
             {{ 'seatingPage.planUpload' | translate }}
           </button>
@@ -53,6 +59,11 @@
           {{ 'seatingPage.addItemCta' | translate }}
         </button>
         <span class="seat-toolbar__group">
+          @if (venueSuggestion(); as venue) {
+            <button type="button" class="seat-quiet" (click)="useVenuePlan()" [disabled]="planBusy()">
+              {{ 'seatingPage.planFromVenue' | translate: { name: venue.name } }}
+            </button>
+          }
           @if (floorPlanUrl()) {
             <button type="button" class="seat-quiet" (click)="showPlan.set(!showPlan())" [attr.aria-pressed]="showPlan()">
               {{ (showPlan() ? 'seatingPage.planHide' : 'seatingPage.planShow') | translate }}

@@ -27,6 +27,8 @@ public class SeatingController : ControllerBase
     };
 
     private const long MaxPlanBytes = 8 * 1024 * 1024; // 8 MB
+    /// <summary>The catalog group whose vendors' floor plans the chart offers.</summary>
+    private const string VenueGroup = "venues";
     private static readonly string[] AllowedPlanTypes = { "image/jpeg", "image/png", "image/webp" };
 
     private readonly AppDbContext _db;
@@ -65,9 +67,28 @@ public class SeatingController : ControllerBase
         var tables = await _db.SeatingTables.AsNoTracking().Where(t => t.CoupleId == cid).ToListAsync();
         var assignments = await _db.SeatAssignments.AsNoTracking().Where(a => a.CoupleId == cid).ToListAsync();
         var objects = await _db.SeatingObjects.AsNoTracking().Where(o => o.CoupleId == cid).ToListAsync();
-        var plan = await _db.Couples.AsNoTracking().Where(c => c.Id == cid).Select(c => c.FloorPlanUrl).FirstOrDefaultAsync();
+        var plan = await _db.Couples.AsNoTracking().Where(c => c.Id == cid)
+            .Select(c => new { c.FloorPlanUrl, c.FloorPlanVendorId }).FirstAsync();
+        var venuePlan = await VenuePlanAsync(cid);
 
-        return Ok(new SeatingStateDto(tables.Select(ToDto), assignments.Select(ToDto), objects.Select(ToDto), plan));
+        return Ok(new SeatingStateDto(tables.Select(ToDto), assignments.Select(ToDto), objects.Select(ToDto),
+            plan.FloorPlanUrl, plan.FloorPlanVendorId, venuePlan));
+    }
+
+    /// <summary>The couple's venue with a floor plan, if any: the chosen one first, then a shortlisted
+    /// or saved one, newest first. Only approved venues (what the catalog shows).</summary>
+    private async Task<VenuePlanDto?> VenuePlanAsync(int cid)
+    {
+        var rows = await _db.PlanServices.AsNoTracking()
+            .Where(s => s.CoupleId == cid && s.Vendor != null && s.Vendor.IsApproved
+                && s.Vendor.FloorPlanUrl != null && s.Vendor.Category.GroupKey == VenueGroup)
+            .Select(s => new { s.Status, s.CreatedAt, s.Vendor!.Id, s.Vendor.Name, s.Vendor.FloorPlanUrl })
+            .ToListAsync();
+        var best = rows
+            .OrderBy(r => r.Status switch { "chosen" => 0, "shortlist" => 1, _ => 2 })
+            .ThenByDescending(r => r.CreatedAt)
+            .FirstOrDefault();
+        return best is null ? null : new VenuePlanDto(best.Id, best.Name, best.FloorPlanUrl!);
     }
 
     [HttpPost("tables")]
@@ -327,6 +348,7 @@ public class SeatingController : ControllerBase
         var old = plan.FloorPlanStorageId;
         plan.FloorPlanUrl = stored.Url;
         plan.FloorPlanStorageId = stored.StorageId;
+        plan.FloorPlanVendorId = null;
         await _db.SaveChangesAsync();
         // The old image goes only after the new one is saved.
         await TryDeleteBlobAsync(old);
@@ -341,6 +363,34 @@ public class SeatingController : ControllerBase
         var old = plan.FloorPlanStorageId;
         plan.FloorPlanUrl = null;
         plan.FloorPlanStorageId = null;
+        plan.FloorPlanVendorId = null;
+        await _db.SaveChangesAsync();
+        await TryDeleteBlobAsync(old);
+        return await Get();
+    }
+
+    /// <summary>
+    /// Take the venue's own floor plan (B5). The couple gets a copy of the image, so the venue
+    /// replacing or removing theirs later never blanks a chart already laid out on it. Any approved
+    /// venue with a plan can be used (the plan is public on its profile anyway).
+    /// </summary>
+    [HttpPut("floor-plan/from-venue")]
+    public async Task<ActionResult<SeatingStateDto>> UseVenuePlan([FromBody] UseVenuePlanDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        if (await _couple.IdAsync() is not int cid) return Forbid();
+        var venue = await _db.Vendors.AsNoTracking()
+            .Where(v => v.Id == dto.VendorId && v.IsApproved && v.FloorPlanUrl != null)
+            .Select(v => new { v.FloorPlanUrl, v.FloorPlanStorageId })
+            .FirstOrDefaultAsync();
+        if (venue is null) return NotFound();
+
+        var stored = await _storage.CopyAsync(new StoredPhoto(venue.FloorPlanUrl!, venue.FloorPlanStorageId));
+        var plan = await _db.Couples.FirstAsync(c => c.Id == cid);
+        var old = plan.FloorPlanStorageId;
+        plan.FloorPlanUrl = stored.Url;
+        plan.FloorPlanStorageId = stored.StorageId;
+        plan.FloorPlanVendorId = dto.VendorId;
         await _db.SaveChangesAsync();
         await TryDeleteBlobAsync(old);
         return await Get();

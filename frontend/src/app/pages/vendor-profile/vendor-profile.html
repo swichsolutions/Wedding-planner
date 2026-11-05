@@ -208,6 +208,12 @@
                 <dd>{{ 'catalog.settings.' + v.setting | translate }}</dd>
               </div>
             }
+            @if (v.floorPlanUrl) {
+              <div class="facts__row">
+                <dt>{{ 'profile.floorPlan' | translate }}</dt>
+                <dd><a [href]="v.floorPlanUrl" target="_blank" rel="noopener">{{ 'profile.floorPlanOpen' | translate }}</a></dd>
+              </div>
+            }
             @if (v.alsoOffers.length) {
               <div class="facts__row">
                 <dt>{{ 'profile.alsoOffers' | translate }}</dt>

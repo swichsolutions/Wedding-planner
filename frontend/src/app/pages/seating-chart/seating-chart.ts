@@ -22,13 +22,16 @@ import {
   SeatingObjectPayload,
   SeatingObjectType,
   SeatingService,
+  SeatingState,
   SeatingTable,
   SeatingTablePayload,
   TableShape,
+  VenuePlan,
   objectPayload,
   tablePayload,
 } from '../../core/seating.service';
 import { ConfirmService } from '../../core/confirm.service';
+import { FLOOR_PLAN_ACCEPT, FloorPlanError, prepareFloorPlan } from '../../core/floor-plan-file';
 import { ToastService } from '../../core/toast.service';
 import { FeatureLanding } from '../../components/feature-landing/feature-landing';
 
@@ -42,7 +45,6 @@ interface Attendee {
 
 /** Width of the venue's floor plan on the canvas, so tables line up with it on every screen. */
 const PLAN_WIDTH = 1000;
-const PLAN_MAX_BYTES = 8 * 1024 * 1024;
 
 interface TablePreset {
   key: string;
@@ -150,6 +152,15 @@ export class SeatingChart {
 
   // ---- the venue's floor plan, under the chart ----
   protected readonly floorPlanUrl = signal<string | null>(null);
+  protected readonly floorPlanVendorId = signal<number | null>(null);
+  /** The couple's venue with a plan to offer (B5). */
+  protected readonly venuePlan = signal<VenuePlan | null>(null);
+  /** Offered until the chart holds that venue's plan. */
+  protected readonly venueSuggestion = computed(() => {
+    const venue = this.venuePlan();
+    return venue && this.floorPlanVendorId() !== venue.vendorId ? venue : null;
+  });
+  protected readonly planAccept = FLOOR_PLAN_ACCEPT;
   protected readonly showPlan = signal(true);
   protected readonly planBusy = signal(false);
   protected readonly planWidth = PLAN_WIDTH;
@@ -204,7 +215,7 @@ export class SeatingChart {
         this.tables.set(state.tables);
         this.assignments.set(state.assignments);
         this.objects.set(state.objects);
-        this.floorPlanUrl.set(state.floorPlanUrl);
+        this.applyPlan(state);
         this.loaded.set(true);
       },
       error: () => {
@@ -674,31 +685,54 @@ export class SeatingChart {
 
   // ---- the venue's floor plan ----
 
+  private applyPlan(state: SeatingState): void {
+    this.floorPlanUrl.set(state.floorPlanUrl);
+    this.floorPlanVendorId.set(state.floorPlanVendorId);
+    this.venuePlan.set(state.venuePlan);
+  }
+
+  /** A PDF becomes an image of its first page in the browser; an oversized photo is shrunk. */
   protected uploadPlan(input: HTMLInputElement): void {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-      this.toast.error('seatingPage.planType');
-      return;
-    }
-    if (file.size > PLAN_MAX_BYTES) {
-      this.toast.error('seatingPage.planTooBig');
-      return;
-    }
     this.planBusy.set(true);
-    this.seatingSvc.uploadFloorPlan(file).subscribe({
-      next: (state) => {
+    prepareFloorPlan(file).then(
+      (ready) =>
+        this.seatingSvc.uploadFloorPlan(ready).subscribe({
+          next: (state) => this.planArrived(state),
+          error: () => {
+            this.planBusy.set(false);
+            this.toast.error('seatingPage.saveError');
+          },
+        }),
+      (err: unknown) => {
         this.planBusy.set(false);
-        this.floorPlanUrl.set(state.floorPlanUrl);
-        this.showPlan.set(true);
-        this.toast.success('seatingPage.planAdded');
+        const code = err instanceof FloorPlanError ? err.code : 'type';
+        this.toast.error(code === 'tooBig' ? 'seatingPage.planTooBig' : code === 'pdf' ? 'seatingPage.planPdfError' : 'seatingPage.planType');
       },
+    );
+  }
+
+  /** The venue's own plan, copied under the chart (B5). */
+  protected useVenuePlan(): void {
+    const venue = this.venueSuggestion();
+    if (!venue) return;
+    this.planBusy.set(true);
+    this.seatingSvc.useVenuePlan(venue.vendorId).subscribe({
+      next: (state) => this.planArrived(state),
       error: () => {
         this.planBusy.set(false);
         this.toast.error('seatingPage.saveError');
       },
     });
+  }
+
+  private planArrived(state: SeatingState): void {
+    this.planBusy.set(false);
+    this.applyPlan(state);
+    this.showPlan.set(true);
+    this.toast.success('seatingPage.planAdded');
   }
 
   protected askRemovePlan(): void {
@@ -707,7 +741,7 @@ export class SeatingChart {
       .then((ok) => {
         if (!ok) return;
         this.seatingSvc.removeFloorPlan().subscribe({
-          next: (state) => this.floorPlanUrl.set(state.floorPlanUrl),
+          next: (state) => this.applyPlan(state),
           error: () => this.toast.error('seatingPage.saveError'),
         });
       });

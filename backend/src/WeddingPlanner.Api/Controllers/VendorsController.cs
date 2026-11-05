@@ -213,7 +213,8 @@ public class VendorsController : ControllerBase
             r.VenueType,
             null,
             Array.Empty<VendorPackageDto>(),
-            false)));
+            false,
+            null)));
     }
 
     /// <summary>
@@ -382,5 +383,6 @@ public class VendorsController : ControllerBase
                 p.Name, p.Price, p.PriceUnit ?? v.PriceUnit ?? CatalogRules.DefaultPriceUnit(v.Category.GroupKey),
                 p.Included, p.Duration))
             .ToArray(),
-        acceptsMessages);
+        acceptsMessages,
+        v.FloorPlanUrl);
 }

@@ -611,6 +611,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<int?>("FloorPlanVendorId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("GuestCountRange")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
@@ -1281,6 +1284,14 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
                         .HasDefaultValueSql("'{}'::text[]");
+
+                    b.Property<string>("FloorPlanStorageId")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("FloorPlanUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Instagram")
                         .HasMaxLength(200)

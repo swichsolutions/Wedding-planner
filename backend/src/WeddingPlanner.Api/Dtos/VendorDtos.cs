@@ -61,4 +61,6 @@ public record VendorDto(
     /// Profile only (false in lists): a vendor account reads the inbox. Imported profiles have no
     /// owner yet, so they show their phone and links but no message form.
     /// </summary>
-    bool AcceptsMessages);
+    bool AcceptsMessages,
+    /// <summary>Profile only (null in lists): the venue's floor plan image, when it has one.</summary>
+    string? FloorPlanUrl);

@@ -39,6 +39,7 @@ import {
   VendorStats, MyVendorClaim,
 } from '../../core/dashboard.service';
 import { ConfirmService } from '../../core/confirm.service';
+import { FLOOR_PLAN_ACCEPT, FloorPlanError, prepareFloorPlan } from '../../core/floor-plan-file';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { NotificationService } from '../../core/notification.service';
@@ -78,6 +79,11 @@ export class Dashboard {
   protected readonly stats = signal<VendorStats | null>(null);
   protected readonly messages = signal<InboxMessage[]>([]);
   protected readonly loadError = signal(false);
+
+  // ---- the venue's floor plan (venues only, B5): PDF, image or a screenshot of the tables ----
+  protected readonly planAccept = FLOOR_PLAN_ACCEPT;
+  protected readonly planBusy = signal(false);
+  protected readonly floorPlanUrl = computed(() => this.vendor()?.floorPlanUrl ?? null);
   /** The account claimed an imported profile and waits for an admin (A3): shown instead of the dashboard. */
   protected readonly claim = signal<MyVendorClaim | null>(null);
   /** Per-panel fetch failures — shown as error notes, never as fake zeros / "no messages". */
@@ -286,6 +292,52 @@ export class Dashboard {
         error: () => {},
       });
     }
+  }
+
+  /** A PDF becomes an image of its first page in the browser; an oversized photo is shrunk. */
+  protected onFloorPlanSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.planBusy.set(true);
+    prepareFloorPlan(file).then(
+      (ready) =>
+        this.dashboard.uploadFloorPlan(ready, this.vendorId).subscribe({
+          next: (r) => {
+            this.planBusy.set(false);
+            this.setFloorPlan(r.floorPlanUrl);
+            this.toast.success('dash.floorPlanAdded');
+          },
+          error: () => {
+            this.planBusy.set(false);
+            this.toast.error('dash.floorPlanError');
+          },
+        }),
+      (err: unknown) => {
+        this.planBusy.set(false);
+        const code = err instanceof FloorPlanError ? err.code : 'type';
+        this.toast.error(code === 'tooBig' ? 'dash.floorPlanTooBig' : code === 'pdf' ? 'dash.floorPlanPdfError' : 'dash.floorPlanType');
+      },
+    );
+  }
+
+  protected async removeFloorPlan(): Promise<void> {
+    const ok = await this.confirmSvc.confirm({
+      title: 'dash.floorPlanRemoveTitle',
+      body: 'dash.floorPlanRemoveBody',
+      confirmLabel: 'dash.floorPlanRemove',
+      danger: true,
+    });
+    if (!ok) return;
+    this.dashboard.removeFloorPlan(this.vendorId).subscribe({
+      next: () => this.setFloorPlan(null),
+      error: () => this.toast.error('dash.floorPlanError'),
+    });
+  }
+
+  private setFloorPlan(url: string | null): void {
+    this.vendor.update((v) => (v ? { ...v, floorPlanUrl: url } : v));
   }
 
   protected onPhotoSelected(event: Event): void {

@@ -47,7 +47,9 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   dormant (CLAUDE.md §4).
 - No booking. Saving or choosing a vendor never means booked; the site says to check the date
   with the vendor.
-- Floor plans: until a venue provides one, seating uses a generic layout marked as not exact
+- Floor plans: a venue's own plan (a PDF, an image or a screenshot of the tables) is uploaded on
+  its editor, shown on its profile and offered to couples who saved that venue; the seating chart
+  takes a copy. Until a venue provides one, seating uses a generic layout marked as not exact
   (guide §7).
 - Real weddings section stays hidden until real stories exist.
 - „პასუხისმგებელი" on tasks and the day timeline: free text, with the partner and saved vendors
@@ -259,7 +261,15 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
 - **Waits on:** B1, A2.
 
 ### B5. Guests + seating (extends what exists)
-- **Status (2026-10-27): done**, apart from floor plans supplied by venues (see "You provide").
+- **Status (2026-11-05): done.** Floor plans from venues since 2026-11-05: the venue (or an admin
+  finishing an imported profile) uploads its plan on the editor's venue fieldset — a PDF, an image
+  or a screenshot of the tables; a PDF's first page is drawn to a PNG in the browser (pdf.js,
+  loaded only then; its worker is an angular.json asset at `/pdfjs/`), so the API stores images
+  only. The profile links it („გეგმის ნახვა“). The seating chart offers it by name to a couple who
+  saved, shortlisted or chose that venue („გამოიყენე X-ის გეგმა“, the chosen one first) and copies
+  the image (`IPhotoStorage.CopyAsync`), so the venue replacing or removing theirs never blanks a
+  chart laid out on it; the couple's own upload (now also PDF) replaces the copy. Migration
+  `VendorFloorPlan` (additive). No scale or dimensions: tables are placed by eye.
   Both pages are on the brand theme. Guests: whether each party is coming (მოდის · პასუხს
   ველოდებით · არ მოდის, changed right in the row), dietary needs (typed or quick picks, shown as a
   small tag), the table each party sits at (picked in the row: the whole party takes free seats
@@ -278,9 +288,8 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   floor plan when one exists; tables (shape, size, seats; add, move, rotate, delete); zones (dance
   floor, band, cake…); drag guests onto a table or seat; counts (tables, seats, free seats,
   unseated guests); download and share. Guest changes show up in seating automatically.
-- **You provide:** D9; one or two real venue floor plans with dimensions to build and test
-  against; who collects floor plans from venues (guide §9 open item) and in what form (my
-  suggestion: image or PDF + room size in metres + table inventory).
+- **You provide:** D9; who collects floor plans from venues (guide §9 open item). Any PDF, image
+  or screenshot works now; room size in metres would allow a true scale later.
 - **Waits on:** B1.
 
 ### B6. Invitation + public „მოსაწვევები" page

@@ -370,6 +370,7 @@ export class VendorProfile implements OnDestroy {
 
   /** The profile's facts block has something to show (region, venue facts, styles…). */
   protected hasDetails(v: Vendor): boolean {
+    if (v.floorPlanUrl) return true; // a venue with only its floor plan still gets the section
     return !!(v.region || v.servedRegions.length || v.alsoOffers.length || v.styles.length ||
       v.features.length || v.capacityMax || v.setting || v.venueType);
   }
