@@ -1,8 +1,8 @@
 # Render Blueprint — the live API behind https://api.weddingplanner.ge (docs/DEPLOY.md).
 #
 # The live frontend is NOT here: it runs on Cloudflare Workers (frontend/wrangler.jsonc,
-# `npm run deploy:live`). The frontend service at the bottom is the old free demo, kept for
-# anyone who wants the whole thing on Render; `frontend/Dockerfile` still builds it.
+# `npm run deploy:live`). The old free demo frontend on Render was deleted on 2026-11-05;
+# `frontend/Dockerfile` still builds the Express/SSR image if anyone wants it elsewhere.
 #
 # Postgres is NOT defined here on purpose: Render's free Postgres expires after 30 days; the
 # database lives on Neon (Frankfurt). Values marked `sync: false` are entered in the dashboard.
@@ -81,39 +81,3 @@ services:
       # ---- Google sign-in: the same OAuth client id as frontend/src/environments/environment.live.ts
       - key: Google__ClientId
         sync: false
-
-  # ------------------------------------------------------ Angular 21 SSR frontend (demo only)
-  # The live site is served by Cloudflare Workers. This free service is the old demo deploy
-  # (weddingplanner-web.onrender.com); delete it once the Workers site is up, or keep it as a
-  # second preview. Two-pass start: deploy with placeholders, then put the real URLs in.
-  - type: web
-    name: weddingplanner-web
-    runtime: docker
-    plan: free
-    region: frankfurt
-    dockerfilePath: ./frontend/Dockerfile
-    dockerContext: ./frontend
-    buildFilter:
-      paths:
-        - frontend/**
-    healthCheckPath: /
-    autoDeployTrigger: commit
-    envVars:
-      # Build arg (Render passes env vars to Docker builds): the API origin compiled into
-      # the bundle. Change → "Manual deploy → Clear build cache & deploy".
-      - key: API_BASE_URL
-        value: https://api.weddingplanner.ge
-      # Angular SSR host allowlist (runtime, comma-separated, wildcards allowed). Without a
-      # match the server silently falls back to client-side rendering.
-      - key: NG_ALLOWED_HOSTS
-        value: "*.onrender.com"
-      # @angular/ssr drops to client-side rendering on ANY x-forwarded-* header it wasn't told
-      # to trust, so list the whole set Render's proxy may send.
-      - key: NG_TRUST_PROXY_HEADERS
-        value: "x-forwarded-for,x-forwarded-host,x-forwarded-port,x-forwarded-proto,x-forwarded-prefix"
-      # Google sign-in button: leave empty to hide it; set a client id whose authorized
-      # origins include the frontend URL to enable it (also set Google__ClientId on the API).
-      - key: GOOGLE_CLIENT_ID
-        value: ""
-      - key: NODE_ENV
-        value: production
