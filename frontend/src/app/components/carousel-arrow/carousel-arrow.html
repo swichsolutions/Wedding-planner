@@ -3,10 +3,7 @@
   <svg class="ca__ring" viewBox="0 0 56 56" aria-hidden="true">
     <circle class="ca__track" cx="28" cy="28" r="26.5" />
     @if (interval() > 0) {
-      <!-- re-created on every move, so the fill starts again from the top -->
-      @for (k of [tick()]; track k) {
-        <circle class="ca__fill" cx="28" cy="28" r="26.5" pathLength="1" [style.animation-duration.ms]="interval()" />
-      }
+      <circle #fill class="ca__fill" cx="28" cy="28" r="26.5" pathLength="1" [style.animation-duration.ms]="interval()" />
     }
   </svg>
   <!-- a long thin arrow, not a chevron -->

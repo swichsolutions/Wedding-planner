@@ -16,6 +16,24 @@ public static class StarterTasks
     /// </summary>
     public record Task(string Stage, string Ka, string En, string? Link);
 
+    public const string SetBudget = "განსაზღვრეთ საერთო ბიუჯეტი";
+    public const string ChooseDate = "აირჩიეთ თარიღი ან თარიღების ვარიანტები";
+
+    private static readonly Lazy<Dictionary<string, Task>> ByTitle = new(() =>
+    {
+        var map = new Dictionary<string, Task>();
+        foreach (var t in All)
+        {
+            map[t.Ka] = t;
+            map[t.En] = t;
+        }
+        return map;
+    });
+
+    /// <summary>A starter task's wording in each language; null for a custom or edited title.</summary>
+    public static string? KaOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.Ka : null;
+    public static string? EnOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.En : null;
+
     public static readonly Task[] All =
     {
         new("m12", "განსაზღვრეთ საერთო ბიუჯეტი", "Set your overall budget", "budget"),

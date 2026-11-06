@@ -17,6 +17,15 @@ export interface ChecklistItem {
   who: string | null;
   /** Where the task opens (see core/task-stages.ts taskLink). */
   link: string | null;
+  /** A starter task's wording in each language; null once it's custom or edited. */
+  titleKa?: string | null;
+  titleEn?: string | null;
+  createdAt?: string;
+}
+
+/** The task's title in the visitor's language, when it's one of the starter tasks. */
+export function taskTitle(item: ChecklistItem, lang: string): string {
+  return (lang === 'en' ? item.titleEn : item.titleKa) ?? item.title;
 }
 
 export interface TaskEdit {

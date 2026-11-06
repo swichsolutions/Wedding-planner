@@ -22,7 +22,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true' },
   template: `
-    <img class="media" [src]="poster()" alt="" width="692" height="1536" loading="lazy" fetchpriority="low" />
+    <img class="media" [src]="poster()" alt="" width="692" height="1536"
+      [attr.loading]="eager() ? null : 'lazy'" [attr.fetchpriority]="eager() ? 'high' : 'low'" />
     @if (useVideo()) {
       <!-- [muted] as a property: the attribute alone doesn't mute a video made by script -->
       <video #video class="media film" [class.is-on]="playing()" [muted]="true" loop playsinline preload="auto"
@@ -65,6 +66,8 @@ import {
 export class ClipVideo {
   readonly src = input.required<string>();
   readonly poster = input.required<string>();
+  /** Near the top of its page: the poster shouldn't wait. */
+  readonly eager = input(false);
 
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly video = viewChild<ElementRef<HTMLVideoElement>>('video');

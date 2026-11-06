@@ -18,6 +18,8 @@ public static class Slugs
     public static string From(string? input)
     {
         if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        // The established spelling, used by the site's city list; transliteration would give "qutaisi".
+        if (input.Trim() == "ქუთაისი") return "kutaisi";
 
         var sb = new StringBuilder(input.Length * 2);
         foreach (var ch in input.ToLowerInvariant())

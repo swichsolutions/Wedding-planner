@@ -44,7 +44,7 @@ public class PlanServiceCreateDto
     [MaxLength(40)] public string? Phone { get; set; }
     [EmailAddress, MaxLength(256)] public string? Email { get; set; }
     [MaxLength(200)] public string? Instagram { get; set; }
-    [Range(0, 999_999_999)] public decimal? Offer { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal? Offer { get; set; }
     [MaxLength(500)] public string? OfferNote { get; set; }
     [MaxLength(1000)] public string? Note { get; set; }
 }
@@ -61,7 +61,7 @@ public class PlanServiceUpdateDto
     [MaxLength(40)] public string? Phone { get; set; }
     [EmailAddress, MaxLength(256)] public string? Email { get; set; }
     [MaxLength(200)] public string? Instagram { get; set; }
-    [Range(0, 999_999_999)] public decimal? Offer { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal? Offer { get; set; }
     [MaxLength(500)] public string? OfferNote { get; set; }
     [MaxLength(1000)] public string? Note { get; set; }
 }
@@ -69,7 +69,7 @@ public class PlanServiceUpdateDto
 /// <summary>Put an agreed price into the budget, with the date the next payment is due.</summary>
 public class PlanServiceToBudgetDto
 {
-    [Range(0, 999_999_999)] public decimal Amount { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal Amount { get; set; }
     public DateOnly? DueDate { get; set; }
 }
 

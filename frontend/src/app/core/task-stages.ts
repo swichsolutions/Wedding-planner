@@ -52,7 +52,10 @@ export function taskDue(task: ChecklistItem, weddingDate: string | null): string
 /** Overdue: not done and the deadline has passed (today counts as still on time). */
 export function isOverdue(task: ChecklistItem, weddingDate: string | null, today = iso(new Date())): boolean {
   const due = taskDue(task, weddingDate);
-  return !task.isDone && !!due && due < today;
+  if (task.isDone || !due || due >= today) return false;
+  // A stage whose time had passed before the task existed isn't late: there's just less time.
+  if (!task.dueDate && task.createdAt && due < task.createdAt.slice(0, 10)) return false;
+  return true;
 }
 
 /** Order for "what's next": by deadline (none last), then the stage order, then the list order. */

@@ -864,3 +864,10 @@ main {
     }
   }
 }
+
+// A vendor's header also holds the bell: on narrow phones the knot makes way, so the menu button stays on screen.
+@media (max-width: 400px) {
+  .hdr:has(.icon-link) .wordmark__knot {
+    display: none;
+  }
+}

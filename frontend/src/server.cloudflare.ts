@@ -6,10 +6,10 @@
 // so only page requests reach the handler below, plus the videos that need byte ranges
 // (server.video.ts). Rendered pages are reused from the edge (server.edge.ts). See wrangler.jsonc
 // and docs/DEPLOY.md.
-import { setActiveConsumer } from '@angular/core/primitives/signals';
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 
 import { EdgeContext, browserRenderedShell, withEdgeCache } from './server.edge';
+import { withFinishedHead } from './server.head';
 import { APEX, redirectFor } from './server.redirects';
 import { AssetFetcher, isVideoPath, serveVideo } from './server.video';
 
@@ -40,15 +40,10 @@ export default {
   async fetch(req: Request, env: { ASSETS: AssetFetcher }, ctx: EdgeContext) {
     if (isVideoPath(new URL(req.url).pathname)) return serveVideo(req, env.ASSETS);
 
-    // A request killed for CPU mid-render never runs Angular's cleanup, which leaves its "inside a
-    // reactive context" flag set for the whole isolate: every later request then dies with NG0600
-    // until the isolate is replaced (the outage of 2026-11-06). No reactive work spans requests, so
-    // starting clean is safe.
-    setActiveConsumer(null);
-
     return withEdgeCache(req, edgeCache(), ctx, async () => {
       try {
-        return (await reqHandler(req)) ?? new Response('Not found', { status: 404 });
+        const res = (await reqHandler(req)) ?? new Response('Not found', { status: 404 });
+        return await withFinishedHead(res, req.url);
       } catch (err) {
         console.error('Server render failed; serving the browser-rendered shell.', err);
         return browserRenderedShell(req, env.ASSETS);

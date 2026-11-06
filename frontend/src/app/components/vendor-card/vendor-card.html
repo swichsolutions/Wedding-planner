@@ -39,7 +39,7 @@
         <span class="vendor-card__votes num" aria-hidden="true">({{ vendor().reviewCount }})</span>
       </p>
     }
-    <p class="vendor-card__meta">{{ vendor().categoryKey | translate }} · {{ vendor().city }}</p>
+    <p class="vendor-card__meta">{{ vendor().categoryKey | translate }} · {{ cityLabel() }}</p>
     @if (vendor().priceFrom > 0) {
       <p class="vendor-card__price">
         <span class="vendor-card__price-label">{{ 'featured.starting' | translate }}</span>

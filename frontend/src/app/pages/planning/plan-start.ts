@@ -4,10 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { EMPTY, catchError, concat, defer, last, of } from 'rxjs';
+import { EMPTY, catchError, concat, defer, last, of, Observable, forkJoin, switchMap } from 'rxjs';
 
 import { safeReturnUrl } from '../../core/auth.service';
-import { BudgetService, takeGuestBudgetDraft } from '../../core/budget.service';
+import { estimatorEdits } from '../../core/budget';
+import { BudgetService, clearGuestBudgetDraft, readGuestBudgetDraft } from '../../core/budget.service';
 import { CoupleService } from '../../core/couple.service';
 import { focusFirstInvalid } from '../../core/forms';
 import { GoldRing } from '../../components/gold-ring/gold-ring';
@@ -42,7 +43,8 @@ export class PlanStart {
   protected readonly saving = signal(false);
   protected readonly error = signal(false);
   /** The total a guest typed into the public budget estimator before signing up. */
-  private readonly draftTotal = isPlatformBrowser(inject(PLATFORM_ID)) ? takeGuestBudgetDraft()?.total ?? null : null;
+  private readonly draft = isPlatformBrowser(inject(PLATFORM_ID)) ? readGuestBudgetDraft() : null;
+  private readonly draftTotal = this.draft?.total ?? null;
 
   constructor() {
     const t = inject(TranslateService);
@@ -89,7 +91,7 @@ export class PlanStart {
     // Details first, then the total (the budget tool reseeds its split from it).
     concat(
       this.couple.update(toPlanDetails(this.form)),
-      defer(() => (total != null ? this.budget.updateTotal(total, true) : of(null))),
+      defer(() => (total != null ? this.applyTotal(total) : of(null))),
     )
       .pipe(last())
       .subscribe({
@@ -105,8 +107,7 @@ export class PlanStart {
   protected skip(): void {
     if (this.draftTotal) {
       this.saving.set(true);
-      this.budget
-        .updateTotal(this.draftTotal, true)
+      this.applyTotal(this.draftTotal)
         .pipe(catchError(() => EMPTY))
         .subscribe({ complete: () => this.continue() });
       return;
@@ -114,7 +115,37 @@ export class PlanStart {
     this.continue();
   }
 
+  /** Sets the total and, if it's the one from the public estimator, the row amounts changed there. */
+  private applyTotal(total: number): Observable<unknown> {
+    const amounts = total === this.draftTotal ? this.draft?.amounts : undefined;
+    return this.budget.updateTotal(total, true).pipe(
+      // asked again: the rows may only just have been created
+      switchMap((saved) => (amounts ? this.budget.get() : of(saved))),
+      switchMap((budget) => {
+        const updates = (amounts ? estimatorEdits(total, amounts) : []).flatMap((edit) => {
+          const item = budget.items.find((i) => i.categorySlug === edit.slug);
+          if (!item) return [];
+          return [
+            this.budget
+              .updateItem(item.id, {
+                name: item.name,
+                vendorId: item.vendor?.id ?? null,
+                merchantName: item.merchantName,
+                estimate: edit.estimate,
+                actualCost: item.actualCost,
+                note: item.note,
+                reminderDate: item.reminderDate ?? null,
+              })
+              .pipe(catchError(() => of(null))),
+          ];
+        });
+        return updates.length ? forkJoin(updates) : of(budget);
+      }),
+    );
+  }
+
   private continue(): void {
+    clearGuestBudgetDraft();
     void this.router.navigateByUrl(this.returnUrl ?? '/planning');
   }
 }

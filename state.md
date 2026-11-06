@@ -145,7 +145,7 @@
     guarded `/dashboard` (stats + profile-edit form + inbox w/ mark-read) and `/admin` (moderation:
     approve + feature toggle). Header shows Dashboard/Admin/Logout vs Login by role. All SSR-verified
     (200s; private pages render a loading shell server-side, hydrate with data on the client).
-  - Dev admin: admin@weddingplanner.ge / Admin!2026_dev (config in appsettings.Development.json `Seed`).
+  - Dev admin: admin@weddingplanner.ge / (password in appsettings.Development.json) (config in appsettings.Development.json `Seed`).
   - ⚠️ **Not yet run against a live DB** — login/registration/persistence unverified until ipsum_dev
     exists; JWT key in appsettings is a dev placeholder (set a real secret in production).
   - Reviewed (a11y + anti-slop): `aria-required` across login/register/dashboard forms,

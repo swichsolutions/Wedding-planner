@@ -1053,7 +1053,7 @@ export class BudgetPlanner {
 
   /** Guest → signup handoff: the total they've already entered must survive registration. */
   protected goSignupWithDraft(): void {
-    saveGuestBudgetDraft(this.estTotal());
+    saveGuestBudgetDraft(this.estTotal(), this.estAmounts());
     void this.router.navigateByUrl('/signup');
   }
 

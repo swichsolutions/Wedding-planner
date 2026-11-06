@@ -7,7 +7,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-import { ChecklistItem, ChecklistService, taskEdit } from '../../core/checklist.service';
+import { ChecklistItem, ChecklistService, taskEdit, taskTitle } from '../../core/checklist.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CoupleService } from '../../core/couple.service';
 import { formatDate } from '../../core/dates';
@@ -137,6 +137,8 @@ export class Tasks {
   }
 
   protected save(): void {
+    const title = this.form.controls.title;
+    title.setValue((title.value ?? '').trim());
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       (this.host.nativeElement.querySelector('#task-title') as HTMLElement | null)?.focus();
@@ -179,6 +181,10 @@ export class Tasks {
   protected due(item: ChecklistItem): string | null {
     const d = taskDue(item, this.weddingDate());
     return d ? formatDate(d, this.lang.current(), 'medium') : null;
+  }
+
+  protected title(item: ChecklistItem): string {
+    return taskTitle(item, this.lang.current());
   }
 
   protected overdue(item: ChecklistItem): boolean {

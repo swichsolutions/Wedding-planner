@@ -12,17 +12,23 @@ const GUEST_DRAFT_KEY = 'weddingplanner.budget.guestDraft';
  * (from the budget page's CTA) so it isn't silently lost. Signup applies it to the
  * couple's freshly-seeded tracker right after the account is created, then clears it.
  */
-export function saveGuestBudgetDraft(total: number): void {
-  safeSessionSet(GUEST_DRAFT_KEY, JSON.stringify({ total }));
+export function saveGuestBudgetDraft(total: number, amounts?: readonly number[]): void {
+  safeSessionSet(GUEST_DRAFT_KEY, JSON.stringify({ total, amounts }));
 }
 
-export function takeGuestBudgetDraft(): { total: number } | null {
+export function clearGuestBudgetDraft(): void {
+  safeSessionRemove(GUEST_DRAFT_KEY);
+}
+
+/** Stays stored until clearGuestBudgetDraft, so leaving the start form doesn't lose it. */
+export function readGuestBudgetDraft(): { total: number; amounts?: number[] } | null {
   const raw = safeSessionGet(GUEST_DRAFT_KEY);
   if (!raw) return null;
-  safeSessionRemove(GUEST_DRAFT_KEY);
   try {
-    const parsed = JSON.parse(raw) as { total?: number };
-    return typeof parsed.total === 'number' && parsed.total > 0 ? { total: parsed.total } : null;
+    const parsed = JSON.parse(raw) as { total?: number; amounts?: number[] };
+    return typeof parsed.total === 'number' && parsed.total > 0
+      ? { total: parsed.total, amounts: Array.isArray(parsed.amounts) ? parsed.amounts : undefined }
+      : null;
   } catch {
     return null;
   }

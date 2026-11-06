@@ -1,8 +1,9 @@
 import { DOCUMENT, isPlatformServer } from '@angular/common';
 import { Component, DestroyRef, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../core/auth.service';
 import { Reveal } from '../../core/reveal.directive';
@@ -61,6 +62,9 @@ export class Home {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
+    const translate = inject(TranslateService);
+    inject(Title).setTitle(translate.instant('home.metaTitle'));
+    inject(Meta).updateTag({ name: 'description', content: translate.instant('home.metaDescription') });
     // The hero render and the brand faces are used on this page only, so they are
     // preloaded from here (in the server-rendered head of '/'), not from index.html for
     // every route.

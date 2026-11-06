@@ -778,13 +778,28 @@ export class GuestList {
     reader.readAsText(file);
   }
 
-  /** One name per line; a "Name" header or a trailing comma-separated column (e.g.
-   *  from a two-column export) is tolerated — only the first field is used. */
+  /** One person per line, or a spreadsheet export with commas, semicolons or tabs. A header row is
+   *  recognised and skipped, and says which columns hold the names. Without one, the second column
+   *  counts as the surname only if it looks like a name (not a phone number or an email). */
   private parseNames(text: string): string[] {
-    return text
-      .split(/\r?\n/)
-      .map((line) => line.split(',')[0]?.trim() ?? '')
-      .filter((name) => name.length > 0 && !/^(name|guest|guests?)$/i.test(name));
+    const rows = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (!rows.length) return [];
+    const delim = [';', '\t', ','].find((d) => rows[0].includes(d));
+    const cells = (line: string) => (delim ? line.split(delim) : [line]).map((c) => c.trim().replace(/^"|"$/g, ''));
+    const FIRST = /^(first ?name|given name|name|guest|guests|სახელი|სტუმარი|სტუმრები)$/i;
+    const LAST = /^(last ?name|surname|family name|გვარი)$/i;
+    const head = cells(rows[0]);
+    const hasHeader = head.some((h) => FIRST.test(h) || LAST.test(h));
+    const firstAt = hasHeader ? Math.max(0, head.findIndex((h) => FIRST.test(h))) : 0;
+    const lastAt = hasHeader ? head.findIndex((h) => LAST.test(h)) : -1;
+    return rows
+      .slice(hasHeader ? 1 : 0)
+      .map((row) => {
+        const c = cells(row);
+        const surname = hasHeader ? (lastAt >= 0 ? c[lastAt] : '') : /^[\p{L}' -]+$/u.test(c[1] ?? '') ? c[1] : '';
+        return [c[firstAt], surname].filter(Boolean).join(' ');
+      })
+      .filter((name) => name.length > 0);
   }
 
   private importNames(names: string[]): void {

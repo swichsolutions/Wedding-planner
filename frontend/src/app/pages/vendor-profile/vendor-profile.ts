@@ -153,6 +153,17 @@ export class VendorProfile implements OnDestroy {
         this.submitError.set(false);
         if (v) this.loadReviews(v.id);
         else this.reviews.set([]);
+        // Their city changed since this address was shared: send everyone on, permanently.
+        if (v && v.citySlug && v.citySlug !== this.lastParams?.city) {
+          const to = `/${v.categorySlug}/${v.citySlug}/${v.slug}`;
+          if (this.responseInit) {
+            this.responseInit.status = 301;
+            this.responseInit.headers = { Location: to };
+          } else {
+            void this.router.navigateByUrl(to, { replaceUrl: true });
+          }
+          return;
+        }
         // Dead URLs must answer 404 so crawlers drop them; a transient API
         // failure is 503 so live pages aren't deindexed over a hiccup.
         if (this.responseInit) this.responseInit.status = failed ? 503 : v ? 200 : 404;
@@ -380,10 +391,15 @@ export class VendorProfile implements OnDestroy {
   }
 
   /** "სიღნაღი, კახეთი" — but just "თბილისი" when the city and the region are the same. */
+  protected cityLabel(v: Vendor): string {
+    return this.lang.current() === 'en' && v.citySlug ? cityDisplayEn(v.citySlug) : v.city;
+  }
+
   protected locationLabel(v: Vendor): string {
     const region = v.region ? this.translate.instant(`catalog.regions.${v.region}`) : '';
-    if (!v.city) return region;
-    return region && region !== v.city ? `${v.city}, ${region}` : v.city;
+    const city = v.city ? this.cityLabel(v) : '';
+    if (!city) return region;
+    return region && region !== v.city ? `${city}, ${region}` : city;
   }
 
   // ---- reviews ----
@@ -498,7 +514,7 @@ export class VendorProfile implements OnDestroy {
 
     const category = this.translate.instant(v.categoryKey);
     const brand = this.translate.instant('brand.name');
-    const pageTitle = `${v.name} — ${category}, ${v.city} | ${brand}`;
+    const pageTitle = `${v.name} — ${category}, ${this.cityLabel(v)} | ${brand}`;
     const description = v.bio.length > 155 ? v.bio.slice(0, 152) + '…' : v.bio;
     const image = v.photos[0]?.url ?? '';
 

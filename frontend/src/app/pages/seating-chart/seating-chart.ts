@@ -502,7 +502,7 @@ export class SeatingChart {
     return this.editingTable()?.name ?? '';
   }
 
-  protected submitCustomForm(form: HTMLFormElement): void {
+  protected async submitCustomForm(form: HTMLFormElement): Promise<void> {
     const shape = this.customShape();
     let seatCount: number;
 
@@ -523,6 +523,17 @@ export class SeatingChart {
     const editing = this.editingTable();
 
     if (editing) {
+      const losing = this.assignments().filter((a) => a.tableId === editing.id && a.seatIndex >= seatCount).length;
+      if (losing > 0) {
+        const ok = await this.confirmSvc.confirm({
+          title: 'seatingPage.shrinkTitle',
+          detail: this.t.instant('seatingPage.shrinkDetail', { n: losing }),
+          body: 'seatingPage.shrinkBody',
+          confirmLabel: 'seatingPage.shrinkConfirm',
+          danger: true,
+        });
+        if (!ok) return;
+      }
       const payload: SeatingTablePayload = { ...tablePayload(editing), name, shape, seatCount };
       this.seatingSvc.updateTable(editing.id, payload).subscribe({
         next: () => {

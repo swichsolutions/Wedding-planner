@@ -320,6 +320,8 @@ public class WebsiteController : ControllerBase
         if (await _couple.IdAsync() is not int cid) return Forbid();
         var site = await LoadAsync(cid);
         if (site is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(site.FirstName) || string.IsNullOrWhiteSpace(site.PartnerFirstName) || site.WeddingDate is null)
+            return BadRequest(new { code = "incomplete" });
 
         // The slug is minted once, on first publish, and stays stable afterwards —
         // shared links must not break when the couple re-publishes. Minting is

@@ -33,7 +33,12 @@
     <legend class="pd-q">{{ 'plan.when' | translate }}</legend>
     <div class="pd-field pd-field--narrow">
       <label [for]="idPrefix() + '-date'">{{ 'plan.date' | translate }}</label>
-      <input [id]="idPrefix() + '-date'" type="date" formControlName="weddingDate" />
+      <input [id]="idPrefix() + '-date'" type="date" formControlName="weddingDate"
+        [class.is-invalid]="form().controls.weddingDate.errors?.['past']"
+        [attr.aria-invalid]="form().controls.weddingDate.errors?.['past'] ? 'true' : null" />
+      @if (form().controls.weddingDate.errors?.['past']) {
+        <span class="pd-err">{{ 'plan.datePast' | translate }}</span>
+      }
     </div>
     <label class="pd-check">
       <input type="checkbox" [checked]="form().controls.dateUnknown.value" (change)="toggleDateUnknown($event)" />

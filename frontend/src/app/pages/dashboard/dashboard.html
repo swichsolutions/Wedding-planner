@@ -15,6 +15,10 @@
         <p class="dash__claim-hint">{{ 'dash.claimRelogin' | translate }}</p>
       }
     </div>
+  } @else if (noProfile()) {
+    <div class="dash__error" role="status">
+      {{ 'dash.noProfile' | translate }} <a href="mailto:info@weddingplanner.ge">info@weddingplanner.ge</a>
+    </div>
   } @else if (loadError()) {
     <div class="dash__error" role="alert">{{ 'dash.loadError' | translate }}</div>
   } @else if (vendor(); as v) {

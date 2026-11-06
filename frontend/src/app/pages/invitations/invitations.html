@@ -18,7 +18,7 @@
   <!-- An invitation being made in the real builder, beside what it does. -->
   <section class="iv-show container" aria-labelledby="iv-show-title">
     <div class="iv-clip">
-      <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.jpg" />
+      <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.jpg" [eager]="true" />
     </div>
     <div class="iv-show__text">
       <h2 id="iv-show-title" class="iv-h2">{{ 'invitationsPage.showTitle' | translate }}</h2>
@@ -41,8 +41,8 @@
         <p class="iv-label">{{ 'invitationsPage.exampleLabel' | translate }}</p>
         <div class="iv-phone" [attr.aria-label]="'invitationsPage.exampleLabel' | translate" role="img">
           <div class="iv-phone__screen" inert>
-            <app-wedding-site [data]="example" [template]="shown()">
-              <app-rsvp-form slug="example" [site]="example" />
+            <app-wedding-site [data]="example()" [template]="shown()">
+              <app-rsvp-form slug="example" [site]="example()" />
             </app-wedding-site>
           </div>
         </div>
@@ -53,7 +53,7 @@
             <button type="button" class="iv-design" [class.is-on]="shown() === t" [attr.aria-pressed]="shown() === t"
               (click)="show(t)">
               <span class="iv-design__thumb" aria-hidden="true">
-                <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+                <app-wedding-site [data]="sample()" [template]="t" [thumb]="true" />
               </span>
               <span class="iv-design__name">{{ 'wsTemplate.' + t | translate }}</span>
             </button>

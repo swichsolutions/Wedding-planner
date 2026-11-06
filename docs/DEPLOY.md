@@ -118,3 +118,7 @@ run on startup (`Database__MigrateOnStartup`). Watch the first deploy's logs for
   reset (the mail arrives), Google sign-in.
 - Admin login with `Seed__AdminEmail`.
 - The old demo on `weddingplanner-web.onrender.com` was deleted on 2026-11-05; Render now hosts only the API.
+
+## Keeping the Worker up
+
+A render costs 45–120 ms of CPU (up to about 1 s from cold), and the Workers free plan allows 10 ms per request. Cloudflare tolerates some of that; when it doesn't, the request fails with error 1102 (`exceededResources` in analytics, at 10 ms). So `src/server.edge.ts` reuses a public page from the edge for 5 minutes (`x-edge-cache: HIT`; edits can take that long to show), a failed render falls back to the browser-rendered shell (`x-rendered-by-browser`), and `src/main.server.ts` clears the flag a killed render leaves behind. The real cure is the $5 Workers Paid plan (30 s of CPU per request): take it before promoting the site. Don't crawl the live site quickly while on the free plan.

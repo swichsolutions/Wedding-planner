@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
-import { TranslatePipe } from '@ngx-translate/core';
+import { ChangeDetectionStrategy, Component, DOCUMENT, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { CarouselArrow } from '../../../components/carousel-arrow/carousel-arrow';
 
@@ -39,6 +39,7 @@ export class TrustFaq {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
+    this.addFaqData(destroyRef);
     afterNextRender(() => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       this.auto = true;
@@ -54,6 +55,28 @@ export class TrustFaq {
       this.start();
     });
     destroyRef.onDestroy(() => this.stop());
+  }
+
+  /** The questions as FAQPage data in the head, rendered on the server. */
+  private addFaqData(destroyRef: DestroyRef): void {
+    const doc = inject(DOCUMENT);
+    const t = inject(TranslateService);
+    const id = 'faq-json-ld';
+    doc.getElementById(id)?.remove();
+    const script = doc.createElement('script');
+    script.id = id;
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: this.questions.map((n) => ({
+        '@type': 'Question',
+        name: t.instant(`home.trust.faq.q${n}`),
+        acceptedAnswer: { '@type': 'Answer', text: t.instant(`home.trust.faq.a${n}`) },
+      })),
+    }).replace(/</g, '\\u003C');
+    doc.head.appendChild(script);
+    destroyRef.onDestroy(() => doc.getElementById(id)?.remove());
   }
 
   /** Card i's place relative to the active one: -1 leaving, 0 active, 1–2 waiting, 3 parked

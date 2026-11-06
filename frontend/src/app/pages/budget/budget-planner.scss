@@ -357,7 +357,7 @@
   padding: var(--space-4);
   margin-bottom: var(--space-4);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3);
   cursor: pointer; // clicking the row (not its controls) opens the detail popup
 
@@ -693,6 +693,8 @@
 // One-click "mark as paid" under the paid amount. Styled as a pressable pill so it
 // reads as an ACTION — green text + checkmark would read as an already-paid status.
 .brow__payfull {
+  max-width: 100%;
+  white-space: normal;
   display: inline-flex;
   align-items: center;
   margin-top: var(--space-1);
@@ -1570,6 +1572,7 @@
 }
 
 .bguide__addsvc-select {
+  max-width: 100%;
   appearance: none;
   -webkit-appearance: none;
   height: 44px;
@@ -1715,6 +1718,7 @@
 
 .bguide__cards {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   margin-bottom: var(--space-6);
 
@@ -1724,6 +1728,7 @@
 }
 
 .bcard {
+  min-width: 0;
   padding: var(--space-5);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -1766,7 +1771,7 @@
 
 .bcard__money {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3);
   padding-block: var(--space-4);
   border-block: 1px solid var(--color-border);
@@ -1775,17 +1780,20 @@
 
 .bcard__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
 }
 
 .bguide__add {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
   max-width: 28rem;
 
   input {
-    flex: 1;
+    flex: 1 1 10rem;
+    min-width: 0;
     height: 44px;
     padding: 0 var(--space-4);
     border: 1px solid var(--color-border-strong);

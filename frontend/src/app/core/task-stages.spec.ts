@@ -61,3 +61,15 @@ describe('taskLink', () => {
     expect(taskLink(null)).toBeNull();
   });
 });
+
+describe('isOverdue for a plan started late', () => {
+  it('a stage already past when the task was created is not late', () => {
+    expect(isOverdue(task({ stage: 'm12', createdAt: '2027-05-01T10:00:00Z' }), '2027-09-18', '2027-06-01')).toBe(false);
+  });
+  it('a stage that passes after that is', () => {
+    expect(isOverdue(task({ stage: 'm2', createdAt: '2027-05-01T10:00:00Z' }), '2027-09-18', '2027-08-01')).toBe(true);
+  });
+  it('the couple\'s own date is always held to', () => {
+    expect(isOverdue(task({ dueDate: '2027-04-01', createdAt: '2027-05-01T10:00:00Z' }), '2027-09-18', '2027-06-01')).toBe(true);
+  });
+});

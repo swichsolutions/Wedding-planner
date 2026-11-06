@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { REGIONS } from '../../core/catalog';
@@ -7,14 +7,22 @@ import { CoupleProfile, PlanDetails } from '../../core/couple.service';
 import { nameValidator } from '../../core/forms';
 import { GUEST_RANGES } from '../../core/onboarding';
 
-/** The plan's details as a form: shared by the start form and the settings page. */
+/** The plan's details as a form: shared by the start form and the settings page. */
+/** A date being typed can't be in the past. One already saved stays valid, so a plan can still be edited after the wedding. */
+function notPastWhenEdited(c: AbstractControl): ValidationErrors | null {
+  if (!c.dirty || !c.value) return null;
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return c.value < today ? { past: true } : null;
+}
+
 export function planDetailsForm(fb: FormBuilder) {
   return fb.group({
     firstName: ['', [nameValidator(), Validators.maxLength(120)]],
     lastName: ['', [nameValidator(), Validators.maxLength(120)]],
     partnerFirstName: ['', [nameValidator(), Validators.maxLength(120)]],
     partnerLastName: ['', [nameValidator(), Validators.maxLength(120)]],
-    weddingDate: [''],
+    weddingDate: ['', [notPastWhenEdited]],
     /** „ჯერ არ ვიცი“ for the date. */
     dateUnknown: [false],
     city: ['', [Validators.maxLength(120)]],

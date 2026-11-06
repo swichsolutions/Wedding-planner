@@ -13,6 +13,7 @@
 
 .pd-set {
   min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
   padding: 0;
   border: 0;
@@ -31,10 +32,11 @@
 
 .pd-pair {
   display: grid;
+  grid-template-columns: minmax(0, 1fr); // or a long <select> option sets the column's width
   gap: var(--space-3);
 
   @include bp.respond-to(sm) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

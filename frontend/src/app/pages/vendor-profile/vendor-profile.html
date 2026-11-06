@@ -54,7 +54,7 @@
 
         <!-- ---------- info rail ---------- -->
         <div class="info">
-          <p class="info__cat">{{ v.categoryKey | translate }} · {{ v.city }}</p>
+          <p class="info__cat">{{ v.categoryKey | translate }} · {{ cityLabel(v) }}</p>
           <h1 class="info__name">{{ v.name }}</h1>
 
           @if (v.reviewCount) {

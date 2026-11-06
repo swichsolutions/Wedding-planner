@@ -108,7 +108,7 @@
                 <label class="tk-check">
                   <input type="checkbox" [checked]="item.isDone" (change)="toggle(item)" />
                   <span class="tk-check__box" aria-hidden="true"></span>
-                  <span class="tk-name">{{ item.title }}</span>
+                  <span class="tk-name">{{ title(item) }}</span>
                 </label>
                 <div class="tk-meta">
                   @if (due(item); as d) {
@@ -129,10 +129,10 @@
                     <a class="tk-go" [routerLink]="l.route" [queryParams]="l.query ?? null">{{ l.key | translate }} →</a>
                   }
                   <button type="button" class="tk-icon" (click)="startEdit(item)" [disabled]="editing() !== null"
-                    [attr.aria-label]="'tasks.edit' | translate: { name: item.title }">
+                    [attr.aria-label]="'tasks.edit' | translate: { name: title(item) }">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
                   </button>
-                  <button type="button" class="tk-icon" (click)="remove(item)" [attr.aria-label]="'tasks.deleteNamed' | translate: { name: item.title }">
+                  <button type="button" class="tk-icon" (click)="remove(item)" [attr.aria-label]="'tasks.deleteNamed' | translate: { name: title(item) }">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /></svg>
                   </button>
                 </div>

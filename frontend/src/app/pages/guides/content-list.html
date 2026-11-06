@@ -26,7 +26,7 @@
     } @else {
       <ul class="gd__grid" [class.gd__grid--4]="card === 'idea'" [class.gd__grid--3]="card !== 'idea'" role="list">
         @for (c of items(); track c.slug) {
-          <li><app-content-card [item]="c" [variant]="card" /></li>
+          <li><app-content-card [item]="c" [variant]="card" [eager]="$index < 3" /></li>
         }
       </ul>
     }

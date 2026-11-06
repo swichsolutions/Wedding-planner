@@ -17,7 +17,7 @@ import { LanguageService } from '../../i18n/language.service';
     <a class="ccard" [class.ccard--idea]="variant() === 'idea'" [routerLink]="path()">
       <span class="ccard__media">
         @if (image()) {
-          <img [src]="image()" [alt]="alt()" loading="lazy" width="800" height="600" />
+          <img [src]="image()" [alt]="alt()" [attr.loading]="eager() ? null : 'lazy'" width="800" height="600" />
         }
       </span>
       <span class="ccard__body">
@@ -121,6 +121,8 @@ export class ContentCard {
 
   readonly item = input.required<ContentSummary>();
   readonly variant = input<'article' | 'idea' | 'story'>('article');
+  /** In the first row of a page: it shouldn't wait. */
+  readonly eager = input(false);
 
   private readonly en = computed(() => this.lang.current() === 'en');
   protected readonly path = computed(() => contentPath(this.item().type, this.item().slug));

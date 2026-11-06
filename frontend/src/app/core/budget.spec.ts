@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BUDGET_CATEGORIES, suggestedAllocation } from './budget';
+import { BUDGET_CATEGORIES, estimatorEdits, suggestedAllocation } from './budget';
 
 describe('budget allocation', () => {
   it('category percentages sum to 100', () => {
@@ -31,5 +31,18 @@ describe('budget allocation', () => {
   it('makes venue the largest single allocation', () => {
     const amounts = suggestedAllocation(10000);
     expect(amounts[0]).toBe(Math.max(...amounts));
+  });
+});
+
+describe('estimatorEdits', () => {
+  it('has nothing to carry when no row was changed', () => {
+    expect(estimatorEdits(30000, suggestedAllocation(30000))).toEqual([]);
+  });
+  it('spreads a changed row over its budget rows, keeping its sum', () => {
+    const amounts = suggestedAllocation(30000);
+    amounts[1] = 5000; // photo and video
+    const edits = estimatorEdits(30000, amounts);
+    expect(edits.map((e) => e.slug)).toEqual(['fotografi', 'videografi']);
+    expect(edits.reduce((a, e) => a + e.estimate, 0)).toBe(5000);
   });
 });

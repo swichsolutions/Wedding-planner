@@ -301,18 +301,21 @@ public class VendorsController : ControllerBase
     [HttpGet("{category}/{city}/{slug}")]
     public async Task<ActionResult<VendorDto>> GetBySlug(string category, string city, string slug)
     {
-        var vendor = await _db.Vendors
+        // The city isn't part of the match: a slug ends in the vendor's id, so an old address from before
+        // a city change still finds them, and the page redirects to the citySlug in the answer.
+        var matches = await _db.Vendors
             .AsNoTracking()
             .Include(v => v.Category)
             .Include(v => v.Photos)
             .Include(v => v.Reviews)
             .Include(v => v.Packages)
             .AsSplitQuery()
-            .FirstOrDefaultAsync(v =>
+            .Where(v =>
                 v.IsApproved &&
                 v.Category.Slug == category &&
-                v.CitySlug == city &&
-                v.Slug == slug);
+                v.Slug == slug)
+            .ToListAsync();
+        var vendor = matches.FirstOrDefault(v => v.CitySlug == city) ?? matches.FirstOrDefault();
 
         if (vendor is null) return NotFound();
         var hasOwner = await _db.Users.AnyAsync(u => u.VendorId == vendor.Id);

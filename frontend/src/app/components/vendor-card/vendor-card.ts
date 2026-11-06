@@ -2,6 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { cityDisplayEn } from '../../core/city-name';
 import { LanguageService } from '../../i18n/language.service';
 import { Vendor } from '../../core/vendor.models';
 import { WishlistService } from '../../core/wishlist.service';
@@ -20,6 +21,10 @@ export class VendorCard {
   readonly vendor = input.required<Vendor>();
 
   private readonly lang = inject(LanguageService);
+  protected readonly cityLabel = computed(() => {
+    const v = this.vendor();
+    return this.lang.current() === 'en' && v.citySlug ? cityDisplayEn(v.citySlug) : v.city;
+  });
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   protected readonly wishlist = inject(WishlistService);

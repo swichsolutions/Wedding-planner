@@ -600,9 +600,9 @@
     white-space: nowrap; // "შენი ოცნების ქორწილი" stays on one line; size follows the viewport
     font-family: var(--font-display);
     font-stretch: var(--stretch-ui);
-    // ~8.1vw at phone widths (20 Georgian glyphs fit inside the 16px gutters), 4.6vw on
-    // desktop, capped at 72px
-    font-size: clamp(1.75rem, min(7.7vw, 2.2rem + 2.6vw), 4.5rem);
+    // On phones, whatever fits this one line (about 12.6 × its font size) inside the 16px gutters;
+    // 4.6vw on desktop, capped at 72px
+    font-size: clamp(1.25rem, min((100vw - 34px) / 12.6, 2.2rem + 2.6vw), 4.5rem);
     font-weight: var(--fw-medium);
     line-height: 1;
     letter-spacing: 0;

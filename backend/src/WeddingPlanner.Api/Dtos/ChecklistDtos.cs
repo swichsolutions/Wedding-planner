@@ -11,7 +11,10 @@ public record ChecklistItemDto(
     string? Stage,
     DateOnly? DueDate,
     string? Who,
-    string? Link);
+    string? Link,
+    string? TitleKa,
+    string? TitleEn,
+    DateTimeOffset CreatedAt);
 
 /// <summary>A task as the couple types it in. Unknown stages are stored as "no stage".</summary>
 public class ChecklistCreateDto

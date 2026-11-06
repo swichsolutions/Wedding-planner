@@ -221,7 +221,13 @@ export class App {
 
   @HostListener('window:keydown.escape')
   protected onEscape(): void {
-    if (this.openGroup()) this.openGroup.set(null);
+    const open = this.openGroup();
+    if (open) {
+      const item = this.doc.getElementById(`nav-${open}`)?.closest('.hdr__item');
+      // Focus inside the closing menu would otherwise fall back to the page's start.
+      if (item?.contains(this.doc.activeElement)) item.querySelector<HTMLElement>('.hdr__chev-btn')?.focus();
+      this.openGroup.set(null);
+    }
     else if (this.menuOpen()) this.menuOpen.set(false);
   }
 
@@ -281,7 +287,22 @@ export class App {
   });
 
   protected toggleLang(): void {
-    this.lang.use(this.otherLang());
+    void this.lang.use(this.otherLang()).then(() => this.redrawPublicPage());
+  }
+
+  /** Pages set their title once, when they open, so a public page is reopened in the new language.
+   * Not the working pages (organizer, dashboard, admin): a half-filled form must survive the switch. */
+  private redrawPublicPage(): void {
+    const path = this.currentUrl().split(/[?#]/)[0];
+    if (this.inOrganizer() || /^\/(admin|dashboard|account|planning|partner|w)(\/|$)/.test(path)) return;
+    const y = window.scrollY;
+    const strategy = this.router.routeReuseStrategy;
+    const reuse = strategy.shouldReuseRoute;
+    strategy.shouldReuseRoute = () => false;
+    void this.router.navigateByUrl(this.router.url, { onSameUrlNavigation: 'reload', replaceUrl: true }).finally(() => {
+      strategy.shouldReuseRoute = reuse;
+      setTimeout(() => window.scrollTo({ top: y, behavior: 'instant' }));
+    });
   }
 
   protected toggleMenu(): void {

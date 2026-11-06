@@ -67,6 +67,7 @@
 // ---- the three steps ----
 .sc__flow {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-12);
   max-width: 72rem;
 
@@ -77,11 +78,14 @@
 
 .sc__step {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
 }
 
 .sc__step-h {
+  overflow-wrap: anywhere;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
   margin: 0;
@@ -90,6 +94,10 @@
   font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem);
   font-weight: var(--fw-bold);
   line-height: 1.15;
+
+  @media (max-width: 340px) {
+    font-size: 1.2rem;
+  }
 }
 
 .sc__n {

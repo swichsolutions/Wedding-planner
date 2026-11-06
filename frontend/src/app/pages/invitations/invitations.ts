@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth.service';
 import { img } from '../../core/catalog';
 import { EMPTY_INVITE_EXTRAS, PublicSite, WEDDING_TEMPLATES } from '../../core/website.service';
 import { ClipVideo } from '../../components/clip-video/clip-video';
+import { LanguageService } from '../../i18n/language.service';
 import { RsvpForm } from '../../components/rsvp-form/rsvp-form';
 import { WeddingSite as WeddingSiteView } from '../../components/wedding-site/wedding-site';
 
@@ -38,7 +39,7 @@ export class Invitations {
   );
 
   /** A finished example: what guests see on the general link. */
-  protected readonly example: PublicSite = {
+  private readonly exampleKa: PublicSite = {
     ...EMPTY_INVITE_EXTRAS,
     templateKey: 'glow',
     firstName: 'ნინო',
@@ -67,7 +68,7 @@ export class Invitations {
     rsvpOpen: true,
   };
 
-  protected readonly sample = {
+  private readonly sampleKa = {
     ...EMPTY_INVITE_EXTRAS,
     firstName: 'ნინო',
     partnerFirstName: 'გიორგი',
@@ -76,6 +77,28 @@ export class Invitations {
     message: null,
     photoUrl: null,
   };
+
+  private readonly lang = inject(LanguageService);
+  private readonly exampleEn: PublicSite = {
+    ...this.exampleKa,
+    firstName: 'Nino',
+    partnerFirstName: 'Giorgi',
+    place: 'Tbilisi',
+    ceremonyName: 'Sameba Cathedral',
+    ceremonyAddress: 'Tbilisi, Sameba Street',
+    receptionName: 'Baghi Restaurant',
+    receptionAddress: 'Tbilisi, Tskneti Highway',
+    schedule: [
+      { time: '16:00', text: 'Wedding ceremony' },
+      { time: '18:30', text: 'Reception' },
+      { time: '19:30', text: 'Dinner and toasts' },
+      { time: '22:00', text: 'Cake and dancing' },
+    ],
+    dressCode: 'Light colours, elegant style.',
+  };
+  private readonly sampleEn = { ...this.sampleKa, firstName: 'Nino', partnerFirstName: 'Giorgi', place: 'Tbilisi' };
+  protected readonly example = computed(() => (this.lang.current() === 'en' ? this.exampleEn : this.exampleKa));
+  protected readonly sample = computed(() => (this.lang.current() === 'en' ? this.sampleEn : this.sampleKa));
 
   constructor() {
     const t = inject(TranslateService);

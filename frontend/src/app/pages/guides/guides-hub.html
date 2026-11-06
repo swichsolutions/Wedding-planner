@@ -22,7 +22,7 @@
       </div>
       <ul class="gd__grid gd__grid--3" role="list">
         @for (a of articles(); track a.slug) {
-          <li><app-content-card [item]="a" /></li>
+          <li><app-content-card [item]="a" [eager]="true" /></li>
         }
       </ul>
     </section>

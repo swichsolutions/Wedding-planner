@@ -88,6 +88,8 @@ public class AdminController : ControllerBase
     {
         var v = await _db.Vendors.FindAsync(id);
         if (v is null) return NotFound();
+        // Self-registration doesn't ask for a city; public pages and URLs can't do without one.
+        if (string.IsNullOrWhiteSpace(v.City)) return Conflict(new { code = "no_city" });
         v.IsApproved = true;
         await _db.SaveChangesAsync();
         return NoContent();

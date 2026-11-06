@@ -40,7 +40,7 @@ public class SitemapController : ControllerBase
         // (category, city) prefixes of the same rows are the landing pages.
         var vendors = await _db.Vendors
             .AsNoTracking()
-            .Where(v => v.IsApproved && v.CitySlug != "")
+            .Where(v => v.IsApproved && v.CitySlug != "" && v.City != "")
             .Select(v => new { CategorySlug = v.Category.Slug, v.CitySlug, v.Slug })
             .OrderBy(v => v.CategorySlug).ThenBy(v => v.CitySlug).ThenBy(v => v.Slug)
             .ToListAsync();

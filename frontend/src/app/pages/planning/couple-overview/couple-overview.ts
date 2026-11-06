@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { categoryKey, cityName } from '../../../core/catalog';
-import { ChecklistItem, ChecklistService, taskEdit } from '../../../core/checklist.service';
+import { ChecklistItem, ChecklistService, taskEdit, taskTitle } from '../../../core/checklist.service';
 import { CoupleProfile } from '../../../core/couple.service';
 import { formatDate } from '../../../core/dates';
 import { Overview, OverviewService } from '../../../core/overview.service';
@@ -206,6 +206,10 @@ export class CoupleOverview {
 
   protected taskDue(t: ChecklistItem): string {
     return formatDate(taskDue(t, this.wedding()), this.lang.current(), 'medium');
+  }
+
+  protected title(t: ChecklistItem): string {
+    return taskTitle(t, this.lang.current());
   }
 
   protected taskLate(t: ChecklistItem): boolean {

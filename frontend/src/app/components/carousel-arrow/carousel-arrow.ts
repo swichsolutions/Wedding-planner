@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ElementRef, effect, viewChild } from '@angular/core';
 
 /**
  * The carousels' "next" control (Beka, 2026-11-03): one round button in the far right corner.
@@ -24,6 +24,14 @@ export class CarouselArrow {
   readonly paused = input(false);
   /** Changes whenever the carousel moves (the active index): restarts the fill. */
   readonly tick = input<unknown>(0);
+  private readonly fill = viewChild<ElementRef<SVGElement>>('fill');
+
+  /** Every move starts the ring's fill again from the top. */
+  private readonly restart = effect(() => {
+    this.tick();
+    const el = this.fill()?.nativeElement;
+    for (const a of el?.getAnimations?.() ?? []) a.currentTime = 0;
+  });
 
   readonly next = output<void>();
 }

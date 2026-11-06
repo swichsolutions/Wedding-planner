@@ -174,7 +174,7 @@
               <li class="ovt__item">
                 <label class="ovt__label">
                   <input type="checkbox" [checked]="t.isDone" (change)="toggleTask(t, $event)" />
-                  <span>{{ t.title }}</span>
+                  <span>{{ title(t) }}</span>
                 </label>
                 @if (taskDue(t); as d) {
                   <span class="ovt__due num" [class.is-late]="taskLate(t)">{{ d }}</span>

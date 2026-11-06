@@ -56,6 +56,7 @@ export class Admin {
   /** Creates the vendor and opens the editor on it, where photos and the rest are added. */
   protected createVendor(): void {
     if (this.addForm.invalid) {
+      this.toast.error('dash.fixErrors');
       this.addAttempted.set(true);
       this.addForm.markAllAsTouched();
       return;
@@ -125,7 +126,8 @@ export class Admin {
           );
         }
       },
-      error: () => this.toast.error('adminPage.saveError'),
+      error: (err: { status?: number }) =>
+        this.toast.error(err.status === 409 ? 'adminPage.approveNoCity' : 'adminPage.saveError'),
     });
   }
 

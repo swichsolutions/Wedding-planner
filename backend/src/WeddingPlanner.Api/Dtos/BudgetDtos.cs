@@ -29,7 +29,7 @@ public class BudgetItemCreateDto
 {
     [Required, MaxLength(200)] public string Name { get; set; } = string.Empty;
     [MaxLength(120)] public string? CategorySlug { get; set; }
-    [Range(0, 999_999_999)] public decimal? Estimate { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal? Estimate { get; set; }
     /// <summary>Link a directory vendor at creation (e.g. "add to my budget" from its profile).</summary>
     public int? VendorId { get; set; }
 }
@@ -40,8 +40,8 @@ public class BudgetItemUpdateDto
     [Required, MaxLength(200)] public string Name { get; set; } = string.Empty;
     public int? VendorId { get; set; }
     [MaxLength(200)] public string? MerchantName { get; set; }
-    [Range(0, 999_999_999)] public decimal? Estimate { get; set; }
-    [Range(0, 999_999_999)] public decimal? ActualCost { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal? Estimate { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal? ActualCost { get; set; }
     [MaxLength(1000)] public string? Note { get; set; }
     public DateOnly? ReminderDate { get; set; }
 }
@@ -56,7 +56,7 @@ public class BudgetPaymentCreateDto
 
 public class BudgetTotalUpdateDto
 {
-    [Range(0, 999_999_999)] public decimal? TotalBudget { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal? TotalBudget { get; set; }
 
     /// <summary>Recompute estimates of seeded rows still following the split (not hand-edited).</summary>
     public bool ApplyEstimates { get; set; }
@@ -85,5 +85,5 @@ public record CategoryBudgetDto(string CategorySlug, decimal Amount);
 
 public class CategoryBudgetUpsertDto
 {
-    [Range(0, 999_999_999)] public decimal Amount { get; set; }
+    [Range(typeof(decimal), "0", "999999999")] public decimal Amount { get; set; }
 }

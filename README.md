@@ -231,5 +231,5 @@ See **`STATE.md`**. In short: the couple-facing discovery MVP (landing, browse, 
 form, budget planner, guides, wishlist) **plus** auth (ASP.NET Identity + JWT), the vendor
 self-serve dashboard/inbox, and admin moderation are all built and SSR-ready. Auth + dashboard +
 admin are **not yet run against a live DB** (login/persistence unverified until `ipsum_dev` exists).
-Dev admin: `admin@weddingplanner.ge` / `Admin!2026_dev`. Remaining: couple accounts (optional — wishlist +
+Dev admin: `admin@weddingplanner.ge` / `(password in appsettings.Development.json)`. Remaining: couple accounts (optional — wishlist +
 messaging already work without them) and go-live. Set a real `Jwt:Key` secret before production.

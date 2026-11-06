@@ -100,6 +100,7 @@
     "settings": "Settings"
   },
   "plan": {
+    "datePast": "That date has passed.",
     "startLabel": "Your account is ready",
     "startTitle": "Let’s start your plan",
     "startLead": "A few questions so the plan fits your wedding. Skip whatever you don’t know yet.",
@@ -201,6 +202,8 @@
     "dismiss": "Dismiss"
   },
   "home": {
+    "metaTitle": "WeddingPlanner — plan your own wedding",
+    "metaDescription": "Plan your own wedding with a clear plan, the right people and everything in one place.",
     "carousel": { "prev": "Previous", "next": "Next" },
     "hero": {
       "title": "Your dream",
@@ -726,6 +729,19 @@
     }
   },
   "categoryPlural": {
+    "catering": "Wedding catering",
+    "rental": "Furniture & equipment rental",
+    "tamada": "Tamadas",
+    "host": "Wedding hosts",
+    "entertainment": "Wedding entertainment",
+    "desserts": "Desserts & sweet tables",
+    "shoes": "Wedding shoes",
+    "accessories": "Wedding accessories",
+    "salon": "Beauty salons",
+    "care": "Care services",
+    "printedInvitations": "Printed invitations",
+    "accommodation": "Guest accommodation",
+    "coordinator": "Day-of coordinators",
     "photographer": "Wedding photographers",
     "videographer": "Wedding videographers",
     "venue": "Wedding venues",
@@ -823,6 +839,8 @@
     "inBudget": "In your budget"
   },
   "dash": {
+    "noProfile": "This account no longer has a profile. To get it back, write to us:",
+    "fixErrors": "Please check the marked fields.",
     "title": "My profile",
     "tabOverview": "Overview",
     "accountSettings": "Account & password",
@@ -939,6 +957,7 @@
     "all": "All",
     "saveError": "That action didn't go through. Try again.",
     "approve": "Approve",
+    "approveNoCity": "Add a city first: a profile can't go public without one.",
     "delete": "Delete",
     "deleteTitle": "Delete this vendor?",
     "deleteBody": "The profile, photos, packages, reviews and messages are deleted for good. This can't be undone.",
@@ -1391,7 +1410,7 @@
     "title": "Contact",
     "body": "Have a question or suggestion? Write to us and we’ll reply soon.",
     "emailLabel": "Email",
-    "email": "hello@weddingplanner.ge"
+    "email": "info@weddingplanner.ge"
   },
   "notFound": {
     "title": "Page not found",
@@ -1633,6 +1652,10 @@
     "rsvpAnswer": "Answer:"
   },
   "seatingPage": {
+    "shrinkTitle": "Reduce the seats?",
+    "shrinkDetail": "Guests losing their seat: {{n}}",
+    "shrinkBody": "They go back to the list of unseated guests.",
+    "shrinkConfirm": "Reduce",
     "title": "Seating chart",
     "subtitle": "Add your venue's tables, arrange them on the canvas, then drag guests onto seats.",
     "loadError": "Couldn't load your seating chart.",
@@ -2256,6 +2279,7 @@
     "livePreview": "Live preview",
     "photoError": "The photo didn’t upload. Use JPG, PNG or WebP, up to 8 MB.",
     "publishedToast": "Your invitation is live.",
+    "publishIncomplete": "An invitation needs both names and the date before it can go live.",
     "unpublishTitle": "Take the invitation offline?",
     "unpublishBody": "Its links, personal ones included, stop opening until you publish again. Replies are kept.",
     "copyError": "Couldn’t copy.",

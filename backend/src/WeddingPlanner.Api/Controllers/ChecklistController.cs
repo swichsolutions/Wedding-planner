@@ -46,6 +46,8 @@ public class ChecklistController : ControllerBase
             {
                 var en = string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
                 var now = DateTimeOffset.UtcNow;
+                // What the start form already answered starts ticked.
+                var plan = await _db.Couples.AsNoTracking().FirstAsync(c => c.Id == cid);
                 for (var i = 0; i < StarterTasks.All.Length; i++)
                 {
                     var t = StarterTasks.All[i];
@@ -57,6 +59,7 @@ public class ChecklistController : ControllerBase
                         Link = t.Link,
                         SortOrder = i,
                         CreatedAt = now,
+                        IsDone = (t.Ka == StarterTasks.SetBudget && plan.TotalBudget > 0) || (t.Ka == StarterTasks.ChooseDate && plan.WeddingDate != null),
                     });
                 }
                 await _db.SaveChangesAsync();
@@ -68,7 +71,7 @@ public class ChecklistController : ControllerBase
             .AsNoTracking()
             .Where(c => c.CoupleId == cid)
             .OrderBy(c => c.SortOrder)
-            .Select(c => new ChecklistItemDto(c.Id, c.Title, c.IsDone, c.SortOrder, c.Stage, c.DueDate, c.Who, c.Link))
+            .Select(c => new ChecklistItemDto(c.Id, c.Title, c.IsDone, c.SortOrder, c.Stage, c.DueDate, c.Who, c.Link, StarterTasks.KaOf(c.Title), StarterTasks.EnOf(c.Title), c.CreatedAt))
             .ToListAsync();
 
         return Ok(items);
@@ -133,7 +136,7 @@ public class ChecklistController : ControllerBase
     }
 
     private static ChecklistItemDto ToDto(ChecklistItem c) =>
-        new(c.Id, c.Title, c.IsDone, c.SortOrder, c.Stage, c.DueDate, c.Who, c.Link);
+        new(c.Id, c.Title, c.IsDone, c.SortOrder, c.Stage, c.DueDate, c.Who, c.Link, StarterTasks.KaOf(c.Title), StarterTasks.EnOf(c.Title), c.CreatedAt);
 
     private static string? StageOrNull(string? stage) =>
         stage is not null && StarterTasks.Stages.Contains(stage.Trim()) ? stage.Trim() : null;

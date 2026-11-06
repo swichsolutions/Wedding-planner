@@ -40,6 +40,7 @@ import {
 } from '../../core/dashboard.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { FLOOR_PLAN_ACCEPT, FloorPlanError, prepareFloorPlan } from '../../core/floor-plan-file';
+import { AuthService } from '../../core/auth.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { NotificationService } from '../../core/notification.service';
@@ -59,6 +60,7 @@ export class Dashboard {
   private readonly dashboard = inject(DashboardService);
   private readonly confirmSvc = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
   private readonly lang = inject(LanguageService);
   private readonly route = inject(ActivatedRoute);
   private readonly notif = inject(NotificationService);
@@ -79,6 +81,8 @@ export class Dashboard {
   protected readonly stats = signal<VendorStats | null>(null);
   protected readonly messages = signal<InboxMessage[]>([]);
   protected readonly loadError = signal(false);
+  /** A vendor account with no profile and no pending request: an admin removed it. */
+  protected readonly noProfile = signal(false);
 
   // ---- the venue's floor plan (venues only, B5): PDF, image or a screenshot of the tables ----
   protected readonly planAccept = FLOOR_PLAN_ACCEPT;
@@ -267,11 +271,12 @@ export class Dashboard {
           }
           this.dashboard.getMyClaim().subscribe({
             next: (c) => this.claim.set(c),
-            error: () => this.loadError.set(true),
+            // no profile and no request either: an admin removed the profile
+            error: (err: { status?: number }) => (err.status === 404 ? this.noProfile : this.loadError).set(true),
           });
         },
       });
-      if (!this.adminMode) {
+      if (!this.adminMode && this.auth.user()?.vendorId) {
         this.dashboard.getStats().subscribe({
           next: (s) => this.stats.set(s),
           error: () => this.statsError.set(true),
@@ -529,6 +534,7 @@ export class Dashboard {
     this.capacityInvalid.set(capacityMin != null && capacityMax != null && capacityMin > capacityMax);
     if (this.form.invalid || this.capacityInvalid()) {
       this.form.markAllAsTouched();
+      this.toast.error('dash.fixErrors');
       focusFirstInvalid(this.host.nativeElement);
       if (this.capacityInvalid()) (this.host.nativeElement.querySelector('#d-cmin') as HTMLElement | null)?.focus();
       return;

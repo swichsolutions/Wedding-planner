@@ -5,6 +5,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { cityName } from '../../core/catalog';
+import { LanguageService } from '../../i18n/language.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CoupleProfile, CoupleService } from '../../core/couple.service';
 import { downloadBlob, qrPng, qrShape, QrShape } from '../../core/qr';
@@ -109,7 +110,8 @@ export class WebsiteBuilder {
   protected readonly stepIndex = computed(() => STEPS.indexOf(this.step()));
 
   /** Sample data for the design thumbnails. */
-  protected readonly sample: WeddingSiteData = {
+  private readonly lang = inject(LanguageService);
+  private readonly sampleKa: WeddingSiteData = {
     ...EMPTY_INVITE_EXTRAS,
     firstName: 'ნინო',
     partnerFirstName: 'გიორგი',
@@ -118,6 +120,10 @@ export class WebsiteBuilder {
     message: null,
     photoUrl: null,
   };
+  private readonly sampleEn: WeddingSiteData = { ...this.sampleKa, firstName: 'Nino', partnerFirstName: 'Giorgi', place: 'Tbilisi' };
+  protected get sample(): WeddingSiteData {
+    return this.lang.current() === 'en' ? this.sampleEn : this.sampleKa;
+  }
 
   /** What the preview shows: the invitation as saved, or the sample while a new one is set up. */
   protected readonly previewData = computed<WeddingSiteData>(() => {
@@ -711,6 +717,12 @@ export class WebsiteBuilder {
 
   protected publish(): void {
     if (this.publishBusy()) return;
+    const s = this.site();
+    if (!s?.firstName?.trim() || !s.partnerFirstName?.trim() || !s.weddingDate) {
+      this.toast.error('invitation.publishIncomplete');
+      this.go('info');
+      return;
+    }
     this.publishBusy.set(true);
     const seq = ++this.commitSeq;
     this.svc.publish().subscribe({

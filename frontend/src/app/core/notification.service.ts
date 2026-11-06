@@ -43,7 +43,8 @@ export class NotificationService {
 
   /** Fetch the current unread count from the vendor stats endpoint. */
   refresh(): void {
-    if (!this.isBrowser || !this.auth.isVendor()) return;
+    // No profile yet (a takeover request is pending): there are no stats to ask for.
+    if (!this.isBrowser || !this.auth.isVendor() || !this.auth.user()?.vendorId) return;
     const seq = ++this.loadSeq;
     this.http
       .get<{ unreadMessages: number }>(`${this.base}/api/vendor/me/stats`, {
