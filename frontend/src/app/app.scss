@@ -51,6 +51,20 @@ main {
     color: var(--ink);
   }
 
+  // the gold knot, the same drawing as the favicon
+  &__knot {
+    display: inline-block;
+    height: 0.82em;
+    width: auto;
+    aspect-ratio: 62 / 38;
+    margin-right: 0.34em;
+    vertical-align: -0.06em;
+    fill: none;
+    stroke: #a3853f;
+    stroke-width: 8;
+    stroke-linejoin: round;
+  }
+
   &--light {
     color: var(--on-spruce);
 

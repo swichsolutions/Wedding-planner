@@ -3,6 +3,8 @@ import { Component, DOCUMENT, HostListener, computed, effect, inject, signal } f
 /** One entry of a header dropdown. Items whose page isn't built yet point at the nearest
  * existing page (listed under "Temporary links" in design-system/BUILD-PLAN.md). */
 interface NavItem {
+  /** Shown only once this content section has something published. */
+  content?: ContentKind;
   key: string;
   link: string;
   query?: Record<string, string>;
@@ -31,6 +33,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageService } from './i18n/language.service';
 import { LangCode } from './i18n/languages';
 import { AuthService } from './core/auth.service';
+import { ContentSections } from './core/content-sections.service';
+import { ContentKind } from './core/content.models';
 import { AuthModalService } from './core/auth-modal.service';
 import { NotificationService } from './core/notification.service';
 import { LoginModal } from './components/login-modal/login-modal';
@@ -58,7 +62,7 @@ export class App {
   /** Header = three sections (guide §1). Each title opens its page (home, the catalog, the
    * tips hub); the dropdown holds the details. The organizer is reached through the CTA and
    * has its own inner menu (OrganizerNav) — no "ჩემი ქორწილი" group here (decision D2). */
-  protected readonly navGroups: NavGroup[] = [
+  private readonly allNavGroups: NavGroup[] = [
     {
       key: 'plan',
       link: '/',
@@ -86,12 +90,19 @@ export class App {
       key: 'guides',
       link: '/guides',
       items: [
-        { key: 'blog', link: '/guides/blog' },
-        { key: 'inspiration', link: '/guides/inspiration' },
-        { key: 'real', link: '/guides/real-weddings' },
+        { key: 'blog', link: '/guides/blog', content: 'article' },
+        { key: 'inspiration', link: '/guides/inspiration', content: 'inspiration' },
+        { key: 'real', link: '/guides/real-weddings', content: 'real-wedding' },
       ],
     },
   ];
+  private readonly contentSections = inject(ContentSections);
+  /** The menu as shown: no empty content sections, and no group left with nothing in it. */
+  protected readonly navGroups = computed(() =>
+    this.allNavGroups
+      .map((g) => ({ ...g, items: g.items.filter((it) => !it.content || this.contentSections.has(it.content)) }))
+      .filter((g) => g.items.length),
+  );
   protected readonly scrolled = signal(false);
   /** Hide-on-scroll (Revolut): the bar slides away as the page scrolls down and comes
    * back on the first scroll up — except while the landing stage's cards are on screen,

@@ -12,6 +12,7 @@ import { PALETTES, Palette, paletteOf } from '../../../core/palettes';
 import { PlanPhoto, PlanPhotosService } from '../../../core/plan-photos.service';
 import { reminderStatus } from '../../../core/budget.service';
 import { byDeadline, isOverdue, taskDue } from '../../../core/task-stages';
+import { ContentSections } from '../../../core/content-sections.service';
 import { ToastService } from '../../../core/toast.service';
 import { LanguageService } from '../../../i18n/language.service';
 import { formatGel } from '../../../core/money';
@@ -50,6 +51,7 @@ export class CoupleOverview {
   private readonly checklist = inject(ChecklistService);
   private readonly toast = inject(ToastService);
   protected readonly planPhotos = inject(PlanPhotosService);
+  protected readonly contentSections = inject(ContentSections);
 
   protected readonly data = signal<Overview | null>(null);
   protected readonly loadError = signal(false);

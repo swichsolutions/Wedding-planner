@@ -105,7 +105,9 @@
           {{ 'overview.photosHint' | translate }}
           <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'decor' }">{{ 'overview.photosDecor' | translate }}</a> ·
           <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'cake' }">{{ 'overview.photosCake' | translate }}</a> ·
-          <a class="ov-quiet" routerLink="/guides/inspiration">{{ 'overview.photosIdeas' | translate }}</a>
+          @if (contentSections.has('inspiration')) {
+            <a class="ov-quiet" routerLink="/guides/inspiration">{{ 'overview.photosIdeas' | translate }}</a>
+          }
         </p>
         @if (photos().length) {
           <ul class="ovc__photos" role="list">

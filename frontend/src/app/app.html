@@ -5,14 +5,14 @@
   [class.is-hidden]="hidden() && !menuOpen()" [class.is-dark]="navDark() && !menuOpen() && !overlay()">
   <div class="container hdr__bar">
     <a routerLink="/" class="wordmark" translate="no" (click)="closeMenu()">
-      {{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
+      <svg class="wordmark__knot" viewBox="1 13 62 38" aria-hidden="true"><path d="M32 32 C23.3 14.6 5.9 17.5 5.9 32 C5.9 46.5 23.3 49.4 32 32 C40.7 14.6 58.1 17.5 58.1 32 C58.1 46.5 40.7 49.4 32 32 Z"/></svg>{{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
     </a>
 
     <!-- Guide §1 header: three sections. The title opens the section's page; the dropdown
          (hover on desktop, the arrow button on phones and for keyboards) holds the details. -->
     <nav id="site-nav" class="hdr__nav" [attr.aria-label]="'nav.menu' | translate">
       <ol class="hdr__links">
-        @for (g of navGroups; track g.key) {
+        @for (g of navGroups(); track g.key) {
           <li class="hdr__item" [class.is-open]="openGroup() === g.key"
             (mouseenter)="hoverGroup(g.key)" (mouseleave)="hoverGroup(null)"
             (focusout)="onGroupBlur($event, g.key)">
@@ -115,7 +115,7 @@
   <div class="container ftr__top">
     <div class="ftr__brand">
       <a routerLink="/" class="wordmark wordmark--light" translate="no">
-        {{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
+        <svg class="wordmark__knot" viewBox="1 13 62 38" aria-hidden="true"><path d="M32 32 C23.3 14.6 5.9 17.5 5.9 32 C5.9 46.5 23.3 49.4 32 32 C40.7 14.6 58.1 17.5 58.1 32 C58.1 46.5 40.7 49.4 32 32 Z"/></svg>{{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
       </a>
       <p class="ftr__promise">{{ 'footer.promise' | translate }}</p>
     </div>
