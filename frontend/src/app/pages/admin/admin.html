@@ -198,6 +198,9 @@
               [attr.aria-pressed]="v.isFeatured">
               {{ 'adminPage.feature' | translate }}
             </button>
+            <button type="button" class="btn btn--ghost admin__btn admin__btn--danger" (click)="deleteVendor(v)">
+              {{ 'adminPage.delete' | translate }}
+            </button>
           </div>
         </li>
       }

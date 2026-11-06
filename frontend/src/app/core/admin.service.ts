@@ -114,6 +114,11 @@ export class AdminService {
     return this.http.post<void>(`${this.base}/api/admin/vendors/${id}/approve`, {});
   }
 
+  /** Permanent: the profile, its photos, packages, reviews and messages. */
+  deleteVendor(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/admin/vendors/${id}`);
+  }
+
   /**
    * The vendor collection spreadsheet (BUILD-PLAN A3). apply=false only checks it; apply=true
    * writes. publish=true makes new and updated profiles public straight away.

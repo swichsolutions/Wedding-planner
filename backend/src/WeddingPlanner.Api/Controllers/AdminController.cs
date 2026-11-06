@@ -2,6 +2,7 @@ using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
+using WeddingPlanner.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,8 +15,15 @@ namespace WeddingPlanner.Api.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IPhotoStorage _storage;
+    private readonly ILogger<AdminController> _logger;
 
-    public AdminController(AppDbContext db) => _db = db;
+    public AdminController(AppDbContext db, IPhotoStorage storage, ILogger<AdminController> logger)
+    {
+        _db = db;
+        _storage = storage;
+        _logger = logger;
+    }
 
     /// <summary>List vendors for moderation. `pending=true` returns only unapproved.</summary>
     [HttpGet("vendors")]
@@ -82,6 +90,45 @@ public class AdminController : ControllerBase
         if (v is null) return NotFound();
         v.IsApproved = true;
         await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Permanently removes a vendor, with its photos, packages, reviews and messages. Couples who
+    /// saved it keep their plan rows, just no longer linked. An owner's account stays, without a
+    /// profile. The stored images go after the commit: an orphaned image is recoverable garbage,
+    /// a row pointing at a deleted image isn't.
+    /// </summary>
+    [HttpDelete("vendors/{id:int}")]
+    public async Task<IActionResult> DeleteVendor(int id)
+    {
+        var v = await _db.Vendors.Include(x => x.Photos).FirstOrDefaultAsync(x => x.Id == id);
+        if (v is null) return NotFound();
+
+        var images = v.Photos.Select(p => p.StorageId).Append(v.FloorPlanStorageId).Where(s => s is not null).ToList();
+
+        await _db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            await _db.Users.Where(u => u.VendorId == id).ExecuteUpdateAsync(s => s.SetProperty(u => u.VendorId, (int?)null));
+            await _db.Couples.Where(x => x.FloorPlanVendorId == id).ExecuteUpdateAsync(s => s.SetProperty(x => x.FloorPlanVendorId, (int?)null));
+            _db.Vendors.Remove(v);
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+        });
+
+        foreach (var image in images)
+        {
+            try
+            {
+                await _storage.DeleteAsync(image);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Orphaned vendor image {StorageId} could not be deleted.", image);
+            }
+        }
+
         return NoContent();
     }
 

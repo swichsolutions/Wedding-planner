@@ -6,6 +6,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AdminClaim, AdminService, AdminVendor } from '../../core/admin.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
@@ -26,6 +27,7 @@ const TABS: AdminTab[] = ['vendors', 'content', 'import', 'claims'];
 export class Admin {
   private readonly admin = inject(AdminService);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
   private readonly lang = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -133,6 +135,24 @@ export class Admin {
         this.vendors.update((list) =>
           list.map((v) => (v.id === id ? { ...v, isFeatured: res.isFeatured } : v)),
         ),
+      error: () => this.toast.error('adminPage.saveError'),
+    });
+  }
+
+  protected async deleteVendor(v: AdminVendor): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'adminPage.deleteTitle',
+      detail: v.name,
+      body: v.hasOwner ? 'adminPage.deleteBodyOwner' : 'adminPage.deleteBody',
+      confirmLabel: 'adminPage.delete',
+      danger: true,
+    });
+    if (!ok) return;
+    this.admin.deleteVendor(v.id).subscribe({
+      next: () => {
+        this.vendors.update((list) => list.filter((x) => x.id !== v.id));
+        this.toast.success('adminPage.deleted');
+      },
       error: () => this.toast.error('adminPage.saveError'),
     });
   }
