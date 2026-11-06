@@ -15,17 +15,12 @@
     </div>
   </header>
 
-  <!-- A finished example on a phone, beside what it does. -->
+  <!-- An invitation being made in the real builder, beside what it does. -->
   <section class="iv-show container" aria-labelledby="iv-show-title">
-    <div class="iv-phone" [attr.aria-label]="'invitationsPage.exampleLabel' | translate" role="img">
-      <div class="iv-phone__screen" inert>
-        <app-wedding-site [data]="example" [template]="shown()">
-          <app-rsvp-form slug="example" [site]="example" />
-        </app-wedding-site>
-      </div>
+    <div class="iv-clip">
+      <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.jpg" />
     </div>
     <div class="iv-show__text">
-      <p class="iv-label">{{ 'invitationsPage.exampleLabel' | translate }}</p>
       <h2 id="iv-show-title" class="iv-h2">{{ 'invitationsPage.showTitle' | translate }}</h2>
       <ul class="iv-features" role="list">
         @for (f of features; track f) {
@@ -41,40 +36,46 @@
   <section class="iv-designs container" aria-labelledby="iv-designs-title">
     <h2 id="iv-designs-title" class="iv-h2">{{ 'invitationsPage.designsTitle' | translate: { n: templates.length } }}</h2>
     <p class="iv-sub">{{ 'invitationsPage.designsLead' | translate }}</p>
-    <ul class="iv-grid" role="list">
-      @for (t of templates; track t) {
-        <li>
-          <button type="button" class="iv-design" [class.is-on]="shown() === t" [attr.aria-pressed]="shown() === t"
-            (click)="show(t)">
-            <span class="iv-design__thumb" aria-hidden="true">
-              <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
-            </span>
-            <span class="iv-design__name">{{ 'wsTemplate.' + t | translate }}</span>
-          </button>
-        </li>
-      }
-    </ul>
+    <div class="iv-designs__body">
+      <div class="iv-example">
+        <p class="iv-label">{{ 'invitationsPage.exampleLabel' | translate }}</p>
+        <div class="iv-phone" [attr.aria-label]="'invitationsPage.exampleLabel' | translate" role="img">
+          <div class="iv-phone__screen" inert>
+            <app-wedding-site [data]="example" [template]="shown()">
+              <app-rsvp-form slug="example" [site]="example" />
+            </app-wedding-site>
+          </div>
+        </div>
+      </div>
+      <ul class="iv-grid" role="list">
+        @for (t of templates; track t) {
+          <li>
+            <button type="button" class="iv-design" [class.is-on]="shown() === t" [attr.aria-pressed]="shown() === t"
+              (click)="show(t)">
+              <span class="iv-design__thumb" aria-hidden="true">
+                <app-wedding-site [data]="sample" [template]="t" [thumb]="true" />
+              </span>
+              <span class="iv-design__name">{{ 'wsTemplate.' + t | translate }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
   </section>
 
   <section class="iv-how container" aria-labelledby="iv-how-title">
     <h2 id="iv-how-title" class="iv-h2">{{ 'invitationsPage.howTitle' | translate }}</h2>
-    <div class="iv-how__body">
-      <!-- an invitation being made, in the real builder -->
-      <div class="iv-clip">
-        <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.jpg" />
-      </div>
-      <ol class="iv-steps">
-        @for (s of steps; track s; let i = $index) {
-          <li>
-            <span class="iv-steps__n num" aria-hidden="true">{{ i + 1 }}</span>
-            <div>
-              <h3>{{ 'invitation.step.' + s | translate }}</h3>
-              <p>{{ 'invitation.hint.' + s | translate }}</p>
-            </div>
-          </li>
-        }
-      </ol>
-    </div>
+    <ol class="iv-steps">
+      @for (s of steps; track s; let i = $index) {
+        <li>
+          <span class="iv-steps__n num" aria-hidden="true">{{ i + 1 }}</span>
+          <div>
+            <h3>{{ 'invitation.step.' + s | translate }}</h3>
+            <p>{{ 'invitation.hint.' + s | translate }}</p>
+          </div>
+        </li>
+      }
+    </ol>
   </section>
 
   <section class="iv-final" aria-labelledby="iv-final-title">

@@ -105,7 +105,7 @@
   line-height: 1.4;
 }
 
-// ---- the example on a phone + what it does ----
+// ---- the clip on a phone + what the invitation does ----
 .iv-show {
   display: grid;
   gap: var(--space-10);
@@ -117,14 +117,39 @@
   }
 }
 
-.iv-phone {
+// the same phone as the example further down, at the clip's proportions (692 × 1536)
+.iv-clip {
+  position: relative;
   justify-self: center;
-  width: min(380px, 100%);
+  box-sizing: content-box;
+  width: min(320px, calc(100vw - 96px), calc((100vh - 140px) * 692 / 1536));
+  aspect-ratio: 692 / 1536;
+  overflow: hidden;
+  border: 10px solid var(--ink);
+  border-radius: 40px;
+  background: #faf7f2;
 
   @include bp.respond-to(lg) {
     position: sticky;
     top: calc(var(--header-h, 72px) + var(--space-6));
   }
+}
+
+// the live example: picking a design redraws it
+.iv-example {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+
+  @include bp.respond-to(lg) {
+    position: sticky;
+    top: calc(var(--header-h, 72px) + var(--space-6));
+  }
+}
+
+.iv-phone {
+  width: min(380px, 100%);
+  scroll-margin-top: calc(var(--header-h, 72px) + var(--space-6)); // picking a design scrolls it into view
 }
 
 .iv-phone__screen {
@@ -181,6 +206,18 @@
 .iv-designs {
   display: grid;
   gap: var(--space-4);
+}
+
+.iv-designs__body {
+  display: grid;
+  gap: var(--space-8);
+  align-items: start;
+  margin-top: var(--space-2);
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: 400px minmax(0, 1fr);
+    gap: var(--space-10);
+  }
 }
 
 .iv-grid {
@@ -246,35 +283,6 @@
   gap: var(--space-6);
 }
 
-.iv-how__body {
-  display: grid;
-  gap: var(--space-8);
-  align-items: start;
-
-  @include bp.respond-to(lg) {
-    grid-template-columns: 340px minmax(0, 1fr);
-    gap: var(--space-10);
-  }
-}
-
-// the same phone as the finished example above, at the clip's proportions (692 × 1536)
-.iv-clip {
-  position: relative;
-  justify-self: center;
-  box-sizing: content-box;
-  width: min(320px, calc(100vw - 96px), calc((100vh - 140px) * 692 / 1536));
-  aspect-ratio: 692 / 1536;
-  overflow: hidden;
-  border: 10px solid var(--ink);
-  border-radius: 40px;
-  background: #faf7f2;
-
-  @include bp.respond-to(lg) {
-    position: sticky;
-    top: calc(var(--header-h, 72px) + var(--space-6));
-  }
-}
-
 .iv-steps {
   display: grid;
   gap: var(--space-3);
@@ -284,6 +292,10 @@
 
   @include bp.respond-to(md) {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: repeat(4, 1fr);
   }
 
   li {

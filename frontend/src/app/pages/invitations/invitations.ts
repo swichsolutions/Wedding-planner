@@ -11,9 +11,9 @@ import { RsvpForm } from '../../components/rsvp-form/rsvp-form';
 import { WeddingSite as WeddingSiteView } from '../../components/wedding-site/wedding-site';
 
 /**
- * „მოსაწვევები“ (/invitations, BUILD-PLAN B6, P11): what the online invitation does, a finished
- * example in a phone, every design (picking one redraws the example), the steps, and
- * „შექმენი მოსაწვევი“, with a clip of an invitation being made beside the steps.
+ * „მოსაწვევები“ (/invitations, BUILD-PLAN B6, P11): a clip of an invitation being made beside what
+ * it does, every design next to a finished example in a phone (picking one redraws it), the steps,
+ * and „შექმენი მოსაწვევი“.
  */
 @Component({
   selector: 'app-invitations',
