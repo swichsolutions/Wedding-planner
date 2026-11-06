@@ -1,0 +1,34 @@
+# WeddingPlanner
+
+> WeddingPlanner (weddingplanner.ge) is a Georgian wedding planning platform: a free planning tool for couples, a catalog of wedding venues and services in Georgia, online invitations with RSVP, and planning advice in Georgian.
+
+WeddingPlanner არის ქართული პლატფორმა ქორწილის დასაგეგმად: უფასო ხელსაწყო წყვილებისთვის, საქორწილო სივრცეებისა და მომსახურებების კატალოგი საქართველოში, ონლაინ მოსაწვევები დასწრების დადასტურებით და რჩევები ქართულად.
+
+The site is in Georgian, with an English interface. Using the service is currently free. It's run by Swich Solutions. Contact: info@weddingplanner.ge
+
+## For couples
+
+- [Wedding planning tool](https://weddingplanner.ge/planning): a task list by stage, budget, guest list, seating on the venue's floor plan, and the wedding day schedule
+- [Online invitations](https://weddingplanner.ge/invitations): 14 designs, a personal link and QR code per family, replies land in the guest list
+- [Wedding day schedules](https://weddingplanner.ge/schedules): example timelines for three kinds of wedding day
+- [Venues and services](https://weddingplanner.ge/vendors): wedding venues, photographers, decor, music, cakes and more in Georgia
+
+## Advice (in Georgian)
+
+- [Blog](https://weddingplanner.ge/guides/blog): practical wedding planning articles
+- [Where to start planning a wedding](https://weddingplanner.ge/guides/blog/saidan-davitsyo-qortsilis-dagegmva)
+- [Wedding budget](https://weddingplanner.ge/guides/blog/qortsilis-biujeti)
+- [Guest list](https://weddingplanner.ge/guides/blog/stumrebis-sia)
+- [Choosing a wedding venue](https://weddingplanner.ge/guides/blog/rogor-avirchiot-darbazi)
+- [Wedding day schedule](https://weddingplanner.ge/guides/blog/qortsilis-dghis-ganrigi)
+- [Online invitations: what to write and when to send](https://weddingplanner.ge/guides/blog/onlain-mosatsvevi)
+
+## For vendors
+
+- [List your business](https://weddingplanner.ge/for-vendors): a free profile for wedding venues and services
+
+## About
+
+- [About WeddingPlanner](https://weddingplanner.ge/about)
+- [Terms](https://weddingplanner.ge/terms)
+- [Privacy](https://weddingplanner.ge/privacy)
