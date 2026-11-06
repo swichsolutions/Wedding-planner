@@ -28,11 +28,11 @@ export interface RegisterVendorPayload {
   /** Required unless claimVendorId is set: the claimed profile has a category already. */
   categorySlug?: string;
   city?: string;
-  /** An imported profile the vendor says is theirs (A3 takeover); the account then waits for admin approval. */
+  /** An admin-added profile the vendor says is theirs (A3 takeover); the account then waits for admin approval. */
   claimVendorId?: number;
 }
 
-/** An imported profile nobody owns yet, offered on the vendor sign-up form. */
+/** An admin-added profile nobody owns yet, offered on the vendor sign-up form. */
 export interface ClaimableVendor {
   id: number;
   name: string;
@@ -254,7 +254,7 @@ export class AuthService {
       );
   }
 
-  /** Imported profiles nobody owns yet whose name matches `q` (A3 takeover). */
+  /** Admin-added profiles nobody owns yet whose name matches `q` (A3 takeover). */
   claimableVendors(q: string): Observable<ClaimableVendor[]> {
     return this.http.get<ClaimableVendor[]>(`${this.base}/api/vendors/claimable`, { params: { q } });
   }

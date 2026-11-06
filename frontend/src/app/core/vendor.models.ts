@@ -69,7 +69,7 @@ export interface Vendor {
   terms: VendorTerms | null;
   /** Profile only. */
   packages: VendorPackage[];
-  /** Profile only: false for an imported profile nobody manages yet (no message form). */
+  /** Profile only: false for an admin-added profile nobody manages yet (no message form). */
   acceptsMessages: boolean;
 }
 

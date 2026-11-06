@@ -8,9 +8,6 @@
       <button type="button" (click)="setTab('content')" [attr.aria-current]="tab() === 'content' ? 'page' : null">
         {{ 'adminPage.tabContent' | translate }}
       </button>
-      <button type="button" (click)="setTab('import')" [attr.aria-current]="tab() === 'import' ? 'page' : null">
-        {{ 'adminPage.tabImport' | translate }}
-      </button>
       <button type="button" (click)="setTab('claims')" [attr.aria-current]="tab() === 'claims' ? 'page' : null">
         {{ 'adminPage.tabClaims' | translate }}
       </button>
@@ -19,10 +16,8 @@
 
   @if (tab() === 'content') {
     <app-admin-content />
-  } @else if (tab() === 'import') {
-    <app-admin-import />
   } @else if (tab() === 'claims') {
-    <!-- A3 takeover requests: a registered vendor says an imported profile is theirs -->
+    <!-- A3 takeover requests: a registered vendor says an admin-added profile is theirs -->
     <div class="admin__subhead">
       <div class="admin__filter" role="group">
         <button type="button" (click)="setClaimsPending(true)" [attr.aria-pressed]="claimsPendingOnly()">

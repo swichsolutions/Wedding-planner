@@ -1,7 +1,7 @@
 namespace WeddingPlanner.Domain.Entities;
 
 /// <summary>
-/// A vendor account's request to take over a profile the platform imported (BUILD-PLAN A3):
+/// A vendor account's request to take over a profile the platform added (BUILD-PLAN A3):
 /// the vendor registers, points at the listing, and an admin links the two after checking
 /// (a call to the listed phone). Until then the account has no vendor of its own.
 /// </summary>

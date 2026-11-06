@@ -47,7 +47,7 @@ public class AdminController : ControllerBase
 
     /// <summary>
     /// Add one vendor by hand: unapproved, no owner, the editor opens on it next. Same slug
-    /// rules as self-registration. Bulk additions go through the spreadsheet import.
+    /// rules as self-registration.
     /// </summary>
     [HttpPost("vendors")]
     public async Task<ActionResult<AdminVendorDto>> Create([FromBody] AdminCreateVendorDto dto)

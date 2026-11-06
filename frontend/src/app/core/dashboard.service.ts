@@ -124,7 +124,7 @@ export interface VendorPhotoAdmin {
 /**
  * Authenticated vendor self-serve dashboard API (requires Vendor role; token via interceptor).
  * The profile and photo calls take an optional vendorId: an admin editing a vendor, typically an
- * imported profile nobody owns yet, goes through /api/admin/vendors/{id} instead of /api/vendor/me.
+ * admin-added profile nobody owns yet, goes through /api/admin/vendors/{id} instead of /api/vendor/me.
  */
 @Injectable({ providedIn: 'root' })
 export class DashboardService {

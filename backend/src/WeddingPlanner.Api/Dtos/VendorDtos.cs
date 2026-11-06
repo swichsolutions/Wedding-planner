@@ -58,7 +58,7 @@ public record VendorDto(
     /// <summary>Profile only (empty in lists).</summary>
     VendorPackageDto[] Packages,
     /// <summary>
-    /// Profile only (false in lists): a vendor account reads the inbox. Imported profiles have no
+    /// Profile only (false in lists): a vendor account reads the inbox. Admin-added profiles have no
     /// owner yet, so they show their phone and links but no message form.
     /// </summary>
     bool AcceptsMessages,

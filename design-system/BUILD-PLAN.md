@@ -100,6 +100,7 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
 ### A3. Real vendor profiles (30–50)
 - **Status (2026-10-19):** the collection spreadsheet is ready:
   `design-system/templates/vendor-collection.xlsx` (PROPOSALS.md P6). Collecting can start now.
+- **Changed (2026-11-06): the spreadsheet import was removed.** Vendors are added one at a time with the add form on the admin vendors tab. The notes on the import below are history.
 - **Status (2026-10-24): import built; waits on the filled-in spreadsheet.** Admin → „იმპორტი“
   (`/admin?tab=import`): choosing the file checks it and lists what each row will do (add, update,
   skip, error) with reasons in Georgian. Nothing is written until confirmed, optionally published at

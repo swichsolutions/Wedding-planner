@@ -38,7 +38,7 @@ public class MessagesController : ControllerBase
             .FirstOrDefaultAsync();
         if (vendor is null)
             return NotFound();
-        // An imported profile has no account to read the inbox yet: a message would go unread.
+        // An admin-added profile has no account to read the inbox yet: a message would go unread.
         if (!vendor.HasOwner)
             return Conflict("This vendor doesn't take messages here yet. Use their phone or links.");
 

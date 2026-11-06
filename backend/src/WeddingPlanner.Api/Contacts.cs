@@ -1,6 +1,6 @@
 namespace WeddingPlanner.Api;
 
-/// <summary>Contact-field normalization shared by the vendor dashboard and the spreadsheet import.</summary>
+/// <summary>Contact-field normalization for the vendor dashboard.</summary>
 public static class Contacts
 {
     /// <summary>

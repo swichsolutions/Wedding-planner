@@ -1,6 +1,6 @@
 <section class="dash container">
   @if (claim(); as c) {
-    <!-- A3 takeover: the account waits for an admin to link it to the imported profile -->
+    <!-- A3 takeover: the account waits for an admin to link it to the admin-added profile -->
     <div class="dash__claim" role="status">
       <h1 class="dash__claim-title">
         {{ (c.status === 'Rejected' ? 'dash.claimRejectedTitle' : 'dash.claimPendingTitle') | translate }}

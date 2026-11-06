@@ -154,7 +154,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/admin/admin').then((m) => m.Admin),
   },
   {
-    // An admin edits one vendor's profile and photos with the vendor dashboard (imported
+    // An admin edits one vendor's profile and photos with the vendor dashboard (admin-added
     // profiles have no owner account yet; BUILD-PLAN A3).
     path: 'admin/vendors/:id',
     canActivate: [roleGuard('Admin')],

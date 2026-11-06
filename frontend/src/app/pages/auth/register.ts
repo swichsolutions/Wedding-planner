@@ -46,7 +46,7 @@ interface ScatterPhoto {
                 <span class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
-            <!-- A3 takeover: listings the platform imported that match the typed name -->
+            <!-- A3 takeover: listings the platform added that match the typed name -->
             @if (claim(); as c) {
               <div class="auth__claim" role="status">
                 <span>{{ 'auth.claimChosen' | translate }} <strong>{{ c.name }}</strong>
@@ -145,7 +145,7 @@ export class Register {
   protected readonly groups = GROUPS;
   protected readonly categoriesIn = categoriesIn;
   protected readonly categoryKey = categoryKey;
-  /** Imported listings matching the typed business name, and the one the vendor says is theirs. */
+  /** Admin-added listings matching the typed business name, and the one the vendor says is theirs. */
   protected readonly matches = signal<ClaimableVendor[]>([]);
   protected readonly claim = signal<ClaimableVendor | null>(null);
   protected readonly error = signal(false);
@@ -189,7 +189,7 @@ export class Register {
       if (user && !this.loading()) this.router.navigateByUrl(defaultRouteFor(user));
     });
 
-    // As the name is typed, offer imported listings with that name (A3 takeover). Quiet on
+    // As the name is typed, offer admin-added listings with that name (A3 takeover). Quiet on
     // failure: the form still works as a plain sign-up.
     this.form.controls.vendorName.valueChanges
       .pipe(
@@ -204,7 +204,7 @@ export class Register {
       .subscribe((list) => this.matches.set(list));
   }
 
-  /** The vendor picked an imported listing as theirs: no category to choose, the listing has one. */
+  /** The vendor picked an admin-added listing as theirs: no category to choose, the listing has one. */
   protected pickClaim(v: ClaimableVendor): void {
     this.claim.set(v);
     this.matches.set([]);

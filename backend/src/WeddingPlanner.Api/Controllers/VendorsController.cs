@@ -16,7 +16,7 @@ public class VendorsController : ControllerBase
     public VendorsController(AppDbContext db) => _db = db;
 
     /// <summary>
-    /// Imported profiles nobody owns yet, by name: the vendor registration form offers them so a
+    /// Admin-added profiles nobody owns yet, by name: the vendor registration form offers them so a
     /// vendor claims their listing instead of creating a second one (A3 takeover). Names, categories
     /// and cities are public on the profiles anyway.
     /// </summary>

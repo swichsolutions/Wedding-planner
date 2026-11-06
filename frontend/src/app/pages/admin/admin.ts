@@ -12,14 +12,13 @@ import { LanguageService } from '../../i18n/language.service';
 import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
 import { formatDate } from '../../core/dates';
 import { AdminContent } from './admin-content';
-import { AdminImport } from './admin-import';
 
-type AdminTab = 'vendors' | 'content' | 'import' | 'claims';
-const TABS: AdminTab[] = ['vendors', 'content', 'import', 'claims'];
+type AdminTab = 'vendors' | 'content' | 'claims';
+const TABS: AdminTab[] = ['vendors', 'content', 'claims'];
 
 @Component({
   selector: 'app-admin',
-  imports: [TranslatePipe, RouterLink, ReactiveFormsModule, AdminContent, AdminImport],
+  imports: [TranslatePipe, RouterLink, ReactiveFormsModule, AdminContent],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
   host: { class: 'theme-brand' },
@@ -34,7 +33,7 @@ export class Admin {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly fb = inject(FormBuilder);
 
-  // ---- Add one vendor by hand (bulk goes through the import tab) ----
+  // ---- Add one vendor by hand ----
   protected readonly groups = GROUPS;
   protected readonly categoriesIn = categoriesIn;
   protected readonly showAdd = signal(false);
@@ -80,7 +79,7 @@ export class Admin {
       });
   }
 
-  /** Vendors (moderation), content (editor), the vendor import or takeover requests; kept in ?tab= so a reload stays put. */
+  /** Vendors (moderation), content (editor) or takeover requests; kept in ?tab= so a reload stays put. */
   protected readonly tab = signal<AdminTab>(
     TABS.find((t) => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'vendors',
   );
@@ -159,7 +158,7 @@ export class Admin {
     });
   }
 
-  // ---- Takeover requests (A3): vendor accounts asking for an imported profile ----
+  // ---- Takeover requests (A3): vendor accounts asking for an admin-added profile ----
   protected readonly claims = signal<AdminClaim[]>([]);
   protected readonly claimsPendingOnly = signal(true);
   protected readonly claimsLoading = signal(false);

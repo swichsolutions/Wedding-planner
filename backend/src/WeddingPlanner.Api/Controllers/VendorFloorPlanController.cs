@@ -10,7 +10,7 @@ namespace WeddingPlanner.Api.Controllers;
 
 /// <summary>
 /// The venue's floor plan (BUILD-PLAN B5): one image per vendor, uploaded by the vendor or by an
-/// admin finishing an imported profile. Venues send PDFs, photos and screenshots of their tables;
+/// admin finishing an admin-added profile. Venues send PDFs, photos and screenshots of their tables;
 /// the browser turns a PDF's first page into an image before it gets here, so only images arrive.
 /// Couples copy it under their seating chart (<see cref="SeatingController.UseVenuePlan"/>).
 /// </summary>

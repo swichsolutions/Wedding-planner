@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace WeddingPlanner.Api.Controllers;
 
 /// <summary>
-/// Takeover requests (A3): a vendor registered and says an imported profile is theirs. The admin
+/// Takeover requests (A3): a vendor registered and says an admin-added profile is theirs. The admin
 /// checks (usually a call to the phone on the listing) and approves, which links the account to
 /// the profile, or rejects. The vendor signs in again after approval to get a token for it.
 /// </summary>

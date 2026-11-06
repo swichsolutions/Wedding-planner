@@ -68,7 +68,7 @@ export class Dashboard {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   /**
-   * Set on /admin/vendors/:id: an admin edits that vendor (usually an imported profile with no
+   * Set on /admin/vendors/:id: an admin edits that vendor (usually an admin-added profile with no
    * owner yet). Only the profile and photos show; the inbox and stats stay the vendor's own.
    */
   private readonly vendorId: number | undefined = (() => {
@@ -88,7 +88,7 @@ export class Dashboard {
   protected readonly planAccept = FLOOR_PLAN_ACCEPT;
   protected readonly planBusy = signal(false);
   protected readonly floorPlanUrl = computed(() => this.vendor()?.floorPlanUrl ?? null);
-  /** The account claimed an imported profile and waits for an admin (A3): shown instead of the dashboard. */
+  /** The account claimed an admin-added profile and waits for an admin (A3): shown instead of the dashboard. */
   protected readonly claim = signal<MyVendorClaim | null>(null);
   /** Per-panel fetch failures — shown as error notes, never as fake zeros / "no messages". */
   protected readonly statsError = signal(false);
@@ -263,7 +263,7 @@ export class Dashboard {
           this.saved.set(false);
         },
         error: () => {
-          // A vendor account that claimed an imported profile has no vendor until an admin
+          // A vendor account that claimed an admin-added profile has no vendor until an admin
           // approves (A3): show the request's state instead of an error.
           if (this.adminMode) {
             this.loadError.set(true);

@@ -14,7 +14,7 @@ export interface AdminVendor {
   createdAt: string;
   slug: string;
   citySlug: string;
-  /** A vendor account manages the profile (false for imported ones nobody has claimed). */
+  /** A vendor account manages the profile (false for admin-added ones nobody has claimed). */
   hasOwner: boolean;
   photoCount: number;
 }
@@ -28,7 +28,7 @@ export interface AdminCreateVendor {
   instagram?: string;
 }
 
-/** A vendor account's request to take over an imported profile (A3). */
+/** A vendor account's request to take over an admin-added profile (A3). */
 export interface AdminClaim {
   id: number;
   vendorId: number;
@@ -41,42 +41,6 @@ export interface AdminClaim {
   status: 'Pending' | 'Approved' | 'Rejected';
   createdAt: string;
   decidedAt: string | null;
-}
-
-/** A problem in one spreadsheet row or cell; the code is translated under adminImport.issue. */
-export interface ImportIssue {
-  code: string;
-  column: string | null;
-  value: string | null;
-}
-
-export type ImportAction = 'create' | 'update' | 'skip' | 'error';
-
-export interface VendorImportRow {
-  row: number;
-  sheetId: string | null;
-  name: string | null;
-  categorySlug: string | null;
-  city: string | null;
-  action: ImportAction;
-  vendorId: number | null;
-  profilePath: string | null;
-  packages: number;
-  photos: string | null;
-  errors: ImportIssue[];
-  warnings: ImportIssue[];
-}
-
-export interface VendorImportReport {
-  applied: boolean;
-  created: number;
-  updated: number;
-  skipped: number;
-  failed: number;
-  rows: VendorImportRow[];
-  /** Problems with the file itself: nothing is imported while there are any. */
-  fileErrors: ImportIssue[];
-  fileWarnings: ImportIssue[];
 }
 
 /** Authenticated admin moderation API (requires Admin role; token via interceptor). */
@@ -117,17 +81,6 @@ export class AdminService {
   /** Permanent: the profile, its photos, packages, reviews and messages. */
   deleteVendor(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/admin/vendors/${id}`);
-  }
-
-  /**
-   * The vendor collection spreadsheet (BUILD-PLAN A3). apply=false only checks it; apply=true
-   * writes. publish=true makes new and updated profiles public straight away.
-   */
-  importVendors(file: File, apply: boolean, publish: boolean): Observable<VendorImportReport> {
-    const form = new FormData();
-    form.append('file', file);
-    const params = new HttpParams().set('apply', apply).set('publish', publish);
-    return this.http.post<VendorImportReport>(`${this.base}/api/admin/vendors/import`, form, { params });
   }
 
   toggleFeature(id: number): Observable<{ id: number; isFeatured: boolean }> {

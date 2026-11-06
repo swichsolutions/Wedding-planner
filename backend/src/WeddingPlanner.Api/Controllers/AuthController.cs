@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
         if (await _users.FindByEmailAsync(dto.Email) is not null)
             return Conflict("Email already registered.");
 
-        // A3 takeover: the vendor says an imported profile is theirs. The account is created
+        // A3 takeover: the vendor says an admin-added profile is theirs. The account is created
         // without a vendor of its own; an admin links the two after checking (AdminClaimsController).
         if (dto.ClaimVendorId is int claimVendorId)
             return await RegisterClaim(dto, claimVendorId);
@@ -109,7 +109,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Vendor registration that claims an imported profile instead of creating one: a Vendor-role
+    /// Vendor registration that claims an admin-added profile instead of creating one: a Vendor-role
     /// user with no VendorId plus a pending VendorClaim. The dashboard shows the request's state
     /// until an admin approves it (the vendor then signs in again for a token with the vendorId).
     /// </summary>

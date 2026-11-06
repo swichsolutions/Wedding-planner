@@ -121,6 +121,6 @@ public record AdminVendorDto(
     DateTimeOffset CreatedAt,
     string Slug,
     string CitySlug,
-    /// <summary>A vendor account manages the profile (false for imported, unclaimed ones).</summary>
+    /// <summary>A vendor account manages the profile (false for admin-added, unclaimed ones).</summary>
     bool HasOwner,
     int PhotoCount);

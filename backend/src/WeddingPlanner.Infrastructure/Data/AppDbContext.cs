@@ -144,7 +144,7 @@ public class AppDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContex
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // ---- VendorClaim: a registered vendor asking to take over an imported profile (A3) ----
+        // ---- VendorClaim: a registered vendor asking to take over an admin-added profile (A3) ----
         b.Entity<VendorClaim>(e =>
         {
             e.HasIndex(x => x.VendorId);

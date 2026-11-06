@@ -79,7 +79,7 @@ public class Vendor
     /// <summary>Google Maps URL the vendor pastes (no API key needed to link out).</summary>
     public string? MapUrl { get; set; }
 
-    // ---- permission, for profiles the platform builds for a vendor (the A3 spreadsheet import) ----
+    // ---- permission, for profiles the platform builds for a vendor ----
     /// <summary>Who allowed us to use the vendor's photos and information.</summary>
     public string? ConsentBy { get; set; }
     public DateOnly? ConsentOn { get; set; }
