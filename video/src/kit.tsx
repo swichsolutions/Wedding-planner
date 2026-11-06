@@ -97,12 +97,12 @@ export const Cap: React.FC<{ name: string; x: number; y: number; k: number; styl
   );
 };
 
-/** Two states of the same element, crossfading at frame `at`. */
+/** Two states of the same element, crossfading at frame `at`. They're transparent, so the old one has to leave too, or it shows through. */
 export const Swap: React.FC<{ a: string; b: string; at: number; f: number; x: number; y: number; k: number; len?: number }> = ({ a, b, at, f, x, y, k, len = 5 }) => {
   const t = iv(f, at, at + len, 0, 1, (v) => v);
   return (
     <>
-      <Cap name={a} x={x} y={y} k={k} />
+      {t < 1 ? <Cap name={a} x={x} y={y} k={k} style={{ opacity: 1 - t }} /> : null}
       {t > 0 ? <Cap name={b} x={x} y={y} k={k} style={{ opacity: t }} /> : null}
     </>
   );
