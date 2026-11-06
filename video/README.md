@@ -11,6 +11,7 @@ Swich has up to 3 employees; above that it needs a paid company license.
 |---|---|---|---|
 | Instagram, 1080x1920, with hook, captions and call to action | `Instagram` | `out/weddingplanner-instagram.mp4` | none |
 | Website organizer section, 692x1536 (the phone's screen), silent seamless loop | `Website` | `out/organizer.mp4`, `out/organizer-poster.jpg` | under 3 MB each |
+| Invitations page, 692x1536, silent seamless loop, 10% slower than the organizer clip | `Invitation` | `out/invitation.mp4`, `out/invitation-poster.jpg` | under 3 MB each |
 
 ## Remaking the clips
 
@@ -28,6 +29,13 @@ couple (ნინო & გიორგი) that is created fresh each time. Neve
 
 `npm run studio` opens Remotion's preview, for scrubbing through the timeline.
 
+The invitation clip has its own capture: with the same two servers running, `npm run seed:invite`, then
+`npm run capture:invite`, then `render:invitation` and `poster:invitation`, and copy both files to
+`frontend/public/media/` too. Seed fresh each time, because the capture answers one invitation. In those
+captures the fields are emptied so typing can be drawn on them, dates and times are drawn as text, some
+secondary fields and buttons are hidden, and the share card shows the live domain with a QR code that opens
+the real `/invitations` page.
+
 ## Where things are
 
 - `capture/seed.mjs`: the fictional couple and their data. `capture/hall-plan.html`: the fictional floor plan.
@@ -35,6 +43,7 @@ couple (ნინო & გიორგი) that is created fresh each time. Neve
 - `src/scenes.tsx`: one function per scene, with its layout, camera, and pointer path. Captions are at the end of each scene.
 - `src/Story.tsx`: the scene order for each clip, and the website loop.
 - `src/kit.tsx`: formats, brand colours, easing, the pointer, click effects, captions.
+- `capture/seed-invite.mjs`, `capture/capture-invite.mjs`, `src/invite.tsx`: the same three jobs for the invitation clip. Its pace is `INVITE_PACE` in `src/Story.tsx`.
 
 Text and screens are built into the video, so each language needs its own render. A redesigned screen
 needs `npm run capture` and a new render; a changed element may also need its selector updated in `capture.mjs`.

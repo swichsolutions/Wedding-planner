@@ -20,15 +20,7 @@
     <div class="stage__glow"></div>
     <div class="phone">
       <div class="phone__screen">
-        <img class="phone__media" src="/media/organizer-poster.jpg" alt="" width="692" height="1536"
-          loading="lazy" fetchpriority="low" />
-        @if (useVideo()) {
-          <!-- [muted] as a property: the attribute alone doesn't mute a video made by script -->
-          <video #video class="phone__media phone__film" [class.is-on]="playing()" [muted]="true" loop playsinline
-            preload="auto" disablepictureinpicture (playing)="playing.set(true)">
-            <source src="/media/organizer.mp4" type="video/mp4" />
-          </video>
-        }
+        <app-clip-video src="/media/organizer.mp4" poster="/media/organizer-poster.jpg" />
         <div class="phone__status"><strong>9:41</strong><span>▰ ▮ ◉</span></div>
         <div class="phone__island"></div>
         <span class="phone__home"></span>

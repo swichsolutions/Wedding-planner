@@ -5,6 +5,7 @@ import { Backdrop, C, Caption, Click, ClickFx, Fmt, IG, PKey, Pointer, WEB, Word
 import {
   SceneDef, budget, budgetCaption, ending, guests, guestsCaption, opening, openingCaption, seating, seatingCaption, tasks, tasksCaption,
 } from './scenes';
+import { inviteDesign, inviteGuest, inviteInfo, invitePlaces, inviteShare } from './invite';
 
 const OVERLAP = 8;
 
@@ -50,8 +51,9 @@ const compile = (fmt: Fmt, placed: Placed[]) => {
   return { keys, clicks, presses, holds };
 };
 
-const Timeline: React.FC<{ fmt: Fmt; placed: Placed[]; length: number }> = ({ fmt, placed, length }) => {
-  const t = useCurrentFrame();
+/** `duration`: how many video frames the `length` frames of the story take; more than `length` runs it slower. */
+const Timeline: React.FC<{ fmt: Fmt; placed: Placed[]; length: number; duration?: number }> = ({ fmt, placed, length, duration = length }) => {
+  const t = (useCurrentFrame() * length) / duration;
   const { keys, clicks, presses, holds } = compile(fmt, placed);
   let bump = 0;
   for (const p of placed) bump = Math.max(bump, iv(t, p.from - 6, p.from + 6, 0, 1) * iv(t, p.from + 6, p.from + 30, 1, 0));
@@ -115,4 +117,19 @@ export const Website: React.FC = () => {
   const list = webList();
   const again = { ...list[0], from: webLength - LEAD };
   return <Timeline fmt={WEB} placed={[...list, again]} length={webLength} />;
+};
+
+// ---------------------------------------------------------------- invitations page: the same kind of loop, a little slower
+const INVITE_PACE = 1.1;
+const inviteList = () => place([{ def: inviteDesign(WEB), from: -LEAD }, { def: inviteInfo(WEB) }, { def: invitePlaces(WEB) }, { def: inviteGuest(WEB) }, { def: inviteShare(WEB) }]);
+const inviteStory = (() => {
+  const l = inviteList();
+  const last = l[l.length - 1];
+  return last.from + last.def.dur - OVERLAP + LEAD;
+})();
+export const inviteLength = Math.round(inviteStory * INVITE_PACE);
+export const InviteClip: React.FC = () => {
+  const list = inviteList();
+  const again = { ...list[0], from: inviteStory - LEAD };
+  return <Timeline fmt={WEB} placed={[...list, again]} length={inviteStory} duration={inviteLength} />;
 };

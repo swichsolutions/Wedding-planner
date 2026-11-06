@@ -6,17 +6,18 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { img } from '../../core/catalog';
 import { EMPTY_INVITE_EXTRAS, PublicSite, WEDDING_TEMPLATES } from '../../core/website.service';
+import { ClipVideo } from '../../components/clip-video/clip-video';
 import { RsvpForm } from '../../components/rsvp-form/rsvp-form';
 import { WeddingSite as WeddingSiteView } from '../../components/wedding-site/wedding-site';
 
 /**
  * „მოსაწვევები“ (/invitations, BUILD-PLAN B6, P11): what the online invitation does, a finished
  * example in a phone, every design (picking one redraws the example), the steps, and
- * „შექმენი მოსაწვევი“. The creation video (C1) joins when it exists.
+ * „შექმენი მოსაწვევი“, with a clip of an invitation being made beside the steps.
  */
 @Component({
   selector: 'app-invitations',
-  imports: [RouterLink, TranslatePipe, WeddingSiteView, RsvpForm],
+  imports: [RouterLink, TranslatePipe, WeddingSiteView, RsvpForm, ClipVideo],
   templateUrl: './invitations.html',
   styleUrl: './invitations.scss',
   host: { class: 'theme-brand' },

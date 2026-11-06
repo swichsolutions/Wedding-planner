@@ -58,17 +58,23 @@
 
   <section class="iv-how container" aria-labelledby="iv-how-title">
     <h2 id="iv-how-title" class="iv-h2">{{ 'invitationsPage.howTitle' | translate }}</h2>
-    <ol class="iv-steps">
-      @for (s of steps; track s; let i = $index) {
-        <li>
-          <span class="iv-steps__n num" aria-hidden="true">{{ i + 1 }}</span>
-          <div>
-            <h3>{{ 'invitation.step.' + s | translate }}</h3>
-            <p>{{ 'invitation.hint.' + s | translate }}</p>
-          </div>
-        </li>
-      }
-    </ol>
+    <div class="iv-how__body">
+      <!-- an invitation being made, in the real builder -->
+      <div class="iv-clip">
+        <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.jpg" />
+      </div>
+      <ol class="iv-steps">
+        @for (s of steps; track s; let i = $index) {
+          <li>
+            <span class="iv-steps__n num" aria-hidden="true">{{ i + 1 }}</span>
+            <div>
+              <h3>{{ 'invitation.step.' + s | translate }}</h3>
+              <p>{{ 'invitation.hint.' + s | translate }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+    </div>
   </section>
 
   <section class="iv-final" aria-labelledby="iv-final-title">

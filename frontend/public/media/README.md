@@ -13,6 +13,8 @@ Served as-is at `/media/...`.
   README), with the interface in Georgian whatever the site's language. Fetched only when the
   section nears the screen and paused once it has left.
 - `organizer-poster.jpg` — its poster (frame 52), shown until it plays and under reduced motion.
+- `invitation.mp4`, `invitation-poster.jpg` — the same for the invitations page: an invitation being made in
+  the builder, a silent 28 s loop, 692×1536, H.264, made in `video/` at 10% slower than the organizer clip.
 - `gold-ring.webm` — a gold wedding band turning slowly, 5 s loop, 1920×1080, VP9 with a
   transparent background, no sound (provided 2026-10-27, Downloads/Gold_Ring_Web.webm). Shown by
   `components/gold-ring` in the home page's final section (above „დაიწყე შენი ქორწილის დაგეგმვა“,

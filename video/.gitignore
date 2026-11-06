@@ -3,3 +3,5 @@ out/
 .remotion/
 capture/.demo-auth.json
 public/cap/
+capture/.demo-invite-auth.json
+public/cap-invite/

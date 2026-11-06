@@ -7,10 +7,14 @@
   "scripts": {
     "seed": "node capture/seed.mjs",
     "capture": "node capture/capture.mjs",
+    "seed:invite": "node capture/seed-invite.mjs",
+    "capture:invite": "node capture/capture-invite.mjs",
     "studio": "remotion studio src/index.tsx",
     "render:instagram": "remotion render src/index.tsx Instagram out/weddingplanner-instagram.mp4 --codec=h264 --crf=17 --pixel-format=yuv420p --color-space=bt709",
     "render:web:mp4": "remotion render src/index.tsx Website out/organizer.mp4 --codec=h264 --crf=29 --pixel-format=yuv420p --color-space=bt709",
-    "poster": "remotion still src/index.tsx Website out/organizer-poster.jpg --frame=52 --image-format=jpeg --jpeg-quality=82"
+    "poster": "remotion still src/index.tsx Website out/organizer-poster.jpg --frame=52 --image-format=jpeg --jpeg-quality=82",
+    "render:invitation": "remotion render src/index.tsx Invitation out/invitation.mp4 --codec=h264 --crf=29 --pixel-format=yuv420p --color-space=bt709",
+    "poster:invitation": "remotion still src/index.tsx Invitation out/invitation-poster.jpg --frame=135 --image-format=jpeg --jpeg-quality=82"
   },
   "dependencies": {
     "@remotion/cli": "4.0.541",
