@@ -59,7 +59,7 @@ better as `keiteringi` than the helper's `qeiteringi`.
 | | მოვლის მომსახურებები (სპა, კანის მოვლა) | Care (spa, skincare) | `movla` | new |
 | **სხვა მომსახურებები** | ტრანსპორტი | Transport | `transporti` | existing |
 | | ბეჭდური მოსაწვევები | Printed invitations | `bechduri-mosatsvevebi` | new |
-| | სტუმრების განთავსება | Guest accommodation | `gantavseba` | new |
+| | ~~სტუმრების განთავსება~~ | Guest accommodation | `gantavseba` | removed 2026-11-10 (hotels list as venues) |
 | | ქორწილის დღის კოორდინატორი | Day-of coordinator | `koordinatori` | new |
 
 **Vendors that do two things** (a photographer who also films, a decorator who does flowers): one

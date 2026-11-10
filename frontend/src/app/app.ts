@@ -81,6 +81,7 @@ export class App {
         { key: 'music', link: '/vendors', query: { group: 'music' } },
         { key: 'cake', link: '/vendors', query: { group: 'cake' } },
         { key: 'attire', link: '/vendors', query: { group: 'attire' } },
+        { key: 'accessories', link: '/vendors', query: { group: 'accessories' } },
         { key: 'beauty', link: '/vendors', query: { group: 'beauty' } },
         { key: 'other', link: '/vendors', query: { group: 'other' } },
         { key: 'all', link: '/vendors' },

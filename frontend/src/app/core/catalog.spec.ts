@@ -28,7 +28,7 @@ describe('catalog taxonomy (PROPOSALS.md P1–P5)', () => {
   it('puts every category in a known group, and every group has categories', () => {
     for (const c of CATEGORIES) expect(GROUPS).toContain(c.group);
     for (const g of GROUPS) expect(categoriesIn(g).length).toBeGreaterThan(0);
-    expect(CATEGORIES.length).toBe(27);
+    expect(CATEGORIES.length).toBe(26);
   });
 
   it('keeps the 14 live category URLs', () => {

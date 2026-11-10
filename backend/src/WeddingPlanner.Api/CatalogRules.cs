@@ -38,6 +38,7 @@ public static class CatalogRules
         ["music"] = new[] { "folk", "pop", "jazz", "classical", "electronic" },
         ["cake"] = new[] { "delivery" },
         ["attire"] = new[] { "sale", "rental" },
+        ["accessories"] = Array.Empty<string>(),
         ["beauty"] = new[] { "comesToYou" },
         ["other"] = Array.Empty<string>(),
     };

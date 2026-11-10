@@ -5,9 +5,9 @@
 export const img = (id: string, w: number): string =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
 
-/** The 8 catalog groups — the catalog's navigation. */
-export type GroupKey = 'venues' | 'photo' | 'decor' | 'music' | 'cake' | 'attire' | 'beauty' | 'other';
-export const GROUPS: GroupKey[] = ['venues', 'photo', 'decor', 'music', 'cake', 'attire', 'beauty', 'other'];
+/** The 9 catalog groups — the catalog's navigation. */
+export type GroupKey = 'venues' | 'photo' | 'decor' | 'music' | 'cake' | 'attire' | 'accessories' | 'beauty' | 'other';
+export const GROUPS: GroupKey[] = ['venues', 'photo', 'decor', 'music', 'cake', 'attire', 'accessories', 'beauty', 'other'];
 
 export interface CategoryRef {
   slug: string;
@@ -39,8 +39,8 @@ export const CATEGORIES: CategoryRef[] = [
   { slug: 'kaba', key: 'category.dress', group: 'attire', img: img('photo-1594552072238-b8a33785b261', 600) },
   { slug: 'kostiumi', key: 'category.suit', group: 'attire', img: img('photo-1507679799987-c73779587ccf', 600) },
   { slug: 'pekhsatsmeli', key: 'category.shoes', group: 'attire' },
-  { slug: 'aksesuarebi', key: 'category.accessories', group: 'attire' },
-  { slug: 'bechdebi', key: 'category.rings', group: 'attire', img: img('photo-1515934751635-c81c6bc9a2d8', 600) },
+  { slug: 'aksesuarebi', key: 'category.accessories', group: 'accessories' },
+  { slug: 'bechdebi', key: 'category.rings', group: 'accessories', img: img('photo-1515934751635-c81c6bc9a2d8', 600) },
   { slug: 'makiaji', key: 'category.makeup', group: 'beauty', img: img('photo-1487412947147-5cebf100ffc2', 600) },
   { slug: 'tmis-stili', key: 'category.hair', group: 'beauty', img: img('photo-1560066984-138dadb4c035', 600) },
   { slug: 'manikiuri', key: 'category.nails', group: 'beauty', img: img('photo-1632345031435-8727f6897d53', 600) },
@@ -48,7 +48,6 @@ export const CATEGORIES: CategoryRef[] = [
   { slug: 'movla', key: 'category.care', group: 'beauty' },
   { slug: 'transporti', key: 'category.transport', group: 'other', img: img('photo-1533473359331-0135ef1b58bf', 600) },
   { slug: 'bechduri-mosatsvevebi', key: 'category.printedInvitations', group: 'other' },
-  { slug: 'gantavseba', key: 'category.accommodation', group: 'other' },
   { slug: 'koordinatori', key: 'category.coordinator', group: 'other' },
 ];
 
@@ -84,6 +83,7 @@ export const FEATURES: Record<GroupKey, string[]> = {
   music: ['folk', 'pop', 'jazz', 'classical', 'electronic'],
   cake: ['delivery'],
   attire: ['sale', 'rental'],
+  accessories: [],
   beauty: ['comesToYou'],
   other: [],
 };
@@ -98,8 +98,11 @@ export const categoriesIn = (group: GroupKey): CategoryRef[] => CATEGORIES.filte
 
 export const groupOf = (slug: string): GroupKey | undefined => CATEGORIES.find((c) => c.slug === slug)?.group;
 
+/** Categories taken out of the catalog; older saved services and budget rows still name them. */
+const RETIRED: Record<string, string> = { gantavseba: 'category.accommodation' };
+
 export const categoryKey = (slug: string): string =>
-  CATEGORIES.find((c) => c.slug === slug)?.key ?? slug;
+  CATEGORIES.find((c) => c.slug === slug)?.key ?? RETIRED[slug] ?? slug;
 
 export const cityName = (slug: string): string =>
   CITIES.find((c) => c.slug === slug)?.name ?? slug;

@@ -56,6 +56,9 @@ describe('byDeadline', () => {
 describe('taskLink', () => {
   it('opens a catalog category or an organizer page', () => {
     expect(taskLink('catalog:darbazi')).toEqual({ route: '/vendors', query: { category: 'darbazi' }, key: 'tasks.open.catalog' });
+    expect(taskLink('catalog:darbazi?features=accommodation')).toEqual({
+      route: '/vendors', query: { category: 'darbazi', features: 'accommodation' }, key: 'tasks.open.catalog',
+    });
     expect(taskLink('day')).toEqual({ route: '/planning/day', key: 'tasks.open.day' });
     expect(taskLink('nope')).toBeNull();
     expect(taskLink(null)).toBeNull();

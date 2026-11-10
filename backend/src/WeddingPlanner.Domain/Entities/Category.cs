@@ -3,7 +3,7 @@ namespace WeddingPlanner.Domain.Entities;
 /// <summary>
 /// A vendor category (sub-type) such as photographer, venue, florist. Bilingual names + URL slug.
 /// The slug is used in SEO URLs, e.g. /fotografi/tbilisi/&lt;vendor-slug&gt;. Each category belongs
-/// to one of the catalog's 8 groups (design-system/PROPOSALS.md P1).
+/// to one of the catalog's 9 groups (design-system/PROPOSALS.md P1).
 /// </summary>
 public class Category
 {
@@ -12,7 +12,7 @@ public class Category
     public string NameEn { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
 
-    /// <summary>Catalog group: venues, photo, decor, music, cake, attire, beauty, other.</summary>
+    /// <summary>Catalog group: venues, photo, decor, music, cake, attire, accessories, beauty, other.</summary>
     public string GroupKey { get; set; } = string.Empty;
 
     public int SortOrder { get; set; }

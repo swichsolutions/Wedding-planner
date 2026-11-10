@@ -50,8 +50,12 @@
             "d": "Wedding cakes, desserts"
           },
           "attire": {
-            "t": "Attire & accessories",
-            "d": "Dresses, suits, shoes, rings"
+            "t": "Attire",
+            "d": "Dresses, suits, shoes"
+          },
+          "accessories": {
+            "t": "Accessories",
+            "d": "Rings, jewellery, accessories"
           },
           "beauty": {
             "t": "Beauty & prep",
@@ -59,7 +63,7 @@
           },
           "other": {
             "t": "Other services",
-            "d": "Invitations, transport, accommodation"
+            "d": "Invitations, transport, coordinator"
           },
           "all": {
             "t": "All categories",
@@ -642,7 +646,8 @@
       "decor": "Decor & flowers",
       "music": "Music & entertainment",
       "cake": "Cake & sweets",
-      "attire": "Attire & accessories",
+      "attire": "Attire",
+      "accessories": "Accessories",
       "beauty": "Beauty & getting ready",
       "other": "Other services"
     },

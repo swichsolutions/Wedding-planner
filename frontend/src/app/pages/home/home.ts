@@ -189,7 +189,7 @@ export class Home {
     { key: 'decor', slugs: ['dekori', 'floristi', 'inventari'], query: { group: 'decor' }, img: '/media/cat/decor.webp' },
     { key: 'music', slugs: ['musika', 'tamada', 'tsamqvani', 'gasartobi'], query: { group: 'music' }, img: '/media/cat/music.webp' },
     { key: 'cake', slugs: ['torti', 'tkbileuli'], query: { group: 'cake' }, img: '/media/cat/cake.webp' },
-    { key: 'attire', slugs: ['kaba', 'kostiumi', 'pekhsatsmeli', 'aksesuarebi'], query: { group: 'attire' }, img: '/media/cat/attire.webp' },
+    { key: 'attire', slugs: ['kaba', 'kostiumi', 'pekhsatsmeli'], query: { group: 'attire' }, img: '/media/cat/attire.webp' },
     { key: 'rings', slugs: ['bechdebi'], query: { category: 'bechdebi' }, img: '/media/cat/rings.webp' },
     { key: 'beauty', slugs: ['makiaji', 'tmis-stili', 'manikiuri', 'saloni', 'movla'], query: { group: 'beauty' }, img: '/media/cat/beauty.webp' },
     { key: 'transport', slugs: ['transporti'], query: { category: 'transporti' }, img: '/media/cat/transport.webp' },

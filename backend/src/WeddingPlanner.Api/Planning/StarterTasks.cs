@@ -12,7 +12,7 @@ public static class StarterTasks
 
     /// <summary>
     /// Link: where the task opens — budget, guests, settings, invitation, day, seating, services,
-    /// or catalog:&lt;category slug&gt;; null for tasks done outside the site.
+    /// or catalog:&lt;category slug&gt; (optionally ?&lt;catalog filters&gt;); null for tasks done outside the site.
     /// </summary>
     public record Task(string Stage, string Ka, string En, string? Link);
 
@@ -50,7 +50,7 @@ public static class StarterTasks
         new("m8", "შეარჩიეთ დეკორატორი", "Choose a decorator", "catalog:dekori"),
         new("m8", "შეარჩიეთ ან შეუკვეთეთ კაბა", "Choose or order the dress", "catalog:kaba"),
         new("m8", "დაგეგმეთ გასართობი პროგრამა", "Plan the entertainment", "catalog:gasartobi"),
-        new("m8", "თუ ქორწილი სხვა ქალაქშია, მოძებნეთ სტუმრების განთავსება", "If the wedding is in another city, find accommodation for guests", "catalog:gantavseba"),
+        new("m8", "თუ ქორწილი სხვა ქალაქშია, მოძებნეთ სტუმრების განთავსება", "If the wedding is in another city, find accommodation for guests", "catalog:darbazi?features=accommodation"),
 
         new("m6", "შეარჩიეთ ფლორისტი", "Choose a florist", "catalog:floristi"),
         new("m6", "შეარჩიეთ კოსტიუმი", "Choose the suit", "catalog:kostiumi"),

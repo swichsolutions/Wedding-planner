@@ -81,7 +81,10 @@ export interface TaskLink {
 export function taskLink(link: string | null): TaskLink | null {
   if (!link) return null;
   if (link.startsWith('catalog:')) {
-    return { route: '/vendors', query: { category: link.slice('catalog:'.length) }, key: 'tasks.open.catalog' };
+    // catalog:<slug>, optionally followed by ?<catalog filters>
+    const [category, filters] = link.slice('catalog:'.length).split('?');
+    const query = { category, ...Object.fromEntries(new URLSearchParams(filters ?? '')) };
+    return { route: '/vendors', query, key: 'tasks.open.catalog' };
   }
   const pages: Record<string, string> = {
     budget: '/budget',

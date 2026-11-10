@@ -4,15 +4,16 @@ using Microsoft.EntityFrameworkCore;
 namespace WeddingPlanner.Infrastructure.Data;
 
 /// <summary>
-/// The catalog taxonomy (design-system/PROPOSALS.md P1, approved 2026-10-21): 8 groups,
-/// 27 categories. Owned by code and synced into the Categories table on every startup in
-/// every environment — vendor registration and the catalog need the rows, and a fresh
-/// production database otherwise has none. Existing slugs never change (they're live URLs).
+/// The catalog taxonomy (design-system/PROPOSALS.md P1, approved 2026-10-21): 9 groups,
+/// 26 categories (2026-11-10: attire and accessories split, guest accommodation removed).
+/// Owned by code and synced into the Categories table on every startup in every environment —
+/// vendor registration and the catalog need the rows, and a fresh production database
+/// otherwise has none. Existing slugs never change (they're live URLs).
 /// Mirrored in the frontend's core/catalog.ts.
 /// </summary>
 public static class CategoryCatalog
 {
-    public static readonly string[] Groups = { "venues", "photo", "decor", "music", "cake", "attire", "beauty", "other" };
+    public static readonly string[] Groups = { "venues", "photo", "decor", "music", "cake", "attire", "accessories", "beauty", "other" };
 
     public static readonly (string Slug, string Group, string Ka, string En)[] Categories =
     {
@@ -33,8 +34,8 @@ public static class CategoryCatalog
         ("kaba", "attire", "საქორწილო კაბა", "Wedding dress"),
         ("kostiumi", "attire", "კოსტიუმი", "Suit"),
         ("pekhsatsmeli", "attire", "ფეხსაცმელი", "Shoes"),
-        ("aksesuarebi", "attire", "აქსესუარები", "Accessories"),
-        ("bechdebi", "attire", "ბეჭდები და სამკაული", "Rings & jewellery"),
+        ("aksesuarebi", "accessories", "აქსესუარები", "Accessories"),
+        ("bechdebi", "accessories", "ბეჭდები და სამკაული", "Rings & jewellery"),
         ("makiaji", "beauty", "მაკიაჟი", "Makeup"),
         ("tmis-stili", "beauty", "თმის სტილისტი", "Hair stylist"),
         ("manikiuri", "beauty", "მანიკიური", "Nails"),
@@ -42,11 +43,22 @@ public static class CategoryCatalog
         ("movla", "beauty", "მოვლის მომსახურებები", "Care (spa, skincare)"),
         ("transporti", "other", "ტრანსპორტი", "Transport"),
         ("bechduri-mosatsvevebi", "other", "ბეჭდური მოსაწვევები", "Printed invitations"),
-        ("gantavseba", "other", "სტუმრების განთავსება", "Guest accommodation"),
         ("koordinatori", "other", "ქორწილის დღის კოორდინატორი", "Day-of coordinator"),
     };
 
-    /// <summary>Insert missing categories and bring names, group and order up to date.</summary>
+    /// <summary>
+    /// Slugs taken out of the catalog, and where task links to them open now. Guest accommodation
+    /// (2026-11-10): nobody offers only that; hotels list as venues with on-site accommodation.
+    /// </summary>
+    public static readonly Dictionary<string, string> Retired = new()
+    {
+        ["gantavseba"] = "catalog:darbazi?features=accommodation",
+    };
+
+    /// <summary>
+    /// Insert missing categories and bring names, group and order up to date. A retired
+    /// category's row goes once no vendor uses it, and checklist links to it are moved.
+    /// </summary>
     public static async Task SyncAsync(AppDbContext db)
     {
         var existing = await db.Categories.ToDictionaryAsync(c => c.Slug);
@@ -62,6 +74,13 @@ public static class CategoryCatalog
             cat.NameKa = ka;
             cat.NameEn = en;
             cat.SortOrder = i + 1;
+        }
+        foreach (var (slug, link) in Retired)
+        {
+            if (existing.TryGetValue(slug, out var gone) && !await db.Vendors.AnyAsync(v => v.CategoryId == gone.Id))
+                db.Categories.Remove(gone);
+            await db.ChecklistItems.Where(c => c.Link == "catalog:" + slug)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.Link, link));
         }
         await db.SaveChangesAsync();
     }
