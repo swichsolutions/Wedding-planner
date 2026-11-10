@@ -56,7 +56,18 @@ export class ScrollStage {
         host.style.setProperty('--card-scale', scale.toFixed(4));
         host.style.setProperty('--stage-w', `${W}px`);
         host.style.setProperty('--stage-h', `${H}px`);
+        measureChip();
       };
+
+      /** The centre chip's height at rest, so the SCSS can keep it inside the rest frame.
+       * Its text shrinks as the stage runs, so only measured while at rest. */
+      const chip = host.querySelector<HTMLElement>('.chip--center');
+      const measureChip = () => {
+        if (chip && p === 0 && chip.offsetHeight) host.style.setProperty('--chip-h', `${chip.offsetHeight}px`);
+      };
+      // web fonts arriving change the chip's height
+      const chipObserver = chip ? new ResizeObserver(measureChip) : null;
+      if (chip) chipObserver!.observe(chip);
 
       const apply = () => {
         host.style.setProperty('--p', p.toFixed(4));
@@ -106,6 +117,7 @@ export class ScrollStage {
         window.removeEventListener('scroll', onScroll);
         window.removeEventListener('resize', measure);
         phone.removeEventListener('change', sync);
+        chipObserver?.disconnect();
         if (raf) cancelAnimationFrame(raf);
       });
     });
