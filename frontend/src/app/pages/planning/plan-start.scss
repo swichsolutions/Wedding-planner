@@ -1,34 +1,81 @@
-// The start form after sign-up. Brand theme: ivory page, the gold ring above a peach label and
-// the Mt heading, a white card for the fields, evergreen only on the main button.
+// The start form after sign-up. Brand theme, and the same look as the sign-up step before
+// it: ivory page, a photo with the title on it (2026-11-12; it was the gold ring on a white
+// page), a white card for the fields, evergreen only on the main button.
 @use 'breakpoints' as bp;
 
 :host {
   display: block;
-  background: var(--paper);
+  background: var(--ivory);
   color: var(--ink);
 }
 
 .ps {
   max-width: 44rem;
   margin-inline: auto;
-  padding: var(--space-8) var(--space-4) var(--space-20);
+  padding: var(--space-6) var(--space-4) var(--space-20);
 
   @include bp.respond-to(md) {
     padding-top: var(--space-10);
   }
 }
 
+// The photo panel: the picture fills it, a charcoal veil rises from the bottom, and the
+// title and lead sit on the veil in white.
 .ps-head {
+  position: relative;
+  isolation: isolate;
   display: grid;
-  justify-items: center;
-  text-align: center;
-  margin-bottom: var(--space-8);
+  align-items: end;
+  min-height: clamp(15rem, 62vw, 24rem);
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--charcoal); // while the photo loads
+  color: #fff;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    // a light tint everywhere (on a phone the text reaches the top of the band) and the
+    // full veil where the text always sits
+    background: linear-gradient(
+      to top,
+      rgba(48, 43, 45, 0.9) 0%,
+      rgba(48, 43, 45, 0.7) 40%,
+      rgba(48, 43, 45, 0.32) 78%,
+      rgba(48, 43, 45, 0.22) 100%
+    );
+  }
 }
 
-// the ring sits on the page, a little into the label's space
-.ps-ring {
-  width: clamp(9.5rem, 34vw, 13rem);
-  margin-bottom: calc(-1 * var(--space-3));
+.ps-head__photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 58%;
+}
+
+.ps-head__text {
+  padding: var(--space-6) var(--space-5);
+
+  // the brand's one decorative line: a short gold rule over the title
+  &::before {
+    content: '';
+    display: block;
+    width: 3rem;
+    height: 1px;
+    margin-bottom: var(--space-4);
+    background: var(--gold);
+  }
+
+  @include bp.respond-to(sm) {
+    padding: var(--space-8);
+  }
 }
 
 .ps-title {
@@ -37,16 +84,16 @@
   font-size: clamp(2rem, 1.4rem + 3vw, 3.25rem);
   font-weight: var(--fw-medium);
   line-height: 1.05;
+  color: #fff;
   text-wrap: balance;
 }
 
 .ps-lead {
-  max-width: 32rem;
+  max-width: 30rem;
   margin: 0;
   font-size: 1.0625rem;
   line-height: 1.5;
-  color: var(--ink-700);
-  text-wrap: balance;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .ps-card {
@@ -184,7 +231,8 @@
   color: var(--ink-500);
 }
 
-// Wide screens: the heading (ring, title) on the left, the form on the right.
+// Wide screens: the photo panel on the left, as tall as the window allows and staying in
+// view while the form scrolls; the form on the right.
 @include bp.respond-to(lg) {
   .ps {
     display: grid;
@@ -198,6 +246,13 @@
   .ps-head {
     position: sticky;
     top: calc(var(--hdr-h) + var(--space-8));
+    height: calc(100dvh - var(--hdr-h) - 2 * var(--space-8));
+    min-height: 28rem;
+    max-height: 52rem;
     margin-bottom: 0;
+  }
+
+  .ps-head__text {
+    padding: var(--space-10);
   }
 }

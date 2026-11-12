@@ -1,8 +1,14 @@
 <section class="ps">
+  <!-- A photo panel with the title on it (2026-11-12; the ring on a white page read as
+       "too white"). The photo is decoration; the panel is a band above the form on
+       phones and a tall panel beside it from 1024px. -->
   <header class="ps-head">
-    <app-gold-ring class="ps-ring" />
-    <h1 class="ps-title">{{ 'plan.startTitle' | translate }}</h1>
-    <p class="ps-lead">{{ 'plan.startLead' | translate }}</p>
+    <img class="ps-head__photo" src="/media/plan-details-2.webp" alt="" width="1000" height="1498"
+      decoding="async" />
+    <div class="ps-head__text">
+      <h1 class="ps-title">{{ 'plan.startTitle' | translate }}</h1>
+      <p class="ps-lead">{{ 'plan.startLead' | translate }}</p>
+    </div>
   </header>
 
   <form class="ps-card" [formGroup]="form" (ngSubmit)="save()" novalidate>

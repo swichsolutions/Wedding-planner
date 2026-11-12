@@ -31,8 +31,10 @@ Served as-is at `/media/...`.
   photo (OneDrive Desktop/9411badc3c9c0017093c677b8c55a4cb.jpg), portrait, only
   1067×1534 at source so kept at that size (webp q82). Crop anchored at
   `center 55%` on wide screens.
-- `plan-details-2.webp` — the glass-conservatory aisle tried before it (OneDrive
-  Desktop/dae9be358096f0a0760c85a0d7aeed18.jpg), kept for now.
+- `plan-details-2.webp` — the photo panel of the plan-setup page (`/planning/start`,
+  `pages/planning/plan-start.html`, since 2026-11-12): the glass-conservatory aisle, with
+  the page title over it. First tried as the third slide (OneDrive
+  Desktop/dae9be358096f0a0760c85a0d7aeed18.jpg).
 - `plan-details.webp` — the previous third-slide photo, kept for now. Beach
   ceremony aisle (Pexels, asadphoto 169189), 2400 px wide.
 - `plan-define-2.webp` — background of the first "საიდან დავიწყო?" slide
@@ -51,8 +53,13 @@ Served as-is at `/media/...`.
   with the wedding date circled, rings and white flowers (Pexels 25002851),
   resized to 1000 px wide (webp q82). The card used to be a white text sheet with
   a four-item list; it is now a photo card like the other two.
-- `plan-define.webp` — the previous first-slide photo, kept for now. Black-and-
-  white couple with a classic car (Pexels, Caleb Minear 34364053), 2400 px wide.
+- `plan-define.webp` — the photo in the hero of `/for-vendors` (since 2026-11-12; before
+  that the first slide's photo). Black-and-white couple with a classic car (Pexels, Caleb
+  Minear 34364053), 2400 px wide.
+- `plan-define-1200.webp` — the same photo at 1200 px wide (Pillow, webp q82, ~77 kB): what
+  phones and ordinary laptops load there (`srcset` in `for-vendors.html`).
+- The vendor sign-up (`/register`) shows `venue.webp` beside its form
+  (`section.auth--vendor::before` in `src/styles/_components.scss`).
 - `cat/*.webp` — the category cards of the home carousel (`categoryGroups` in
   `home.ts`). Beka's own renders on a warm-charcoal backdrop with a floor
   reflection, Revolut-style (2026-10-12, the brand's card colour; Downloads/

@@ -11,7 +11,6 @@ import { estimatorEdits } from '../../core/budget';
 import { BudgetService, clearGuestBudgetDraft, readGuestBudgetDraft } from '../../core/budget.service';
 import { CoupleService } from '../../core/couple.service';
 import { focusFirstInvalid } from '../../core/forms';
-import { GoldRing } from '../../components/gold-ring/gold-ring';
 import { PlanDetailsFields, patchPlanDetails, planDetailsForm, toPlanDetails } from './plan-details-fields';
 
 /**
@@ -21,7 +20,7 @@ import { PlanDetailsFields, patchPlanDetails, planDetailsForm, toPlanDetails } f
  */
 @Component({
   selector: 'app-plan-start',
-  imports: [ReactiveFormsModule, TranslatePipe, GoldRing, PlanDetailsFields],
+  imports: [ReactiveFormsModule, TranslatePipe, PlanDetailsFields],
   templateUrl: './plan-start.html',
   styleUrl: './plan-start.scss',
   host: { class: 'theme-brand' },

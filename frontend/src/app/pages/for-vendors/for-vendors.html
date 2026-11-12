@@ -1,13 +1,23 @@
 <section class="fv-hero">
   <div class="container fv-hero__inner">
-    <p class="overline fv-hero__overline">{{ 'forVendors.overline' | translate }}</p>
-    <h1 class="fv-hero__title">{{ 'forVendors.title' | translate }}</h1>
-    <p class="fv-hero__sub">{{ 'forVendors.subtitle' | translate }}</p>
-    <div class="fv-hero__cta">
-      <a class="btn btn--primary" routerLink="/register">{{ 'forVendors.ctaPrimary' | translate }}</a>
-      <a class="btn btn--ghost" routerLink="/vendors">{{ 'forVendors.ctaSecondary' | translate }}</a>
+    <div class="fv-hero__text">
+      <p class="overline fv-hero__overline">{{ 'forVendors.overline' | translate }}</p>
+      <h1 class="fv-hero__title">{{ 'forVendors.title' | translate }}</h1>
+      <p class="fv-hero__sub">{{ 'forVendors.subtitle' | translate }}</p>
+      <div class="fv-hero__cta">
+        <a class="btn btn--primary" routerLink="/register">{{ 'forVendors.ctaPrimary' | translate }}</a>
+        <a class="btn btn--ghost" routerLink="/vendors">{{ 'forVendors.ctaSecondary' | translate }}</a>
+      </div>
+      <p class="fv-hero__free">{{ 'forVendors.freeNote' | translate }}</p>
     </div>
-    <p class="fv-hero__free">{{ 'forVendors.freeNote' | translate }}</p>
+
+    <!-- Decoration: the couples a vendor reaches here. The 1200px copy serves phones and
+         ordinary laptops; the 2400px original only dense wide screens. -->
+    <div class="fv-hero__photo" aria-hidden="true">
+      <img src="/media/plan-define-1200.webp"
+        srcset="/media/plan-define-1200.webp 1200w, /media/plan-define.webp 2400w"
+        sizes="(min-width: 1024px) 42vw, 100vw" alt="" width="1200" height="800" decoding="async" />
+    </div>
   </div>
 </section>
 

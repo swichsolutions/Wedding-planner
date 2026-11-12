@@ -15,21 +15,74 @@
   }
 }
 
+// The hero fills the container like every other page (2026-11-12; it was a narrow 48rem
+// column in the middle of a wide screen): the text on the left at a readable measure, a
+// photo beside it from 1024px, stacked below that.
 .fv-hero__inner {
-  max-width: 48rem;
+  display: grid;
+  gap: var(--space-10);
+  align-items: center;
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: clamp(2rem, 5vw, 6rem);
+  }
+}
+
+.fv-hero__text {
+  max-width: 40rem;
 }
 
 .fv-hero__overline {
   color: var(--ink);
 }
 
+// About the h2 scale (60px from 1300px up, 30px on a phone), not the 104px display size: at
+// that size the sentence broke into six lines and split „მომსახურებას". Words are never
+// hyphenated or split; on the narrowest phones the size follows the width so the longest
+// word (~7.9em) still fits.
 .fv-hero__title {
-  overflow-wrap: anywhere; // long Georgian words at display size must break, not widen the page
-  hyphens: auto;
   margin: var(--space-4) 0 0;
-  font-size: var(--fs-display);
-  line-height: var(--lh-display);
+  font-size: min(clamp(1.75rem, 1.05rem + 3.4vw, 3.75rem), (100vw - 2 * var(--gutter)) / 8.2);
+  line-height: var(--lh-heading);
   letter-spacing: var(--tracking-display);
+  overflow-wrap: break-word; // last resort only
+  hyphens: manual;
+
+  // beside the photo the text column is under half the window: the size follows it, so the
+  // sentence stays at four lines from 1024px up
+  @include bp.respond-to(lg) {
+    font-size: min(3.75rem, 4.4vw);
+  }
+}
+
+// The photo, with the brand's one decorative line: a fine gold frame set off behind it.
+.fv-hero__photo {
+  position: relative;
+
+  img {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: 28px;
+  }
+
+  @include bp.respond-to(lg) {
+    img {
+      aspect-ratio: 5 / 4;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--gold);
+      border-radius: 28px;
+      transform: translate(14px, 14px);
+    }
+  }
 }
 
 .fv-hero__sub {

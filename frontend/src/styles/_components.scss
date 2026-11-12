@@ -235,9 +235,9 @@
   }
 }
 
-// Wide screens: a photo beside the form instead of a lone card in the middle. Only the
-// section-level pages (sign in, sign up, forgot / reset password); the vendor sign-up has its
-// own photo collage. The photo is decoration, so it's a CSS background.
+// Wide screens: a photo beside the form instead of a lone card in the middle. The
+// section-level pages (sign in, sign up, forgot / reset password) and, since 2026-11-12, the
+// vendor sign-up with its own photo. The photo is decoration, so it's a CSS background.
 @media (min-width: 1024px) {
   section.auth {
     display: grid;
@@ -253,6 +253,12 @@
       min-height: 34rem;
       border-radius: 28px;
       background: url('/media/hero-tall.webp') center 60% / cover no-repeat;
+    }
+
+    // vendor sign-up: the decorated hall (the vendors' own work), not the ceremony arch
+    &.auth--vendor::before {
+      background-image: url('/media/venue.webp');
+      background-position: center;
     }
   }
 }

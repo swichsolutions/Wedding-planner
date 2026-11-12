@@ -1,42 +1,18 @@
-@use 'breakpoints' as bp;
-
+// Vendor sign-up. The same look as the couple sign-up (signup.scss): ivory page, the global
+// white .auth card with the title inside it, and from 1024px the photo beside it (the
+// section.auth split in styles/_components.scss; .auth--vendor swaps in the hall photo).
 :host {
   display: block;
+  background: var(--ivory);
 }
 
-// positioning context for the scattered photos; the form sits centered on top
-.vreg {
-  position: relative;
-  overflow: hidden; // clip photos that spill past the edges (part of the "thrown" look)
+.auth h1 {
+  line-height: 1.15; // the theme's display line-height (1) is for single lines; this may wrap
 }
 
-.vreg__form {
-  position: relative;
-  z-index: 1; // keep the form above the collage
-}
-
-// decorative collage — shown only on wide screens (xl+), where the big photos fit in the
-// side gutters without colliding with the centered form; hidden below that (clean form)
-.vreg__scatter {
-  display: none;
-
-  @include bp.respond-to(xl) {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none; // never intercept clicks meant for the form
-  }
-}
-
-// each snapshot: a small, white-framed print tossed onto the page
-.vreg__photo {
-  position: absolute;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  border: 5px solid #fff;
-  box-shadow: 0 10px 30px -12px rgba(20, 12, 14, 0.45);
+.auth__intro,
+.auth__error {
+  line-height: 1.5;
 }
 
 // A3 takeover: admin-added listings matching the typed name, and the one picked as "mine"
