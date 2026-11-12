@@ -1,34 +1,37 @@
 <!-- ================== 01 + 02 / PROMISE → "WHERE DO I START?" ================== -->
 <!-- The hero and the three steps share one stage (review of 2026-11-12). At rest this is
      the hero: the photo full screen, the headline, the lead and the button, and in the
-     middle a box that already holds the first planning step. On the first scroll the
-     photo shrinks into that box (the site's own first-to-second-screen effect) and stays
-     there as the first step's picture; around it the second section appears: its photo
-     (the couple in the car) full screen, the heading, the step's link, the step pills and
-     the ring. On steps two and three the box is see-through over that step's photo.
+     middle a box that already holds the first planning step. On the first scroll the hero
+     photo fades into the second section's photo (the couple in the car) and the hero's
+     words give way to the second section's: its heading, the step's link, the step pills
+     and the ring. The box stays, moving into the second section's card; it is see-through
+     on every step, the first included (Beka, 2026-11-12: a small hero photo held in the
+     first step's box, over a different photo, did not look right, and nothing shrinks).
      From 1024px the screen is pinned while this happens (ScrollStage: .is-staged, .is-run).
      On smaller or short screens, and without JS, the hero and the steps are two ordinary
-     full-screen blocks. The "ყველაფერი ერთ სივრცეში" three-card end of the old effect is
-     gone: the photo now shrinks straight into the second section. -->
+     full-screen blocks. The old "ყველაფერი ერთ სივრცეში" three-card stage is gone. -->
 <section id="promise" class="intro" appScrollStage (ran)="onStage($event)">
-  <div class="intro__stage" data-nav="dark">
+  <!-- keyboard focus anywhere in the stage holds the automatic rotation (see introPaused) -->
+  <div class="intro__stage" data-nav="dark" #stage (focusin)="introFocus.set(true)"
+    (focusout)="introFocus.set(stage.contains($any($event).relatedTarget))">
     <!-- The steps' photos, one per slide, crossfading. The first is in the server HTML (the
          steps are readable without JS); it is lazy and low priority so it never competes
          with the hero photo. The other two join after the first scroll. -->
     <div class="intro__slides">
       @for (s of startSlides; track s.key; let i = $index) {
         @if (i === 0 || slidesArmed()) {
-          <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" alt="" loading="lazy"
-            fetchpriority="low" decoding="async" [style.object-position]="s.pos ?? null" width="2000" height="1333" />
+          <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" [attr.srcset]="s.srcset ?? null"
+            sizes="100vw" alt="" loading="lazy" fetchpriority="low" decoding="async"
+            [style.object-position]="s.pos ?? null" />
         }
       }
       <div class="start__scrim" aria-hidden="true"></div>
     </div>
 
     <!-- The hero photo: the same scene rendered twice, tall for portrait screens (phones),
-         wide for everything else. Staged, it shrinks into the box and shows only on the
-         first step. -->
-    <div class="intro__photo" [class.is-off]="slide() !== 0">
+         wide for everything else. Staged, it lies over the steps' photos and fades away
+         when the stage runs. -->
+    <div class="intro__photo">
       <picture>
         <source media="(orientation: portrait)" type="image/webp" srcset="/media/hero-tall.webp" />
         <source media="(orientation: portrait)" srcset="/media/hero-tall.jpg" />
@@ -75,8 +78,10 @@
     <!-- The box: the current step. At rest it is the hero's frame and shows the first step
          without its link; when the stage runs it becomes the second section's card, and the
          shrunken hero photo fills it on the first step. Announced when a visitor switches
-         steps, not on every turn of the automatic rotation. -->
-    <div class="start__card" [attr.aria-live]="rotating() ? 'off' : 'polite'">
+         steps, not on every turn of the automatic rotation. Resting the pointer on it
+         holds the rotation, so its link does not change under the hand. -->
+    <div class="start__card" [attr.aria-live]="rotating() && !introPaused() ? 'off' : 'polite'"
+      (mouseenter)="cardHover.set(true)" (mouseleave)="cardHover.set(false)">
       @for (s of startSlides; track s.key; let i = $index) {
         @if (slide() === i) {
           <div class="start__card-inner">
@@ -97,13 +102,10 @@
       }
     </div>
 
-    <!-- the size of the card the photo shrinks into, for ScrollStage to read (see home.scss) -->
-    <span class="intro__probe" data-stage-probe aria-hidden="true"></span>
-
     <!-- the ring in the far right corner: fills while the slide waits (only once the slides
          rotate), one step forward on click -->
     <app-car-arrow class="start__arrow car-arrow--light" data-stage="run" [label]="'home.carousel.next' | translate"
-      [interval]="rotating() ? 10400 : 0" [tick]="slide()" (next)="stepSlide(1)" />
+      [interval]="rotating() ? 10400 : 0" [paused]="introPaused()" [tick]="slide()" (next)="stepSlide(1)" />
 
     <!-- step labels: show which step is on screen and switch to it on click -->
     <ol class="start__dots" data-stage="run" [attr.aria-label]="'home.start.title' | translate">

@@ -151,9 +151,9 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   seven sections: hero → categories → three steps → organizer → day schedules → FAQ → final call.
   **Amended 2026-11-12 (review round):** the order is now hero → three steps → categories →
   organizer → day schedules → FAQ → final call. The hero and the three steps share one stage: on
-  the first scroll the hero photo shrinks into the box in its middle, which becomes the first
-  step's card, and the second section appears around it. The "ყველაფერი ერთ სივრცეში" three-card
-  end of that effect is gone; the shrinking itself stays.
+  the first scroll the hero photo fades into the first step's photo, the words change, and the
+  box in the middle of the hero becomes the first step's card (see-through, like the others).
+  The "ყველაფერი ერთ სივრცეში" three-card stage is gone, and nothing shrinks.
   The day section shows the three P7 schedules as cards with „ნახე განრიგი“ (the full schedule in
   a dialog) and „ნახე ყველა განრიგი“ → `/schedules` (built now: B2's public half). The FAQ gains
   the invitation question, with P9's answer (link or QR code, replies in the guest list) since B6. The own-vendor answer points to

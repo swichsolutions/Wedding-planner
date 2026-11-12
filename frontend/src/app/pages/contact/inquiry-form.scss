@@ -79,8 +79,20 @@
 }
 
 // the confirmation heading takes focus from script, to be read out: no ring around it
+// (the global ring is a box-shadow)
 .iq-done__title:focus {
   outline: none;
+  box-shadow: none;
+}
+
+// On the ivory panel the usual light field edge all but vanishes (1.4:1) and the white fill
+// alone does not mark the field: a darker edge here.
+.iq .auth__field :is(input, textarea) {
+  border-color: var(--charcoal-500);
+}
+
+.iq .auth__field :is(input, textarea).is-invalid {
+  border-color: var(--color-danger-600);
 }
 
 // Off screen, not display:none (some bots skip hidden fields), and out of the tab order.

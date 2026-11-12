@@ -174,10 +174,13 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   server-rendered, and the server can't see who is signed in. Never branch it on auth.
   Its sections, in order (2026-11-12 review): hero → "საიდან დავიწყო?" (three steps) →
   categories → organizer → day schedules → FAQ → final call. The first two share one stage:
-  on the first scroll the hero photo shrinks into the box in its middle and stays there as
-  the first step's picture, with the second section (the couple-in-the-car photo, heading,
-  step pills) around it (`core/scroll-stage.directive.ts`; pinned from 1024px, two plain
-  blocks below). Beka wants this shrinking-photo effect kept: do not replace it.
+  on the first scroll the hero photo fades into the second section's photo (the couple in
+  the car), the hero's words give way to "საიდან დავიწყო?" with its button and step pills,
+  and the box in the middle of the hero becomes the first step's card
+  (`core/scroll-stage.directive.ts`; pinned from 1024px, two plain blocks below). The box is
+  see-through on every step. Tried and rejected by Beka on 2026-11-12: the hero photo
+  shrinking into the box and staying there as the first step's picture (a small photo over a
+  different background, while the other steps' boxes were see-through).
 - Header (2026-11-12 review): the three menus start right after the logo, and every dropdown
   opens to the right from its own title.
 - The couple's organizer ("ჩემი ქორწილი", sitemap §06) lives at **`/planning`**. It is the

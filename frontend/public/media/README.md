@@ -39,8 +39,10 @@ Served as-is at `/media/...`.
   ceremony aisle (Pexels, asadphoto 169189), 2400 px wide.
 - `plan-define-2.webp` — background of the first "საიდან დავიწყო?" slide
   ("განსაზღვრე შენი ქორწილი"), referenced from `startSlides` in `home.ts`. Since
-  2026-11-12 it is also what appears around the box when the hero photo (`hero-wide` /
-  `hero-tall`) shrinks into it on the first scroll.
+  2026-11-12 it is also what the hero photo (`hero-wide` / `hero-tall`) fades into on the
+  first scroll.
+- `plan-define-2-1200.webp` — the same photo at 1200 px wide (Pillow, webp q82, ~178 kB
+  against 855 kB): what phones load, through the slide's `srcset` in `home.ts`.
   Black-and-white couple in a convertible under cypresses, portrait
   (Beka's own photo `156.jpg`, 7728×5152 source), EXIF-rotated and resized to
   2400 px wide with Pillow (webp q82). The slide anchors the crop at

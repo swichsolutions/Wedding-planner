@@ -27,9 +27,10 @@ import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core
               <label for="r-name">{{ 'auth.vendorName' | translate }}</label>
               <input id="r-name" type="text" formControlName="vendorName" autocomplete="organization" aria-required="true"
                 [class.is-invalid]="attempted() && form.controls.vendorName.invalid"
-                [attr.aria-invalid]="attempted() && form.controls.vendorName.invalid ? 'true' : null" />
+                [attr.aria-invalid]="attempted() && form.controls.vendorName.invalid ? 'true' : null"
+                [attr.aria-describedby]="attempted() && form.controls.vendorName.invalid ? 'r-name-err' : null" />
               @if (attempted() && form.controls.vendorName.invalid) {
-                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+                <span id="r-name-err" class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
             <!-- A3 takeover: listings the platform added that match the typed name -->
@@ -60,7 +61,8 @@ import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core
               <label for="r-cat">{{ 'auth.category' | translate }}</label>
               <select id="r-cat" formControlName="categorySlug" aria-required="true"
                 [class.is-invalid]="attempted() && form.controls.categorySlug.invalid"
-                [attr.aria-invalid]="attempted() && form.controls.categorySlug.invalid ? 'true' : null">
+                [attr.aria-invalid]="attempted() && form.controls.categorySlug.invalid ? 'true' : null"
+                [attr.aria-describedby]="attempted() && form.controls.categorySlug.invalid ? 'r-cat-err' : null">
                 <option value="">{{ 'auth.selectCategory' | translate }}</option>
                 @for (g of groups; track g) {
                   <optgroup [label]="'catalog.groups.' + g | translate">
@@ -71,7 +73,7 @@ import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core
                 }
               </select>
               @if (attempted() && form.controls.categorySlug.invalid) {
-                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+                <span id="r-cat-err" class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
             }
@@ -79,23 +81,24 @@ import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core
               <label for="r-email">{{ 'auth.email' | translate }}</label>
               <input id="r-email" type="email" formControlName="email" autocomplete="email" spellcheck="false" aria-required="true"
                 [class.is-invalid]="attempted() && form.controls.email.invalid"
-                [attr.aria-invalid]="attempted() && form.controls.email.invalid ? 'true' : null" />
+                [attr.aria-invalid]="attempted() && form.controls.email.invalid ? 'true' : null"
+                [attr.aria-describedby]="attempted() && form.controls.email.invalid ? 'r-email-err' : null" />
               @if (attempted() && form.controls.email.hasError('required')) {
-                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+                <span id="r-email-err" class="auth__err">{{ 'auth.required' | translate }}</span>
               } @else if (attempted() && form.controls.email.hasError('email')) {
-                <span class="auth__err">{{ 'auth.emailInvalid' | translate }}</span>
+                <span id="r-email-err" class="auth__err">{{ 'auth.emailInvalid' | translate }}</span>
               }
             </div>
             <div class="auth__field">
               <label for="r-pass">{{ 'auth.password' | translate }}</label>
               <input id="r-pass" type="password" formControlName="password" autocomplete="new-password" aria-required="true"
-                aria-describedby="r-pass-reqs"
+                [attr.aria-describedby]="attempted() && form.controls.password.invalid ? 'r-pass-err r-pass-reqs' : 'r-pass-reqs'"
                 [class.is-invalid]="attempted() && form.controls.password.invalid"
                 [attr.aria-invalid]="attempted() && form.controls.password.invalid ? 'true' : null" />
               @if (attempted() && form.controls.password.hasError('required')) {
-                <span class="auth__err">{{ 'auth.required' | translate }}</span>
+                <span id="r-pass-err" class="auth__err">{{ 'auth.required' | translate }}</span>
               } @else if (attempted() && form.controls.password.hasError('password')) {
-                <span class="auth__err">{{ 'auth.pwReqNotMet' | translate }}</span>
+                <span id="r-pass-err" class="auth__err">{{ 'auth.pwReqNotMet' | translate }}</span>
               }
               <ul id="r-pass-reqs" class="pw-reqs" aria-live="polite"
                 [class.is-checking]="attempted() && form.controls.password.hasError('password')">

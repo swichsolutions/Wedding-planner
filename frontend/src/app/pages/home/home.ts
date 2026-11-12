@@ -20,8 +20,9 @@ import { CategoryStat, VendorService } from '../../core/vendor.service';
 /**
  * Landing page, in seven sections (the order since the review of 2026-11-12): hero → three
  * steps → categories → organizer → example day schedules → FAQ → final call. The first two
- * share one stage: on the first scroll the hero photo shrinks into the box in its middle,
- * which becomes the first step's card (core/scroll-stage.directive.ts, home.scss). Each section answers the question
+ * share one stage: on the first scroll the hero photo fades into the first step's photo and
+ * the box in its middle becomes that step's card (core/scroll-stage.directive.ts,
+ * home.scss). Each section answers the question
  * a couple naturally asks next. All copy lives in i18n under `home.*` (the schedules in
  * core/day-schedules.ts); this file only holds structure.
  */
@@ -84,7 +85,9 @@ export class Home {
     this.stopRotation();
     this.rotating.set(true);
     this.rotationId = window.setInterval(() => {
-      if (document.hidden) return; // don't burn cycles (or skip slides) in a background tab
+      // not in a background tab (don't burn cycles or skip slides), and not while the visitor
+      // is using the stage: the step would change under their keyboard focus or their pointer
+      if (document.hidden || this.introPaused()) return;
       this.slide.update((i) => (i + 1) % this.startSlides.length);
     }, 10400);
   }
@@ -102,14 +105,20 @@ export class Home {
     if (this.rotating()) this.startRotation();
   }
 
-  /** 02 — the three planning steps, each a full-bleed photo + the step card. On the first
-   * step the card also holds the hero photo, shrunk into it by the opening stage. The
-   * slides rotate on their own once the stage has run (browser only, not under reduced
-   * motion); the bottom labels switch directly. */
-  protected readonly startSlides: { key: string; img: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
+  /** 02 — the three planning steps, each a full-bleed photo + the step card (see-through on
+   * every step). The slides rotate on their own once the stage has run (browser only, not
+   * under reduced motion); the bottom labels switch directly. */
+  protected readonly startSlides: { key: string; img: string; srcset?: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
     // couple in a convertible under cypresses, b&w, portrait (Beka's photo 156.jpg);
-    // the couple sits low in the frame, so wide screens anchor the crop there
-    { key: 's1', img: '/media/plan-define-2.webp', pos: 'center 78%', to: 'organize' },
+    // the couple sits low in the frame, so wide screens anchor the crop there. The 1200px
+    // copy is what phones load (the 2400px original is 855 kB).
+    {
+      key: 's1',
+      img: '/media/plan-define-2.webp',
+      srcset: '/media/plan-define-2-1200.webp 1200w, /media/plan-define-2.webp 2400w',
+      pos: 'center 78%',
+      to: 'organize',
+    },
     { key: 's2', img: img('photo-1583939003579-730e3918a45a', 2400), to: 'find' },
     // Beka's photo (OneDrive Desktop/9411badc...jpg), portrait, 1067 px wide source
     { key: 's3', img: '/media/plan-details-3.webp', pos: 'center 55%', to: 'day' },
@@ -119,6 +128,12 @@ export class Home {
   protected readonly slidesArmed = signal(false);
   /** True while the slides turn on their own (drives the ring's fill and the live region). */
   protected readonly rotating = signal(false);
+  /** The pointer rests on the step's box / keyboard focus is somewhere in the stage. Either
+   * holds the rotation (and the ring's fill): a moving step must be pausable, and its link
+   * must not be swapped out while someone is about to follow it. */
+  protected readonly cardHover = signal(false);
+  protected readonly introFocus = signal(false);
+  protected readonly introPaused = computed(() => this.cardHover() || this.introFocus());
 
   /** The stage ran (the first scroll) or went back to rest (the top of the page). Rest is
    * the hero with the first step in its box, so the rotation stops and rewinds there. */
@@ -143,7 +158,8 @@ export class Home {
     const start = document.getElementById('start');
     if (!start) return;
     const staged = !!(event.currentTarget as HTMLElement).closest('.intro.is-staged');
-    if (!staged) start.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // (no `behavior`: the page's own CSS scrolls smoothly, and not under reduced motion)
+    if (!staged) start.scrollIntoView({ block: 'start' });
     start.focus({ preventScroll: true });
   }
 

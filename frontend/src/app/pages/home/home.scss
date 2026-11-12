@@ -220,12 +220,12 @@
 //
 // Staged (.is-staged, set by ScrollStage from 1024px wide and 600px tall): one pinned
 // screen. At rest it is the hero: the photo full screen, its words, and a box in the
-// middle holding the first step. .is-run (the first scroll) shrinks the photo into the
-// box, while the box moves and narrows into the second section's card; around it the
-// second section appears (its own photo, its heading, the link, the step pills, the
-// ring). The shrunken hero photo stays in the box as the first step's picture; on steps
-// two and three the box is see-through. Everything that moves runs on one clock
-// (--run-dur, --run-ease), so the photo's edge and the box's border arrive together.
+// middle holding the first step. .is-run (the first scroll) fades the hero photo into the
+// second section's photo, which lies under it, while the hero's words give way to the
+// second section's (its heading, the link, the step pills, the ring) and the box moves
+// and narrows into the second section's card. The box is see-through on every step and
+// nothing shrinks into it (Beka, 2026-11-12, after seeing the hero photo held small in
+// the first step's box). The fade and the box run on one clock (--run-dur, --run-ease).
 // The screen stays pinned for --hold of further scrolling before the page moves on.
 //
 // Stacked (the default: phones, tablets upright, short screens, no JS): the hero and the
@@ -264,10 +264,6 @@
   --card-h: calc(var(--card-w) * 1.25);
   --card-bottom: clamp(4.5rem, 13vh, 9rem); // room under the card for the step pills
   --card-top: calc(100dvh - var(--card-bottom) - var(--card-h));
-  // How far the photo zooms out while it shrinks, so the card shows the whole arch and
-  // not a full-size crop of its middle. Set by ScrollStage from the stage's and the
-  // card's sizes (the smallest scale at which the photo still covers the card).
-  --card-scale: 0.5;
 
   --hold: 55vh; // how long the staged screen stays pinned after the first scroll
   --run-dur: 950ms;
@@ -346,15 +342,6 @@
   inset: 0;
   background:
     linear-gradient(to bottom, rgba(34, 30, 32, 0.6) 0%, rgba(34, 30, 32, 0.2) 40%, rgba(34, 30, 32, 0.55) 100%);
-}
-
-// the size of the card the photo shrinks into, for ScrollStage to read (never shown)
-.intro__probe {
-  position: absolute;
-  width: var(--card-w);
-  height: var(--card-h);
-  visibility: hidden;
-  pointer-events: none;
 }
 
 // ---- the hero's words: top-left under the header, left-aligned, one colour ----
@@ -453,9 +440,18 @@
     scroll-margin-top: var(--hdr-h); // a jump to it lands the heading below the bar
 
     // it takes focus from script only (the hero's scroll arrow), as a place to continue
-    // from: no ring around a block of text
+    // from: no ring around a block of text (the global ring is a box-shadow)
     &:focus {
       outline: none;
+      box-shadow: none;
+    }
+
+    // the narrowest phones: the button's one-line label is wider than the screen
+    @media (max-width: 359px) {
+      .pill-cta {
+        white-space: normal;
+        text-align: center;
+      }
     }
   }
 
@@ -483,9 +479,10 @@
     align-self: center;
     container-type: inline-size;
     // (--card-w is capped by the screen height, which on a phone leaves the card narrow
-    // enough that the ring beside it stays clear of its text, and wide enough that the
-    // step's link stays on one line; a narrower card wraps that link)
-    width: min(var(--card-w), calc(100% - 2 * var(--gutter)));
+    // enough that the ring beside it stays clear of its text. Never under 200px, though:
+    // on a phone held sideways, or a page zoomed far in, the height-based size would leave
+    // a card narrower than its own words.)
+    width: min(max(var(--card-w), 12.5rem), calc(100% - 2 * var(--gutter)));
     // clear of the button above; more room below than above, so it sits a little high
     margin-block: clamp(1.25rem, 4vh, 3rem) clamp(1.5rem, 6vh, 9rem);
   }
@@ -607,9 +604,12 @@
       border-color: rgba(250, 247, 242, 0.8);
     }
 
+    // (its own outline with a gap; the global ring, a white box-shadow, would close the gap
+    // on the white active pill)
     &:focus-visible {
       outline: 2px solid var(--paper-white);
       outline-offset: 2px;
+      box-shadow: none;
     }
 
     &.is-active {
@@ -620,7 +620,7 @@
   }
 }
 
-// ---- staged: one pinned screen; the photo shrinks into the box ----
+// ---- staged: one pinned screen; the hero fades into the second section ----
 .intro.is-staged {
   height: calc(100dvh + var(--hold)); // the runway: the screen stays pinned for --hold
 
@@ -633,25 +633,18 @@
     overflow: hidden;
   }
 
-  // the steps' photos lie under the hero photo, full screen, and show as it shrinks
+  // the steps' photos lie under the hero photo, full screen, and show as it fades
   .intro__slides {
     position: absolute;
     inset: 0;
     z-index: 0;
   }
 
-  // the hero photo: full screen at rest; when the stage runs, clipped to the card
+  // the hero photo: full screen over them at rest; gone once the stage has run
   .intro__photo {
     position: absolute;
     inset: 0;
     z-index: 1;
-    clip-path: inset(0 0 0 0 round 0px);
-  }
-
-  // ...and zoomed out about the screen's centre, then moved to the card's centre, so the
-  // card shows the whole arch
-  .hero__img {
-    transform-origin: 50% 50%;
   }
 
   .hero__copy {
@@ -720,11 +713,16 @@
     font-size: clamp(1.125rem, 7.8cqi, 2.75rem);
   }
 
-  // one line in every card: the text follows the card's width
+  // The text follows the card's width (12px in the smallest card, 16px in the large ones),
+  // which keeps the link on one line wherever it can fit, and the link never leaves the
+  // card: where a long label still does not fit (the card is ~230px on a 650px-tall laptop
+  // screen) it wraps to two lines, centred.
   .start__card-sub {
-    min-height: clamp(32px, 13cqi, 40px);
+    max-width: 100%;
+    min-height: clamp(34px, 13cqi, 40px);
     font-size: clamp(0.75rem, 4.6cqi, 1rem);
-    white-space: nowrap;
+    line-height: 1.25;
+    text-align: center;
   }
 
   // back to the global .car-arrow placement: the far right edge, vertically centred
@@ -770,11 +768,7 @@
   // page opened mid-scroll, must simply appear, not animate into place. ----
   &.is-ready {
     .intro__photo {
-      transition: clip-path var(--run-dur) var(--run-ease), opacity 600ms var(--ease-out);
-    }
-
-    .hero__img {
-      transition: transform var(--run-dur) var(--run-ease);
+      transition: opacity var(--run-dur) var(--run-ease);
     }
 
     .start__card {
@@ -807,23 +801,10 @@
 
   // ---- run (the first scroll) ----
   &.is-run {
+    // the hero photo fades away over the second section's photo; nothing shrinks, and the
+    // box is see-through on the first step as on the others
     .intro__photo {
-      clip-path: inset(
-        var(--card-top)
-        calc((100% - var(--card-w)) / 2)
-        var(--card-bottom)
-        calc((100% - var(--card-w)) / 2)
-        round 14px
-      );
-
-      // steps two and three: the box is see-through over that step's own photo
-      &.is-off {
-        opacity: 0;
-      }
-    }
-
-    .hero__img {
-      transform: translateY(calc(var(--card-top) + var(--card-h) / 2 - 50dvh)) scale(var(--card-scale));
+      opacity: 0;
     }
 
     .start__card {
@@ -914,6 +895,12 @@
     &:hover {
       color: var(--ink);
       background: var(--paper-deep);
+    }
+
+    // a ring that shows on a white pill over a dark photo: a charcoal gap, then white
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--charcoal), 0 0 0 4px #fff;
     }
   }
 }

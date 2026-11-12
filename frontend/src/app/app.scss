@@ -846,9 +846,10 @@ main {
   // The five links stay on one line wherever they fit (2026-11-12). From 1024px they fit a
   // row of their own under the logo; from 1280px they sit beside it, and the column is as
   // wide as the links need (the old 1.2fr / 1fr split left them ~584px and wrapped the last).
+  // (each link stays whole; the row itself may still wrap, so larger text or wider letter
+  // spacing set by the reader gives a second row and not a page that scrolls sideways)
   @include bp.respond-to(lg) {
-    &__links {
-      flex-wrap: nowrap;
+    &__links a {
       white-space: nowrap;
     }
   }
