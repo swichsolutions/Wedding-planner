@@ -88,6 +88,11 @@ export class Tasks {
     if (isPlatformBrowser(inject(PLATFORM_ID))) this.load();
   }
 
+  protected retry(): void {
+    this.loadError.set(false);
+    this.load();
+  }
+
   private load(): void {
     this.tasks.list(this.lang.current()).subscribe({
       next: (items) => {

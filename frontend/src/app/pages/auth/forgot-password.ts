@@ -13,12 +13,13 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Meta, Title } from '@angular/platform-browser';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Meta } from '@angular/platform-browser';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor } from '../../core/auth.service';
 import { AuthModalService } from '../../core/auth-modal.service';
 import { focusFirstInvalid } from '../../core/forms';
+import { pageTitle } from '../../core/page-title';
 import { LanguageService } from '../../i18n/language.service';
 
 /**
@@ -97,8 +98,7 @@ export class ForgotPassword implements OnInit {
   });
 
   constructor() {
-    const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('pwReset.forgotTitle')} | ${t.instant('brand.name')}`);
+    pageTitle('pwReset.forgotTitle');
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
     // Signing in from here (the "back to sign in" modal) means the password came back to

@@ -1,4 +1,4 @@
-import { Component, ElementRef, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
@@ -47,6 +47,13 @@ const DIETS = ['vegetarian', 'vegan', 'fasting', 'kids', 'allergy'];
 
 /** The family select's "new family…" option. */
 const NEW_FAMILY = '__new';
+
+/** The update payload for a row. It carries the `rsvpAt` the list last saw, so the server can tell
+ * that the guest has answered on the invitation since and keep their answer. */
+function updatePayload(g: Guest): GuestPayload {
+  const { id: _id, sortOrder: _sortOrder, rsvpMessage: _rsvpMessage, rsvpAnswer: _rsvpAnswer, ...payload } = g;
+  return payload;
+}
 
 /**
  * Couple guest list. Deliberately starts empty (no seeding, unlike the checklist/
@@ -129,9 +136,15 @@ export class GuestList {
   });
   // ---- row selection (header "select all" + per-row checkboxes) ----
   protected readonly selectedIds = signal<Set<number>>(new Set());
-  protected readonly allSelected = computed(
-    () => this.guests().length > 0 && this.guests().every((g) => this.selectedIds().has(g.id)),
-  );
+  /** The guests on screen under the current filter: "select all" means these, not the hidden ones. */
+  private readonly shownIds = computed(() => {
+    const groups = this.groups();
+    return [...groups.families.flatMap((x) => x.guests), ...groups.loose].map((g) => g.id);
+  });
+  protected readonly allSelected = computed(() => {
+    const ids = this.shownIds();
+    return ids.length > 0 && ids.every((id) => this.selectedIds().has(id));
+  });
   protected readonly someSelected = computed(() => this.selectedIds().size > 0 && !this.allSelected());
 
   protected isSelected(id: number): boolean {
@@ -156,7 +169,13 @@ export class GuestList {
   }
 
   protected toggleSelectAll(): void {
-    this.selectedIds.set(this.allSelected() ? new Set() : new Set(this.guests().map((g) => g.id)));
+    this.selectedIds.set(this.allSelected() ? new Set() : new Set(this.shownIds()));
+  }
+
+  /** A new filter starts with nothing selected: a guest it hides must not get the bulk action. */
+  protected setFilter(filter: 'all' | GuestAttendance): void {
+    this.filter.set(filter);
+    this.clearSelection();
   }
 
   protected partySize(guest: Guest): number {
@@ -251,6 +270,11 @@ export class GuestList {
       }
     });
 
+    // Leaving the page with the drawer open (browser Back) must not leave the next page locked.
+    inject(DestroyRef).onDestroy(() => {
+      if (this.isBrowser && this.sidebarOpen()) this.doc.body.style.overflow = '';
+    });
+
     // Re-focus the first field whenever the drawer swaps to the manual form.
     effect(() => {
       if (!this.isBrowser || !this.sidebarOpen() || this.drawerView() !== 'manual') return;
@@ -290,17 +314,42 @@ export class GuestList {
 
   // ---- attendance (inline) ----
 
-  protected setAttendance(guest: Guest, attendance: GuestAttendance): void {
+  protected setAttendance(guest: Guest, select: HTMLSelectElement): void {
+    const attendance = select.value as GuestAttendance;
     if (guest.attendance === attendance) return;
-    const payload: GuestFormValues = { ...guest, attendance };
-    this.guestSvc.update(guest.id, payload).subscribe({
-      next: () => {
-        this.guests.update((list) => list.map((g) => (g.id === guest.id ? { ...g, attendance } : g)));
-        // Not coming: the server freed their seats.
-        if (attendance === 'no') this.assignments.update((list) => list.filter((a) => a.guestId !== guest.id));
+    const sent: Guest = { ...guest, attendance };
+    this.guestSvc.update(guest.id, updatePayload(sent)).subscribe({
+      next: (saved) => {
+        // The server may have kept the guest's own answer; the select shows what was stored.
+        select.value = this.rowSaved(saved, sent).attendance;
       },
-      error: () => this.toast.error('guestListPage.saveError'),
+      error: () => {
+        // The select moved itself; the binding didn't change, so put it back by hand.
+        select.value = guest.attendance;
+        this.toast.error('guestListPage.saveError');
+      },
     });
+  }
+
+  /** After an update: the list takes the server's row (it keeps a guest's newer answer on the
+   * invitation over what we sent), or what we sent when the server gave none back. */
+  private rowSaved(saved: Guest | null, sent: Guest): Guest {
+    const row = saved ?? sent;
+    this.guests.update((list) => list.map((g) => (g.id === row.id ? row : g)));
+    // The server freed seats that no longer belong (declined, plus-one or child removed).
+    this.assignments.update((list) =>
+      list.filter(
+        (a) =>
+          a.guestId !== row.id ||
+          (row.attendance !== 'no' &&
+            (a.attendeeKind !== 'plus_one' || row.hasPlusOne) &&
+            (a.attendeeKind !== 'child' || row.hasChild)),
+      ),
+    );
+    // A row the filter now hides can't stay selected for the bulk action.
+    const f = this.filter();
+    if (f !== 'all' && row.attendance !== f && this.selectedIds().has(row.id)) this.toggleSelect(row.id);
+    return row;
   }
 
   // ---- tables: which one a party sits at, chosen from the list ----
@@ -321,14 +370,16 @@ export class GuestList {
     return this.freeSeats(table) + already >= this.partySize(guest);
   }
 
-  protected seatAt(guest: Guest, value: string): void {
-    const tableId = value ? Number(value) : null;
+  protected seatAt(guest: Guest, select: HTMLSelectElement): void {
+    const tableId = select.value ? Number(select.value) : null;
     this.seatingSvc.seatGuest(guest.id, tableId).subscribe({
       next: (seats) =>
         this.assignments.update((list) => [...list.filter((a) => a.guestId !== guest.id), ...seats]),
       error: (err: { status?: number }) => {
         this.toast.error(err?.status === 409 ? 'guestListPage.tableFull' : 'guestListPage.saveError');
-        this.loadSeating(); // put the select back to where they really sit
+        // The select moved itself; the binding didn't change, so put it back to where they sit by hand.
+        select.value = String(this.tableOf(guest)?.id ?? '');
+        this.loadSeating(); // the free seats it shows were out of date
       },
     });
   }
@@ -595,12 +646,13 @@ export class GuestList {
     const lastName = val('lastName');
     const email = val('email');
     const phone = val('phone');
-    const plusOneOk = !this.hasPlusOne() || this.plusOneNameUnknown() || (val('plusOneFirstName') && val('plusOneLastName'));
-    const childOk = !this.hasChild() || this.childNameUnknown() || (val('childFirstName') && val('childLastName'));
+    // Only first names are required: a plus-one, a child or an imported guest may have one name.
+    const plusOneOk = !this.hasPlusOne() || this.plusOneNameUnknown() || !!val('plusOneFirstName');
+    const childOk = !this.hasChild() || this.childNameUnknown() || !!val('childFirstName');
     const emailOk = this.emailValid(email);
     const phoneOk = this.phoneValid(phone);
 
-    if (!firstName || !lastName || !plusOneOk || !childOk || !emailOk || !phoneOk) {
+    if (!firstName || !plusOneOk || !childOk || !emailOk || !phoneOk) {
       this.guestFormAttempted.set(true);
       (form.querySelector('.ng-invalid, [data-invalid="true"]') as HTMLElement | null)?.focus();
       return;
@@ -628,11 +680,11 @@ export class GuestList {
       invitedStatus: (invitedInput?.value as GuestInvitedStatus | undefined) ?? 'definitely',
       hasPlusOne: this.hasPlusOne(),
       plusOneFirstName: this.hasPlusOne() && !this.plusOneNameUnknown() ? val('plusOneFirstName') : null,
-      plusOneLastName: this.hasPlusOne() && !this.plusOneNameUnknown() ? val('plusOneLastName') : null,
+      plusOneLastName: this.hasPlusOne() && !this.plusOneNameUnknown() ? val('plusOneLastName') || null : null,
       plusOneNameUnknown: this.hasPlusOne() && this.plusOneNameUnknown(),
       hasChild: this.hasChild(),
       childFirstName: this.hasChild() && !this.childNameUnknown() ? val('childFirstName') : null,
-      childLastName: this.hasChild() && !this.childNameUnknown() ? val('childLastName') : null,
+      childLastName: this.hasChild() && !this.childNameUnknown() ? val('childLastName') || null : null,
       childNameUnknown: this.hasChild() && this.childNameUnknown(),
       attendance: (attendanceInput?.value as GuestAttendance | undefined) ?? 'pending',
       dietaryNeeds: val('dietaryNeeds') || null,
@@ -663,29 +715,19 @@ export class GuestList {
     this.savingGuest.set(true);
 
     if (editId != null) {
-      this.guestSvc.update(editId, payload).subscribe({
-        next: () => {
-          // Order and invitation replies are the server's; keep what the list has.
-          const before = this.guests().find((g) => g.id === editId);
-          const updated: Guest = {
-            id: editId,
-            sortOrder: before?.sortOrder ?? 0,
-            rsvpAt: before?.rsvpAt ?? null,
-            rsvpMessage: before?.rsvpMessage ?? null,
-            rsvpAnswer: before?.rsvpAnswer ?? null,
-            ...payload,
-          };
-          this.guests.update((list) => list.map((g) => (g.id === editId ? updated : g)));
-          // The server freed seats that no longer belong (declined, plus-one or child removed).
-          this.assignments.update((list) =>
-            list.filter(
-              (a) =>
-                a.guestId !== editId ||
-                (payload.attendance !== 'no' &&
-                  (a.attendeeKind !== 'plus_one' || payload.hasPlusOne) &&
-                  (a.attendeeKind !== 'child' || payload.hasChild)),
-            ),
-          );
+      // Order and invitation replies are the server's; send back what the list has.
+      const before = this.guests().find((g) => g.id === editId);
+      const sent: Guest = {
+        id: editId,
+        sortOrder: before?.sortOrder ?? 0,
+        rsvpAt: before?.rsvpAt ?? null,
+        rsvpMessage: before?.rsvpMessage ?? null,
+        rsvpAnswer: before?.rsvpAnswer ?? null,
+        ...payload,
+      };
+      this.guestSvc.update(editId, updatePayload(sent)).subscribe({
+        next: (saved) => {
+          this.rowSaved(saved, sent);
           this.savingGuest.set(false);
           this.toast.success('guestListPage.guestUpdated');
           this.closeSidebar();
@@ -718,11 +760,15 @@ export class GuestList {
    *  replace, same as any other edit, just triggered from the row itself. */
   protected setInvited(guest: Guest, status: GuestInvitedStatus): void {
     if (guest.invitedStatus === status) return;
-    const payload: GuestFormValues = { ...guest, invitedStatus: status };
-    this.guestSvc.update(guest.id, payload).subscribe({
-      next: () =>
-        this.guests.update((list) => list.map((g) => (g.id === guest.id ? { ...g, invitedStatus: status } : g))),
-      error: () => this.toast.error('guestListPage.saveError'),
+    const sent: Guest = { ...guest, invitedStatus: status };
+    this.guestSvc.update(guest.id, updatePayload(sent)).subscribe({
+      next: (saved) => this.rowSaved(saved, sent),
+      error: () => {
+        // The radio moved itself; the binding didn't change, so put the pair back by hand.
+        const radios = this.host.nativeElement.querySelectorAll(`input[name="invited-${guest.id}"]`);
+        for (const radio of radios as NodeListOf<HTMLInputElement>) radio.checked = radio.value === guest.invitedStatus;
+        this.toast.error('guestListPage.saveError');
+      },
     });
   }
 

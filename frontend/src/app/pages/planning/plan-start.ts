@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { EMPTY, catchError, concat, defer, last, of, Observable, forkJoin, switchMap } from 'rxjs';
+import { catchError, concat, defer, last, of, Observable, forkJoin, switchMap } from 'rxjs';
 
 import { safeReturnUrl } from '../../core/auth.service';
 import { estimatorEdits } from '../../core/budget';
@@ -102,15 +102,8 @@ export class PlanStart {
       });
   }
 
-  /** Nothing now — but a total typed into the public estimator before signing up isn't lost. */
+  /** Nothing now, the budget included: "skip" must not set a total the couple didn't confirm here. */
   protected skip(): void {
-    if (this.draftTotal) {
-      this.saving.set(true);
-      this.applyTotal(this.draftTotal)
-        .pipe(catchError(() => EMPTY))
-        .subscribe({ complete: () => this.continue() });
-      return;
-    }
     this.continue();
   }
 

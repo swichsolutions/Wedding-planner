@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Component, PLATFORM_ID, inject, signal, viewChild } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -84,7 +84,14 @@ export class Admin {
     TABS.find((t) => t === this.route.snapshot.queryParamMap.get('tab')) ?? 'vendors',
   );
 
-  protected setTab(tab: AdminTab): void {
+  private readonly contentEditor = viewChild(AdminContent);
+
+  protected async setTab(tab: AdminTab): Promise<void> {
+    // Leaving the content tab destroys its editor: an unsaved article gets the same question as "Back".
+    if (this.tab() === 'content' && tab !== 'content') {
+      const editor = this.contentEditor();
+      if (editor && !(await editor.confirmDiscard())) return;
+    }
     this.tab.set(tab);
     if (tab === 'claims' && this.isBrowser) this.loadClaims();
     this.router.navigate([], { queryParams: { tab: tab === 'vendors' ? null : tab }, replaceUrl: true });
@@ -184,16 +191,32 @@ export class Admin {
     });
   }
 
-  /** Links the account to the profile (the vendor signs in again afterwards); the list reloads. */
-  protected approveClaim(id: number): void {
-    this.admin.approveClaim(id).subscribe({
+  /** Links the account to the profile (the vendor signs in again afterwards); the list reloads.
+   *  It hands a profile to an account, so one click isn't enough: it asks first. */
+  protected async approveClaim(c: AdminClaim): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'adminPage.claimApproveTitle',
+      detail: `${c.vendorName} · ${c.userEmail}`,
+      body: 'adminPage.claimApproveBody',
+      confirmLabel: 'adminPage.approve',
+    });
+    if (!ok) return;
+    this.admin.approveClaim(c.id).subscribe({
       next: () => this.loadClaims(),
       error: () => this.toast.error('adminPage.saveError'),
     });
   }
 
-  protected rejectClaim(id: number): void {
-    this.admin.rejectClaim(id).subscribe({
+  protected async rejectClaim(c: AdminClaim): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'adminPage.claimRejectTitle',
+      detail: `${c.vendorName} · ${c.userEmail}`,
+      body: 'adminPage.claimRejectBody',
+      confirmLabel: 'adminPage.reject',
+      danger: true,
+    });
+    if (!ok) return;
+    this.admin.rejectClaim(c.id).subscribe({
       next: () => this.loadClaims(),
       error: () => this.toast.error('adminPage.saveError'),
     });

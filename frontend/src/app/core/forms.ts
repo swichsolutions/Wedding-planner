@@ -25,6 +25,21 @@ export function nameValidator(): ValidatorFn {
   };
 }
 
+/** At least `min` characters once the spaces around the text are gone: the text is sent
+ * trimmed, and the server counts what it receives. Reported as `minlength`, like the
+ * built-in validator. Empty text is left to `required`. */
+export function trimmedMinLength(min: number): ValidatorFn {
+  return (control: AbstractControl<string>): ValidationErrors | null => {
+    const length = (control.value ?? '').trim().length;
+    return length > 0 && length < min ? { minlength: { requiredLength: min, actualLength: length } } : null;
+  };
+}
+
+/** Not empty and not only spaces. Reported as `required`. */
+export function notBlank(control: AbstractControl<string>): ValidationErrors | null {
+  return (control.value ?? '').trim() ? null : { required: true };
+}
+
 /**
  * The password rules the backend actually enforces: ASP.NET Identity with RequiredLength = 8 and
  * RequireDigit/Lowercase/Uppercase (RequireNonAlphanumeric is turned off — no symbol required). The

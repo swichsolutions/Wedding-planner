@@ -242,6 +242,10 @@ export class Home {
   /** Index of the centred card. */
   protected readonly orbitActive = signal(0);
   protected readonly orbitHover = signal(false);
+  /** Keyboard focus is on a card or the ring. It holds the carousel like the pointer does:
+   * otherwise the focused card keeps moving and ends up off stage, hidden from screen readers. */
+  protected readonly orbitFocus = signal(false);
+  protected readonly orbitPaused = computed(() => this.orbitHover() || this.orbitFocus());
   private orbitTimer = 0;
   private orbitDrag: { x: number; id: number; moved: boolean } | null = null;
 
@@ -303,10 +307,21 @@ export class Home {
     }
   }
 
+  /** Only focus that came from the keyboard: a mouse click leaves focus on the ring too, and
+   * that one click would stop the carousel until the visitor clicked somewhere else. */
+  protected onOrbitFocus(e: FocusEvent): void {
+    this.orbitFocus.set((e.target as HTMLElement).matches(':focus-visible'));
+  }
+
+  protected onOrbitBlur(e: FocusEvent): void {
+    const stage = e.currentTarget as HTMLElement;
+    if (!stage.contains(e.relatedTarget as Node | null)) this.orbitFocus.set(false);
+  }
+
   private startOrbit(): void {
     this.stopOrbit();
     this.orbitTimer = window.setInterval(() => {
-      if (document.hidden || this.orbitHover() || this.orbitDrag) return;
+      if (document.hidden || this.orbitPaused() || this.orbitDrag) return;
       this.orbitActive.update((a) => (a + 1) % Math.max(1, this.categoryRows().length));
     }, 3800);
   }

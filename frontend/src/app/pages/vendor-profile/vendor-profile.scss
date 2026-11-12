@@ -61,12 +61,15 @@
 }
 
 // ---- top layout: gallery + sticky info rail ----
+// minmax(0, …): a column must not grow past the screen for the sake of one long word. Without
+// it a profile with no photos (nothing but text in the grid) ran 9px off a 320px screen.
 .profile__layout {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-8);
 
   @include bp.respond-to(lg) {
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
     gap: var(--space-12);
     align-items: start;
   }
@@ -230,6 +233,7 @@
 .info__name {
   margin: var(--space-2) 0 var(--space-5);
   font-size: var(--fs-h2);
+  overflow-wrap: break-word; // a one-word name longer than the screen wraps instead of running off it
 }
 
 .info__price {
@@ -750,6 +754,13 @@
 .profile-missing {
   padding-block: var(--space-24);
   text-align: center;
+
+  // The longest word of the title („მომწოდებელი“, ~7.3em wide in the heading face) has to
+  // fit a phone: at the usual 51–55px it was wider than the screen and the page scrolled
+  // sideways. Below ~500px the size follows the width that is left.
+  h1 {
+    font-size: min((100vw - 2 * var(--gutter)) / 7.5, var(--fs-display));
+  }
 
   p {
     margin: var(--space-3) auto var(--space-8);

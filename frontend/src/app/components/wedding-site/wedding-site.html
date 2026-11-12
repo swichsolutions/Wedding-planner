@@ -397,7 +397,7 @@
 <ng-template #countTpl>
   @if (daysToGo() !== null && daysToGo()! > 0) {
     <p class="ws__count">
-      <span class="num">{{ daysToGo() }}</span> {{ 'wsite.daysToGo' | translate }}
+      <span class="num">{{ daysToGo() }}</span> {{ (daysToGo() === 1 ? 'wsite.dayToGo' : 'wsite.daysToGo') | translate }}
     </p>
   } @else if (daysToGo() === 0) {
     <p class="ws__count">{{ 'wsite.today' | translate }}</p>

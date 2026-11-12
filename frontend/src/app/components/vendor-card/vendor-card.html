@@ -1,5 +1,8 @@
 <article class="vendor-card">
-  <a class="vendor-card__media"
+  <!-- The same destination as the name below, which is the card's one link for keyboards and
+       screen readers: this one had no name when the vendor has no photo, and doubled every
+       tab stop when it has. A click or tap on the photo still opens the profile. -->
+  <a class="vendor-card__media" aria-hidden="true" tabindex="-1"
     [routerLink]="['/', vendor().categorySlug, vendor().citySlug, vendor().slug]">
     @if (vendor().photos[0]; as photo) {
       <img [src]="photo.url" [alt]="photo.alt" loading="lazy" width="700" height="875" />

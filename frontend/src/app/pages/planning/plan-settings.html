@@ -5,7 +5,10 @@
   </header>
 
   @if (loadError()) {
-    <p class="st-note" role="alert">{{ 'plan.loadError' | translate }}</p>
+    <p class="st-note" role="alert">
+      {{ 'plan.loadError' | translate }}
+      <button type="button" class="btn btn--ghost st-retry" (click)="retry()">{{ 'vendors.retry' | translate }}</button>
+    </p>
   } @else {
     <!-- ======================= the plan's details ======================= -->
     <form class="st-card" [formGroup]="form" (ngSubmit)="save()" novalidate aria-labelledby="st-details">

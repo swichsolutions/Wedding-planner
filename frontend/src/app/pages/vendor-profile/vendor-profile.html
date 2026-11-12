@@ -340,8 +340,8 @@
               [value]="reviewBody()" (input)="reviewBody.set($any($event.target).value)"
               [placeholder]="'reviews.bodyPlaceholder' | translate"></textarea>
 
-            @if (submitError()) {
-              <p class="cform__error" role="alert">{{ 'reviews.error' | translate }}</p>
+            @if (submitError(); as key) {
+              <p class="cform__error" role="alert">{{ key | translate }}</p>
             }
             @if (submitSuccess()) {
               <p class="rform__success" role="status">{{ 'reviews.success' | translate }}</p>

@@ -9,6 +9,34 @@ export const EDGE_CACHE_SECONDS = 300;
 /** Pages that must stay per-visitor or fresh: personal invitation links and one-time token links. */
 const NEVER_CACHED = [/^\/w(\/|$)/, /^\/partner(\/|$)/, /^\/join(\/|$)/, /^\/reset-password(\/|$)/];
 
+/**
+ * The query parameters a page can read (grep the app for queryParamMap): the catalog's filters,
+ * the schedule and topic pickers, the budget's view, and the sign-in pages' returnUrl / expired
+ * (they change the words on the page). Nothing else can change what is rendered, so nothing
+ * else is part of the cache key: a link shared on Facebook or Instagram arrives with its own
+ * ?fbclid=… / ?igsh=… / utm_* on every click, and each one used to be rendered again.
+ * (uid and token belong to /reset-password, which is never cached.) A page that starts reading
+ * a new parameter must add it here, or its variants will share one stored copy.
+ */
+const PAGE_PARAMS = new Set([
+  'group', 'category', 'city', 'region', 'maxPrice', 'styles', 'guests', 'setting', 'venueType',
+  'features', 'q', 'sort', 'vip', // /vendors
+  's', // /schedules
+  'topic', // /guides/…
+  'view', // /budget
+  'returnUrl', 'expired', // /login, /signup, /planning/start
+  'tab', 'use', 'step', // dashboard, admin and organizer pages (rendered signed-out on the server)
+]);
+
+/** Where a page is stored: its address with only the parameters it reads, in a fixed order. */
+export function edgeCacheKey(url: string): string {
+  const { origin, pathname, searchParams } = new URL(url);
+  const kept = [...searchParams].filter(([name]) => PAGE_PARAMS.has(name));
+  kept.sort(([a, x], [b, y]) => (a === b ? (x < y ? -1 : x > y ? 1 : 0) : a < b ? -1 : 1));
+  const query = new URLSearchParams(kept).toString();
+  return origin + pathname + (query ? `?${query}` : '');
+}
+
 export interface EdgeCache {
   match(key: string): Promise<Response | undefined>;
   put(key: string, res: Response): Promise<void>;
@@ -33,7 +61,7 @@ export async function withEdgeCache(
 ): Promise<Response> {
   if (!isCacheablePage(req)) return render();
 
-  const key = req.url;
+  const key = edgeCacheKey(req.url);
   const hit = await cache.match(key).catch(() => undefined);
   if (hit) return forVisitor(hit, 'HIT');
 

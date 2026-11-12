@@ -31,6 +31,7 @@ export class PlanSettings {
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
   private readonly lang = inject(LanguageService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly plan = signal<CoupleProfile | null>(null);
   protected readonly loadError = signal(false);
@@ -53,7 +54,12 @@ export class PlanSettings {
     inject(Title).setTitle(`${t.instant('plan.settingsTitle')} | ${t.instant('brand.name')}`);
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
     this.form.valueChanges.subscribe(() => this.saved.set(false));
-    if (isPlatformBrowser(inject(PLATFORM_ID))) this.load();
+    if (this.isBrowser) this.load();
+  }
+
+  protected retry(): void {
+    this.loadError.set(false);
+    this.load();
   }
 
   private load(): void {
@@ -108,6 +114,11 @@ export class PlanSettings {
       },
       error: (err: HttpErrorResponse) => {
         this.inviting.set(false);
+        // Three mailed invitations a day per plan; a link made without an email still works.
+        if (err.status === 429 && err.error?.code === 'mailLimit') {
+          this.toast.show('plan.inviteMailLimit', 'error', 9000);
+          return;
+        }
         this.toast.error(err.status === 409 ? 'plan.inviteFull' : 'plan.inviteError');
       },
     });
@@ -166,11 +177,12 @@ export class PlanSettings {
     });
     if (!ok) return;
     this.couple.leave().subscribe({
-      // A fresh, empty plan of their own from here on.
+      // A fresh, empty plan of their own from here on. A full page load, not a route change: the
+      // saved-vendor hearts, banner photos and "in my budget" badges are kept per user by
+      // app-wide services and would still show the plan they just left.
       next: () => {
-        this.created.set(null);
-        this.load();
         this.toast.success('plan.leftToast');
+        if (this.isBrowser) location.assign('/planning');
       },
       error: () => this.toast.error('plan.inviteError'),
     });

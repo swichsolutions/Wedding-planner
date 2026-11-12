@@ -69,10 +69,10 @@
                 {{ 'adminPage.edit' | translate }}
               </a>
               @if (c.status === 'Pending') {
-                <button type="button" class="btn btn--primary admin__btn" (click)="approveClaim(c.id)">
+                <button type="button" class="btn btn--primary admin__btn" (click)="approveClaim(c)">
                   {{ 'adminPage.approve' | translate }}
                 </button>
-                <button type="button" class="btn btn--ghost admin__btn" (click)="rejectClaim(c.id)">
+                <button type="button" class="btn btn--ghost admin__btn" (click)="rejectClaim(c)">
                   {{ 'adminPage.reject' | translate }}
                 </button>
               }

@@ -394,3 +394,8 @@ a.wd-contact {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+// "Try again" beside a load error
+.wd-retry {
+  margin-inline-start: var(--space-3);
+}

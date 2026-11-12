@@ -11,8 +11,10 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
@@ -99,8 +101,11 @@ export class VendorProfile implements OnDestroy {
   protected readonly ratingMissing = signal(false);
   protected readonly submitBusy = signal(false);
   protected readonly submitSuccess = signal(false);
-  protected readonly submitError = signal(false);
+  /** i18n key of the review form's failure message, or null. */
+  protected readonly submitError = signal<string | null>(null);
   protected readonly myReview = computed(() => this.reviews().find((r) => r.mine));
+  /** The account (email, null when signed out) the shown reviews were fetched for. */
+  private reviewsFor: string | null = null;
 
   constructor() {
     // Route params and manual retries feed ONE stream; switchMap cancels the
@@ -150,7 +155,7 @@ export class VendorProfile implements OnDestroy {
         this.reviewBody.set('');
         this.ratingMissing.set(false);
         this.submitSuccess.set(false);
-        this.submitError.set(false);
+        this.submitError.set(null);
         if (v) this.loadReviews(v.id);
         else this.reviews.set([]);
         // Their city changed since this address was shared: send everyone on, permanently.
@@ -172,6 +177,25 @@ export class VendorProfile implements OnDestroy {
         this.contactTracked = false;
         if (v && this.isBrowser) this.vendorService.trackView(v.id);
       });
+
+    // The language switch leaves this page open (a review draft must survive it, see
+    // App.redrawPublicPage), so the title and description are written again in the new language.
+    this.translate.onLangChange.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.loaded()) this.applySeo(this.vendor(), this.loadError());
+    });
+
+    // A couple who signs in through the header window stays on this page, and the reviews
+    // were fetched before that: without their own review marked `mine` they would get an
+    // empty form for a review they already wrote. Fetch again when the account changes
+    // (signing out too: the form must not keep the last couple's review). user() only wakes
+    // the effect; the comparison reads sessionUser(), which doesn't blink at hydration.
+    effect(() => {
+      this.auth.user();
+      const v = untracked(this.vendor);
+      if (v && this.reviewsFor !== (this.auth.sessionUser()?.email ?? null)) {
+        untracked(() => this.loadReviews(v.id));
+      }
+    });
 
     // Move focus into the contact dialog when it opens (a11y focus management).
     // setTimeout (macrotask) so the child <app-contact-form> inputs have rendered.
@@ -261,7 +285,8 @@ export class VendorProfile implements OnDestroy {
 
   private doAddToBudget(v: Vendor): void {
     this.budgetVendors
-      .addVendor({ id: v.id, name: v.name, categorySlug: v.categorySlug, priceFrom: v.priceFrom })
+      // the unit goes along: a per-guest / per-kg / per-hour price is not the whole planned amount
+      .addVendor({ id: v.id, name: v.name, categorySlug: v.categorySlug, priceFrom: v.priceFrom, priceUnit: v.priceUnit })
       .subscribe({
         next: () => {
           this.addingToBudget.set(false);
@@ -408,6 +433,7 @@ export class VendorProfile implements OnDestroy {
     // navigation doesn't cancel it: guard each handler against the vendor that
     // is CURRENTLY shown, or a slow response paints vendor A's reviews (and
     // prefills A's draft) onto vendor B's page.
+    this.reviewsFor = this.auth.sessionUser()?.email ?? null;
     this.reviewSvc
       .list(vendorId)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -442,17 +468,20 @@ export class VendorProfile implements OnDestroy {
     }
     this.submitBusy.set(true);
     this.submitSuccess.set(false);
-    this.submitError.set(false);
+    this.submitError.set(null);
     this.reviewSvc.submit(v.id, { rating: this.myRating(), body: this.reviewBody() || null }).subscribe({
       next: (saved) => {
-        this.reviews.update((list) => [saved, ...list.filter((r) => !r.mine)]);
+        // By id as well as by `mine`: a list fetched before signing in has this couple's
+        // earlier review without the mark, and it would then show twice.
+        this.reviews.update((list) => [saved, ...list.filter((r) => !r.mine && r.id !== saved.id)]);
         this.refreshAggregate();
         this.submitBusy.set(false);
         this.submitSuccess.set(true);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.submitBusy.set(false);
-        this.submitError.set(true);
+        // 429 is the rate limit: "check your connection" would be the wrong advice
+        this.submitError.set(err.status === 429 ? 'pwReset.tooMany' : 'reviews.error');
       },
     });
   }

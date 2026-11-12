@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -27,6 +27,7 @@ import {
   SeatingTablePayload,
   TableShape,
   VenuePlan,
+  fourSidedSides,
   objectPayload,
   tablePayload,
 } from '../../core/seating.service';
@@ -95,6 +96,14 @@ function seatListId(tableId: number, seatIndex: number): string {
 function parseSeatListId(id: string): { tableId: number; seatIndex: number } | null {
   const m = /^seat-(\d+)-(\d+)$/.exec(id);
   return m ? { tableId: Number(m[1]), seatIndex: Number(m[2]) } : null;
+}
+
+/** iOS Safari draws nothing on a canvas above about 16.7 million pixels. */
+const MAX_CANVAS_PIXELS = 16_000_000;
+
+/** A spot on the canvas: nothing sits above or to the left of it, where it couldn't be reached. */
+function onCanvas(pos: { x: number; y: number }): { x: number; y: number } {
+  return { x: Math.max(0, pos.x), y: Math.max(0, pos.y) };
 }
 
 /**
@@ -200,6 +209,11 @@ export class SeatingChart {
       } catch {
         this.canShare.set(false);
       }
+      // Leaving the page with the drawer open (browser Back) must not leave the next page locked.
+      const body = this.host.nativeElement.ownerDocument.body;
+      inject(DestroyRef).onDestroy(() => {
+        if (this.drawerOpen()) body.style.overflow = '';
+      });
     }
   }
 
@@ -212,9 +226,14 @@ export class SeatingChart {
     this.guestSvc.families().subscribe({ next: (list) => this.families.set(list), error: () => {} });
     this.seatingSvc.load().subscribe({
       next: (state) => {
-        this.tables.set(state.tables);
+        // A table or zone saved above or left of the canvas comes back to its edge.
+        const back = <T extends { positionX: number; positionY: number }>(item: T): T =>
+          item.positionX < 0 || item.positionY < 0
+            ? { ...item, positionX: Math.max(0, item.positionX), positionY: Math.max(0, item.positionY) }
+            : item;
+        this.tables.set(state.tables.map(back));
         this.assignments.set(state.assignments);
-        this.objects.set(state.objects);
+        this.objects.set(state.objects.map(back));
         this.applyPlan(state);
         this.loaded.set(true);
       },
@@ -483,15 +502,15 @@ export class SeatingChart {
   }
 
   /** Four-sided tables aren't stored as separate short/long counts — split the
-   * total evenly so editing an existing table starts from a sensible guess. */
+   * total so editing an existing table starts from the sides that add up to it. */
   protected editingShortSeats(): number {
     const n = this.editingTable()?.seatCount;
-    return n ? Math.max(1, Math.round(n / 4)) : 2;
+    return n ? fourSidedSides(n).short : 2;
   }
 
   protected editingLongSeats(): number {
     const n = this.editingTable()?.seatCount;
-    return n ? Math.max(1, Math.round(n / 4)) : 3;
+    return n ? fourSidedSides(n).long : 3;
   }
 
   protected editingSeatCount(): number {
@@ -504,6 +523,7 @@ export class SeatingChart {
 
   protected async submitCustomForm(form: HTMLFormElement): Promise<void> {
     const shape = this.customShape();
+    const editing = this.editingTable();
     let seatCount: number;
 
     if (shape === 'four_sided') {
@@ -511,7 +531,9 @@ export class SeatingChart {
       const longSel = form.elements.namedItem('longSeats') as HTMLSelectElement | null;
       const short = Math.max(1, Number(shortSel?.value) || 1);
       const long = Math.max(1, Number(longSel?.value) || 1);
-      seatCount = short * 2 + long * 2;
+      // Sides nobody touched keep the stored count (an odd one can't be shown as two sides).
+      const untouched = !!editing && short === this.editingShortSeats() && long === this.editingLongSeats();
+      seatCount = untouched ? editing.seatCount : short * 2 + long * 2;
     } else {
       const seatInput = form.elements.namedItem('seatCount') as HTMLInputElement | null;
       seatCount = Math.max(1, Math.min(40, Number(seatInput?.value) || 0));
@@ -520,7 +542,6 @@ export class SeatingChart {
 
     const nameInput = form.elements.namedItem('tableName') as HTMLInputElement | null;
     const name = nameInput?.value.trim() || this.nextName();
-    const editing = this.editingTable();
 
     if (editing) {
       const losing = this.assignments().filter((a) => a.tableId === editing.id && a.seatIndex >= seatCount).length;
@@ -560,7 +581,9 @@ export class SeatingChart {
   // ---- table position / rename / delete ----
 
   protected onTableDragEnded(table: SeatingTable, event: CdkDragEnd): void {
-    const pos = event.source.getFreeDragPosition();
+    const dropped = event.source.getFreeDragPosition();
+    const pos = onCanvas(dropped);
+    if (pos.x !== dropped.x || pos.y !== dropped.y) event.source.setFreeDragPosition(pos);
     const payload: SeatingTablePayload = { ...tablePayload(table), positionX: pos.x, positionY: pos.y };
     this.seatingSvc.updateTable(table.id, payload).subscribe({
       next: () =>
@@ -628,7 +651,9 @@ export class SeatingChart {
   }
 
   protected onObjectDragEnded(obj: SeatingObject, event: CdkDragEnd): void {
-    const pos = event.source.getFreeDragPosition();
+    const dropped = event.source.getFreeDragPosition();
+    const pos = onCanvas(dropped);
+    if (pos.x !== dropped.x || pos.y !== dropped.y) event.source.setFreeDragPosition(pos);
     const payload: SeatingObjectPayload = { ...objectPayload(obj), positionX: pos.x, positionY: pos.y };
     this.seatingSvc.updateObject(obj.id, payload).subscribe({
       next: () =>
@@ -869,10 +894,11 @@ export class SeatingChart {
   private async chartPng(): Promise<Blob> {
     const { svg, width, height } = await this.chartSvg();
     const img = await this.loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
-    const scale = 2;
+    // Twice the size for a sharp image, less for a big wedding: past the pixel limit there is no image.
+    const scale = Math.min(2, Math.sqrt(MAX_CANVAS_PIXELS / (width * height)));
     const canvas = document.createElement('canvas');
-    canvas.width = width * scale;
-    canvas.height = height * scale;
+    canvas.width = Math.floor(width * scale);
+    canvas.height = Math.floor(height * scale);
     const ctx = canvas.getContext('2d')!;
     ctx.scale(scale, scale);
     ctx.drawImage(img, 0, 0, width, height);

@@ -71,11 +71,11 @@
 
       <div class="guests__toolbar">
         <div class="gfilter" role="group" [attr.aria-label]="'guestListPage.filterLabel' | translate">
-          <button type="button" [attr.aria-pressed]="filter() === 'all'" (click)="filter.set('all')">
+          <button type="button" [attr.aria-pressed]="filter() === 'all'" (click)="setFilter('all')">
             {{ 'guestListPage.filterAll' | translate }} <span class="num">{{ guests().length }}</span>
           </button>
           @for (a of attendances; track a) {
-            <button type="button" [attr.aria-pressed]="filter() === a" (click)="filter.set(a)">
+            <button type="button" [attr.aria-pressed]="filter() === a" (click)="setFilter(a)">
               {{ 'guestListPage.attendance.' + a | translate }}
             </button>
           }
@@ -252,8 +252,8 @@
         </td>
         <td class="grow__count" [attr.data-label]="'guestListPage.columnGuests' | translate">{{ partySize(guest) }}</td>
         <td class="grow__attendance" [attr.data-label]="'guestListPage.columnAttendance' | translate">
-          <select class="gselect" [class.is-yes]="guest.attendance === 'yes'" [class.is-no]="guest.attendance === 'no'"
-            (change)="setAttendance(guest, $any($event.target).value)"
+          <select #attSel class="gselect" [class.is-yes]="guest.attendance === 'yes'" [class.is-no]="guest.attendance === 'no'"
+            (change)="setAttendance(guest, attSel)"
             [attr.aria-label]="('guestListPage.columnAttendance' | translate) + ' — ' + fullName(guest)">
             @for (a of attendances; track a) {
               <option [value]="a" [selected]="guest.attendance === a">{{ 'guestListPage.attendance.' + a | translate }}</option>
@@ -264,8 +264,8 @@
           @if (tables().length === 0) {
             <span class="grow__contact-empty">—</span>
           } @else {
-            <select class="gselect" [disabled]="guest.attendance === 'no'"
-              (change)="seatAt(guest, $any($event.target).value)"
+            <select #tableSel class="gselect" [disabled]="guest.attendance === 'no'"
+              (change)="seatAt(guest, tableSel)"
               [attr.aria-label]="('guestListPage.columnTable' | translate) + ' — ' + fullName(guest)">
               <option value="" [selected]="!tableOf(guest)">{{ 'guestListPage.noTable' | translate }}</option>
               @for (t of tables(); track t.id) {
@@ -278,12 +278,12 @@
         </td>
         <td class="grow__invited" [attr.data-label]="'guestListPage.columnInvited' | translate">
           <label class="grow__radio">
-            <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'definitely'"
+            <input type="radio" [name]="'invited-' + guest.id" value="definitely" [checked]="guest.invitedStatus === 'definitely'"
               (change)="setInvited(guest, 'definitely')" />
             {{ 'guestListPage.invitedDefinitely' | translate }}
           </label>
           <label class="grow__radio">
-            <input type="radio" [name]="'invited-' + guest.id" [checked]="guest.invitedStatus === 'maybe'"
+            <input type="radio" [name]="'invited-' + guest.id" value="maybe" [checked]="guest.invitedStatus === 'maybe'"
               (change)="setInvited(guest, 'maybe')" />
             {{ 'guestListPage.invitedMaybe' | translate }}
           </label>
@@ -372,12 +372,8 @@
                   }
                 </div>
                 <div class="gform__field">
-                  <label for="guest-last-name">{{ 'guestListPage.lastNamePlaceholder' | translate }} *</label>
-                  <input id="guest-last-name" name="lastName" type="text" maxlength="120" autocomplete="off"
-                    [class.ng-invalid]="guestFormAttempted() && fieldEmpty(guestForm, 'lastName')" />
-                  @if (guestFormAttempted() && fieldEmpty(guestForm, 'lastName')) {
-                    <small class="gform__err">{{ 'guestListPage.requiredField' | translate }}</small>
-                  }
+                  <label for="guest-last-name">{{ 'guestListPage.lastNamePlaceholder' | translate }}</label>
+                  <input id="guest-last-name" name="lastName" type="text" maxlength="120" autocomplete="off" />
                 </div>
               </div>
 
@@ -420,8 +416,7 @@
                         <input name="plusOneLastName" type="text" maxlength="120" autocomplete="off"
                           [disabled]="plusOneNameUnknown()"
                           [attr.placeholder]="'guestListPage.lastNamePlaceholder' | translate"
-                          [attr.aria-label]="'guestListPage.plusOneLastNamePlaceholder' | translate"
-                          [class.ng-invalid]="guestFormAttempted() && !plusOneNameUnknown() && fieldEmpty(guestForm, 'plusOneLastName')" />
+                          [attr.aria-label]="'guestListPage.plusOneLastNamePlaceholder' | translate" />
                       </div>
                     </div>
                     <label class="gform__checkbox">
@@ -451,8 +446,7 @@
                         <input name="childLastName" type="text" maxlength="120" autocomplete="off"
                           [disabled]="childNameUnknown()"
                           [attr.placeholder]="'guestListPage.lastNamePlaceholder' | translate"
-                          [attr.aria-label]="'guestListPage.childLastNamePlaceholder' | translate"
-                          [class.ng-invalid]="guestFormAttempted() && !childNameUnknown() && fieldEmpty(guestForm, 'childLastName')" />
+                          [attr.aria-label]="'guestListPage.childLastNamePlaceholder' | translate" />
                       </div>
                     </div>
                     <label class="gform__checkbox">

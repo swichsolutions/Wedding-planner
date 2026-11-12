@@ -9,6 +9,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { MessageService } from '../../core/message.service';
+import { notBlank, trimmedMinLength } from '../../core/forms';
 
 type SendState = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -34,14 +35,15 @@ export class ContactForm {
 
   protected readonly state = signal<SendState>('idle');
 
-  // Max lengths mirror the server's CreateMessageDto caps (200/40/4000) so an
-  // over-long message fails with a specific message, not a bare 400.
+  // Lengths mirror the server's CreateMessageDto (body 2–4000, name 200, phone 40) so a
+  // too-short or over-long message fails here with its own message, not a bare 400. The body
+  // is checked on the trimmed text, which is what gets sent: only spaces is "required".
   protected readonly form = this.fb.group(
     {
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
       phone: ['', [Validators.maxLength(40)]],
       email: ['', [Validators.email]],
-      body: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(4000)]],
+      body: ['', [notBlank, trimmedMinLength(2), Validators.maxLength(4000)]],
     },
     { validators: contactRequired },
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { EDGE_CACHE_SECONDS, EdgeCache, browserRenderedShell, isCacheablePage, withEdgeCache } from './server.edge';
+import { EDGE_CACHE_SECONDS, EdgeCache, browserRenderedShell, edgeCacheKey, isCacheablePage, withEdgeCache } from './server.edge';
 
 const B = 'https://weddingplanner.ge';
 const html = (status = 200, extra: Record<string, string> = {}) =>
@@ -32,6 +32,25 @@ describe('isCacheablePage', () => {
     expect(isCacheablePage(new Request(`${B}/`, { method: 'HEAD' }))).toBe(false);
     expect(isCacheablePage(new Request(`${B}/`, { method: 'POST' }))).toBe(false);
     expect(isCacheablePage(new Request(`${B}/`, { headers: { authorization: 'Bearer x' } }))).toBe(false);
+  });
+});
+
+describe('edgeCacheKey', () => {
+  it('drops the parameters social networks and ads add', () => {
+    expect(edgeCacheKey(`${B}/vendors?fbclid=abc&group=photo&utm_source=ig&igsh=x`)).toBe(`${B}/vendors?group=photo`);
+    expect(edgeCacheKey(`${B}/?fbclid=abc`)).toBe(`${B}/`);
+    expect(edgeCacheKey(`${B}/tamada/tbilisi/x-1?igsh=1#reviews`)).toBe(`${B}/tamada/tbilisi/x-1`);
+  });
+
+  it('keeps what the pages read, in one order', () => {
+    const a = edgeCacheKey(`${B}/vendors?region=kakheti&group=venues&q=${encodeURIComponent('ეზო')}`);
+    const b = edgeCacheKey(`${B}/vendors?q=${encodeURIComponent('ეზო')}&group=venues&region=kakheti`);
+    expect(a).toBe(b);
+    expect(a).toContain('group=venues');
+    expect(a).toContain('region=kakheti');
+    expect(edgeCacheKey(`${B}/schedules?s=classic`)).toBe(`${B}/schedules?s=classic`);
+    expect(edgeCacheKey(`${B}/guides/blog?topic=budget`)).toBe(`${B}/guides/blog?topic=budget`);
+    expect(edgeCacheKey(`${B}/login?expired=1&returnUrl=%2Fplanning`)).not.toBe(edgeCacheKey(`${B}/login`));
   });
 });
 
@@ -68,6 +87,16 @@ describe('withEdgeCache', () => {
     await settle();
     await withEdgeCache(new Request(`${B}/vendors?group=decor`), cache, ctx, render);
     expect(render).toHaveBeenCalledTimes(2);
+  });
+
+  it('serves one stored page to every tracking link', async () => {
+    const { cache, ctx, settle } = fakeCache();
+    const render = vi.fn(async () => html());
+    await withEdgeCache(new Request(`${B}/vendors?group=photo&fbclid=one`), cache, ctx, render);
+    await settle();
+    const second = await withEdgeCache(new Request(`${B}/vendors?fbclid=two&group=photo`), cache, ctx, render);
+    expect(second.headers.get('x-edge-cache')).toBe('HIT');
+    expect(render).toHaveBeenCalledTimes(1);
   });
 
   it('stores only successful HTML pages', async () => {

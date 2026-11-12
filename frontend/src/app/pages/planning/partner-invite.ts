@@ -29,6 +29,7 @@ export class PartnerInvite {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   protected readonly auth = inject(AuthService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly token = inject(ActivatedRoute).snapshot.paramMap.get('token') ?? '';
   protected readonly preview = signal<PlanInvitePreview | null>(null);
@@ -45,7 +46,7 @@ export class PartnerInvite {
     inject(Title).setTitle(`${t.instant('partner.title')} | ${t.instant('brand.name')}`);
     // A personal link: never indexed.
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
-    if (isPlatformBrowser(inject(PLATFORM_ID))) {
+    if (this.isBrowser) {
       this.couple.previewInvite(this.token).subscribe({
         next: (p) => this.preview.set(p),
         error: () => this.loadError.set(true),
@@ -63,7 +64,10 @@ export class PartnerInvite {
     this.couple.acceptInvite(this.token, replace).subscribe({
       next: () => {
         this.toast.success('partner.joinedToast');
-        void this.router.navigateByUrl('/planning');
+        // A full page load, not a route change: the saved-vendor hearts, banner photos and "in my
+        // budget" badges are kept per user by app-wide services and would still be the old plan's.
+        if (this.isBrowser) location.assign('/planning');
+        else void this.router.navigateByUrl('/planning');
       },
       error: (err: HttpErrorResponse) => {
         this.joining.set(false);

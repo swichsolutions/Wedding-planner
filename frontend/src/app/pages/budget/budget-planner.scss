@@ -693,6 +693,9 @@
 // One-click "mark as paid" under the paid amount. Styled as a pressable pill so it
 // reads as an ACTION — green text + checkmark would read as an already-paid status.
 .brow__payfull {
+  // a tap area of at least 24px without moving anything (2026-11-12 scan)
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
   max-width: 100%;
   white-space: normal;
   display: inline-flex;
@@ -2002,5 +2005,41 @@
 
   @include bp.respond-to(sm) {
     grid-column: 1 / -1;
+  }
+}
+
+// =============================================================================
+// Phones
+// =============================================================================
+// Amount fields with no size of their own fell back to the browser's 13.3px.
+.bmodal__amount input,
+.alloc__amount input {
+  font-size: var(--fs-body);
+}
+
+@media (max-width: 767.98px) {
+  // Nothing typed into is under 16px on a phone: iOS zooms the page when a smaller field gets focus.
+  .bguide__addsvc-select {
+    font-size: 1rem;
+  }
+
+  // The pill under the paid amount wraps instead of spilling out of a narrow column.
+  .brow__payfull {
+    white-space: normal;
+    text-align: start;
+    line-height: 1.3;
+  }
+}
+
+// A service card's three amounts side by side don't fit a phone (the labels ran into each other
+// and the paid column was squeezed): planned and agreed share a row, paid takes the next one.
+// (The full table's rows already stack there: each cell is a block.)
+@media (max-width: 599.98px) {
+  .bcard__money {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > .bpaid {
+      grid-column: 1 / -1;
+    }
   }
 }

@@ -7,6 +7,14 @@ import { environment } from '../../environments/environment';
 import { SILENT_AUTH_401 } from './auth.interceptor';
 import { AuthService } from './auth.service';
 import { Budget, BudgetItem } from './budget.service';
+import { PriceUnit } from './catalog';
+
+/** A vendor's "from" price as a budget line's planned amount. Only a price for the whole event is
+ * one; a price per guest, hour, kg or item says nothing about the line until it is multiplied.
+ * (A caller that doesn't say the unit gets the price, as before.) */
+export function plannedFromPrice(vendor: { priceFrom: number; priceUnit?: PriceUnit }): number | null {
+  return vendor.priceUnit === undefined || vendor.priceUnit === 'event' ? vendor.priceFrom : null;
+}
 
 interface BudgetVendorSlot {
   itemId: number;
@@ -89,12 +97,18 @@ export class BudgetVendorsService {
   }
 
   /** Add a vendor as a new budget item; refreshes the local slot list on success. */
-  addVendor(vendor: { id: number; name: string; categorySlug: string; priceFrom: number }): Observable<BudgetItem> {
+  addVendor(vendor: {
+    id: number;
+    name: string;
+    categorySlug: string;
+    priceFrom: number;
+    priceUnit?: PriceUnit;
+  }): Observable<BudgetItem> {
     return this.http
       .post<BudgetItem>(`${this.base}/api/planning/budget/items`, {
         name: vendor.name,
         categorySlug: vendor.categorySlug,
-        estimate: vendor.priceFrom,
+        estimate: plannedFromPrice(vendor),
         vendorId: vendor.id,
       })
       .pipe(

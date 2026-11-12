@@ -7,6 +7,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -52,8 +53,9 @@ export class RsvpForm {
 
   protected readonly diets = DIETS;
   protected readonly party = signal<RsvpParty | null>(null);
-  /** loading → ready, or missing when the personal link no longer works. */
-  protected readonly state = signal<'loading' | 'ready' | 'missing'>('loading');
+  /** loading → ready; missing when the personal link no longer works (404); failed when the
+   * request didn't get through (connection, rate limit) and can be tried again. */
+  protected readonly state = signal<'loading' | 'ready' | 'missing' | 'failed'>('loading');
   /** The form, or the summary of the answers already sent. */
   protected readonly editing = signal(true);
   protected readonly busy = signal(false);
@@ -82,11 +84,21 @@ export class RsvpForm {
       const slug = this.slug();
       if (!this.isBrowser || !code || loadedFor === `${slug}/${code}`) return;
       loadedFor = `${slug}/${code}`;
-      this.state.set('loading');
-      this.svc.rsvp(slug, code).subscribe({
-        next: (p) => this.take(p),
-        error: () => this.state.set('missing'),
-      });
+      untracked(() => this.load());
+    });
+  }
+
+  /** Reads the party behind the personal link; also the "try again" button. */
+  protected load(): void {
+    const code = this.code();
+    if (!code) return;
+    this.state.set('loading');
+    this.svc.rsvp(this.slug(), code).subscribe({
+      next: (p) => this.take(p),
+      // Only a 404 means the link is dead; telling a family "this link no longer works"
+      // over a dropped connection would send them to phone the couple for nothing.
+      error: (err: unknown) =>
+        this.state.set(err instanceof HttpErrorResponse && err.status === 404 ? 'missing' : 'failed'),
     });
   }
 

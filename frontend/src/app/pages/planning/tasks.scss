@@ -384,6 +384,9 @@
 }
 
 .tk-go {
+  // a tap area of at least 24px without moving anything (2026-11-12 scan)
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
   margin-right: var(--space-2);
   font-size: var(--fs-small);
   line-height: 1.4;
@@ -418,4 +421,9 @@
 .tk-add-here {
   justify-self: start;
   margin-top: var(--space-1);
+}
+
+// "Try again" beside a load error
+.tk-retry {
+  margin-inline-start: var(--space-3);
 }

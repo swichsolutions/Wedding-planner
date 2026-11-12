@@ -146,21 +146,8 @@ export class WebsiteBuilder {
     inject(Title).setTitle(`${t.instant('invitation.title')} | ${t.instant('brand.name')}`);
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
-    const askedStep = inject(ActivatedRoute).snapshot.queryParamMap.get('step') as InviteStep | null;
-
     if (this.isBrowser) {
-      this.svc.get().subscribe({
-        next: (s) => {
-          this.site.set(s);
-          this.loaded.set(true);
-          if (s) {
-            this.openExtras(s);
-            this.scheduleDraft.set(s.schedule.map((l) => ({ ...l })));
-            this.go(askedStep && STEPS.includes(askedStep) ? askedStep : s.isPublished ? 'share' : 'design');
-          }
-        },
-        error: () => this.loadError.set(true),
-      });
+      this.load();
       this.coupleSvc.me().subscribe({ next: (c) => this.prefill(c), error: () => {} });
     }
 
@@ -175,15 +162,29 @@ export class WebsiteBuilder {
     });
   }
 
-  protected retryLoad(): void {
+  private readonly askedStep = inject(ActivatedRoute).snapshot.queryParamMap.get('step') as InviteStep | null;
+
+  /** The first load and "Retry" after a failed one. Both open the extras and the schedule draft
+   * from what is saved: a draft left empty would wipe the saved schedule at step 4's first edit. */
+  private load(): void {
     this.loadError.set(false);
     this.svc.get().subscribe({
       next: (s) => {
         this.site.set(s);
         this.loaded.set(true);
+        if (s) {
+          this.openExtras(s);
+          this.scheduleDraft.set(s.schedule.map((l) => ({ ...l })));
+          const asked = this.askedStep;
+          this.go(asked && STEPS.includes(asked) ? asked : s.isPublished ? 'share' : 'design');
+        }
       },
       error: () => this.loadError.set(true),
     });
+  }
+
+  protected retryLoad(): void {
+    this.load();
   }
 
   // ---- steps ----
@@ -343,15 +344,36 @@ export class WebsiteBuilder {
     const next = { ...s, ...changes };
     this.site.set(next); // optimistic — the preview updates at once
     const seq = ++this.commitSeq;
+    const photoRev = this.photoRev;
     this.svc.update(this.payload(next)).subscribe({
       next: (r) => {
-        if (seq === this.commitSeq) this.site.set(r);
+        if (seq === this.commitSeq) this.site.set(this.withNewerPhotos(r, photoRev));
       },
       error: () => {
-        if (seq === this.commitSeq) this.site.set(s);
+        if (seq === this.commitSeq) this.site.set(this.withNewerPhotos(s, photoRev));
         this.toast.error('website.saveError');
       },
     });
+  }
+
+  /** Photo answers so far. A save sent before one of them must not put the older photos back. */
+  private photoRev = 0;
+
+  /** `row` (a save's answer, or its rollback) with the photos of an upload that landed after the
+   * save was sent. */
+  private withNewerPhotos(row: WeddingSite, sentAtRev: number): WeddingSite {
+    const now = this.site();
+    return now && sentAtRev !== this.photoRev ? { ...row, photoUrl: now.photoUrl, photos: now.photos } : row;
+  }
+
+  /** A photo upload or removal answered. When something else was edited meanwhile, that edit's own
+   * save owns the other fields, but the photos in this answer are still the newest: keep them. */
+  private photoArrived(seq: number, answer: WeddingSite): void {
+    this.photoRev++;
+    const now = this.site();
+    this.site.set(
+      seq === this.commitSeq || !now ? answer : { ...now, photoUrl: answer.photoUrl, photos: answer.photos },
+    );
   }
 
   protected commitText(field: TextField, event: Event): void {
@@ -408,7 +430,7 @@ export class WebsiteBuilder {
     const seq = ++this.commitSeq;
     this.svc.uploadPhoto(file).subscribe({
       next: (s) => {
-        if (seq === this.commitSeq) this.site.set(s);
+        this.photoArrived(seq, s);
         this.photoBusy.set(false);
         input.value = '';
       },
@@ -426,7 +448,7 @@ export class WebsiteBuilder {
     const seq = ++this.commitSeq;
     this.svc.removePhoto().subscribe({
       next: (s) => {
-        if (seq === this.commitSeq) this.site.set(s);
+        this.photoArrived(seq, s);
         this.photoBusy.set(false);
       },
       error: () => {
@@ -451,7 +473,7 @@ export class WebsiteBuilder {
       const seq = ++this.commitSeq;
       this.svc.addGalleryPhoto(files[i]).subscribe({
         next: (s) => {
-          if (seq === this.commitSeq) this.site.set(s);
+          this.photoArrived(seq, s);
           upload(i + 1);
         },
         error: () => {
@@ -469,7 +491,7 @@ export class WebsiteBuilder {
     const seq = ++this.commitSeq;
     this.svc.removeGalleryPhoto(id).subscribe({
       next: (s) => {
-        if (seq === this.commitSeq) this.site.set(s);
+        this.photoArrived(seq, s);
         this.photoBusy.set(false);
       },
       error: () => {

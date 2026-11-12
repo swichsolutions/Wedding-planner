@@ -37,7 +37,7 @@ import {
 import { formatDate, todayIso } from '../../core/dates';
 import { trapTabKey } from '../../core/a11y';
 import { CATEGORIES, CategoryRef } from '../../core/catalog';
-import { BudgetVendorsService } from '../../core/budget-vendors.service';
+import { BudgetVendorsService, plannedFromPrice } from '../../core/budget-vendors.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CoupleService } from '../../core/couple.service';
 import { ToastService } from '../../core/toast.service';
@@ -363,6 +363,8 @@ export class BudgetPlanner {
   protected readonly estCategories = BUDGET_CATEGORIES;
   protected readonly estTotal = signal(30000);
   protected readonly estAmounts = signal<number[]>(suggestedAllocation(30000));
+  /** The visitor changed the total or an amount: only then is the estimate theirs to carry over. */
+  private estTouched = false;
   protected readonly estAllocated = computed(() =>
     this.estAmounts().reduce((a, b) => a + b, 0),
   );
@@ -467,7 +469,11 @@ export class BudgetPlanner {
   }
 
   private apply(b: Budget): void {
-    this.total.set(b.totalBudget);
+    // The total field keeps what is being typed: an answer that is older than the last keystroke
+    // (its save still waiting or on its way), or that lands while the field has focus, would
+    // rewrite it under the cursor ("25", pause, "000" became 2 500).
+    const typing = this.isBrowser && document.activeElement?.id === 'bt-total';
+    if (this.totalSeq === this.totalSettledSeq && !typing) this.total.set(b.totalBudget);
     // Rows with a save in flight keep their optimistic state: a full payload
     // (total autosave / resync after another row's failure) landing mid-edit
     // must not roll them back — each pending row's own PUT settle decides it.
@@ -491,42 +497,70 @@ export class BudgetPlanner {
   private totalSaveTimer: ReturnType<typeof setTimeout> | null = null;
   private totalSavedTimer: ReturnType<typeof setTimeout> | null = null;
   protected readonly totalSaved = signal(false); // brief "saved ✓" confirmation
+  /** Keystrokes in the total field, and the latest of them whose save has come back (see apply). */
+  private totalSeq = 0;
+  private totalSettledSeq = 0;
 
   protected onTotalInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
     const value = raw === '' ? null : Math.max(0, Number(raw) || 0);
     this.total.set(value); // summary meters update immediately
     this.totalSaved.set(false);
+    this.totalSeq++;
     if (this.totalSaveTimer) clearTimeout(this.totalSaveTimer);
     this.totalSaveTimer = setTimeout(() => this.persistTotal(value), 700);
   }
 
   private persistTotal(value: number | null): void {
     this.totalSaveTimer = null;
+    const seq = this.totalSeq;
     // Estimates follow the total live — the server updates only rows the couple hasn't
     // hand-edited; tuned rows keep their numbers (the reset button is the explicit path).
     this.budgetSvc.updateTotal(value, true).subscribe({
       next: (b) => {
+        this.totalSettledSeq = Math.max(this.totalSettledSeq, seq);
         this.apply(b);
         this.totalSaved.set(true);
         if (this.totalSavedTimer) clearTimeout(this.totalSavedTimer);
         this.totalSavedTimer = setTimeout(() => this.totalSaved.set(false), 2500);
       },
-      error: () => this.toast.error('budgetPage.saveError'),
+      error: () => {
+        this.totalSettledSeq = Math.max(this.totalSettledSeq, seq);
+        this.toast.error('budgetPage.saveError');
+      },
     });
   }
 
+  /** One tap would replace every planned amount typed by hand, so it asks first. */
   protected recalcEstimates(): void {
-    if (this.totalSaveTimer) {
-      clearTimeout(this.totalSaveTimer);
-      this.totalSaveTimer = null;
-    }
-    const t = this.total();
-    if (t === null) return;
-    this.budgetSvc.updateTotal(t, false, true).subscribe({
-      next: (b) => this.apply(b),
-      error: () => this.toast.error('budgetPage.saveError'),
-    });
+    void this.confirmSvc
+      .confirm({
+        title: 'budgetPage.recalcConfirmTitle',
+        body: 'budgetPage.recalcConfirmBody',
+        confirmLabel: 'budgetPage.recalcConfirmBtn',
+        danger: true,
+      })
+      .then((ok) => {
+        if (!ok) return;
+        if (this.totalSaveTimer) {
+          clearTimeout(this.totalSaveTimer);
+          this.totalSaveTimer = null;
+        }
+        const t = this.total();
+        if (t === null) return;
+        // It sends the total as typed, so it also stands in for a save that was still waiting.
+        const seq = this.totalSeq;
+        this.budgetSvc.updateTotal(t, false, true).subscribe({
+          next: (b) => {
+            this.totalSettledSeq = Math.max(this.totalSettledSeq, seq);
+            this.apply(b);
+          },
+          error: () => {
+            this.totalSettledSeq = Math.max(this.totalSettledSeq, seq);
+            this.toast.error('budgetPage.saveError');
+          },
+        });
+      });
   }
 
   // In-flight PUT count per row — only the LAST response may replace the optimistic row,
@@ -897,7 +931,8 @@ export class BudgetPlanner {
     const changes: Partial<BudgetItemUpdate> = { vendorId: vendor.id, merchantName: null, name: vendor.name };
     // Only fill a blank estimate — an amount the couple already typed (or that came
     // from the percentage split) is theirs to keep; picking a vendor shouldn't erase it.
-    if (item.estimate === null) changes.estimate = vendor.priceFrom;
+    // And only from a price for the whole event: one per guest, hour or kg isn't the line's cost.
+    if (item.estimate === null) changes.estimate = plannedFromPrice(vendor);
     this.patch(item, changes, ref);
     this.drawer.set(null);
   }
@@ -953,7 +988,12 @@ export class BudgetPlanner {
     const target = item.actualCost ?? item.estimate;
     if (target === null || target <= 0) return;
     const rest = target - (item.paid ?? 0);
-    if (rest > 0) this.recordPayment(item, rest, todayIso(), null);
+    if (rest <= 0) return;
+    // Paid against the planned amount: that amount becomes the agreed price, or the line would
+    // never count as settled (isPaidUp and "left to pay" both go by the agreed price). After the
+    // payment is in, so the row's save can't come back without it.
+    const agree = item.actualCost === null ? () => this.patch(item, { actualCost: target }) : undefined;
+    this.recordPayment(item, rest, todayIso(), null, agree);
   }
 
   // ---- payments (B4): a deposit, instalments, the rest ----
@@ -1027,6 +1067,7 @@ export class BudgetPlanner {
 
   protected setEstTotal(event: Event): void {
     const v = Math.max(0, Number((event.target as HTMLInputElement).value) || 0);
+    this.estTouched = true;
     this.estTotal.set(v);
     this.estAmounts.set(suggestedAllocation(v));
   }
@@ -1035,6 +1076,7 @@ export class BudgetPlanner {
     const v = Math.max(0, Number((event.target as HTMLInputElement).value) || 0);
     const next = this.estAmounts().slice();
     next[i] = v;
+    this.estTouched = true;
     this.estAmounts.set(next);
   }
 
@@ -1051,9 +1093,10 @@ export class BudgetPlanner {
     return Math.round(this.estShare(i));
   }
 
-  /** Guest → signup handoff: the total they've already entered must survive registration. */
+  /** Guest → signup handoff: the total they've already entered must survive registration.
+   *  The example the page opens with (30 000 ₾) is not theirs, so an untouched estimator saves nothing. */
   protected goSignupWithDraft(): void {
-    saveGuestBudgetDraft(this.estTotal(), this.estAmounts());
+    if (this.estTouched) saveGuestBudgetDraft(this.estTotal(), this.estAmounts());
     void this.router.navigateByUrl('/signup');
   }
 

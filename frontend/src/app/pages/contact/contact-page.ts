@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
-import { Meta, Title } from '@angular/platform-browser';
+import { Meta } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
+import { pageTitle } from '../../core/page-title';
 import { InquiryForm } from './inquiry-form';
 
 @Component({
@@ -25,7 +26,7 @@ import { InquiryForm } from './inquiry-form';
 export class ContactPage {
   constructor() {
     const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('contactPage.title')} | ${t.instant('brand.name')}`);
+    pageTitle('contactPage.title');
     inject(Meta).updateTag({ name: 'description', content: t.instant('contactPage.body') });
   }
 }

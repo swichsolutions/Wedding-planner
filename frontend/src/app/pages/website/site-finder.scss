@@ -13,7 +13,11 @@
 
 .sf__back {
   display: inline-block;
-  margin-bottom: var(--space-6);
+  // a tap area of at least 24px (WCAG 2.5.8): 4px of padding above and below, taken back
+  // out of the margins so nothing moves
+  padding-block: 0.25rem;
+  margin-top: -0.25rem;
+  margin-bottom: calc(var(--space-6) - 0.25rem);
   font-size: var(--fs-small);
   line-height: 1.4;
   color: var(--ink-700);

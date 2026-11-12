@@ -4,6 +4,12 @@
     <p>{{ 'website.notFoundBody' | translate }}</p>
     <a class="btn btn--primary" routerLink="/">{{ 'notFound.home' | translate }}</a>
   </section>
+} @else if (loadFailed()) {
+  <section class="static-page static-page--center">
+    <h1>{{ 'website.viewErrorTitle' | translate }}</h1>
+    <p>{{ 'website.viewErrorBody' | translate }}</p>
+    <button type="button" class="btn btn--primary" (click)="load()">{{ 'website.viewRetry' | translate }}</button>
+  </section>
 } @else if (site(); as s) {
   <app-wedding-site [data]="s" [template]="s.templateKey" [page]="true">
     <app-rsvp-form [slug]="slug" [code]="code" [site]="s" />

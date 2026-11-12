@@ -1,4 +1,4 @@
-import { Component, ElementRef, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -47,7 +47,16 @@ export class Planning {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly isCouple = this.auth.isCouple;
+  /** Signed in, but not as a couple (vendor / admin): the notice the tool pages show, no sign-up. */
+  protected readonly otherRole = computed(() => !!this.auth.user() && !this.auth.isCouple());
+  protected readonly roleNoticeKey = computed(() =>
+    this.auth.isAdmin() ? 'featureLanding.signedInAdmin' : 'featureLanding.signedInVendor',
+  );
   private coupleLoadStarted = false;
+
+  protected logout(): void {
+    this.auth.logout();
+  }
 
   // couple profile → the overview's names, date and countdown (and the restart wizard's defaults)
   protected readonly couple = signal<CoupleProfile | null>(null);
@@ -291,6 +300,11 @@ export class Planning {
       setTimeout(() => {
         (this.host.nativeElement.querySelector('.rmodal input, .rmodal button') as HTMLElement | null)?.focus();
       });
+    });
+
+    // Leaving the page with the wizard open (browser Back) must not leave the next page locked.
+    inject(DestroyRef).onDestroy(() => {
+      if (this.isBrowser && this.restartOpen()) this.doc.body.style.overflow = '';
     });
   }
 }

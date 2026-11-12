@@ -44,8 +44,10 @@ function isPdf(file: File): boolean {
 async function renderPdfPage(file: File): Promise<File> {
   let canvas: HTMLCanvasElement;
   try {
-    const pdfjs = await import('pdfjs-dist');
-    // The worker is copied to /pdfjs by angular.json (assets); it never goes through the bundle.
+    // The legacy build: the modern one throws on browsers a few years old (missing language features).
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    // The worker (the legacy one too) is copied to /pdfjs by angular.json (assets); it never goes
+    // through the bundle.
     pdfjs.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.mjs';
     const task = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
     try {

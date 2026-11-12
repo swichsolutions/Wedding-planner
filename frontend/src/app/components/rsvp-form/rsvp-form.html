@@ -14,6 +14,12 @@
     <h2 class="rsvp__eyebrow">{{ 'rsvp.title' | translate }}</h2>
     <p class="rsvp__lead">{{ 'rsvp.missing' | translate }}</p>
   </section>
+} @else if (state() === 'failed') {
+  <section class="rsvp rsvp--note" role="status">
+    <h2 class="rsvp__eyebrow">{{ 'rsvp.title' | translate }}</h2>
+    <p class="rsvp__lead">{{ 'rsvp.loadError' | translate }}</p>
+    <button type="button" class="rsvp__again" (click)="load()">{{ 'rsvp.retry' | translate }}</button>
+  </section>
 } @else if (state() === 'loading') {
   <section class="rsvp rsvp--loading" aria-hidden="true">
     <span class="rsvp__skel"></span>

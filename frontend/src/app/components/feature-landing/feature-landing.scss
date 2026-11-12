@@ -42,23 +42,39 @@
 }
 
 // ---- hero: copy + product preview ----
+// Two columns from 1024px, not 768px: on a tablet held upright each column was about 346px
+// wide, the 78px heading ran into the preview, and the sample guest table was squeezed until
+// its names wrapped onto the status badges. Below 1024px the preview sits under the copy.
 .fl-hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-12);
   align-items: center;
   padding-block: var(--space-12) var(--space-16);
 
   @include bp.respond-to(md) {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
     gap: var(--space-16);
     padding-block: var(--space-16) var(--space-20);
   }
 
+  @include bp.respond-to(lg) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
+  }
+
+  // The heading is sized from its own column so that its longest word fits on every screen:
+  // „დასხდომის“ is about 5.8em wide in the heading face, so the size is at most a 6.1th of
+  // the column (the usual heading size wherever that is smaller: phones from ~370px, tablets,
+  // and desktops from ~1380px).
   h1 {
     margin: 0;
     max-width: 20ch;
+    font-size: min(var(--fs-display), 100cqi / 6.1);
     text-wrap: balance;
   }
+}
+
+.fl-hero__copy {
+  container-type: inline-size;
 }
 
 .fl-eyebrow {

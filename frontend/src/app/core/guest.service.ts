@@ -75,6 +75,9 @@ export interface GuestPayload {
   attendance?: GuestAttendance;
   dietaryNeeds?: string | null;
   familyId?: number | null;
+  /** Updates only: the `rsvpAt` this client last saw. When the guest has answered on the invitation
+   * since, the server keeps their answer (attendance, dietary needs, plus-one) over this payload. */
+  rsvpAt?: string | null;
 }
 
 /** How many people a guest row stands for (the guest, plus-one, child). */
@@ -96,8 +99,9 @@ export class GuestService {
     return this.http.post<Guest>(`${this.base}/api/planning/guests`, payload);
   }
 
-  update(id: number, payload: GuestPayload): Observable<void> {
-    return this.http.put<void>(`${this.base}/api/planning/guests/${id}`, payload);
+  /** Gives back the row as the server now holds it (which may keep a guest's own newer answer). */
+  update(id: number, payload: GuestPayload): Observable<Guest | null> {
+    return this.http.put<Guest | null>(`${this.base}/api/planning/guests/${id}`, payload);
   }
 
   remove(id: number): Observable<void> {

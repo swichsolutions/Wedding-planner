@@ -72,6 +72,21 @@
   justify-content: center;
 }
 
+// A signed-in vendor or admin: the "for couple accounts" notice where the sign-up buttons were.
+.pl-hero__role {
+  margin: var(--space-8) auto 0;
+  max-width: 52ch;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  color: rgba(255, 255, 255, 0.92);
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
 // cream "make it easy" band
 .pl-easy {
   background: var(--paper-deep);

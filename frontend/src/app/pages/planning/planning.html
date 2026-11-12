@@ -141,10 +141,20 @@
     <div class="container pl-hero__content">
       <h1>{{ 'planning.heroTitle' | translate }}</h1>
       <p class="pl-hero__sub">{{ 'planning.heroSubtitle' | translate }}</p>
-      <div class="pl-hero__cta">
-        <a class="btn btn--primary btn--pill" routerLink="/signup">{{ 'planning.signup' | translate }}</a>
-        <a class="btn btn--ghost-light btn--pill" routerLink="/login">{{ 'planning.login' | translate }}</a>
-      </div>
+      @if (otherRole()) {
+        <!-- signed-in vendor / admin: the organizer needs a couple account -->
+        <div class="pl-hero__role" role="note">
+          <p><strong>{{ 'featureLanding.signedInTitle' | translate }}.</strong> {{ roleNoticeKey() | translate }}</p>
+          <button type="button" class="btn btn--ghost-light btn--pill" (click)="logout()">
+            {{ 'featureLanding.logout' | translate }}
+          </button>
+        </div>
+      } @else {
+        <div class="pl-hero__cta">
+          <a class="btn btn--primary btn--pill" routerLink="/signup">{{ 'planning.signup' | translate }}</a>
+          <a class="btn btn--ghost-light btn--pill" routerLink="/login">{{ 'planning.login' | translate }}</a>
+        </div>
+      }
     </div>
   </section>
 
@@ -154,7 +164,9 @@
       <div class="pl-easy__copy">
         <h2>{{ 'planning.easyTitle' | translate }}</h2>
         <p>{{ 'planning.easyText' | translate }}</p>
-        <a class="btn btn--primary" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+        @if (!otherRole()) {
+          <a class="btn btn--primary" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+        }
       </div>
       <div class="pl-easy__media">
         <img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=800&q=80"
@@ -244,7 +256,9 @@
         <h2>{{ 'planning.finalTitle' | translate }}</h2>
         <p>{{ 'planning.finalText' | translate }}</p>
       </div>
-      <a class="btn btn--primary" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+      @if (!otherRole()) {
+        <a class="btn btn--primary" routerLink="/signup">{{ 'planning.signupFree' | translate }}</a>
+      }
     </div>
   </section>
 }

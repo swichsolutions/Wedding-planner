@@ -1,14 +1,16 @@
 import { Component, ElementRef, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Meta, Title } from '@angular/platform-browser';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Meta } from '@angular/platform-browser';
+import { TranslatePipe } from '@ngx-translate/core';
 import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 
 import { AuthService, ClaimableVendor, defaultRouteFor } from '../../core/auth.service';
 import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
+import { pageTitle } from '../../core/page-title';
 
 @Component({
   selector: 'app-register',
@@ -109,7 +111,7 @@ import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core
               </ul>
             </div>
             @if (error()) {
-              <p class="auth__error" role="alert">{{ 'auth.registerError' | translate }}</p>
+              <p class="auth__error" role="alert">{{ error()! | translate }}</p>
             }
             <button class="btn btn--primary" type="submit" [disabled]="loading()">
               {{ 'auth.signUp' | translate }}
@@ -136,7 +138,8 @@ export class Register {
   /** Admin-added listings matching the typed business name, and the one the vendor says is theirs. */
   protected readonly matches = signal<ClaimableVendor[]>([]);
   protected readonly claim = signal<ClaimableVendor | null>(null);
-  protected readonly error = signal(false);
+  /** i18n key of the failure banner, or null. */
+  protected readonly error = signal<string | null>(null);
   protected readonly loading = signal(false);
   /** Set on a failed submit — reveals the inline email/password validation messages. */
   protected readonly attempted = signal(false);
@@ -149,8 +152,7 @@ export class Register {
   });
 
   constructor() {
-    const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('auth.registerTitle')} | ${t.instant('brand.name')}`);
+    pageTitle('auth.registerTitle');
     // A sign-up form has nothing to rank for.
     inject(Meta).updateTag({ name: 'robots', content: 'noindex' });
 
@@ -206,7 +208,7 @@ export class Register {
       return;
     }
     this.loading.set(true);
-    this.error.set(false);
+    this.error.set(null);
     const v = this.form.getRawValue();
     const claim = this.claim();
     this.auth
@@ -218,8 +220,9 @@ export class Register {
       })
       .subscribe({
         next: () => this.router.navigateByUrl('/dashboard'),
-        error: () => {
-          this.error.set(true);
+        error: (err: HttpErrorResponse) => {
+          // 429 is the rate limit: "this email may be taken" would send them off to change it.
+          this.error.set(err.status === 429 ? 'pwReset.tooMany' : 'auth.registerError');
           this.loading.set(false);
         },
       });

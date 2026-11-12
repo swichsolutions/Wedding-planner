@@ -46,6 +46,8 @@
       @if (showError('body')) {
         @if (form.controls.body.hasError('maxlength')) {
           <p class="cform__error">{{ 'contact.bodyTooLong' | translate }}</p>
+        } @else if (form.controls.body.hasError('minlength')) {
+          <p class="cform__error">{{ 'contactPage.form.messageShort' | translate }}</p>
         } @else {
           <p class="cform__error">{{ 'contact.required' | translate }}</p>
         }

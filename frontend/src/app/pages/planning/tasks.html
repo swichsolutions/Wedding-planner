@@ -69,7 +69,10 @@
   </ng-template>
 
   @if (loadError()) {
-    <p class="tk-note tk-note--box" role="alert">{{ 'tasks.loadError' | translate }}</p>
+    <p class="tk-note tk-note--box" role="alert">
+      {{ 'tasks.loadError' | translate }}
+      <button type="button" class="btn btn--ghost tk-retry" (click)="retry()">{{ 'vendors.retry' | translate }}</button>
+    </p>
   } @else if (!loaded()) {
     <span class="skel tk-skel" aria-hidden="true"></span>
   } @else {

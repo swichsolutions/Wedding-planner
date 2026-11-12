@@ -110,7 +110,9 @@
                 <span class="seat-pool__group">{{ group.name ?? ('seatingPage.poolOthers' | translate) }}</span>
               }
               @for (attendee of group.attendees; track (attendee.guestId + '-' + attendee.kind)) {
-                <div class="seat-chip" cdkDrag [cdkDragData]="attendee" [attr.title]="attendee.diet">
+                <!-- on a phone a short press scrolls; holding the chip picks it up -->
+                <div class="seat-chip" cdkDrag [cdkDragStartDelay]="{ touch: 200, mouse: 0 }"
+                  [cdkDragData]="attendee" [attr.title]="attendee.diet">
                   {{ attendee.name }}
                   @if (attendee.diet) {
                     <span class="seat-chip__diet" [attr.aria-label]="('guestListPage.dietaryLabel' | translate) + ': ' + attendee.diet">•</span>
@@ -162,7 +164,8 @@
                       <div class="seat-dot" cdkDropList [id]="seatListId(table.id, seatIndex)"
                         (cdkDropListDropped)="onDrop($event)" [style.transform]="'rotate(' + -table.rotation + 'deg)'">
                         @if (seatOccupant(table.id, seatIndex); as occ) {
-                          <div class="seat-chip seat-chip--seated" cdkDrag [cdkDragData]="attendeeFor(occ)"
+                          <div class="seat-chip seat-chip--seated" cdkDrag
+                            [cdkDragStartDelay]="{ touch: 200, mouse: 0 }" [cdkDragData]="attendeeFor(occ)"
                             [attr.title]="attendeeFor(occ)?.name">
                             {{ (attendeeFor(occ)?.name ?? '')?.charAt(0) }}
                             <button type="button" class="seat-chip__remove"

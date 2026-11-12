@@ -42,6 +42,10 @@ main {
   color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
+  // the link is one 23px line of text: a taller tap area (31px) that moves nothing, the
+  // negative margin gives the padding's height back to the bar and the footer
+  padding-block: 0.25rem;
+  margin-block: -0.25rem;
 
   &:hover {
     color: var(--ink);
@@ -506,6 +510,12 @@ main {
     display: block;
   }
 
+  // in the sheet these links are tapped with a thumb: 44px tall (they were 36px)
+  &__nav &__panel-link {
+    align-content: center;
+    min-height: 44px;
+  }
+
   &__sheet-foot {
     display: grid;
     gap: var(--space-3);
@@ -656,6 +666,10 @@ main {
       opacity: 1;
       transform: none;
       transition-delay: 0s;
+    }
+
+    &__nav &__panel-link {
+      min-height: 0;
     }
   }
 

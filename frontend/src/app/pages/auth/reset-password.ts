@@ -10,9 +10,9 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Meta, Title } from '@angular/platform-browser';
+import { Meta } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthService, defaultRouteFor } from '../../core/auth.service';
 import {
@@ -22,6 +22,7 @@ import {
   passwordsMatchValidator,
 } from '../../core/forms';
 import { ToastService } from '../../core/toast.service';
+import { pageTitle } from '../../core/page-title';
 
 /**
  * Step 2 of "forgot password": the emailed link lands here with ?uid=&token=. Setting the new
@@ -117,8 +118,7 @@ export class ResetPassword implements OnDestroy {
   );
 
   constructor() {
-    const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('pwReset.resetTitle')} | ${t.instant('brand.name')}`);
+    pageTitle('pwReset.resetTitle');
     this.meta.updateTag({ name: 'robots', content: 'noindex' });
     // The URL carries a live reset token — don't hand it to any other site as a Referer.
     this.meta.updateTag({ name: 'referrer', content: 'no-referrer' });

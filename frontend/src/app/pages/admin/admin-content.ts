@@ -214,17 +214,21 @@ export class AdminContent {
   }
 
   protected async back(): Promise<void> {
-    if (this.form.dirty) {
-      const ok = await this.confirm.confirm({
-        title: 'adminContent.discardTitle',
-        body: 'adminContent.discardBody',
-        confirmLabel: 'adminContent.discard',
-        danger: true,
-      });
-      if (!ok) return;
-    }
+    if (!(await this.confirmDiscard())) return;
     this.editing.set(false);
     this.load();
+  }
+
+  /** Before the editor goes away ("Back", or the admin page switching tabs): true when nothing is
+   * unsaved, or the admin agrees to drop it. */
+  async confirmDiscard(): Promise<boolean> {
+    if (!this.editing() || !this.form.dirty) return true;
+    return this.confirm.confirm({
+      title: 'adminContent.discardTitle',
+      body: 'adminContent.discardBody',
+      confirmLabel: 'adminContent.discard',
+      danger: true,
+    });
   }
 
   // ---------------------------------------------------------------- save / delete

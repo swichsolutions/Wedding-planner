@@ -1418,16 +1418,18 @@
   &__dots {
     display: flex;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
   }
 
   // bigger pills with a generous tap area: the padding is part of the button but
-  // not of the painted dot (background-clip), so only the pill shows
+  // not of the painted dot (background-clip), so only the pill shows. 24px wide with the
+  // padding (WCAG 2.5.8; it was 22px): a pixel moved from the gap into each side, so the
+  // painted dots sit exactly where they were.
   &__dot {
     box-sizing: content-box;
     width: 12px;
     height: 12px;
-    padding: 8px 5px;
+    padding: 8px 6px;
     border: 0;
     border-radius: 14px;
     background: rgba(48, 43, 45, 0.55); // ~3.3:1 on ivory (WCAG 1.4.11)

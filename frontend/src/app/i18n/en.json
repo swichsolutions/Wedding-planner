@@ -163,6 +163,7 @@
     "revokeBody": "The link will stop working.",
     "inviteFull": "Two people are already on the plan.",
     "inviteError": "That didn’t work. Please try again.",
+    "inviteMailLimit": "No more invitation emails can be sent today. Try tomorrow, or make a link without an email and send it yourself.",
     "accountTitle": "Account",
     "accountLead": "Email and password.",
     "accountLink": "Account settings"
@@ -246,6 +247,7 @@
       "title": "Where do I find everything?",
       "lead": "Vendors by category — with photos, location and starting price. No account needed to browse.",
       "count": "vendors",
+      "countOne": "vendor",
       "soon": "soon",
       "open": "Open category",
       "cat": {
@@ -515,6 +517,7 @@
     "eyebrow": "Our wedding",
     "namesFallback": "The happy couple",
     "daysToGo": "days to go",
+    "dayToGo": "day to go",
     "today": "It's wedding day!",
     "defaultMessage": "We can't wait to celebrate our special day with you. See you there!",
     "when": "When",
@@ -572,7 +575,10 @@
     "loadError": "Couldn’t load your invitation. Refresh the page to try again.",
     "saveError": "Couldn't save your change. Check your connection and try again.",
     "notFoundTitle": "Invitation not found",
-    "notFoundBody": "The link may be outdated, or the invitation is no longer published."
+    "notFoundBody": "The link may be outdated, or the invitation is no longer published.",
+    "viewErrorTitle": "The invitation didn’t load",
+    "viewErrorBody": "Check your connection and try again.",
+    "viewRetry": "Try again"
   },
   "search": {
     "category": "Category",
@@ -769,7 +775,7 @@
     "search": "Search",
     "required": "Fill in first name, last name and year.",
     "error": "Search failed. Check your connection and try again.",
-    "resultsCount": "We found {{count}} matches for “{{name}}”",
+    "resultsCount": "Matches for “{{name}}”: {{count}}",
     "noResults": "No matches found. Check the spelling, try the partner's name, or another year.",
     "thCouple": "Couple",
     "thDate": "Wedding date",
@@ -779,7 +785,7 @@
   },
   "reviews": {
     "title": "Reviews",
-    "summaryAria": "Rated {{rating}} out of 5 from {{count}} reviews",
+    "summaryAria": "Rated {{rating}} out of 5. Reviews: {{count}}",
     "writeTitle": "Leave a review",
     "updateTitle": "Update your review",
     "yourRating": "Your rating",
@@ -957,6 +963,10 @@
     "claimsHint": "At sign-up the vendor said a profile we added is theirs. Call the number on the listing and confirm.",
     "noClaims": "No requests.",
     "claimBy": "requested by",
+    "claimApproveTitle": "Link this account to the profile?",
+    "claimApproveBody": "This account becomes the profile's owner and can edit it.",
+    "claimRejectTitle": "Reject this request?",
+    "claimRejectBody": "The vendor will see that the request was not confirmed.",
     "emailMatches": "Email matches",
     "reject": "Reject",
     "add": "Add vendor",
@@ -1354,6 +1364,7 @@
     "title": "Venues & services",
     "subtitle": "Find the right venue and services for your wedding, compare offers and save your favourites.",
     "countLabel": "vendors",
+    "countLabelOne": "vendor",
     "price": "Max price",
     "anyPrice": "Any price",
     "clear": "Clear filters",
@@ -1787,6 +1798,9 @@
     "totalBudget": "Total budget",
     "setBudgetHint": "Enter your total budget and we'll suggest an estimate for every item, based on Georgian wedding norms.",
     "recalc": "Reset estimates to the suggested split",
+    "recalcConfirmTitle": "Reset to the suggested split?",
+    "recalcConfirmBody": "The planned amounts you typed in are replaced by the suggested ones. Agreed prices and payments stay as they are.",
+    "recalcConfirmBtn": "Reset",
     "loadError": "Couldn't load your budget. Refresh the page to try again.",
     "saveError": "Couldn't save your last change. Check your connection and try again.",
     "addItem": "Add budget item",
@@ -2086,7 +2100,9 @@
     "change": "Change reply",
     "chooseAll": "Please answer for everyone listed.",
     "tooMany": "Too many tries. Please try again in a minute.",
-    "error": "Your reply didn’t go through. Please try again."
+    "error": "Your reply didn’t go through. Please try again.",
+    "loadError": "The reply form didn’t load. The invitation is above.",
+    "retry": "Try again"
   },
   "invitation": {
     "title": "Invitation",

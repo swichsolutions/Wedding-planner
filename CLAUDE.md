@@ -273,7 +273,8 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
    proxy-internal host.
 2. **`Jwt:Key`** (≥32 chars) must be set in production config/env — the API refuses to
    start without it (deliberate fail-fast; the dev key lives only in the untracked
-   appsettings.Development.json).
+   appsettings.Development.json). Since 2026-11-12 the same goes for **`Jwt:Issuer`** and
+   **`Jwt:Audience`** (`render.yaml` sets both).
 3. **`ForwardedHeaders:TrustedProxies`** (array of proxy IPs) must be set behind any
    reverse proxy — otherwise every client shares the proxy's IP and the per-IP rate
    limits (auth 10/min, messages 5/min, the contact form 3 per 10 min, tracking/search 60/min)

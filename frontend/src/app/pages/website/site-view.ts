@@ -1,4 +1,4 @@
-import { Component, RESPONSE_INIT, inject, signal } from '@angular/core';
+import { Component, DestroyRef, RESPONSE_INIT, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -20,26 +20,38 @@ import { RsvpForm } from '../../components/rsvp-form/rsvp-form';
 export class SiteView {
   private readonly translate = inject(TranslateService);
   private readonly title = inject(Title);
+  private readonly meta = inject(Meta);
+  private readonly sites = inject(WebsiteService);
+  private readonly destroyRef = inject(DestroyRef);
+  // SSR only (null in the browser) — lets a dead slug answer with a real 404.
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
 
   protected readonly site = signal<PublicSite | null>(null);
   protected readonly notFound = signal(false);
+  /** The request failed for another reason (connection, rate limit): the invitation may well
+   * exist, so the page offers to try again instead of saying "not found". */
+  protected readonly loadFailed = signal(false);
   protected readonly slug: string;
   /** The party's code on a personal link; null on the general one. */
   protected readonly code: string | null;
 
   constructor() {
     const params = inject(ActivatedRoute).snapshot.paramMap;
-    const slug = (this.slug = params.get('slug') ?? '');
+    this.slug = params.get('slug') ?? '';
     this.code = params.get('code');
-    const meta = inject(Meta);
-    // SSR only (null in the browser) — lets a dead slug answer with a real 404.
-    const responseInit = inject(RESPONSE_INIT, { optional: true });
+    this.load();
+  }
 
-    inject(WebsiteService)
-      .publicSite(slug)
+  /** Also the "try again" button of the failed state. */
+  protected load(): void {
+    const meta = this.meta;
+    const responseInit = this.responseInit;
+    this.loadFailed.set(false);
+    this.sites
+      .publicSite(this.slug)
       // A slow response landing after navigation must not retitle the next
       // page or stamp noindex onto it.
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (s) => {
           this.site.set(s);
@@ -60,25 +72,27 @@ export class SiteView {
           });
         },
         error: (err: unknown) => {
-          this.notFound.set(true);
-          this.title.setTitle(this.translate.instant('website.notFoundTitle'));
+          // Only a 404 means the invitation is gone. Anything else (a dropped connection,
+          // the rate limit) gets its own words and a retry.
+          const missing = err instanceof HttpErrorResponse && err.status === 404;
+          const keyBase = missing ? 'website.notFound' : 'website.viewError';
+          this.notFound.set(missing);
+          this.loadFailed.set(!missing);
+          this.title.setTitle(this.translate.instant(`${keyBase}Title`));
           // Dead URL: no lingering description/social card from an earlier
           // page, no indexing — and a real 404 status instead of a soft-404.
           // Non-404 failures answer 503 so a live site isn't deindexed over
           // one API hiccup.
           meta.updateTag({
             name: 'description',
-            content: this.translate.instant('website.notFoundBody'),
+            content: this.translate.instant(`${keyBase}Body`),
           });
           meta.removeTag("property='og:title'");
           meta.removeTag("property='og:description'");
           meta.removeTag("property='og:type'");
           meta.removeTag("property='og:image'");
           meta.updateTag({ name: 'robots', content: 'noindex' });
-          if (responseInit) {
-            responseInit.status =
-              err instanceof HttpErrorResponse && err.status === 404 ? 404 : 503;
-          }
+          if (responseInit) responseInit.status = missing ? 404 : 503;
         },
       });
   }

@@ -256,6 +256,7 @@ export class Services {
 
   protected openBudget(s: PlanService): void {
     this.editing.set(null);
+    this.form.controls.name.enable(); // a catalog vendor's edit form had locked it
     this.budgeting.set(s.id);
     this.focus(`#svc-amount-${s.id}`);
   }

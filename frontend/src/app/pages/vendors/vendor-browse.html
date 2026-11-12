@@ -35,14 +35,17 @@
       </nav>
     }
 
-    <form class="cat__filters" [attr.aria-label]="'vendors.filtersLabel' | translate" (submit)="$event.preventDefault()">
+    <!-- Each option carries [selected] as well as the select's [value]: the value is set before
+         the looped options exist, so on coming back to the page (open a vendor, press Back) the
+         select alone would show "any" over a filtered list. -->
+    <form class="cat__filters"[attr.aria-label]="'vendors.filtersLabel' | translate" (submit)="$event.preventDefault()">
       <div class="cat__row">
         <div class="cat__field">
           <label for="f-region">{{ 'vendors.region' | translate }}</label>
           <select id="f-region" [value]="filter().region ?? ''" (change)="setParam('region', $event)">
             <option value="">{{ 'vendors.anyRegion' | translate }}</option>
             @for (r of regions; track r) {
-              <option [value]="r">{{ 'catalog.regions.' + r | translate }}</option>
+              <option [value]="r" [selected]="filter().region === r">{{ 'catalog.regions.' + r | translate }}</option>
             }
           </select>
         </div>
@@ -52,7 +55,7 @@
           <select id="f-price" [value]="filter().maxPrice ?? ''" (change)="setParam('maxPrice', $event)">
             <option value="">{{ 'vendors.anyPrice' | translate }}</option>
             @for (p of priceBuckets(); track p) {
-              <option [value]="p">≤ {{ formatPrice(p) }} {{ 'catalog.per.' + priceUnit() | translate }}</option>
+              <option [value]="p" [selected]="filter().maxPrice === p">≤ {{ formatPrice(p) }} {{ 'catalog.per.' + priceUnit() | translate }}</option>
             }
           </select>
         </div>
@@ -63,7 +66,7 @@
             <select id="f-guests" [value]="filter().guests ?? ''" (change)="setParam('guests', $event)">
               <option value="">{{ 'vendors.anyGuests' | translate }}</option>
               @for (b of guestBuckets; track b) {
-                <option [value]="b">{{ 'catalog.guests.' + b | translate }}</option>
+                <option [value]="b" [selected]="filter().guests === b">{{ 'catalog.guests.' + b | translate }}</option>
               }
             </select>
           </div>
@@ -73,7 +76,7 @@
               <option value="">{{ 'vendors.anySetting' | translate }}</option>
               @for (s of settings; track s) {
                 @if (s !== 'both') {
-                  <option [value]="s">{{ 'catalog.settings.' + s | translate }}</option>
+                  <option [value]="s" [selected]="filter().setting === s">{{ 'catalog.settings.' + s | translate }}</option>
                 }
               }
             </select>
@@ -86,7 +89,7 @@
             <select id="f-style" [value]="filter().styles?.[0] ?? ''" (change)="setParam('styles', $event)">
               <option value="">{{ 'vendors.anyStyle' | translate }}</option>
               @for (s of styles(); track s) {
-                <option [value]="s">{{ 'catalog.styles.' + s | translate }}</option>
+                <option [value]="s" [selected]="filter().styles?.[0] === s">{{ 'catalog.styles.' + s | translate }}</option>
               }
             </select>
           </div>
@@ -120,7 +123,7 @@
                 <select id="f-vtype" [value]="filter().venueType ?? ''" (change)="setParam('venueType', $event)">
                   <option value="">{{ 'vendors.anyVenueType' | translate }}</option>
                   @for (v of venueTypes; track v) {
-                    <option [value]="v">{{ 'catalog.venueTypes.' + v | translate }}</option>
+                    <option [value]="v" [selected]="filter().venueType === v">{{ 'catalog.venueTypes.' + v | translate }}</option>
                   }
                 </select>
               </div>
@@ -156,7 +159,7 @@
         }
       </ul>
     } @else if (results().length > 0) {
-      <p class="cat__count" role="status"><span class="num">{{ results().length }}</span> {{ 'vendors.countLabel' | translate }}</p>
+      <p class="cat__count" role="status"><span class="num">{{ results().length }}</span> {{ (results().length === 1 ? 'vendors.countLabelOne' : 'vendors.countLabel') | translate }}</p>
       <ul class="vendor-grid" role="list">
         @for (v of results(); track v.id) {
           <li><app-vendor-card [vendor]="v" /></li>

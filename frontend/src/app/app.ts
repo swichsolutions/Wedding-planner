@@ -42,6 +42,20 @@ import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
 import { Toasts } from './components/toasts/toasts';
 import { ORGANIZER_PATHS, OrganizerNav } from './components/organizer-nav/organizer-nav';
 
+/** Public routes (as written in app.routes.ts) that the language switch must not reopen: the
+ * account forms, the contact form, and a vendor's page with its review draft. Reopening empties
+ * them. Their text follows the language by itself, and they set their own title again
+ * (core/page-title.ts; VendorProfile does it with its other search tags). */
+const KEEPS_ITS_FORM = [
+  'login',
+  'signup',
+  'register',
+  'forgot-password',
+  'reset-password',
+  'contact',
+  ':category/:city/:slug',
+];
+
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LoginModal, ConfirmDialog, Toasts, OrganizerNav],
@@ -281,8 +295,11 @@ export class App {
     this.router.navigateByUrl('/');
   }
 
+  /** Every language control ends here (the bar's toggle, the phone menu's and the footer's
+   * buttons), so each of them also puts the page's title into the new language. */
   protected setLang(code: LangCode): void {
-    this.lang.use(code);
+    if (code === this.lang.current()) return;
+    void this.lang.use(code).then(() => this.redrawPublicPage());
   }
 
   /** Desktop bar: a plain text control that names the language you would switch TO
@@ -294,14 +311,17 @@ export class App {
   });
 
   protected toggleLang(): void {
-    void this.lang.use(this.otherLang()).then(() => this.redrawPublicPage());
+    this.setLang(this.otherLang());
   }
 
   /** Pages set their title once, when they open, so a public page is reopened in the new language.
-   * Not the working pages (organizer, dashboard, admin): a half-filled form must survive the switch. */
+   * Not the working pages (organizer, dashboard, admin), and not the public pages that hold a form
+   * (KEEPS_ITS_FORM): a half-filled form must survive the switch. */
   private redrawPublicPage(): void {
     const path = this.currentUrl().split(/[?#]/)[0];
     if (this.inOrganizer() || /^\/(admin|dashboard|account|planning|partner|w)(\/|$)/.test(path)) return;
+    const route = this.router.routerState.snapshot.root.firstChild?.routeConfig?.path ?? '';
+    if (KEEPS_ITS_FORM.includes(route)) return;
     const y = window.scrollY;
     const strategy = this.router.routeReuseStrategy;
     const reuse = strategy.shouldReuseRoute;

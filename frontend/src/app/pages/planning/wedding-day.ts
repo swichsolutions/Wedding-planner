@@ -96,6 +96,11 @@ export class WeddingDay {
     if (isPlatformBrowser(inject(PLATFORM_ID))) this.load();
   }
 
+  protected retry(): void {
+    this.loadError.set(false);
+    this.load();
+  }
+
   private load(): void {
     this.day.list().subscribe({
       next: (items) => {

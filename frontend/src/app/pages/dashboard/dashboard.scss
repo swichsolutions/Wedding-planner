@@ -328,6 +328,7 @@
 }
 
 .stat__label {
+  overflow-wrap: anywhere; // one long word on the narrowest phones
   font-size: var(--fs-caption);
   color: var(--ink-700);
 }

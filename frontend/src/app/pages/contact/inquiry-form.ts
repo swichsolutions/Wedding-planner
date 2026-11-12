@@ -1,27 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, Injector, afterNextRender, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ContactService } from '../../core/contact.service';
-import { focusFirstInvalid } from '../../core/forms';
+import { focusFirstInvalid, notBlank, trimmedMinLength } from '../../core/forms';
 
 type SendState = 'idle' | 'sending' | 'sent' | 'error' | 'tooMany';
-
-/** At least `min` characters once the spaces around the text are gone: the text is sent
- * trimmed, and the server counts what it receives. Reported as `minlength`, like the
- * built-in validator. Empty text is left to `required`. */
-function trimmedMinLength(min: number): ValidatorFn {
-  return (control: AbstractControl<string>): ValidationErrors | null => {
-    const length = (control.value ?? '').trim().length;
-    return length > 0 && length < min ? { minlength: { requiredLength: min, actualLength: length } } : null;
-  };
-}
-
-/** Not empty and not only spaces. Reported as `required`. */
-function notBlank(control: AbstractControl<string>): ValidationErrors | null {
-  return (control.value ?? '').trim() ? null : { required: true };
-}
 
 /**
  * The inquiry form on /contact (review of 2026-11-12). The API mails the message to the site

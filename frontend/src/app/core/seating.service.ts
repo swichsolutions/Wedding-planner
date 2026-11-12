@@ -96,6 +96,15 @@ export function objectPayload(o: SeatingObject): SeatingObjectPayload {
   return { type: o.type, positionX: o.positionX, positionY: o.positionY, width: o.width, height: o.height, rotation: o.rotation, label: o.label };
 }
 
+/** Seats on a short and on a long side of a four-sided table with `seatCount` seats. Only the
+ * total is stored, so this is the split the edit form starts from; it gives the total back for
+ * every even count the form can make (10 is 2 + 3, not 3 + 3). */
+export function fourSidedSides(seatCount: number): { short: number; long: number } {
+  const side = (n: number) => Math.min(10, Math.max(1, n));
+  const short = side(Math.floor(seatCount / 4));
+  return { short, long: side(Math.floor(seatCount / 2) - short) };
+}
+
 /** The couple's seating chart API (requires Couple role; token via interceptor). */
 @Injectable({ providedIn: 'root' })
 export class SeatingService {

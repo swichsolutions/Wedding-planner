@@ -175,9 +175,10 @@ export class VendorBrowse {
     return { group: g, q: this.filter().q ?? null };
   }
 
-  /** Query params for a category chip within the current group. */
+  /** Query params for a category chip within the current group. The group is named too: when
+   * it was only implied by ?category=…, „ყველა" would otherwise drop it and show every group. */
   protected categoryParams(slug: string | null): Params {
-    return { ...this.currentParams(), category: slug };
+    return { ...this.currentParams(), group: this.group(), category: slug };
   }
 
   protected setParam(key: string, event: Event): void {

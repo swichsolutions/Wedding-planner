@@ -146,7 +146,8 @@
       <div class="orbit__stage"
         (pointerdown)="onOrbitDown($event)" (pointermove)="onOrbitMove($event)"
         (pointerup)="onOrbitUp($event)" (pointercancel)="onOrbitUp($event)"
-        (mouseenter)="orbitHover.set(true)" (mouseleave)="orbitHover.set(false)">
+        (mouseenter)="orbitHover.set(true)" (mouseleave)="orbitHover.set(false)"
+        (focusin)="onOrbitFocus($event)" (focusout)="onOrbitBlur($event)">
         <ul class="orbit__cards" role="list">
           @for (g of categoryRows(); track g.key; let i = $index) {
             @let s = orbitSlot(i);
@@ -159,7 +160,7 @@
                 @if (g.count > 0) {
                   <span class="orbit__card-foot">
                     <span class="orbit__card-n">{{ g.count }}</span>
-                    <span>{{ 'home.find.count' | translate }}</span>
+                    <span>{{ (g.count === 1 ? 'home.find.countOne' : 'home.find.count') | translate }}</span>
                   </span>
                 }
                 <!-- the render fills the card (its backdrop IS the card colour); prints sit at the bottom -->
@@ -176,7 +177,7 @@
 
         <!-- the ring in the far right corner: fills while the carousel waits, one card forward on click -->
         <app-car-arrow class="orbit__arrow" [label]="'home.carousel.next' | translate" [interval]="3800"
-          [paused]="orbitHover()" [tick]="orbitActive()" (next)="orbitStep(1)" />
+          [paused]="orbitPaused()" [tick]="orbitActive()" (next)="orbitStep(1)" />
       </div>
 
       <!-- Carousel controls (a group, not tabs: there are no tab panels); the shown one is current. -->

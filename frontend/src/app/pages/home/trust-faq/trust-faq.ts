@@ -13,7 +13,7 @@ import { CarouselArrow } from '../../../components/carousel-arrow/carousel-arrow
  *
  * Every answer is in the server-rendered HTML (on the card backs), so the questions
  * stay crawlable. Auto-advance runs only in view, never under reduced motion, and
- * pauses while the pointer is over the cards or a card is turned.
+ * pauses while the pointer is over the cards, keyboard focus is on them, or a card is turned.
  */
 @Component({
   selector: 'app-trust-faq',
@@ -30,6 +30,9 @@ export class TrustFaq {
   protected readonly active = signal(0);
   protected readonly flipped = signal<number | null>(null);
   protected readonly hover = signal(false);
+  /** Keyboard focus is on a card or the ring. It holds the carousel like the pointer does:
+   * otherwise the focused card moves away and becomes hidden from screen readers. */
+  protected readonly focus = signal(false);
 
   private timer = 0;
   private auto = false;
@@ -137,10 +140,21 @@ export class TrustFaq {
     }
   }
 
+  /** Only focus that came from the keyboard: a mouse click leaves focus on the card or the ring
+   * too, and that one click would stop the carousel until the visitor clicked somewhere else. */
+  protected onFocus(e: FocusEvent): void {
+    this.focus.set((e.target as HTMLElement).matches(':focus-visible'));
+  }
+
+  protected onBlur(e: FocusEvent): void {
+    const stage = e.currentTarget as HTMLElement;
+    if (!stage.contains(e.relatedTarget as Node | null)) this.focus.set(false);
+  }
+
   private start(): void {
     this.stop();
     this.timer = window.setInterval(() => {
-      if (!this.inView || document.hidden || this.hover() || this.drag || this.flipped() !== null) return;
+      if (!this.inView || document.hidden || this.hover() || this.focus() || this.drag || this.flipped() !== null) return;
       this.active.update((a) => (a + 1) % this.questions.length);
     }, 4000);
   }

@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -51,7 +52,8 @@ export class LoginModal {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   protected readonly modal = inject(AuthModalService);
 
-  protected readonly error = signal(false);
+  /** i18n key of the failure banner, or null. */
+  protected readonly error = signal<string | null>(null);
   protected readonly loading = signal(false);
   protected readonly googleError = signal(false);
   /** Set on a failed submit — reveals the inline email/password validation messages. */
@@ -81,7 +83,7 @@ export class LoginModal {
         // Captured before our own focus move below — this is the navbar button
         // (or whatever else) that focus must return to on close.
         this.modalTrigger = document.activeElement as HTMLElement | null;
-        this.error.set(false);
+        this.error.set(null);
         this.googleError.set(false);
         this.attempted.set(false);
         queueMicrotask(() => {
@@ -115,7 +117,7 @@ export class LoginModal {
     this.loading.set(false);
     this.modal.close();
     this.form.reset();
-    this.error.set(false);
+    this.error.set(null);
     this.attempted.set(false);
     this.modalTrigger?.focus(); // back to the element that opened the modal (a11y)
     this.modalTrigger = null;
@@ -156,7 +158,7 @@ export class LoginModal {
     // still store its session and still teleport. One pending sign-in at a time.
     this.pending?.unsubscribe();
     this.loading.set(true);
-    this.error.set(false);
+    this.error.set(null);
     const { email, password } = this.form.getRawValue();
     this.pending = this.auth.login(email!, password!).subscribe({
       next: () => {
@@ -165,9 +167,10 @@ export class LoginModal {
         this.close();
         this.redirect();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.pending = null;
-        this.error.set(true);
+        // 429 is the rate limit, not a wrong password: say so, or they keep retyping it.
+        this.error.set(err.status === 429 ? 'pwReset.tooMany' : 'auth.invalidCredentials');
         this.loading.set(false);
       },
     });
@@ -238,7 +241,7 @@ export class LoginModal {
       this.pending?.unsubscribe(); // one pending sign-in at a time (see submit())
       this.loading.set(true);
       this.googleError.set(false);
-      this.error.set(false);
+      this.error.set(null);
       this.pending = this.auth.googleLogin(credential).subscribe({
         next: () => {
           this.pending = null;

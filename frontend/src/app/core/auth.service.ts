@@ -60,9 +60,11 @@ const USER_KEY = 'weddingplanner.auth.user';
 /**
  * Routes that render session-owned data. A tab sitting on one of these is evicted
  * when the session changes under it cross-tab; public pages (browse, profiles,
- * home) just re-render from the signals and are left alone.
+ * home) just re-render from the signals and are left alone. Every organizer page is here
+ * (/planning covers its sub-pages; the budget, guest list and seating chart have their own
+ * addresses): each keeps the couple's data it loaded.
  */
-const SESSION_ROUTES = ['/dashboard', '/admin', '/account', '/planning', '/budget'];
+const SESSION_ROUTES = ['/dashboard', '/admin', '/account', '/planning', '/budget', '/guests', '/seating'];
 
 /**
  * localStorage can THROW on mere access (Chrome "Block all cookies", some embedded
