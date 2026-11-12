@@ -1,124 +1,76 @@
-import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, afterNextRender, inject, output } from '@angular/core';
 
 /**
- * Scroll-triggered stage (the landing hero), Revolut-style. The hero is a plain
- * full-screen section; the FIRST small scroll triggers a timed animation that runs
- * to the end on its own (not scrubbed by scroll distance). Progress is written to
- * the host as `--p` (0…1); the SCSS does the rest (clip the photo into a card,
- * slide cards in, fade the heading). Scrolling back to the very top reverses it.
+ * The landing page's opening stage (hero → "where do I start?"). The host shows two sets of
+ * words around one photo and one box; this directive only says which set is on:
  *
- * Browser-only, after hydration. Without JS or under prefers-reduced-motion the
- * host never gets `is-staged`, and the SCSS falls back to a plain full-screen hero.
- * Phones (< 768px) never stage either, like Revolut's mobile site: the hero is an
- * ordinary photo section that scrolls away, nothing pinned or shrunk.
+ * - `is-run` on the host once the page has been scrolled a little (off again at the very top,
+ *   with hysteresis so it cannot flicker), and the `ran` output with the same value. The SCSS
+ *   swaps the words with plain transitions; nothing is measured or animated from here.
+ * - `is-staged` on the host while the window is wide and tall enough for the pinned version
+ *   (see home.scss). Below that, and without JS, the host stays an ordinary pair of blocks.
+ *
+ * Inside the host, mark what belongs to each state with `data-stage="rest"` / `"run"`. When
+ * keyboard focus lands on something of the state that is not showing, the page scrolls to
+ * the state that shows it, so focus is never on an invisible control.
+ *
+ * Browser-only, after hydration. Reduced motion needs nothing special: the states still
+ * switch, the global reduced-motion rule makes the transitions instant.
  */
 @Directive({ selector: '[appScrollStage]' })
 export class ScrollStage {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** True once the stage has run (the first scroll), false again at the top of the page. */
+  readonly ran = output<boolean>();
+
   constructor() {
     afterNextRender(() => {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
       const host = this.el.nativeElement;
-      const phone = window.matchMedia('(max-width: 767px)');
+      // the pinned version needs room for the box between the bar and the step pills
+      const roomy = window.matchMedia('(min-width: 1024px) and (min-height: 600px)');
 
-      const DURATION = 950; // ms, one run of the transform
-      const TRIGGER_DOWN = 16; // px scrolled: start the transform
-      const TRIGGER_UP = 4; // px scrolled: reverse it (hysteresis, no flicker)
-      const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+      const TRIGGER_DOWN = 16; // px scrolled: run
+      const TRIGGER_UP = 4; // px scrolled: back to rest (hysteresis, no flicker)
+      const RUN_AT = 24; // where to scroll to show the run state (past TRIGGER_DOWN)
 
-      let p = 0;
-      let target = 0;
-      let from = 0;
-      let startedAt = 0;
-      let raf = 0;
-
-      /** How far the photo may zoom out while it shrinks into the centre card: the
-       * smallest scale at which the (viewport-sized) image, scaled about the viewport
-       * centre and shifted down into the card, still covers the card area. That shows
-       * as much of the picture as possible (the whole arch) instead of a viewport-scale
-       * crop of its middle. Measured from a side card (same size as the centre card). */
-      const measure = () => {
-        const card = host.querySelector<HTMLElement>('.stage__card');
-        const W = host.clientWidth;
-        const H = window.innerHeight;
-        if (!W || !H) return;
-        // phones hide the side cards (the strip replaces them) and keep the photo as a
-        // full-width band, so there is nothing to zoom out for
-        // the centre card is `--mid` times a side card (see home.scss), so the photo
-        // must stay at least that much larger than a side card to fill it
-        const mid = parseFloat(getComputedStyle(host).getPropertyValue('--mid')) || 1;
-        const scale = !card || !card.offsetWidth
-          ? 1
-          : Math.min(1, Math.max((card.offsetWidth * mid) / W, (card.offsetHeight * mid) / H) + 0.015);
-        host.style.setProperty('--card-scale', scale.toFixed(4));
-        host.style.setProperty('--stage-w', `${W}px`);
-        host.style.setProperty('--stage-h', `${H}px`);
-        measureChip();
-      };
-
-      /** The centre chip's height at rest, so the SCSS can keep it inside the rest frame.
-       * Its text shrinks as the stage runs, so only measured while at rest. */
-      const chip = host.querySelector<HTMLElement>('.chip--center');
-      const measureChip = () => {
-        if (chip && p === 0 && chip.offsetHeight) host.style.setProperty('--chip-h', `${chip.offsetHeight}px`);
-      };
-      // web fonts arriving change the chip's height
-      const chipObserver = chip ? new ResizeObserver(measureChip) : null;
-      if (chip) chipObserver!.observe(chip);
-
-      const apply = () => {
-        host.style.setProperty('--p', p.toFixed(4));
-        // once the hero copy has faded, stop it catching clicks
-        host.classList.toggle('is-past', p > 0.35);
-      };
-
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - startedAt) / DURATION);
-        p = from + (target - from) * easeOut(t);
-        apply();
-        raf = t < 1 ? requestAnimationFrame(tick) : 0;
-      };
-
-      const setTarget = (next: number) => {
-        if (next === target) return;
-        target = next;
-        from = p;
-        startedAt = performance.now();
-        if (!raf) raf = requestAnimationFrame(tick);
+      let run: boolean | null = null;
+      const set = (next: boolean) => {
+        if (next === run) return;
+        run = next;
+        host.classList.toggle('is-run', next);
+        this.ran.emit(next);
       };
 
       const onScroll = () => {
-        if (phone.matches) return;
         const y = window.scrollY;
-        if (y > TRIGGER_DOWN) setTarget(1);
-        else if (y < TRIGGER_UP) setTarget(0);
+        if (y > TRIGGER_DOWN) set(true);
+        else if (y < TRIGGER_UP) set(false);
       };
 
-      /** Stage on wider screens only; crossing the phone breakpoint (rotation, a window
-       * resized) switches it on or off. A page opened mid-scroll (refresh, back button)
-       * starts in the end state. */
-      const sync = () => {
-        if (raf) cancelAnimationFrame(raf);
-        raf = 0;
-        host.classList.toggle('is-staged', !phone.matches);
-        p = target = !phone.matches && window.scrollY > TRIGGER_DOWN ? 1 : 0;
-        measure();
-        apply();
+      const sync = () => host.classList.toggle('is-staged', roomy.matches);
+
+      /** Focus on a control of the hidden state: bring that state on (pinned version only;
+       * stacked, everything is visible and the browser scrolls to the focus itself). */
+      const onFocusIn = (e: FocusEvent) => {
+        if (!roomy.matches) return;
+        const state = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-stage]')?.dataset['stage'];
+        if (state === 'run' && !run) window.scrollTo({ top: RUN_AT });
+        else if (state === 'rest' && run && window.scrollY <= window.innerHeight) window.scrollTo({ top: 0 });
       };
+
       sync();
+      // a page opened mid-scroll (refresh, back button) starts in the run state
+      set(window.scrollY > TRIGGER_DOWN);
 
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', measure);
-      phone.addEventListener('change', sync);
+      roomy.addEventListener('change', sync);
+      host.addEventListener('focusin', onFocusIn);
       this.destroyRef.onDestroy(() => {
         window.removeEventListener('scroll', onScroll);
-        window.removeEventListener('resize', measure);
-        phone.removeEventListener('change', sync);
-        chipObserver?.disconnect();
-        if (raf) cancelAnimationFrame(raf);
+        roomy.removeEventListener('change', sync);
+        host.removeEventListener('focusin', onFocusIn);
       });
     });
   }

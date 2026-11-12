@@ -1,7 +1,7 @@
 <a class="skip-link" href="#main" (click)="skipToMain($event)">{{ 'common.skipToContent' | translate }}</a>
 
 @if (!chromeless()) {
-<header class="hdr theme-brand" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled()" [class.is-overlay]="overlay() && !menuOpen()"
+<header class="hdr theme-brand" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled() && !overlay()" [class.is-overlay]="overlay() && !menuOpen()"
   [class.is-hidden]="hidden() && !menuOpen()" [class.is-dark]="navDark() && !menuOpen() && !overlay()">
   <div class="container hdr__bar">
     <a routerLink="/" class="wordmark" translate="no" (click)="closeMenu()">

@@ -222,7 +222,6 @@
     "start": {
       "title": "Where do I start?",
       "lead": "Three steps and the plan is yours. It adapts to your date, guest count and budget.",
-      "cta": "See how planning works",
       "s1": {
         "label": "Define",
         "title": "Define your wedding",
@@ -380,30 +379,6 @@
       "flipHint": "Tap for the answer",
       "flipBack": "Back to the question",
       "goTo": "Question {{n}}"
-    },
-    "stage": {
-      "title": "Everything in one place",
-      "lead": "Start, find the right people and organize it all — the three things a wedding needs.",
-      "left": {
-        "label": "Where do I find everything?",
-        "value": "Venues & services",
-        "sub": "Photo · Decor · Music"
-      },
-      "center": {
-        "label": "Where do I start?",
-        "value": "Plan your wedding",
-        "sub": "Start planning"
-      },
-      "right": {
-        "title": "How do I keep control?",
-        "r1": "Tasks and deadlines",
-        "r2": "Budget and payments",
-        "r3": "Guests and seating",
-        "r4": "Wedding-day schedule",
-        "chipLabel": "Personal organizer",
-        "chipValue": "My wedding",
-        "sub": "Tasks · Budget · Guests"
-      }
     }
   },
   "schedules": {

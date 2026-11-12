@@ -215,374 +215,123 @@
 }
 
 // =============================================================================
-// 01 — Hero + scroll stage. One screen tall. --p (0…1, animated by ScrollStage on the
-// first scroll) drives every transition below.
+// 01 — Hero, and from the first scroll "where do I start?": sections 01 and 02 in one
+// stage (review of 2026-11-12). One photo, one box, two sets of words.
+//
+// Stacked (the default: phones, tablets upright, short screens, no JS): two blocks one
+// after the other, the hero's words and then the steps (heading, box, step pills), with
+// the photo held behind both while they scroll past.
+//
+// Staged (.is-staged, set by ScrollStage from 1024px wide and 600px tall): one pinned
+// screen. The box has ONE position and size; the hero's words and the steps' words take
+// turns around it. .is-run (the first scroll) swaps them with plain CSS transitions, and
+// the screen stays pinned for --hold of further scrolling before the page moves on.
 // =============================================================================
-.hero {
+.intro {
   position: relative;
   margin-top: calc(var(--hdr-h) * -1 - 1px); // pull up under the transparent header (+ its hairline)
-  --p: 0;
-  --stage-w: 100vw;
-  --stage-h: 100vh;
-  --card-w: min(20rem, 66vw);
-  --card-h: min(26rem, 50vh);
-  --card-gap: var(--space-3);
-  --cards-y: 14vh; // the card row sits below centre to leave room for the heading
-  // the hero frame at rest; the chip wraps inside it. Sized from the screen height as
-  // well, so it keeps the same tall shape on a short laptop screen as on a big monitor.
-  --frame-w: min(36rem, 40vw, 45vh);
-  // The headline's size, shared with the frame so the frame can start below it.
-  // On phones, whatever fits this one line (about 12.6 x its font size) inside the 16px gutters;
-  // 4.6vw on desktop, capped at 72px
-  --title-fs: clamp(1.25rem, min((100vw - 34px) / 12.6, 2.2rem + 2.6vw), 4.5rem);
-  // Short wide screens (a TV browser reporting 960x540, a phone on its side): the centred frame
-  // would run into the text column, so at rest it moves right, just past the paragraph, and
-  // stays inside the screen. Zero wherever the centred frame already clears the text.
-  --copy-right: calc(max(var(--gutter), (var(--stage-w) - var(--container-max)) / 2 + var(--gutter)) + var(--space-2) + 400px + var(--space-4));
-  // ...and its top drops below the headline.
-  --frame-top: max(30vh, var(--hdr-h) + 48px + var(--title-fs) + var(--space-5));
-  --rest-shift: clamp(0px, var(--copy-right) - (var(--stage-w) - var(--frame-w)) / 2, (var(--stage-w) - var(--frame-w)) / 2 - var(--gutter));
-  --mid: 1.08; // the centre card is a touch larger than the side cards (Revolut)
-  --mid-w: calc(var(--card-w) * var(--mid));
-  --mid-h: calc(var(--card-h) * var(--mid));
-  --slide: clamp(0, (var(--p) - 0.3) / 0.6, 1); // side cards: 0.3 → 0.9
-  --card-scale: 0.6; // set by ScrollStage: how far the photo zooms out inside the card
-
-  // The first small scroll triggers a timed run of the transform (see ScrollStage).
-  // Meanwhile the stage stays pinned for --hold of extra scrolling, so the three
-  // cards are on screen alone; only after that does the next section slide in.
-  --hold: 55vh;
-
-  &.is-staged {
-    height: calc(100dvh + var(--hold));
-  }
-
-  @include bp.respond-to(md) {
-    --card-w: min(21rem, 30vw);
-    --card-h: min(28rem, 58vh);
-    --card-gap: var(--space-2); // cards sit close together, like Revolut's
-    --cards-y: 14vh;
-  }
-
-  @include bp.respond-to(lg) {
-    --card-w: min(24rem, 30vw);
-    --card-h: min(32rem, 58vh);
-  }
-
-  // Short desktop viewports (a 1080p laptop at 125% scaling leaves ~750px): smaller
-  // cards pushed further down, so the heading block above them never touches the row.
-  @media (min-width: 768px) and (max-height: 900px) {
-    --card-w: min(19rem, 26vw);
-    --card-h: min(24rem, 48vh);
-    --cards-y: 17vh;
-  }
-}
-
-.stage {
-  position: relative;
-  min-height: 100dvh;
-  overflow: hidden;
-  background: var(--paper);
   color: var(--on-spruce);
+  // The one-line headline is sized from 100vw, which counts a desktop scrollbar: in a
+  // narrow desktop window it can run a few pixels past the edge. Clip, not hidden: hidden
+  // would make this a scroll container and unpin the photo.
+  overflow-x: clip;
 
-  .hero.is-staged & {
-    position: sticky;
-    top: 0;
-    height: 100dvh;
-    min-height: 0;
-  }
+  // The headline's size, shared with the box so the box can start below it. On phones,
+  // whatever fits this one line (about 12.6 x its font size) inside the 16px gutters;
+  // 4.6vw on desktop, capped at 72px.
+  --title-fs: clamp(1.25rem, min((100vw - 34px) / 12.6, 2.2rem + 2.6vw), 4.5rem);
 
-  // ---- the photo: full screen → clipped to the centre card ----
-  &__photo {
-    position: absolute;
-    inset: 0;
-    z-index: 2; // above the side cards, so they emerge from behind the photo
-    background: var(--spruce);
-    clip-path: inset(
-      calc(var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 + var(--cards-y)))
-      calc(var(--p) * ((var(--stage-w) - var(--mid-w)) / 2))
-      calc(var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y)))
-      round calc(var(--p) * 18px)
-    );
-  }
-
-  // ---- the frame: rest box → centre card edge, driven by --p ----
-  // Rest geometry follows Revolut's hero (a quarter of the screen wide, top at 30% of
-  // the viewport, running off the bottom). End geometry is the centre card's clip.
-  &__frame {
-    --f-w-rest: var(--frame-w);
-    --f-top-rest: var(--frame-top);
-    --f-bottom-rest: 11vh; // the whole box is on screen, above the scroll arrow
-    --f-side-rest: calc((var(--stage-w) - var(--f-w-rest)) / 2);
-    --f-top-end: calc((var(--stage-h) - var(--mid-h)) / 2 + var(--cards-y));
-    --f-bottom-end: calc((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y));
-    --f-side-end: calc((var(--stage-w) - var(--mid-w)) / 2);
-    position: absolute;
-    z-index: 3;
-    top: calc((1 - var(--p)) * var(--f-top-rest) + var(--p) * var(--f-top-end));
-    bottom: calc((1 - var(--p)) * var(--f-bottom-rest) + var(--p) * var(--f-bottom-end));
-    left: calc((1 - var(--p)) * (var(--f-side-rest) + var(--rest-shift)) + var(--p) * var(--f-side-end));
-    right: calc((1 - var(--p)) * (var(--f-side-rest) - var(--rest-shift)) + var(--p) * var(--f-side-end));
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    border-radius: calc(24px - var(--p) * 6px); // 24px at rest → the card's 18px
-    pointer-events: none;
-    animation: chip-in var(--dur-reveal) var(--ease-out) 300ms both;
-  }
-
-  // ---- heading above the cards ----
-  &__head {
-    position: absolute;
-    left: var(--gutter);
-    right: var(--gutter);
-    top: calc(var(--hdr-h) + 9vh);
-    z-index: 3; // the text is never covered by the cards, whatever the viewport
-    text-align: center;
-    color: var(--ink);
-    opacity: clamp(0, (var(--p) - 0.55) * 2.5, 1);
-    transform: translateY(calc((1 - var(--p)) * 28px));
-
-    // short desktop viewports: tighter heading, higher up, smaller type
-    @media (min-width: 768px) and (max-height: 900px) {
-      top: calc(var(--hdr-h) + 5vh);
-
-      .stage__title {
-        font-size: clamp(2rem, 1rem + 2.6vw, 3.25rem);
-      }
-
-      .stage__lead {
-        max-width: 44rem;
-        font-size: 1.125rem;
-        line-height: 1.45;
-      }
-    }
-  }
-
-  // Revolut-style statement: regular-width sans at medium weight, tight, centred.
-  &__title {
-    margin: 0 0 var(--space-3);
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-ui);
-    font-size: clamp(2.25rem, 1.2rem + 3.6vw, 5rem);
-    font-weight: var(--fw-medium);
-    line-height: 1;
-    letter-spacing: 0;
-    color: var(--ink);
-  }
-
-  &__lead {
-    margin: 0 auto;
-    max-width: 52rem;
-    font-family: var(--font-statement);
-    font-stretch: var(--stretch-ui);
-    font-size: var(--fs-ui);
-    font-weight: var(--fw-regular);
-    line-height: 1.4;
-    color: var(--ink);
-
-    @include bp.respond-to(md) {
-      font-size: 1.5rem;
-      line-height: 1.45;
-    }
-  }
-
-  // ---- the two cards that join the photo ----
-  &__card {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: var(--card-w);
-    height: var(--card-h);
-    margin: calc(var(--card-h) / -2 + var(--cards-y)) 0 0 calc(var(--card-w) / -2);
-    z-index: 1;
-    overflow: hidden;
-    border-radius: 18px;
-    color: inherit; // the cards are links now
-    text-decoration: none;
-    cursor: pointer;
-    background: var(--spruce);
-    box-shadow: var(--shadow-lg);
-    opacity: var(--slide);
-    // full size: the side cards match the centre card exactly (no scale-down)
-    transform: translateX(calc(var(--dir) * ((var(--mid-w) + var(--card-w)) / 2 + var(--card-gap)) * var(--slide)));
-
-    img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: saturate(0.85);
-    }
-
-    &--l { --dir: -1; }
-    &--r { --dir: 1; }
-  }
-
-  &__card-scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(34, 30, 32, 0.7), rgba(34, 30, 32, 0.1) 60%);
-  }
+  // The box when staged. Sized from the screen height as well, so it keeps the same tall
+  // shape on a short laptop screen as on a big monitor; its top sits below the headline.
+  --box-w: min(36rem, 40vw, 45vh);
+  --box-top: max(30vh, var(--hdr-h) + 48px + var(--title-fs) + var(--space-5));
+  --box-bottom: 11vh; // room under the box for the step pills (and the scroll arrow at rest)
+  // Short wide screens: the centred box would run into the hero's text column, so it moves
+  // right, just past the paragraph, and stays inside the screen. Zero wherever the centred
+  // box already clears the text.
+  --copy-right: calc(max(var(--gutter), (100vw - var(--container-max)) / 2 + var(--gutter)) + var(--space-2) + 400px + var(--space-4));
+  --box-shift: clamp(0px, var(--copy-right) - (100vw - var(--box-w)) / 2, (100vw - var(--box-w)) / 2 - var(--gutter));
+  // how long the staged screen stays pinned after the first scroll
+  --hold: 55vh;
 }
 
-// "Personal · £6,012 · Accounts" style chips inside the cards
-.chip {
-  position: absolute;
-  left: var(--space-4);
-  right: var(--space-4);
-  bottom: var(--space-4);
+// ---- stacked: the hero's block is one screen, the steps follow at their own height ----
+.intro__stage {
+  position: relative;
+  isolation: isolate;
   display: grid;
-  gap: 2px;
-  text-align: center;
-  color: #fff;
-  // light text over bright photo areas (the white flowers in the centre card)
-  text-shadow: 0 1px 14px rgba(34, 30, 32, 0.55);
-  opacity: clamp(0, (var(--p) - 0.6) * 3, 1);
-
-  &__label {
-    font-family: var(--font-statement);
-    font-size: var(--fs-small);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.01em;
-  }
-
-  &__value {
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-display);
-    font-size: var(--fs-h3);
-    font-weight: var(--fw-black);
-    line-height: 1;
-    letter-spacing: var(--tracking-tight);
-  }
-
-  // The pill: one size on all three cards (Revolut's "Accounts" pills are identical).
-  // Fixed height and width, one line; the texts are kept short enough to fit.
-  &__sub {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    width: min(100%, 14.5rem);
-    height: 40px;
-    margin-top: var(--space-2);
-    justify-self: center;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-pill);
-    background: rgba(250, 247, 242, 0.94);
-    color: var(--ink);
-    font-family: var(--font-ui);
-    font-size: 0.875rem;
-    font-weight: var(--fw-semibold);
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  // The centre chip is visible at rest too (Revolut's "Personal · £6,012 · Accounts"):
-  // it fills the lower half of the hero as a product preview, then rides into the
-  // centre card. At rest it sits at 62% of the screen height; by p=1 it is pinned
-  // to the bottom of the card.
-  &--center {
-    opacity: 1;
-    // width follows the photo: full viewport at rest → the card's inner width at p=1,
-    // so a long title wraps inside the card instead of being clipped by it
-    // centred arithmetically (no transform: the entrance animation's final keyframe
-    // would reset a transform-based centring)
-    // the chip is as wide as the frame at rest and as the card at p=1, so the title
-    // wraps inside whichever box it is in
-    --chip-w: calc((1 - var(--p)) * var(--frame-w) + var(--p) * var(--mid-w));
-    left: calc((var(--stage-w) - var(--chip-w)) / 2 + (1 - var(--p)) * var(--rest-shift) + var(--space-4));
-    right: auto;
-    width: calc(var(--chip-w) - 2 * var(--space-4));
-    bottom: calc(
-      // at rest 38% up the screen, but never above the frame's top edge (--chip-h is
-      // measured by ScrollStage; a short screen pushes the frame down)
-      (1 - var(--p)) * min(var(--stage-h) * 0.38, var(--stage-h) - var(--frame-top) - var(--chip-h, 0px) - var(--space-4)) +
-      var(--p) * ((var(--stage-h) - var(--mid-h)) / 2 - var(--cards-y) + var(--space-4))
-    );
-    animation: chip-in var(--dur-reveal) var(--ease-out) 420ms both;
-
-    // A phone on its side: the rest frame is shorter than the chip, so the chip
-    // appears with the cards, like the side cards' chips (a filter: chip-in's fill holds opacity).
-    @media (min-width: 768px) and (max-height: 480px) {
-      filter: opacity(clamp(0, (var(--p) - 0.6) * 3, 1));
-    }
-
-    // Text is bigger while the photo is full-screen and eases down to card size with --p.
-    --rest-value: clamp(1.5rem, calc(var(--frame-w) * 0.078), 2.75rem); // in step with the frame
-    --card-value: clamp(1.5rem, 1.1rem + 1.4vw, 2.125rem);
-
-    .chip__label {
-      font-size: calc(1.25rem - var(--p) * 0.3125rem); // 20px → 15px
-    }
-
-    .chip__value {
-      font-size: calc(var(--rest-value) - var(--p) * (var(--rest-value) - var(--card-value)));
-      text-wrap: balance; // long section names wrap to two lines in the card
-    }
-
-    .chip__sub {
-      // larger while the photo is full screen; the shared pill size once in the card
-      font-size: calc(1.0625rem - var(--p) * 0.1875rem); // 17px → 14px
-      height: calc(46px - var(--p) * 6px); // 46px → 40px
-      margin-top: calc(20px - var(--p) * 12px); // a little more air at rest → the cards' 8px
-    }
-  }
-
-  // Phones (no stage): the chip sits inside the frame, near its bottom edge.
-  @media (max-width: 767px) {
-    &--center {
-      --rest-value: 1.5rem;
-      bottom: calc(var(--hero-pb) + var(--space-5));
-
-      .chip__label {
-        font-size: 1rem;
-      }
-    }
-  }
-
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(100svh, auto) auto auto auto;
+  justify-items: center;
+  background: var(--spruce);
 }
 
-// ---- hero copy on the photo (fades up and out as the stage starts) ----
-.hero {
-  &__img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 55%; // the arch sits just below centre in both renders
-    filter: saturate(0.95);
-    // zoom out as the frame shrinks: scale about the viewport centre, then shift the
-    // image down into the card, so the card shows the whole arch rather than a
-    // viewport-scale crop of the middle
-    transform-origin: 50% 50%;
-    transform: translateY(calc(var(--p) * var(--cards-y))) scale(calc(1 - var(--p) * (1 - var(--card-scale))));
-  }
+// The photo layer: one screen tall, held in place while both blocks scroll past it.
+.intro__bg {
+  grid-area: 1 / 1 / -1 / -1;
+  justify-self: stretch;
+  align-self: start;
+  position: sticky;
+  top: 0;
+  z-index: -1;
+  height: 100lvh;
+  overflow: hidden;
+}
 
-  &__scrim {
+// One background per slide, crossfading. Slide 1 is the hero photo (.hero__img below).
+.start__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85);
+  opacity: 0;
+  transition: opacity 1400ms var(--ease-in-out); // plain crossfade, no zoom
+
+  &.is-active {
+    opacity: 1;
+  }
+}
+
+// back at the top the hero photo returns with the words, not a second after them
+.intro:not(.is-run) .start__bg {
+  transition-duration: 500ms;
+}
+
+.hero__img {
+  object-position: 50% 55%; // the arch sits just below centre in both renders
+  filter: saturate(0.95);
+}
+
+// The hero's shade, and over it a little more at the top and bottom, where the steps'
+// centred heading and the pills sit.
+.intro__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(34, 30, 32, 0.5) 0%, rgba(34, 30, 32, 0.22) 45%, rgba(34, 30, 32, 0.45) 100%);
+
+  &::after {
+    content: '';
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(to bottom, rgba(34, 30, 32, 0.5) 0%, rgba(34, 30, 32, 0.22) 45%, rgba(34, 30, 32, 0.45) 100%);
-    opacity: calc(1 - var(--p) * 1.5);
+      linear-gradient(to bottom, rgba(34, 30, 32, 0.24) 0%, rgba(34, 30, 32, 0) 40%, rgba(34, 30, 32, 0.2) 100%);
   }
+}
 
-  // Revolut placement: top-left under the header, left-aligned, one colour.
+// ---- the hero's words: top-left under the header, left-aligned, one colour ----
+.hero {
   &__copy {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(var(--hdr-h) + 48px);
-    z-index: 3;
+    grid-area: 1 / 1;
+    justify-self: stretch;
+    align-self: start;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    padding-top: calc(var(--hdr-h) + 48px);
     text-align: left;
-    // lifts away as the stage begins
-    transform: translateY(calc(var(--p) * -120px));
-    opacity: clamp(0, 1 - var(--p) * 3, 1);
 
     > * {
       animation: hero-in var(--dur-reveal) var(--ease-out) both;
@@ -592,13 +341,8 @@
     > :nth-child(3) { animation-delay: 260ms; }
   }
 
-  &.is-past &__copy,
-  &.is-past &__down {
-    pointer-events: none;
-  }
-
   // Measured from revolut.com's hero: 88.7px / 500 / lh 1 / ls -0.024em at 1504px wide,
-  // paragraph 18/24 in a 400px column with 18px margins, black pill button below.
+  // paragraph 18/24 in a 400px column with 18px margins, the pill button below.
   &__title {
     margin: 0;
     max-width: none;
@@ -615,63 +359,391 @@
       font-style: normal;
       color: inherit;
     }
-
   }
 
   &__lead {
     margin: 28px 0 36px; // more air between headline → paragraph → button
     max-width: 400px;
-
-    @include bp.respond-to(md) {
-      margin-left: var(--space-2); // a touch in from the headline's left edge
-    }
     font-family: var(--font-statement);
     font-stretch: var(--stretch-ui);
     font-size: 18px;
     font-weight: var(--fw-regular);
-    line-height: 26px; // Nus ascenders/descenders touch at 24px
+    line-height: 26px;
+    color: #fff;
+
+    @include bp.respond-to(md) {
+      margin-left: var(--space-2); // a touch in from the headline's left edge
+    }
+  }
+
+  // the scroll arrow at the foot of the hero's screen (not on phones)
+  &__down {
+    display: none;
+
+    @include bp.respond-to(md) {
+      position: absolute;
+      left: 50%;
+      top: calc(100svh - 44px - max(var(--space-6), env(safe-area-inset-bottom)));
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-pill);
+      color: var(--on-spruce);
+      transform: translateX(-50%);
+      animation: hero-down 2.2s var(--ease-in-out) 1.2s infinite;
+
+      &:hover {
+        color: var(--paper-white);
+        background: rgba(250, 247, 242, 0.14);
+      }
+    }
+  }
+}
+
+// ---- the steps' words: one heading, one line, centred ----
+.start {
+  &__copy {
+    grid-area: 2 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(2rem, 7vh, 4rem) var(--gutter) 0;
+    text-align: center;
+    scroll-margin-top: var(--hdr-h); // an anchor jump lands the heading below the bar
+  }
+
+  &__title {
+    margin: 0 0 var(--space-4);
+    font-size: var(--fs-h2);
+    color: var(--paper-white);
+    text-shadow: 0 2px 24px rgba(34, 30, 32, 0.25);
+  }
+
+  &__lead {
+    margin: 0;
+    max-width: 30rem;
+    font-family: var(--font-statement);
+    font-size: var(--fs-lead);
+    line-height: 1.5;
     color: #fff;
   }
 
-  &__down {
-    position: absolute;
-    left: 50%;
-    bottom: max(var(--space-2), env(safe-area-inset-bottom));
-    z-index: 3;
+  // The box. Its text scales with its width (cqi), so every screen shows the same box,
+  // only smaller or larger.
+  &__card {
+    grid-area: 3 / 1;
+    container-type: inline-size;
+    width: min(22rem, calc(100% - 2 * var(--gutter)));
+    margin-block: clamp(1.5rem, 5vh, 3rem);
+  }
 
-    @include bp.respond-to(md) {
-      bottom: max(var(--space-6), env(safe-area-inset-bottom));
-    }
+  // Revolut-style frame (their "Life, meets savings" box): a tall portrait rectangle with
+  // a crisp 1px solid white border and nothing inside it but the photo. Three rows —
+  // empty / main block / empty — keep the step and its value in the exact middle; the
+  // detail pill sits on its own near the bottom edge.
+  &__card-inner {
+    display: grid;
+    grid-template-rows: 1fr auto 1fr;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    padding: clamp(0.875rem, 5.2cqi, 1.25rem);
+    border-radius: 14px;
+    background: transparent;
+    border: 1px solid #fff;
+    text-align: center;
+    text-shadow: 0 1px 12px rgba(34, 30, 32, 0.6); // keeps the text legible on the bare photo
+    animation: card-in 700ms var(--ease-out) both;
+  }
+
+  &__card-main {
+    grid-row: 2;
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  &__card-label {
+    font-family: var(--font-ui);
+    font-size: clamp(0.9375rem, 5.2cqi, 1.25rem);
+    font-weight: var(--fw-medium);
+    color: var(--paper-white);
+  }
+
+  &__card-value {
+    margin-top: var(--space-1);
+    font-family: var(--font-display);
+    font-stretch: var(--stretch-display);
+    // phrases, not short numbers — a notch under h3 so they hold one or two lines
+    font-size: clamp(1.125rem, 7.8cqi, 1.875rem);
+    text-wrap: balance;
+    font-weight: var(--fw-black);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tight);
+    color: var(--paper-white);
+  }
+
+  &__card-sub {
+    grid-row: 3;
+    align-self: end;
+    justify-self: center;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
+    gap: var(--space-2);
+    min-height: 36px;
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4);
     border-radius: var(--radius-pill);
-    color: var(--on-spruce);
-    transform: translateX(-50%);
-    opacity: clamp(0, 1 - var(--p) * 6, 1);
-    animation: hero-down 2.2s var(--ease-in-out) 1.2s infinite;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 0.875rem; // 14px; fits every card width
+    font-weight: var(--fw-semibold);
+    text-decoration: none;
+    text-shadow: none;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 
-    &:hover {
-      color: var(--paper-white);
-      background: rgba(250, 247, 242, 0.14);
+    // a link (2026-11-03): the hover makes that visible before the pointer does
+    &:hover,
+    &:focus-visible {
+      background: var(--color-action);
+      color: #fff;
     }
   }
 
-  // Not staged (no JS yet, or reduced motion): plain full-screen hero, no cards.
-  // Phones are never staged and keep the chip in their frame.
-  &:not(.is-staged) {
-    .stage__card,
-    .stage__head {
-      display: none;
+  // the one arrow (the global .car-arrow is pinned to its section's right edge; stacked,
+  // it sits beside the box instead)
+  &__arrow {
+    grid-area: 3 / 1;
+    justify-self: end;
+    align-self: center;
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-right: var(--space-3);
+    transform: none;
+  }
+
+  // labels at the bottom: which step is on screen, and a way to switch
+  &__dots {
+    grid-area: 4 / 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0 var(--gutter) clamp(1.5rem, 5vh, 3rem);
+    list-style: none;
+  }
+
+  &__dot {
+    appearance: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(250, 247, 242, 0.35);
+    background: transparent;
+    font-family: var(--font-ui);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+    line-height: inherit;
+    color: var(--on-spruce);
+    cursor: pointer;
+    transition:
+      background var(--dur-slow) var(--ease-out),
+      border-color var(--dur-slow) var(--ease-out),
+      color var(--dur-slow) var(--ease-out);
+
+    &:hover {
+      border-color: rgba(250, 247, 242, 0.8);
     }
 
-    @include bp.respond-to(md) {
-      .chip--center {
-        display: none;
-      }
+    &:focus-visible {
+      outline: 2px solid var(--paper-white);
+      outline-offset: 2px;
     }
+
+    &.is-active {
+      background: var(--paper-white);
+      border-color: var(--paper-white);
+      color: var(--ink);
+    }
+  }
+}
+
+// ---- staged: one pinned screen, the box in one place, the words taking turns ----
+.intro.is-staged {
+  height: calc(100dvh + var(--hold)); // the runway: the screen stays pinned for --hold
+
+  .intro__stage {
+    position: sticky;
+    top: 0;
+    display: block;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .intro__bg {
+    position: absolute;
+    inset: 0;
+    // (align-self: start, kept from the stacked rule, would shrink an absolute box to its
+    // content, which is nothing: the photos inside are absolute too)
+    align-self: stretch;
+    height: 100%;
+  }
+
+  .hero__copy {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--hdr-h) + 48px);
+    z-index: 2;
+    padding-top: 0;
+    transition: opacity 320ms var(--ease-out), translate 420ms var(--ease-out);
+  }
+
+  // Between the bar and the box, centred on the box (which is off-centre on short wide
+  // screens). Sized from the screen height: a heading and one line must fit that band on
+  // a laptop (about 140px at 1366x640).
+  .start__copy {
+    position: absolute;
+    top: var(--hdr-h);
+    left: 50%;
+    z-index: 2;
+    width: min(52rem, 100vw - 2 * var(--gutter) - 2 * var(--box-shift));
+    height: calc(var(--box-top) - var(--hdr-h));
+    justify-content: center;
+    padding: 0;
+    transform: translateX(calc(-50% + var(--box-shift)));
+    translate: 0 16px;
+  }
+
+  .start__title {
+    margin-bottom: clamp(0.375rem, 1.2vh, 0.75rem);
+    font-size: clamp(1.625rem, 5.4vh, 3.25rem);
+    line-height: 1.05;
+  }
+
+  .start__lead {
+    max-width: none;
+    font-size: clamp(0.9375rem, 2.2vh, 1.25rem);
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  // the box: the hero's frame, and the same in both states
+  .start__card {
+    position: absolute;
+    top: var(--box-top);
+    bottom: var(--box-bottom);
+    left: 50%;
+    z-index: 2;
+    width: var(--box-w);
+    margin: 0 0 0 calc(var(--box-w) / -2 + var(--box-shift));
+  }
+
+  .start__card-inner {
+    height: 100%;
+    aspect-ratio: auto;
+    padding: clamp(1rem, 5cqi, 1.75rem);
+    border-radius: 24px;
+  }
+
+  // the box is larger than the stacked card, so its text may grow further with it
+  .start__card-label {
+    font-size: clamp(0.9375rem, 5.2cqi, 1.5rem);
+  }
+
+  .start__card-value {
+    font-size: clamp(1.125rem, 7.8cqi, 2.75rem);
+  }
+
+  // one line in every box: the text follows the box's width (12px in the 288px box of a
+  // 640px-tall laptop screen, 17px in the large ones)
+  .start__card-sub {
+    min-height: clamp(34px, 12cqi, 40px);
+    font-size: clamp(0.75rem, 4.2cqi, 1.0625rem);
+    white-space: nowrap;
+  }
+
+  // back to the global .car-arrow placement: the far right edge, vertically centred
+  .start__arrow {
+    position: absolute;
+    top: 50%;
+    right: var(--space-8);
+    margin-right: 0;
+    transform: translateY(-50%);
+  }
+
+  // under the box, centred on it; the scroll arrow shares the spot while at rest
+  .start__dots {
+    position: absolute;
+    left: 50%;
+    bottom: calc((var(--box-bottom) - 2.25rem) / 2);
+    z-index: 2;
+    flex-wrap: nowrap;
+    padding: 0;
+    transform: translateX(calc(-50% + var(--box-shift)));
+  }
+
+  .hero__down {
+    top: auto;
+    bottom: calc((var(--box-bottom) - 44px) / 2);
+    left: calc(50% + var(--box-shift));
+    transition: opacity 200ms var(--ease-out);
+  }
+
+  // ---- at rest: the hero's words are on; the steps' words, link, pills and ring wait ----
+  .start__copy,
+  .start__card-sub,
+  .start__dots,
+  .start__arrow {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 360ms var(--ease-out), translate 480ms var(--ease-out);
+  }
+
+  .intro__scrim::after {
+    opacity: 0;
+    transition: opacity 600ms var(--ease-out);
+  }
+
+  // ---- run (the first scroll): they change places; the photo and the box do not move ----
+  &.is-run {
+    .hero__copy {
+      opacity: 0;
+      translate: 0 -28px;
+      pointer-events: none;
+    }
+
+    .hero__down {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .start__copy,
+    .start__card-sub,
+    .start__dots,
+    .start__arrow {
+      opacity: 1;
+      pointer-events: auto;
+      transition-delay: 200ms; // after the hero's words have begun to leave
+    }
+
+    .start__copy {
+      translate: 0 0;
+    }
+
+    .intro__scrim::after {
+      opacity: 1;
+    }
+  }
+}
+
+// Reduced motion: the global rule shortens every transition; delays must go too, so the
+// two states simply switch.
+@media (prefers-reduced-motion: reduce) {
+  .intro * {
+    transition-delay: 0s !important;
   }
 }
 
@@ -734,413 +806,9 @@
   }
 }
 
-@keyframes chip-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes hero-down {
   0%, 100% { transform: translate(-50%, 0); }
   50% { transform: translate(-50%, 6px); }
-}
-
-// ---- phones: Revolut's mobile hero. No stage here (ScrollStage never runs below
-// 768px): the photo section scrolls away like any other, the copy at the top and a
-// tall frame (Revolut's 5:7 box) at the bottom holding the "where do I start?" chip.
-// The heading and the three cards follow as an ordinary section: a swipeable strip,
-// the centred card full size, its neighbours smaller and dimmer. ----
-.strip {
-  display: none; // md+ keeps the three-card stage
-}
-
-@media (max-width: 767px) {
-  .hero {
-    --frame-w: min(64vw, 18rem);
-    --rest-shift: 0px; // the phone frame sits in the flow, centred
-    --hero-pb: var(--space-10); // photo below the frame
-    --strip-w: min(72vw, 20rem);
-  }
-
-  // at least one screen; the copy at the top, the frame pushed to the bottom
-  .stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: calc(var(--hdr-h) + 48px) 0 var(--hero-pb);
-  }
-
-  .hero__copy {
-    order: -1; // before the frame (which comes first in the markup)
-    position: relative;
-    top: auto;
-    width: 100%;
-    margin-bottom: var(--space-8);
-  }
-
-  .stage__frame {
-    position: relative;
-    inset: auto;
-    flex: none;
-    width: var(--frame-w);
-    aspect-ratio: 5 / 7;
-    margin-top: auto;
-  }
-
-  .stage__card,
-  .stage__head,
-  .hero__down {
-    display: none;
-  }
-
-  // ---- the strip ----
-  .strip {
-    display: block;
-    padding: var(--space-10) 0 var(--space-12);
-    background: var(--paper);
-    color: var(--ink);
-    text-align: center;
-  }
-
-  .strip__title {
-    margin: 0 var(--gutter) var(--space-3);
-    max-width: none;
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-ui);
-    font-size: clamp(1.625rem, 6.4vw, 2rem);
-    font-weight: var(--fw-medium);
-    line-height: 1.1;
-    letter-spacing: 0;
-  }
-
-  .strip__lead {
-    margin: 0 auto var(--space-6);
-    max-width: 30rem;
-    padding: 0 var(--gutter);
-    font-family: var(--font-statement);
-    font-size: 1.0625rem;
-    line-height: 1.45;
-    color: var(--ink-700);
-  }
-
-  .strip__track {
-    display: flex;
-    gap: var(--space-3);
-    // room for the first and last card to sit centred
-    padding: var(--space-2) calc((100vw - var(--strip-w)) / 2);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: calc((100vw - var(--strip-w)) / 2);
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  .strip__card {
-    position: relative;
-    flex: none;
-    width: var(--strip-w);
-    aspect-ratio: 3 / 4;
-    overflow: hidden;
-    border-radius: 18px;
-    background: var(--spruce);
-    color: var(--on-spruce);
-    box-shadow: var(--shadow-lg);
-    scroll-snap-align: center;
-    // the slide: neighbours sit smaller and dimmer, the centred card swells to full size
-    transform: scale(0.9);
-    opacity: 0.55;
-    transition:
-      transform 420ms var(--ease-out),
-      opacity 420ms var(--ease-out);
-
-    &.is-active {
-      transform: none;
-      opacity: 1;
-    }
-
-    img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: saturate(0.85);
-    }
-
-    // chips in the strip are always on (the stage's --p fade is for the desktop cards)
-    .chip {
-      opacity: 1;
-      left: var(--space-3);
-      right: var(--space-3);
-      bottom: var(--space-4);
-    }
-
-    .chip__label {
-      font-size: var(--fs-small);
-    }
-
-    .chip__value {
-      font-size: 1.5rem;
-      text-wrap: balance;
-    }
-
-    .chip__sub {
-      height: 34px;
-      margin-top: var(--space-2);
-      font-size: 0.8125rem;
-    }
-  }
-
-  .strip__dots {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-top: var(--space-4);
-  }
-
-  .strip__dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(34, 30, 32, 0.25);
-    transition:
-      width 300ms var(--ease-out),
-      background 300ms var(--ease-out);
-
-    &.is-active {
-      width: 18px;
-      background: var(--ink);
-    }
-  }
-}
-
-// Everything after the stage.
-.after-hero {
-  position: relative;
-  z-index: 1;
-  background: var(--paper);
-}
-
-// =============================================================================
-// 02 — Start: full-screen auto-rotating slides (photo + the example couple's card)
-// =============================================================================
-.start {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100dvh;
-  // padding scales with the screen so the section is exactly one screen on laptops too
-  padding: clamp(2rem, 7vh, 4rem) 0 clamp(1.25rem, 3.5vh, 3rem);
-  overflow: hidden;
-  background: var(--spruce);
-  color: var(--on-spruce);
-
-  &__bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: saturate(0.85);
-    opacity: 0;
-    transition: opacity 1400ms var(--ease-in-out); // plain crossfade, no zoom
-
-    &.is-active {
-      opacity: 1;
-    }
-  }
-
-  &__scrim {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(to bottom, rgba(34, 30, 32, 0.6) 0%, rgba(34, 30, 32, 0.2) 40%, rgba(34, 30, 32, 0.55) 100%);
-  }
-
-  &__copy {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  &__title {
-    margin: 0 0 var(--space-4);
-    font-size: var(--fs-h2);
-    color: var(--paper-white);
-    text-shadow: 0 2px 24px rgba(34, 30, 32, 0.25);
-  }
-
-  &__lead {
-    margin: 0 0 var(--space-6);
-    max-width: 30rem;
-    font-family: var(--font-statement);
-    font-size: var(--fs-lead);
-    line-height: 1.5;
-    color: #fff;
-  }
-
-  // the floating card, centred in the remaining space
-  &__card {
-    position: relative;
-    z-index: 1;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    // the 4:5 card is sized from the screen height too (44vh tall at most), so the
-    // copy, the card and the labels always fit one screen; its text scales with it
-    // (cqi), so a laptop shows the same card as a big monitor, only smaller
-    container-type: inline-size;
-    width: min(22rem, calc(44vh * 0.8), calc(100% - 2 * var(--gutter)));
-    min-height: 0;
-    // clear of the button above; more room below than above, so it sits a little high
-    margin-block: clamp(1.25rem, 4vh, 3rem) clamp(1.5rem, 6vh, 9rem);
-  }
-
-  // Revolut-style frame (their "Life, meets savings" box): a tall portrait
-  // rectangle, 4:5, with a crisp 1px solid white border and nothing inside it but
-  // the photo. Three rows — empty / main block / empty — keep the name, step and
-  // value in the exact middle; the detail pill sits on its own near the bottom edge.
-  &__card-inner {
-    display: grid;
-    grid-template-rows: 1fr auto 1fr;
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    padding: clamp(0.875rem, 5.2cqi, 1.25rem);
-    border-radius: 14px;
-    background: transparent;
-    border: 1px solid #fff;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    text-align: center;
-    text-shadow: 0 1px 12px rgba(34, 30, 32, 0.6); // keeps the text legible on the bare photo
-    animation: card-in 700ms var(--ease-out) both;
-  }
-
-  &__card-main {
-    grid-row: 2;
-    display: grid;
-    gap: var(--space-1);
-  }
-
-  &__card-label {
-    font-family: var(--font-ui);
-    font-size: clamp(0.9375rem, 5.2cqi, 1.25rem);
-    font-weight: var(--fw-medium);
-    color: var(--paper-white);
-  }
-
-  &__card-value {
-    margin-top: var(--space-1);
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-display);
-    // phrases now, not short numbers — a notch under h3 so they hold one or two lines
-    font-size: clamp(1.125rem, 7.8cqi, 1.875rem);
-    text-wrap: balance;
-    font-weight: var(--fw-black);
-    line-height: 1.05;
-    letter-spacing: var(--tracking-tight);
-    color: var(--paper-white);
-  }
-
-  &__card-sub {
-    grid-row: 3;
-    align-self: end;
-    justify-self: center;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 36px;
-    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4);
-    border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.94);
-    color: var(--ink);
-    font-family: var(--font-ui);
-    font-size: 0.875rem; // 14px; fits every card width
-    font-weight: var(--fw-semibold);
-    text-decoration: none;
-    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-
-    // a link (2026-11-03): the hover makes that visible before the pointer does
-    &:hover,
-    &:focus-visible {
-      background: var(--color-action);
-      color: #fff;
-    }
-  }
-
-  // the one arrow, in the section's far right corner, vertically centred (the section is a
-  // flex column, so it is taken out of the flow explicitly)
-  &__arrow {
-    position: absolute;
-    top: 50%;
-    right: var(--space-3);
-    left: auto;
-    z-index: 2;
-
-    @include bp.respond-to(lg) {
-      right: var(--space-8);
-    }
-  }
-
-  // labels at the bottom: which step is on screen (not controls)
-  &__dots {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-2);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  &__dot {
-    appearance: none;
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(250, 247, 242, 0.35);
-    background: transparent;
-    font-family: var(--font-ui);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
-    line-height: inherit;
-    color: var(--on-spruce);
-    cursor: pointer;
-    transition:
-      background var(--dur-slow) var(--ease-out),
-      border-color var(--dur-slow) var(--ease-out),
-      color var(--dur-slow) var(--ease-out);
-
-    &:hover {
-      border-color: rgba(250, 247, 242, 0.8);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--paper-white);
-      outline-offset: 2px;
-    }
-
-    &.is-active {
-      background: var(--paper-white);
-      border-color: var(--paper-white);
-      color: var(--ink);
-    }
-  }
-
-  @include bp.respond-to(md) {
-    padding-top: clamp(2.5rem, 8vh, 5rem);
-
-    &__card {
-      width: min(24rem, calc(44vh * 0.8));
-    }
-  }
 }
 
 @keyframes card-in {
@@ -1153,6 +821,13 @@
     opacity: 1;
     transform: none;
   }
+}
+
+// Everything after the stage.
+.after-hero {
+  position: relative;
+  z-index: 1;
+  background: var(--paper);
 }
 
 // =============================================================================

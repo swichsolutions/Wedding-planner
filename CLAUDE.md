@@ -132,7 +132,10 @@ puts it on `<body>` (so overlays and drag previews get it too) everywhere except
 invitation at `/w/…`, which keeps its own design. New pages follow the same rules:
 - **Large backgrounds:** plain white `#FFF` everywhere (Beka, 2026-11-03; the earlier ivory
   `#FAF7F2` read as a "warm" page). Ivory-deep `#f0ece6` stays for small fills and sunken panels.
-  The home final call is white too (no large peach section any more).
+  The home final call is white too (no large peach section any more). Exceptions from the
+  2026-11-12 review: the home day-schedule section sits on ivory-deep so it reads apart from the
+  white organizer above it, and the account steps (`/signup`, `/register`, `/planning/start`)
+  are ivory `#FAF7F2` pages with a photo beside the white card.
 - **Buttons:** every `.btn` is a pill (Beka, 2026-11-03); the one exception is the catalog's
   search button (`.btn--square`). Every carousel has one "next" control in its far right corner
   (`components/carousel-arrow`, host class `.car-arrow`): the gold ring, which fills while the
@@ -141,8 +144,9 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
   text `#585454`, muted text `#6d6868`, small fills `#f0ece6`.
 - **Evergreen `#29483F`:** buttons ONLY (hover `#1D352E`), through `--color-action`.
 - **Mint `#DCECE4`:** only inside photos, never a UI colour.
-- **Peach `#F2CEBB`:** small callouts (chapter labels). The home final call is the one
-  large peach section, kept by choice.
+- **Peach `#F2CEBB`:** small fills and status chips only. No peach pill labels above headings
+  (removed everywhere on 2026-11-12: reviewers took them for buttons). A pill shape is for
+  things that can be clicked.
 - **Gold `#B69A68`:** decorative only (fine lines, the rings). Never text.
 - **Type:** Noto Sans Georgian for everything (Beka, 2026-11-03: GF Aisi was not readable at
   text sizes). Headings and large text are heavy (700–800) and slightly condensed
@@ -168,6 +172,12 @@ schedules, tasks, URLs) in `design-system/PROPOSALS.md`. `REDESIGN-PLAN.md` is t
 condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav changes against these.
 - `/` is the public landing page and is the **same for everyone**, signed in or not. It is
   server-rendered, and the server can't see who is signed in. Never branch it on auth.
+  Its sections, in order (2026-11-12 review): hero → "საიდან დავიწყო?" (three steps) →
+  categories → organizer → day schedules → FAQ → final call. The first two share one stage:
+  the hero's photo and box stay and the words change on the first scroll
+  (`core/scroll-stage.directive.ts`; pinned from 1024px, plain scrolling below).
+- Header (2026-11-12 review): the three menus start right after the logo, and every dropdown
+  opens to the right from its own title.
 - The couple's organizer ("ჩემი ქორწილი", sitemap §06) lives at **`/planning`**. It is the
   overview (`pages/planning/couple-overview`, B7): the personal banner, the next step, and one block
   per tool, tasks and payments included.
@@ -272,7 +282,10 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
    backend config and the frontend environment for Google sign-in (omitting it just
    hides the button — password auth still works).
 8. **Email (`Email:Smtp:Host/Port/Username/Password` + `Email:From`)** for "forgot
-   password" — without it the API delivers nothing (it only logs a warning). Any SMTP
+   password" and the `/contact` inquiry form — without it the API delivers nothing (it only
+   logs a warning), and the contact form tells the visitor it could not send. Inquiries are
+   mailed to `Email:ContactTo` (default `info@weddingplanner.ge`) and stored nowhere, so that
+   mailbox must exist and be read. Any SMTP
    provider on port 587. Reset links point at `Site:PublicOrigin`, so set that too. The
    link-signing keys live in the `DataProtectionKeys` table (migration
    `AddDataProtectionKeys`), so links survive restarts.

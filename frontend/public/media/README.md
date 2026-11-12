@@ -37,19 +37,22 @@ Served as-is at `/media/...`.
   Desktop/dae9be358096f0a0760c85a0d7aeed18.jpg).
 - `plan-details.webp` — the previous third-slide photo, kept for now. Beach
   ceremony aisle (Pexels, asadphoto 169189), 2400 px wide.
-- `plan-define-2.webp` — background of the first "საიდან დავიწყო?" slide
-  ("განსაზღვრე შენი ქორწილი"), referenced from `startSlides` in `home.ts`.
+- `plan-define-2.webp` — background of the second "საიდან დავიწყო?" slide ("შეარჩიე
+  მთავარი"), referenced from `startSlides` in `home.ts`. Until 2026-11-12 it was the first
+  slide's; the first slide is now the hero photo itself (`hero-wide` / `hero-tall`), so the
+  first scroll changes the words and not the picture.
   Black-and-white couple in a convertible under cypresses, portrait
   (Beka's own photo `156.jpg`, 7728×5152 source), EXIF-rotated and resized to
   2400 px wide with Pillow (webp q82). The slide anchors the crop at
   `center 78%` so the couple stays in frame on wide screens.
-- `venue.webp` — the left hero card ("სად ვიპოვო ყველაფერი?" / venues &
-  services), referenced as `venueImg` in `home.ts`. Bright hall with an arched
+- `venue.webp` — the photo beside the vendor sign-up form (see below); also used by the blog
+  seed (`BlogArticlesSeeder.cs`). Until 2026-11-12 the left card of the home hero's
+  three-card stage, which is gone. Bright hall with an arched
   ceiling, hanging florals and set tables (Pexels 14716282), resized to 1000 px
   wide (webp q82). Replaced an Unsplash table-setting close-up, then a
   chandelier ballroom (Pexels 29624022) Beka passed on.
-- `organizer.webp` — the right hero card ("როგორ ვაკონტროლო ყველაფერი?" /
-  personal organizer), referenced as `organizerImg` in `home.ts`. Phone calendar
+- `organizer.webp` — used by the blog seed (`BlogArticlesSeeder.cs`) only since 2026-11-12;
+  before that the right card of the home hero's three-card stage. Phone calendar
   with the wedding date circled, rings and white flowers (Pexels 25002851),
   resized to 1000 px wide (webp q82). The card used to be a white text sheet with
   a four-item list; it is now a photo card like the other two.

@@ -149,6 +149,10 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
 - **Status (2026-10-24): done**, apart from the organizer video (C1; the animated phone demo stands
   in) and the prices question (waits on the pricing decision). The home page follows the guide's
   seven sections: hero → categories → three steps → organizer → day schedules → FAQ → final call.
+  **Amended 2026-11-12 (review round):** the order is now hero → three steps → categories →
+  organizer → day schedules → FAQ → final call. The hero and the three steps share one stage (the
+  photo and the box stay, the words change on the first scroll); the "ყველაფერი ერთ სივრცეში"
+  three-card stage that sat between them is gone.
   The day section shows the three P7 schedules as cards with „ნახე განრიგი“ (the full schedule in
   a dialog) and „ნახე ყველა განრიგი“ → `/schedules` (built now: B2's public half). The FAQ gains
   the invitation question, with P9's answer (link or QR code, replies in the guest list) since B6. The own-vendor answer points to

@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformServer } from '@angular/common';
-import { Component, DestroyRef, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
@@ -14,13 +14,14 @@ import { TrustFaq } from './trust-faq/trust-faq';
 import { FinalCall } from './final-call/final-call';
 import { DayPreview } from '../../components/day-preview/day-preview';
 import { CarouselArrow } from '../../components/carousel-arrow/carousel-arrow';
-import { img } from '../../core/catalog';
 import { CategoryStat, VendorService } from '../../core/vendor.service';
 
 /**
- * Landing page, in the guide's seven sections (BUILD-PLAN A5): hero → categories → three
- * steps → organizer → example day schedules → FAQ → final call. Each answers the question a
- * couple naturally asks next. All copy lives in i18n under `home.*` (the schedules in
+ * Landing page, in seven sections (the order since the review of 2026-11-12): hero → three
+ * steps → categories → organizer → example day schedules → FAQ → final call. The first two
+ * share one stage: the hero's photo and box stay, and the words around them change on the
+ * first scroll (core/scroll-stage.directive.ts, home.scss). Each section answers the question
+ * a couple naturally asks next. All copy lives in i18n under `home.*` (the schedules in
  * core/day-schedules.ts); this file only holds structure.
  */
 
@@ -70,23 +71,17 @@ export class Home {
     // every route.
     if (isPlatformServer(inject(PLATFORM_ID))) this.preloadAssets(inject(DOCUMENT));
     afterNextRender(() => {
-      this.setUpStrip(destroyRef);
       this.setUpOrbit(destroyRef);
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        this.reelPlays.set(false);
-        return;
-      }
-      this.autoRotate = true;
-      this.startRotation();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.reelPlays.set(false);
       destroyRef.onDestroy(() => this.stopRotation());
     });
   }
 
-  private autoRotate = false;
   private rotationId: number | undefined;
 
   private startRotation(): void {
     this.stopRotation();
+    this.rotating.set(true);
     this.rotationId = window.setInterval(() => {
       if (document.hidden) return; // don't burn cycles (or skip slides) in a background tab
       this.slide.update((i) => (i + 1) % this.startSlides.length);
@@ -96,87 +91,57 @@ export class Home {
   private stopRotation(): void {
     if (this.rotationId !== undefined) window.clearInterval(this.rotationId);
     this.rotationId = undefined;
+    this.rotating.set(false);
   }
 
   /** Jump to a step from its bottom label. Restarts the timer so the slide the
    * visitor just picked gets a full turn before auto-rotation moves on. */
   protected goToSlide(i: number): void {
     this.slide.set(i);
-    if (this.autoRotate) this.startRotation();
+    if (this.rotating()) this.startRotation();
   }
 
-  /** Left stage card (venues & services): a set reception table outdoors. */
-  /** left hero card: a bright hall with an arched ceiling, hanging florals and set
-   * tables (local photo, Pexels 14716282) */
-  protected readonly venueImg = '/media/venue.webp';
-  /** right hero card: phone calendar with the date circled, rings and white flowers
-   * (local photo, Pexels 25002851) */
-  protected readonly organizerImg = '/media/organizer.webp';
-
-  /** Phones: which card of the strip is centred (0 planning · 1 venues · 2 organizer).
-   * Drives the card scale/dim and the dots; starts on the venues card. */
-  protected readonly stripActive = signal(1);
-  private readonly stripTrack = viewChild<ElementRef<HTMLElement>>('stripTrack');
-  private stripRaf = 0;
-
-  /** Once per frame while the strip scrolls: the card nearest its centre line is active. */
-  protected onStripScroll(track: HTMLElement): void {
-    if (this.stripRaf) return;
-    this.stripRaf = requestAnimationFrame(() => {
-      this.stripRaf = 0;
-      const cards = Array.from(track.children) as HTMLElement[];
-      if (cards.length < 2) return;
-      const centre = (c: HTMLElement) => c.offsetLeft + c.offsetWidth / 2;
-      const stride = centre(cards[1]) - centre(cards[0]);
-      if (!stride) return; // strip not laid out (md+ hides it)
-      const t = (track.scrollLeft + track.clientWidth / 2 - centre(cards[0])) / stride;
-      this.stripActive.set(Math.round(Math.min(cards.length - 1, Math.max(0, t))));
-    });
-  }
-
-  /** Centre the strip on a card without animation (the strip only lays out on phones,
-   * so this is a no-op on wider screens where it has no width). */
-  private centreStrip(index = this.stripActive()): void {
-    const track = this.stripTrack()?.nativeElement;
-    if (!track || !track.offsetWidth) return;
-    const card = track.children[index] as HTMLElement | undefined;
-    if (!card) return;
-    const left = card.offsetLeft + card.offsetWidth / 2 - track.clientWidth / 2;
-    track.scrollTo({ left, behavior: 'instant' as ScrollBehavior });
-  }
-
-  /** Browser only: centre once the layout has settled, and keep the active card
-   * centred when the viewport changes (rotation, or a desktop window shrinking). */
-  private setUpStrip(destroyRef: DestroyRef): void {
-    this.centreStrip();
-    requestAnimationFrame(() => this.centreStrip());
-    window.addEventListener('load', () => this.centreStrip(), { once: true });
-    let timer = 0;
-    const onResize = () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => this.centreStrip(), 120);
-    };
-    window.addEventListener('resize', onResize);
-    destroyRef.onDestroy(() => {
-      window.removeEventListener('resize', onResize);
-      window.clearTimeout(timer);
-    });
-  }
-
-  /** 03 — the three planning steps, each a full-bleed photo + the step card.
-   * Rotates on its own (browser only, not under reduced motion); the bottom labels
-   * also switch slides directly. */
-  protected readonly startSlides: { key: string; img: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
+  /** 02 — the three planning steps: a full-bleed photo and the step's box each.
+   * The first step has no photo of its own: it is the hero photo, so the first scroll
+   * changes the words and nothing else. The couple in the car (which used to open the
+   * section) is the second step's photo. The slides rotate on their own once the stage
+   * has run (browser only, not under reduced motion); the bottom labels switch directly. */
+  protected readonly startSlides: { key: string; img?: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
+    { key: 's1', to: 'organize' },
     // couple in a convertible under cypresses, b&w, portrait (Beka's photo 156.jpg);
     // the couple sits low in the frame, so wide screens anchor the crop there
-    { key: 's1', img: '/media/plan-define-2.webp', pos: 'center 78%', to: 'organize' },
-    { key: 's2', img: img('photo-1583939003579-730e3918a45a', 2400), to: 'find' },
+    { key: 's2', img: '/media/plan-define-2.webp', pos: 'center 78%', to: 'find' },
     // Beka's photo (OneDrive Desktop/9411badc...jpg), portrait, 1067 px wide source
     { key: 's3', img: '/media/plan-details-3.webp', pos: 'center 55%', to: 'day' },
   ];
   protected readonly slide = signal(0);
+  /** True from the first scroll on: the photos of steps 2 and 3 join the page (see the template). */
+  protected readonly slidesArmed = signal(false);
+  /** True while the slides turn on their own (drives the ring's fill and the live region). */
+  protected readonly rotating = signal(false);
 
-  /** 02 — the categories: the 14 catalog slugs folded into nine cards (the carousel;
+  /** The stage ran (the first scroll) or went back to rest (the top of the page). Rest
+   * always shows the first step on the hero photo, so the rotation stops and rewinds there. */
+  protected onStage(ran: boolean): void {
+    if (ran) {
+      this.slidesArmed.set(true);
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.startRotation();
+    } else {
+      this.stopRotation();
+      this.slide.set(0);
+    }
+  }
+
+  /** The hero's scroll arrow. In the pinned stage its target is already on screen, so a
+   * plain anchor would go nowhere: scroll just far enough to run the stage instead.
+   * Stacked, the anchor does its own job. */
+  protected runStage(event: Event): void {
+    if (!(event.currentTarget as HTMLElement).closest('.intro.is-staged')) return;
+    event.preventDefault();
+    window.scrollTo({ top: Math.round(window.innerHeight * 0.2), behavior: 'smooth' });
+  }
+
+  /** 03 — the categories: the 14 catalog slugs folded into nine cards (the carousel;
    * the older editorial index is commented out in the template). Inventory comes from
    * the API; a card with no approved vendors shows no count instead of a zero. */
   private readonly categoryGroups: CategoryGroup[] = [

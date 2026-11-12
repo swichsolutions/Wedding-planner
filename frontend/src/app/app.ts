@@ -106,10 +106,13 @@ export class App {
   );
   protected readonly scrolled = signal(false);
   /** Hide-on-scroll (Revolut): the bar slides away as the page scrolls down and comes
-   * back on the first scroll up — except while the landing stage's cards are on screen,
-   * where it stays away; the very top of the page always shows it. */
+   * back on the first scroll up. The very top of the page always shows it, and so does the
+   * landing page's pinned opening stage (see introPinned). */
   protected readonly hidden = signal(false);
   private lastY = 0;
+  /** Scrolled, but the landing page's opening stage is still pinned (hero → "where do I
+   * start?", pages/home): the photo has not moved, so the bar stays as it is over it. */
+  private readonly introPinned = signal(false);
   /** True while a dark section (`data-nav="dark"`) sits under the bar: the bar's
    * translucent paper then reads as dark grey over it, and the text goes light. */
   protected readonly navDark = signal(false);
@@ -147,8 +150,9 @@ export class App {
   protected readonly onHome = computed(() => this.currentUrl().split(/[?#]/)[0] === '/');
 
   /** On the landing page the header sits transparently over the full-screen hero photo
-   * until the page is scrolled; everywhere else it is the normal paper bar. */
-  protected readonly overlay = computed(() => this.onHome() && !this.scrolled());
+   * until the page is scrolled past it (the pinned opening stage counts as not scrolled:
+   * the photo is still there); everywhere else it is the normal paper bar. */
+  protected readonly overlay = computed(() => this.onHome() && (!this.scrolled() || this.introPinned()));
 
   constructor() {
     // noindex must not leak across client-side navigations (the site finder,
@@ -193,15 +197,13 @@ export class App {
 
     const dy = y - this.lastY;
     this.lastY = y;
-    if (y < 8) {
+    // The landing page's opening stage is pinned for its extra height (the hero's words
+    // give way to the second section's, the photo stays): the bar stays too, unchanged.
+    const stage = document.querySelector<HTMLElement>('.intro.is-staged');
+    const pinned = !!stage && y < stage.offsetHeight - window.innerHeight;
+    this.introPinned.set(pinned);
+    if (y < 8 || pinned) {
       this.hidden.set(false);
-      return;
-    }
-    // The landing hero's stage (the three cards) runs for the hero's extra height; the
-    // bar stays hidden until the next section has mostly taken over the screen.
-    const stage = document.querySelector<HTMLElement>('.hero.is-staged');
-    if (stage && y < stage.offsetHeight - window.innerHeight * 0.75) {
-      this.hidden.set(true);
       return;
     }
     if (dy > 2) this.hidden.set(true);

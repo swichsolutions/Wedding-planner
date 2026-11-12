@@ -1,39 +1,41 @@
-<!-- ============================ 01 / PROMISE ============================ -->
-<!-- "შევძლებ თავად ორგანიზებას?" — the promise, one strong visual, the first plan
-     of the example wedding that the rest of the page follows. -->
-<section id="promise" class="hero" appScrollStage>
-  <!-- Scroll stage (Revolut-style): the runway is 2 screens tall; the stage inside is
-       sticky. As the page scrolls through the runway, --p goes 0 → 1: the full-screen
-       photo clips down into the centre card, two more cards slide in beside it and a
-       heading fades in above. Without JS / with reduced motion: a plain full-screen hero. -->
-  <div class="stage">
-    <div class="stage__photo">
-      <!-- Same scene rendered twice: tall for portrait screens (phones), wide for everything else. -->
+<!-- ================== 01 + 02 / PROMISE → "WHERE DO I START?" ================== -->
+<!-- One photo, one box, two sets of words (review of 2026-11-12). At rest this is the hero:
+     the headline, the lead and the button, and in the middle of the photo the box that
+     already holds the first planning step. On the first scroll the photo and the box stay
+     where they are: the headline leaves, and the second section's heading arrives above
+     the box with the step's link, the step pills and the ring. From then on the three
+     steps rotate as slides (the hero photo, the couple in the car, the hall).
+     From 1024px the screen is pinned while this happens (ScrollStage: .is-staged, .is-run).
+     On smaller or short screens, and without JS, the two halves are ordinary blocks one
+     after the other with the photo held behind both. The second section used to be the
+     "ყველაფერი ერთ სივრცეში" three-card stage; that is gone. -->
+<section id="promise" class="intro" appScrollStage (ran)="onStage($event)">
+  <div class="intro__stage" data-nav="dark">
+    <div class="intro__bg">
+      <!-- Slide 1 is the hero photo: the same scene rendered twice, tall for portrait
+           screens (phones), wide for everything else. -->
       <picture>
         <source media="(orientation: portrait)" type="image/webp" srcset="/media/hero-tall.webp" />
         <source media="(orientation: portrait)" srcset="/media/hero-tall.jpg" />
         <source type="image/webp" srcset="/media/hero-wide.webp" />
-        <img class="hero__img" src="/media/hero-wide.jpg" [alt]="'home.hero.photoAlt' | translate"
-          width="1536" height="1024" fetchpriority="high" />
+        <img class="start__bg hero__img" [class.is-active]="slide() === 0" src="/media/hero-wide.jpg"
+          [alt]="'home.hero.photoAlt' | translate" width="1536" height="1024" fetchpriority="high" />
       </picture>
-      <div class="hero__scrim" aria-hidden="true"></div>
-      <!-- Product preview (Revolut's "Personal · £6,012 · Accounts" slot): the centre card's
-           text — "where do I start?" → plan your wedding (sitemap §2, the section that
-           follows the banner). -->
-      <!-- a real link (Beka, 2026-11-03): the organizer for a signed-in couple, sign-up otherwise -->
-      <a class="chip chip--center chip--link" [routerLink]="stepLink('organize')">
-        <span class="chip__label">{{ 'home.stage.center.label' | translate }}</span>
-        <span class="chip__value">{{ 'home.stage.center.value' | translate }}</span>
-        <span class="chip__sub">{{ heroCta().key | translate }}</span>
-      </a>
+      <!-- Slides 2 and 3 join the page only after the first scroll: sitting unseen in the
+           first screen they would load at once and compete with the hero photo. -->
+      @if (slidesArmed()) {
+        @for (s of startSlides; track s.key; let i = $index) {
+          @if (s.img) {
+            <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" alt=""
+              [style.object-position]="s.pos ?? null" width="2000" height="1333" />
+          }
+        }
+      }
+      <div class="intro__scrim" aria-hidden="true"></div>
     </div>
 
-    <!-- The frame (Revolut's hero outline, the step card's hairline): at rest a tall
-         white-bordered box in the middle of the photo with the chip inside; as the
-         stage runs it contracts until it sits exactly on the centre card's edge. -->
-    <div class="stage__frame" aria-hidden="true"></div>
-
-    <div class="container hero__copy">
+    <!-- the hero's words -->
+    <div class="container hero__copy" data-stage="rest">
       <h1 class="hero__title">
         {{ 'home.hero.title' | translate }}
         <em>{{ 'home.hero.titleEm' | translate }}</em>
@@ -42,95 +44,70 @@
       <!-- white on the photo (2026-11-12): the evergreen pill could not be seen there -->
       <a class="pill-cta pill-cta--white" [routerLink]="heroCta().link">
         <span>{{ heroCta().key | translate }}</span>
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
       </a>
     </div>
 
-    <!-- heading that appears above the three cards -->
-    <div class="stage__head" aria-hidden="true">
-      <p class="stage__title">{{ 'home.stage.title' | translate }}</p>
-      <p class="stage__lead">{{ 'home.stage.lead' | translate }}</p>
+    <!-- the second section's words: one heading, one line (no button: the box has the link) -->
+    <div id="start" class="start__copy" data-stage="run">
+      <h2 class="start__title">{{ 'home.start.title' | translate }}</h2>
+      <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
     </div>
 
-    <!-- left card: venues & services (sitemap §3); the centre card is planning (§2) -->
-    <!-- The cards are links (Beka, 2026-11-03): the catalog on the left, the organizer on the
-         right (sign-up first for a visitor). Hidden from assistive tech until the stage has
-         run (they are duplicates of the header links until then). -->
-    <a class="stage__card stage__card--l" [routerLink]="stepLink('find')" tabindex="-1" aria-hidden="true">
-      <img [src]="venueImg" alt="" loading="lazy" width="600" height="800" />
-      <div class="stage__card-scrim"></div>
-      <div class="chip">
-        <span class="chip__label">{{ 'home.stage.left.label' | translate }}</span>
-        <span class="chip__value">{{ 'home.stage.left.value' | translate }}</span>
-        <span class="chip__sub">{{ 'home.stage.left.sub' | translate }}</span>
-      </div>
-    </a>
-
-    <!-- right card: the personal organizer (sitemap: "help me organize everything") -->
-    <a class="stage__card stage__card--r" [routerLink]="stepLink('organize')" tabindex="-1" aria-hidden="true">
-      <img [src]="organizerImg" alt="" loading="lazy" width="600" height="800" />
-      <div class="stage__card-scrim"></div>
-      <div class="chip">
-        <span class="chip__label">{{ 'home.stage.right.title' | translate }}</span>
-        <span class="chip__value">{{ 'home.stage.right.chipLabel' | translate }}</span>
-        <span class="chip__sub">{{ 'home.stage.right.sub' | translate }}</span>
-      </div>
-    </a>
-
-    <a class="hero__down" href="#start" [attr.aria-label]="'home.hero.scroll' | translate">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6 6-6"/></svg>
-    </a>
-  </div>
-
-  <!-- phones: the stage never runs (see ScrollStage); after the plain photo section,
-       the heading and the three cards follow in the page as a swipeable strip. The
-       active card sits full size, its neighbours shrink and dim. Decorative, like the
-       desktop cards. -->
-  <div class="strip" aria-hidden="true">
-    <p class="strip__title">{{ 'home.stage.title' | translate }}</p>
-    <p class="strip__lead">{{ 'home.stage.lead' | translate }}</p>
-    <div class="strip__track" #stripTrack (scroll)="onStripScroll(stripTrack)">
-      <a class="strip__card" [class.is-active]="stripActive() === 0" [routerLink]="stepLink('find')" tabindex="-1">
-        <img [src]="venueImg" alt="" loading="lazy" width="600" height="800" />
-        <div class="stage__card-scrim"></div>
-        <div class="chip">
-          <span class="chip__label">{{ 'home.stage.left.label' | translate }}</span>
-          <span class="chip__value">{{ 'home.stage.left.value' | translate }}</span>
-          <span class="chip__sub">{{ 'home.stage.left.sub' | translate }}</span>
-        </div>
-      </a>
-      <a class="strip__card" [class.is-active]="stripActive() === 1" [routerLink]="stepLink('organize')" tabindex="-1">
-        <img src="/media/hero-tall.webp" alt="" loading="lazy" width="1024" height="1536" />
-        <div class="stage__card-scrim"></div>
-        <div class="chip">
-          <span class="chip__label">{{ 'home.stage.center.label' | translate }}</span>
-          <span class="chip__value">{{ 'home.stage.center.value' | translate }}</span>
-          <span class="chip__sub">{{ heroCta().key | translate }}</span>
-        </div>
-      </a>
-      <a class="strip__card" [class.is-active]="stripActive() === 2" [routerLink]="stepLink('organize')" tabindex="-1">
-        <img [src]="organizerImg" alt="" loading="lazy" width="600" height="800" />
-        <div class="stage__card-scrim"></div>
-        <div class="chip">
-          <span class="chip__label">{{ 'home.stage.right.title' | translate }}</span>
-          <span class="chip__value">{{ 'home.stage.right.chipLabel' | translate }}</span>
-          <span class="chip__sub">{{ 'home.stage.right.sub' | translate }}</span>
-        </div>
-      </a>
-    </div>
-    <div class="strip__dots">
-      @for (i of [0, 1, 2]; track i) {
-        <span class="strip__dot" [class.is-active]="stripActive() === i"></span>
+    <!-- The box: the current step. It is on screen in both states and never moves; at rest
+         it shows the first step without its link. Announced when a visitor switches steps,
+         not on every turn of the automatic rotation. -->
+    <div class="start__card" [attr.aria-live]="rotating() ? 'off' : 'polite'">
+      @for (s of startSlides; track s.key; let i = $index) {
+        @if (slide() === i) {
+          <div class="start__card-inner">
+            <!-- the step/value block sits in the exact middle of the frame;
+                 the detail pill sits on its own near the bottom edge -->
+            <div class="start__card-main">
+              <span class="start__card-label">{{ 'home.start.' + s.key + '.title' | translate }}</span>
+              <span class="start__card-value">{{ 'home.start.' + s.key + '.value' | translate }}</span>
+            </div>
+            <!-- the pill is a link (Beka, 2026-11-03): define → the organizer (sign-up first),
+                 choose → the catalog, plan the details → the day schedules -->
+            <a class="start__card-sub" data-stage="run" [routerLink]="stepLink(s.to)">
+              {{ 'home.start.' + s.key + '.sub' | translate }}
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+          </div>
+        }
       }
     </div>
+
+    <!-- the ring in the far right corner: fills while the slide waits (only once the slides
+         rotate), one step forward on click -->
+    <app-car-arrow class="start__arrow car-arrow--light" data-stage="run" [label]="'home.carousel.next' | translate"
+      [interval]="rotating() ? 10400 : 0" [tick]="slide()" (next)="stepSlide(1)" />
+
+    <!-- step labels: show which step is on screen and switch to it on click -->
+    <ol class="start__dots" data-stage="run" [attr.aria-label]="'home.start.title' | translate">
+      @for (s of startSlides; track s.key; let i = $index) {
+        <li>
+          <button type="button" class="start__dot" [class.is-active]="slide() === i"
+            [attr.aria-pressed]="slide() === i" (click)="goToSlide(i)">
+            {{ 'home.start.' + s.key + '.label' | translate }}
+          </button>
+        </li>
+      }
+    </ol>
+
+    <!-- pinned stage: a plain anchor would go nowhere (the target is already on screen),
+         so the click scrolls just far enough to run the stage; stacked, it is the anchor -->
+    <a class="hero__down" data-stage="rest" href="#start" (click)="runStage($event)"
+      [attr.aria-label]="'home.hero.scroll' | translate">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6-6 6"/></svg>
+    </a>
   </div>
 </section>
 
 <!-- Everything below the stage. -->
 <div class="after-hero">
-<!-- ===================== 02 / CATEGORIES (PEOPLE & PLACE) ===================== -->
-<!-- The guide's order (BUILD-PLAN A5): hero → categories → three steps → organizer → day
-     schedules → FAQ → final call. -->
+<!-- ===================== 03 / CATEGORIES (PEOPLE & PLACE) ===================== -->
+<!-- The order since the review of 2026-11-12: hero → three steps (both in the stage above)
+     → categories → organizer → day schedules → FAQ → final call. -->
 <!-- Black stage, one screen tall: compact copy at the top and a
      card carousel below (after the carousel on Revolut's business page: fixed slots,
      the centre card full size, its two neighbours each side at 90%, the next ones
@@ -255,65 +232,6 @@
   
     ---- end of previous version ---- -->
   </div>
-</section>
-
-<!-- ======================= 03 / THREE STEPS (START) ======================= -->
-<!-- Full-screen "slides": the background photo and the floating card rotate on their
-     own through the three planning steps of the example wedding. One heading, one
-     line, one button. Labels at the bottom only show which step is on screen. -->
-<section id="start" class="start" data-nav="dark" [attr.aria-label]="'home.start.title' | translate">
-  @for (s of startSlides; track s.key; let i = $index) {
-    <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" alt="" loading="lazy"
-      [style.object-position]="s.pos ?? null" width="2000" height="1333" />
-  }
-  <div class="start__scrim" aria-hidden="true"></div>
-
-  <div class="container start__copy">
-    <h2 class="start__title">{{ 'home.start.title' | translate }}</h2>
-    <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
-    <a class="pill-cta pill-cta--white" [routerLink]="stepLink('organize')">
-      <span>{{ 'home.start.cta' | translate }}</span>
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-    </a>
-  </div>
-
-  <!-- the example couple's card for the current step -->
-  <div class="start__card" aria-live="polite">
-    @for (s of startSlides; track s.key; let i = $index) {
-      @if (slide() === i) {
-        <div class="start__card-inner">
-          <!-- the step/value block sits in the exact middle of the frame;
-               the detail pill sits on its own near the bottom edge -->
-          <div class="start__card-main">
-            <span class="start__card-label">{{ 'home.start.' + s.key + '.title' | translate }}</span>
-            <span class="start__card-value">{{ 'home.start.' + s.key + '.value' | translate }}</span>
-          </div>
-          <!-- the pill is a link (Beka, 2026-11-03): define → the organizer (sign-up first),
-               choose → the catalog, plan the details → the day schedules -->
-          <a class="start__card-sub" [routerLink]="stepLink(s.to)">
-            {{ 'home.start.' + s.key + '.sub' | translate }}
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </div>
-      }
-    }
-  </div>
-
-  <!-- the ring in the far right corner: fills while the slide waits, one step forward on click -->
-  <app-car-arrow class="start__arrow car-arrow--light" [label]="'home.carousel.next' | translate"
-    [interval]="10400" [tick]="slide()" (next)="stepSlide(1)" />
-
-  <!-- step labels: show which step is on screen and switch to it on click -->
-  <ol class="start__dots" [attr.aria-label]="'home.start.title' | translate">
-    @for (s of startSlides; track s.key; let i = $index) {
-      <li>
-        <button type="button" class="start__dot" [class.is-active]="slide() === i"
-          [attr.aria-pressed]="slide() === i" (click)="goToSlide(i)">
-          {{ 'home.start.' + s.key + '.label' | translate }}
-        </button>
-      </li>
-    }
-  </ol>
 </section>
 
 <!-- ============================ 04 / ORGANIZE ============================ -->
