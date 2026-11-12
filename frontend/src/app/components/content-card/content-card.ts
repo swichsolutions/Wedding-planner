@@ -77,15 +77,13 @@ import { LanguageService } from '../../i18n/language.service';
       gap: var(--space-1);
     }
 
-    // Peach: small callouts only (CLAUDE.md brand rules).
+    // The topic: plain small text, not a peach pill (2026-11-12: pills that are not
+    // buttons read as buttons).
     .ccard__topic {
       justify-self: start;
-      padding: 2px var(--space-2);
-      border-radius: var(--radius-pill);
-      background: var(--peach);
       font-size: var(--fs-caption);
       line-height: 1.4;
-      color: var(--ink);
+      color: var(--ink-700);
     }
 
     .ccard__title {

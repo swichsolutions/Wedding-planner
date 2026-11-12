@@ -74,8 +74,9 @@
       </p>
 
       <p class="lm-vendor">
-        {{ 'authModal.vendorPrompt' | translate }}
-        <button type="button" class="lm-link" (click)="goVendor()">{{ 'authModal.vendorStart' | translate }}</button>
+        <!-- the same line as on /signup (one pair of keys, so the two cannot drift apart) -->
+        {{ 'signup.vendorQ' | translate }}
+        <button type="button" class="lm-link" (click)="goVendor()">{{ 'signup.vendorLink' | translate }}</button>
       </p>
     </div>
   </div>

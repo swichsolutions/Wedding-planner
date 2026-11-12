@@ -307,11 +307,8 @@ main {
     }
   }
 
-  // the last two groups open to the left so the panel stays inside the viewport
-  &__item:nth-last-child(-n + 2) &__panel {
-    left: auto;
-    right: 0;
-  }
+  // every panel opens to the right from its own title (2026-11-12): the menus start
+  // right after the logo, so even the two-column panel stays inside a 1280px window
 
   &__item.is-open &__panel {
     visibility: visible;
@@ -546,6 +543,11 @@ main {
       background: transparent;
       overflow: visible;
       transition: none;
+      // the menus start right after the logo, not in the middle of the bar (2026-11-12):
+      // the auto margin takes the free space that space-between used to split. The gap
+      // to the logo grows with the window; below 1440px the bar has no room to spare.
+      margin-right: auto;
+      margin-left: clamp(0px, (100vw - 1440px) / 6, var(--space-8));
     }
 
     &__sheet-foot {
@@ -572,13 +574,16 @@ main {
       width: auto;
       justify-content: flex-start;
       min-height: 40px;
-      padding: 0 var(--space-3);
+      // 8px at 1280px growing to 12px at 1440px (see the font size below)
+      padding: 0 clamp(var(--space-2), var(--space-2) + (100vw - 1280px) * 0.025, var(--space-3));
       border-radius: var(--radius-pill);
       font-size: 0.875rem; // four Georgian titles + controls must fit the 1248px container
 
-      // brand theme: a step larger (Beka, 2026-10-12); Nus is narrow, so it still fits
+      // brand theme: a step larger (Beka, 2026-10-12), 17px. In Noto Sans Georgian (since
+      // 2026-11-03) that is 80px wider than a 1280px bar, which gave the page a sideways
+      // scrollbar there: so 15px at 1280px, growing to the full 17px at 1440px.
       .hdr.theme-brand & {
-        font-size: 1.0625rem;
+        font-size: clamp(0.9375rem, 0.9375rem + (100vw - 1280px) * 0.0125, 1.0625rem);
       }
       letter-spacing: 0;
       color: var(--ink-700);
@@ -838,14 +843,20 @@ main {
     color: var(--on-spruce-muted);
   }
 
-  @include bp.respond-to(md) {
-    &__top {
-      grid-template-columns: 1.2fr 1fr;
-      align-items: end;
-    }
-
+  // The five links stay on one line wherever they fit (2026-11-12). From 1024px they fit a
+  // row of their own under the logo; from 1280px they sit beside it, and the column is as
+  // wide as the links need (the old 1.2fr / 1fr split left them ~584px and wrapped the last).
+  @include bp.respond-to(lg) {
     &__links {
-      justify-content: flex-end;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+  }
+
+  @include bp.respond-to(xl) {
+    &__top {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
     }
   }
 }

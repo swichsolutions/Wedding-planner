@@ -31,18 +31,6 @@
   margin-bottom: calc(-1 * var(--space-3));
 }
 
-.ps-label {
-  margin: 0 0 var(--space-4);
-  padding: 0.5em 1.1em;
-  border-radius: var(--radius-pill);
-  background: var(--peach);
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: var(--fs-small);
-  font-weight: var(--fw-medium);
-  line-height: 1;
-}
-
 .ps-title {
   margin: 0 0 var(--space-3);
   font-family: var(--font-display);

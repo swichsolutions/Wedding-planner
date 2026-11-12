@@ -1,7 +1,6 @@
 <ul class="ds" role="list">
   @for (s of schedules(); track s.key; let i = $index) {
     <li class="ds-card">
-      <p class="ds-label">{{ 'schedules.example' | translate: { n: i + 1 } }}</p>
       @if (headingLevel() === 2) {
         <h2 class="ds-card__title">{{ s.title }}</h2>
       } @else {
@@ -27,7 +26,6 @@
         <div class="ds-dialog__panel">
           <header class="ds-dialog__head">
             <div>
-              <p class="ds-label">{{ 'schedules.example' | translate: { n: i + 1 } }}</p>
               <h2 class="ds-dialog__title" [id]="'ds-title-' + s.key">{{ s.title }}</h2>
               <p class="ds-dialog__summary">{{ s.summary }}</p>
             </div>

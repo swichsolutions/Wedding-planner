@@ -39,7 +39,8 @@
         <em>{{ 'home.hero.titleEm' | translate }}</em>
       </h1>
       <p class="hero__lead">{{ 'home.hero.lead' | translate }}</p>
-      <a class="pill-cta" [routerLink]="heroCta().link">
+      <!-- white on the photo (2026-11-12): the evergreen pill could not be seen there -->
+      <a class="pill-cta pill-cta--white" [routerLink]="heroCta().link">
         <span>{{ heroCta().key | translate }}</span>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
       </a>
@@ -140,7 +141,6 @@
   <div class="container">
     <div class="orbit" appReveal>
       <div class="orbit__copy">
-        <p class="orbit__overline">{{ 'home.find.overline' | translate }}</p>
         <h2 class="orbit__title">{{ 'home.find.title' | translate }}</h2>
         <p class="orbit__lead">{{ 'home.find.leadShort' | translate }}</p>
         <a class="pill-cta orbit__cta" routerLink="/vendors">
@@ -332,7 +332,8 @@
 <!-- ============================== 05 / DAY ============================== -->
 <!-- Three example schedules (guide §3, PROPOSALS.md P7): a card each, the full schedule in a
      dialog, and the /schedules page with all of them. -->
-<section id="day" class="chap chap--paper chap--screen">
+<!-- on ivory (2026-11-12): apart from the white organizer above; the schedule cards stay white -->
+<section id="day" class="chap chap--deep chap--screen">
   <div class="container">
     <div class="tl" appReveal>
       <div class="tl__copy">

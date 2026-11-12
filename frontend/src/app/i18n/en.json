@@ -105,7 +105,6 @@
   },
   "plan": {
     "datePast": "That date has passed.",
-    "startLabel": "Your account is ready",
     "startTitle": "Let’s start your plan",
     "startLead": "A few questions so the plan fits your wedding. Skip whatever you don’t know yet.",
     "startCta": "Continue",
@@ -169,7 +168,6 @@
     "accountLink": "Account settings"
   },
   "partner": {
-    "label": "Invitation",
     "title": "You’re invited to a shared wedding plan",
     "titleNamed": "{{names}} — a shared plan",
     "lead": "Tasks, budget, guests, seating and the invitation in one place, for both of you.",
@@ -245,7 +243,6 @@
       }
     },
     "find": {
-      "overline": "Categories",
       "leadShort": "Every vendor in one place — with photos and starting prices.",
       "title": "Where do I find everything?",
       "lead": "Vendors by category — with photos, location and starting price. No account needed to browse.",
@@ -334,7 +331,6 @@
         "chosen": "Chosen",
         "saved": "Saved"
       },
-      "overline": "Personal organizer",
       "leadShort": "One plan — tasks, budget and guests. You only ever see the next step.",
       "modules": {
         "m1": "Tasks & deadlines",
@@ -423,7 +419,6 @@
     "title": "Wedding-day schedules",
     "lead": "Three common ways the day runs: all in one place, a church wedding and then a restaurant, or an evening party only. Each shows the time, the activity and who’s responsible.",
     "meta": "Example wedding-day schedules: {{names}}. Time, activity and who’s responsible at every step.",
-    "example": "Example {{n}}",
     "items": "{{n}} items",
     "open": "See the schedule",
     "close": "Close",
@@ -1293,8 +1288,6 @@
     "googleSoon": "Google sign-in is coming soon.",
     "googleError": "Google sign-in didn’t work. Please try again.",
     "or": "or",
-    "vendorPrompt": "Are you a vendor?",
-    "vendorStart": "Start here",
     "close": "Close"
   },
   "account": {
@@ -2022,7 +2015,6 @@
       "shortlist": "No one on the shortlist yet. Mark the ones you are seriously considering.",
       "chosen": "No one chosen yet. A chosen vendor’s agreed price goes into your budget."
     },
-    "emptyLabel": "My services",
     "emptyTitle": "Your vendors will live here",
     "emptyBody": "Save vendors from the catalog with the heart, or add one you found elsewhere. Then mark who is on your shortlist and who you have chosen.",
     "name": "Name",
@@ -2263,7 +2255,6 @@
     "finalBody": "No need to finish in one go: every change is saved, and you publish when you’re ready."
   },
   "overview": {
-    "eyebrow": "Our wedding",
     "namesFallback": "Wedding plan",
     "daysLeft": "days to go",
     "today": "It’s the wedding day!",

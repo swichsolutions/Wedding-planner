@@ -308,17 +308,14 @@
   line-height: 1.15;
 }
 
+// the step counter beside the title: plain small text, not a peach pill (2026-11-12:
+// pills that are not buttons read as buttons)
 .ib-chapter {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--peach);
   font-family: var(--font-body);
   font-size: var(--fs-caption);
+  font-weight: 400;
   line-height: 1.4;
-  color: var(--ink);
+  color: var(--ink-700);
 }
 
 .ib-panel__hint {

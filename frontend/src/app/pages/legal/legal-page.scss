@@ -5,12 +5,20 @@
 }
 
 // Long Georgian titles („კონფიდენციალურობის პოლიტიკა") must wrap inside the side column instead
-// of running over the text column: a tighter size and breaking inside words when needed.
+// of running over the text column. Words are never hyphenated or split (2026-11-12:
+// „კონფიდენციალუ-რობის" read as a mistake), so the size follows the space the longest word
+// has: that word is ~11.9em wide in the heading face.
+// - one column (below 1024px): the page width less its padding; only matters under ~370px
+// - two columns (.static-page, from 1024px): the title column is ~35.8% of the window
 .legal h1 {
-  font-size: clamp(1.75rem, 1.2rem + 1.8vw, var(--fs-h2));
+  font-size: min((100vw - 3rem) / 11.9, clamp(1.75rem, 1.2rem + 1.8vw, var(--fs-h2)));
   line-height: 1.12;
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  overflow-wrap: break-word; // last resort only; the sizes above keep every word whole
+  hyphens: manual;
+
+  @media (min-width: 1024px) {
+    font-size: min(2.9vw, var(--fs-h2));
+  }
 }
 
 .legal__updated {

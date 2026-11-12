@@ -35,19 +35,6 @@
 }
 
 // the peach label that marks this step of the journey (as on the other chapters)
-.hero__eyebrow {
-  display: inline-block;
-  margin: 0 0 32px;
-  padding: 0.5em 1.1em;
-  border-radius: var(--radius-pill);
-  background: var(--peach);
-  font-size: 15px;
-  font-weight: var(--fw-medium);
-  line-height: 1;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-}
-
 .hero__title {
   margin: 0 0 28px;
   font-family: var(--font-display);
@@ -221,11 +208,6 @@
     padding-block: max(2rem, 72 * var(--u));
   }
 
-  .hero__eyebrow {
-    margin-bottom: max(14px, 32 * var(--u));
-    font-size: max(15px, 15 * var(--u)); // the other chapters' peach labels are 15px
-  }
-
   .hero__title {
     max-width: 9em; // three lines on every screen, as on the monitor
     margin-bottom: max(14px, 28 * var(--u));
@@ -259,10 +241,6 @@
   .hero__copy {
     padding: 43px 24px 0;
     text-align: center;
-  }
-
-  .hero__eyebrow {
-    margin-bottom: 16px;
   }
 
   .hero__title {

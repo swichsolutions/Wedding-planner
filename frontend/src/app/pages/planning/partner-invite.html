@@ -6,7 +6,6 @@
     <p class="pi-lead">{{ 'partner.errorBody' | translate }}</p>
   } @else if (preview(); as p) {
     @if (p.status === 'ok') {
-      <p class="pi-label">{{ 'partner.label' | translate }}</p>
       <h1 class="pi-title">
         @if (p.names) {
           {{ 'partner.titleNamed' | translate: { names: p.names } }}

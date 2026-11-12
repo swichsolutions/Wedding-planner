@@ -1,6 +1,6 @@
 // Example day schedules: cards + the full schedule in a dialog. Brand theme (the host page
 // carries .theme-brand): white panels on ivory, charcoal text, Mt for headings, Nus for text,
-// peach only for the small "example N" label, evergreen only on buttons.
+// evergreen only on buttons. (The peach "example N" pill went on 2026-11-12: it read as a button.)
 @use 'breakpoints' as bp;
 
 :host {
@@ -31,21 +31,6 @@
   background: var(--paper-white, #fff);
   color: var(--ink);
   text-align: left;
-}
-
-.ds-label {
-  // a pill, not a bar: in the card (flex) and the dialog head (grid)
-  align-self: flex-start;
-  justify-self: start;
-  margin: 0;
-  padding: 0.45em 0.95em;
-  border-radius: var(--radius-pill);
-  background: var(--peach);
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-medium);
-  line-height: 1;
 }
 
 .ds-card__title {

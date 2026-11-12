@@ -2,26 +2,12 @@
 
 // The home page runs on the brand theme (Mint & Peach + GF Aisi; the host carries
 // .theme-brand, styles/_brand.scss): the neutral tokens are re-pointed for this
-// subtree, children (organizer, FAQ, final call) included. Sections alternate ivory
-// and mint, the final call is the peach callout, and each chapter's overline is a
-// small peach label marking the step of the journey.
+// subtree, children (organizer, FAQ, final call) included. Sections are white; the day
+// schedule sits on ivory so it reads apart from the organizer above it. No peach pill
+// labels over the chapter titles (removed 2026-11-12: they read as buttons).
 :host {
   display: block;
   background: var(--ivory);
-}
-
-// Peach label: the overline over each chapter title (brandbook: "occasional peach
-// callouts to mark each part of the journey").
-%journey-label {
-  display: inline-block;
-  padding: 0.5em 1.1em;
-  border-radius: var(--radius-pill);
-  background: var(--peach);
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-weight: var(--fw-medium);
-  line-height: 1;
-  letter-spacing: 0.04em;
 }
 
 // =============================================================================
@@ -1455,12 +1441,6 @@
     text-align: center;
   }
 
-  &__overline {
-    @extend %journey-label;
-    margin: 0 0 var(--space-4);
-    font-size: var(--fs-small);
-  }
-
   &__title {
     margin: 0 0 var(--space-3);
     font-family: var(--font-display);
@@ -1802,12 +1782,6 @@
     display: grid;
     justify-items: center;
     text-align: center;
-  }
-
-  &__overline {
-    @extend %journey-label;
-    margin: 0 0 var(--space-4);
-    font-size: var(--fs-small);
   }
 
   &__title {
