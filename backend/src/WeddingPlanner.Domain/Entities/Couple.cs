@@ -35,6 +35,13 @@ public class Couple
 
     public decimal? TotalBudget { get; set; }
 
+    /// <summary>The starter tasks were given to this plan already. They are given once: a couple
+    /// who deletes them all to write their own must not get them back ("start over" clears this).</summary>
+    public bool TasksSeeded { get; set; }
+
+    /// <summary>The same for the default budget lines.</summary>
+    public bool BudgetSeeded { get; set; }
+
     /// <summary>The colour palette the couple picked for their wedding (B7 banner); null = none yet.</summary>
     public string? PaletteKey { get; set; }
 

@@ -35,19 +35,24 @@ public class ChecklistController : ControllerBase
     {
         if (await _couple.IdAsync() is not int cid) return Forbid();
 
-        if (!await _db.ChecklistItems.AnyAsync(c => c.CoupleId == cid))
+        // The starter list is given once per plan (Couple.TasksSeeded), not whenever the plan has
+        // no tasks: a couple who deletes them all to write their own keeps an empty list.
+        if (!await _db.Couples.AnyAsync(c => c.Id == cid && c.TasksSeeded))
         {
             // Two first visits at once (two tabs, both partners) would both seed: serialize on the
             // plan and check again inside.
             await using var tx = await _db.Database.BeginTransactionAsync();
             var lockKey = $"tasks-seed-{cid}";
             await _db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtext({lockKey}))");
-            if (!await _db.ChecklistItems.AnyAsync(c => c.CoupleId == cid))
+            var plan = await _db.Couples.FirstAsync(c => c.Id == cid);
+            if (!plan.TasksSeeded)
             {
                 var en = string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
                 var now = DateTimeOffset.UtcNow;
+                // after any task the couple added before ever opening the list
+                var first = (await _db.ChecklistItems.Where(c => c.CoupleId == cid).MaxAsync(c => (int?)c.SortOrder) ?? -1) + 1;
+                plan.TasksSeeded = true;
                 // What the start form already answered starts ticked.
-                var plan = await _db.Couples.AsNoTracking().FirstAsync(c => c.Id == cid);
                 for (var i = 0; i < StarterTasks.All.Length; i++)
                 {
                     var t = StarterTasks.All[i];
@@ -57,7 +62,7 @@ public class ChecklistController : ControllerBase
                         Title = en ? t.En : t.Ka,
                         Stage = t.Stage,
                         Link = t.Link,
-                        SortOrder = i,
+                        SortOrder = first + i,
                         CreatedAt = now,
                         IsDone = (t.Ka == StarterTasks.SetBudget && plan.TotalBudget > 0) || (t.Ka == StarterTasks.ChooseDate && plan.WeddingDate != null),
                     });

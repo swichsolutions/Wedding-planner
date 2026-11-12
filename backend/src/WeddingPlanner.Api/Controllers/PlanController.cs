@@ -107,6 +107,9 @@ public class PlanController : ControllerBase
         plan.GuestCountRange = CatalogRules.OneOf(dto.GuestCountRange, GuestRanges);
         plan.NeededCategories = dto.NeededCategories ?? new List<string>();
         plan.TotalBudget = null; // a fresh plan starts without a carried-over total
+        // the starter tasks and default budget lines are given again on the next visit
+        plan.TasksSeeded = false;
+        plan.BudgetSeeded = false;
 
         await _db.ChecklistItems.Where(c => c.CoupleId == cid).ExecuteDeleteAsync();
         await _db.BudgetItems.Where(b => b.CoupleId == cid).ExecuteDeleteAsync();

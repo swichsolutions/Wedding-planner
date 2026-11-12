@@ -592,6 +592,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("BudgetSeeded")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("City")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
@@ -645,6 +648,9 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                     b.Property<string>("Region")
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
+
+                    b.Property<bool>("TasksSeeded")
+                        .HasColumnType("boolean");
 
                     b.Property<decimal?>("TotalBudget")
                         .HasPrecision(12, 2)

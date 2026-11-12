@@ -55,8 +55,10 @@ public class BudgetController : ControllerBase
 
         var total = await CurrentTotalAsync(cid);
 
-        var hasAny = await _db.BudgetItems.AnyAsync(i => i.CoupleId == cid);
-        if (!hasAny)
+        // The default lines are given once per plan (Couple.BudgetSeeded), not whenever the plan
+        // has no lines: a couple who deletes them all keeps an empty budget, and one who added
+        // a vendor to the budget before ever opening it still gets the defaults.
+        if (!await _db.Couples.AnyAsync(c => c.Id == cid && c.BudgetSeeded))
         {
             // Two concurrent first visits (two tabs) would both pass the check above and
             // seed 28 rows. A unique index on (CoupleId, SortOrder) can't guard this —
@@ -67,18 +69,24 @@ public class BudgetController : ControllerBase
             await _db.Database.ExecuteSqlInterpolatedAsync(
                 $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))");
 
-            if (!await _db.BudgetItems.AnyAsync(i => i.CoupleId == cid))
+            var plan = await _db.Couples.FirstAsync(c => c.Id == cid);
+            if (!plan.BudgetSeeded)
             {
+                plan.BudgetSeeded = true;
                 // Seed only what the couple said they'll need at sign-up (plus the
                 // categoryless "invitations and other" catch-all) — a couple who skipped
                 // that step (empty list) still gets the full comprehensive default.
-                var neededCategories = await _db.Couples.AsNoTracking()
-                    .Where(c => c.Id == cid)
-                    .Select(c => c.NeededCategories)
-                    .FirstOrDefaultAsync();
-                var toSeed = neededCategories is { Count: > 0 }
+                var neededCategories = plan.NeededCategories;
+                var wanted = neededCategories is { Count: > 0 }
                     ? DefaultItems.Where(d => d.CategorySlug is null || neededCategories.Contains(d.CategorySlug)).ToArray()
                     : DefaultItems;
+                // A line the couple already has for a category (a vendor added from its profile
+                // before the budget was ever opened) is not doubled; the defaults go after it.
+                var existing = await _db.BudgetItems.Where(i => i.CoupleId == cid)
+                    .Select(i => new { i.CategorySlug, i.SortOrder }).ToListAsync();
+                var have = existing.Where(e => e.CategorySlug != null).Select(e => e.CategorySlug).ToHashSet();
+                var toSeed = wanted.Where(d => d.CategorySlug is null || !have.Contains(d.CategorySlug)).ToArray();
+                var first = existing.Count > 0 ? existing.Max(e => e.SortOrder) + 1 : 0;
 
                 var now = DateTimeOffset.UtcNow;
                 for (var i = 0; i < toSeed.Length; i++)
@@ -91,7 +99,7 @@ public class BudgetController : ControllerBase
                         CategorySlug = slug,
                         DefaultPct = pct,
                         Estimate = EstimateFor(total, pct),
-                        SortOrder = i,
+                        SortOrder = first + i,
                         CreatedAt = now,
                     });
                 }
