@@ -36,11 +36,12 @@
           </span>
         }
       </div>
-    </div>
 
-    <div class="auth__field iq__phone">
-      <label for="iq-phone">{{ 'contactPage.form.phone' | translate }}</label>
-      <input id="iq-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" maxlength="40" />
+      <!-- in the same row as the name and the email once there is room (see .iq__row) -->
+      <div class="auth__field">
+        <label for="iq-phone">{{ 'contactPage.form.phone' | translate }}</label>
+        <input id="iq-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" maxlength="40" />
+      </div>
     </div>
 
     <div class="auth__field">

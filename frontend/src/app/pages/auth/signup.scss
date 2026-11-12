@@ -48,6 +48,22 @@
   }
 }
 
+// Wide screens: the page fits one screen (see section.auth in styles/_components.scss), so
+// the gaps around "or" and above the closing lines follow the window's height too.
+@media (min-width: 1024px) {
+  .su-or {
+    margin: clamp(0.5rem, 1.8vh, 1.25rem) 0 clamp(0.125rem, 0.6vh, 0.5rem);
+  }
+
+  .su-alt {
+    margin-top: clamp(0.625rem, 2vh, 1.5rem);
+
+    &--vendor {
+      margin-top: clamp(0.125rem, 0.6vh, 0.5rem);
+    }
+  }
+}
+
 // Quiet text links on charcoal: evergreen is reserved for buttons.
 .su-link {
   padding: 0;

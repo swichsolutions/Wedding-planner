@@ -157,6 +157,10 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
   max-width. Only running text keeps a readable line length (~46rem); on wide screens put
   side-by-side columns next to it rather than empty space. Short pages still end with the footer at
   the bottom of the window (App is a flex column).
+- **One screen:** the account pages (`/signup`, `/register`, `/login`, forgot / reset password)
+  and `/contact` fit one desktop screen without scrolling (Beka, 2026-11-12). Their spacing,
+  title and field sizes follow the window's height (`section.auth` and `.static-page--fit` in
+  `styles/_components.scss`, `inquiry-form.scss`). Keep that when adding fields or text to them.
 - **Putting a page on the theme:** add `host: { class: 'theme-brand' }` to the page component
   (see `pages/home/home.ts`). Style it with the v2 tokens the theme re-points: `--paper`,
   `--paper-deep`, `--ink`, `--spruce`, `--color-action`, `--font-display`, `--font-body`. The

@@ -261,6 +261,71 @@
       background-position: center;
     }
   }
+
+  // The whole page on one screen (Beka, 2026-11-12: the card ran below the fold and had to
+  // be scrolled). The section is as tall as the window under the bar, the photo fills that
+  // height, and the card's spacing, title and fields are sized from the window's height:
+  // full size on a tall monitor, tighter on a laptop. The four password rules sit in two
+  // columns. At 740px of window height the sign-up card is about 610px tall.
+  section.auth {
+    min-height: calc(100dvh - var(--hdr-h) - 1px);
+    padding-block: clamp(1rem, 3.2vh, 3rem);
+
+    &::before {
+      min-height: 0; // as tall as the row: the window, or the card where that is taller
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 4.4vh, var(--fs-h3));
+    }
+
+    .auth__card {
+      padding: clamp(1.25rem, 3.4vh, 2rem) clamp(1.5rem, 2.2vw, 2rem);
+    }
+
+    .auth__intro {
+      margin-bottom: clamp(0.75rem, 2.4vh, 1.5rem);
+      font-size: clamp(0.875rem, 2.1vh, 1rem);
+      line-height: 1.45;
+    }
+
+    .auth__field {
+      gap: clamp(0.25rem, 0.8vh, 0.5rem);
+      margin-bottom: clamp(0.625rem, 2vh, 1.25rem);
+
+      input,
+      select {
+        height: clamp(40px, 6vh, 48px);
+      }
+    }
+
+    .pw-reqs {
+      grid-template-columns: 1fr 1fr;
+      column-gap: var(--space-4);
+      margin-top: clamp(0.25rem, 0.8vh, 0.5rem);
+    }
+
+    .auth__alt {
+      margin-top: clamp(0.75rem, 2.2vh, 1.5rem);
+    }
+
+    // the vendor sign-up has four fields where the others have two: a step tighter
+    &.auth--vendor {
+      padding-block: clamp(0.75rem, 2.4vh, 3rem);
+
+      .auth__card {
+        padding-block: clamp(1rem, 2.8vh, 2rem);
+      }
+
+      .auth__field {
+        margin-bottom: clamp(0.5rem, 1.5vh, 1.25rem);
+      }
+
+      .auth__alt {
+        margin-top: clamp(0.5rem, 1.6vh, 1.5rem);
+      }
+    }
+  }
 }
 
 .auth__intro {
@@ -480,6 +545,17 @@
     > :not(h1) {
       grid-column: 2;
       max-width: 46rem;
+    }
+  }
+
+  // A page that should fit one screen (the contact page with its form): the space above and
+  // below follows the window's height in place of the fixed 64px and 80px, and so does the
+  // gap under each paragraph.
+  .static-page--fit {
+    padding-block: clamp(1.25rem, 4.5vh, 4rem);
+
+    > p {
+      margin-bottom: clamp(0.5rem, 1.8vh, 1rem);
     }
   }
 }

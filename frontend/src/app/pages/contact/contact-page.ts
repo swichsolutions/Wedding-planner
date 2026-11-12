@@ -8,7 +8,8 @@ import { InquiryForm } from './inquiry-form';
   selector: 'app-contact-page',
   imports: [TranslatePipe, InquiryForm],
   template: `
-    <section class="static-page">
+    <!-- static-page--fit: on wide screens the page (text, address, form) fits one screen -->
+    <section class="static-page static-page--fit">
       <h1>{{ 'contactPage.title' | translate }}</h1>
       <p>{{ 'contactPage.body' | translate }}</p>
       <p>

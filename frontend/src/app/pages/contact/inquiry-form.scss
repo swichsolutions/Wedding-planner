@@ -27,19 +27,59 @@
   line-height: 1.2;
 }
 
-// name and email side by side once there is room; the fields keep their own bottom margin
+// Name, email and phone: stacked on a phone, name and email side by side from 600px (the
+// phone under them), all three in one row from 1024px. The fields keep their own bottom
+// margin. The labels sit at the bottom of their cell so the inputs line up when one label
+// wraps.
 .iq__row {
   display: grid;
-  column-gap: var(--space-5);
+  column-gap: var(--space-4);
+  align-items: end;
 
+  // minmax(0, …), and the fields allowed to shrink: a text input's own minimum width would
+  // otherwise hold three columns wider than a laptop's text column and scroll the page sideways
   @include bp.respond-to(sm) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include bp.respond-to(lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .auth__field,
+  input {
+    min-width: 0;
   }
 }
 
-.iq__phone {
-  @include bp.respond-to(sm) {
-    max-width: calc(50% - var(--space-5) / 2);
+// Wide screens: the page fits one screen (Beka, 2026-11-12: the form ran below the fold).
+// Spacing, field height and the message box follow the window's height, like the sign-up
+// pages (section.auth in styles/_components.scss).
+@include bp.respond-to(lg) {
+  :host {
+    margin-top: clamp(0.75rem, 2.6vh, 2rem);
+  }
+
+  .iq,
+  .iq-done {
+    padding: clamp(1.25rem, 3.2vh, 2rem) clamp(1.5rem, 2.2vw, 2rem);
+  }
+
+  .iq__title {
+    margin-bottom: clamp(0.625rem, 2vh, 1.25rem);
+  }
+
+  .iq .auth__field {
+    gap: clamp(0.25rem, 0.8vh, 0.5rem);
+    margin-bottom: clamp(0.625rem, 2vh, 1.25rem);
+
+    input {
+      height: clamp(40px, 6vh, 48px);
+    }
+
+    textarea {
+      min-height: clamp(5.5rem, 16vh, 9rem);
+    }
   }
 }
 
