@@ -98,6 +98,18 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+
+  // The narrowest phones: the second button's label is wider than the screen and wraps
+  // inside its pill. Both buttons take the full width, and a wrapped label gets room to
+  // breathe (buttons are set at line-height 1).
+  @media (max-width: 399px) {
+    .btn {
+      width: 100%;
+      padding-block: var(--space-3);
+      line-height: 1.25;
+      text-align: center;
+    }
+  }
 }
 
 .fv-hero__free {
