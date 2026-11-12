@@ -482,9 +482,10 @@
     grid-area: 3 / 1;
     align-self: center;
     container-type: inline-size;
-    // never under the ring beside it: on a phone the ring (48px, 12px from the edge) would
-    // otherwise sit on the card's frame and text
-    width: min(var(--card-w), calc(100% - 2 * (48px + var(--space-3) + var(--space-2))));
+    // (--card-w is capped by the screen height, which on a phone leaves the card narrow
+    // enough that the ring beside it stays clear of its text, and wide enough that the
+    // step's link stays on one line; a narrower card wraps that link)
+    width: min(var(--card-w), calc(100% - 2 * var(--gutter)));
     // clear of the button above; more room below than above, so it sits a little high
     margin-block: clamp(1.25rem, 4vh, 3rem) clamp(1.5rem, 6vh, 9rem);
   }
