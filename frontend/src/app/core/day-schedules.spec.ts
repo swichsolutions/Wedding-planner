@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DAY_SCHEDULES, LocalText, local } from './day-schedules';
+import { DAY_SCHEDULES, LocalText, iconFor, local, phaseStarts } from './day-schedules';
 
 const texts = (t: LocalText | undefined): string[] => (t ? [t.ka, t.en] : []);
 
@@ -24,6 +24,19 @@ describe('DAY_SCHEDULES', () => {
         return (h === 0 ? 24 : h) * 60 + m;
       });
       expect(minutes).toEqual([...minutes].sort((a, b) => a - b));
+    }
+  });
+});
+
+describe('the day views', () => {
+  it('draw an icon for every row and start a phase on a row that exists', () => {
+    for (const s of DAY_SCHEDULES) {
+      for (const r of s.rows) expect(iconFor(r.activity.ka), r.activity.ka).not.toBe('dot');
+      const starts = phaseStarts(s.key);
+      expect(starts[0]).toBe(0);
+      expect(starts).toEqual([...starts].sort((a, b) => a - b));
+      // the last phase leaves a row after its first one: the day bar marks that row too
+      expect(starts[starts.length - 1]).toBeLessThan(s.rows.length - 1);
     }
   });
 });

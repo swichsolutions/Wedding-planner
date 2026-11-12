@@ -19,11 +19,11 @@ describe('scheduleRows', () => {
   it('turns an example into rows in the chosen language', () => {
     const ka = scheduleRows('church-restaurant', 'ka')!;
     const en = scheduleRows('church-restaurant', 'en')!;
-    expect(ka).toHaveLength(11);
-    expect(ka[1]).toMatchObject({ time: '12:30', activity: 'მაყრიონი პატარძლის სახლში', contact: null });
-    expect(en[1].activity).toBe('Makrioni at the bride’s home');
+    expect(ka).toHaveLength(9);
+    expect(ka[1]).toMatchObject({ time: '13:30', activity: 'სტუმრების შეკრება ეკლესიასთან', contact: null });
+    expect(en[1].activity).toBe('Guests gather at the church');
     // a row without a note or a responsible person sends null, not an empty string
-    expect(ka[ka.length - 1]).toMatchObject({ activity: 'დასასრული', note: null, who: null });
+    expect(ka[ka.length - 1]).toMatchObject({ activity: 'წვეულების დასრულება', note: null, who: null });
   });
 
   it('is null for an unknown example', () => {
