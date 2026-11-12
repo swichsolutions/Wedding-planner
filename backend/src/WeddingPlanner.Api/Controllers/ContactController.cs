@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using WeddingPlanner.Api.Dtos;
 using WeddingPlanner.Api.Email;
 using WeddingPlanner.Infrastructure.Email;
@@ -17,8 +18,10 @@ namespace WeddingPlanner.Api.Controllers;
 public class ContactController : ControllerBase
 {
     /// <summary>
-    /// Inquiries mailed per hour, site-wide. The per-IP limit doesn't stop a flood from many
-    /// addresses, and each inquiry is a mail out of the same SMTP allowance as password resets.
+    /// Inquiries mailed per hour, site-wide. The per-IP limit ("contact": 3 in 10 minutes, so
+    /// 18 an hour at most from one address, which cannot fill this on its own) doesn't stop a
+    /// flood from many addresses, and each inquiry is a mail out of the same SMTP allowance
+    /// as password resets.
     /// </summary>
     private const int HourlyCap = 40;
 
@@ -50,15 +53,29 @@ public class ContactController : ControllerBase
 
     /// <summary>202 when the mail went out; 503 when it could not, so the form can point to the address instead.</summary>
     [HttpPost]
-    [EnableRateLimiting("messages")]
+    [EnableRateLimiting("contact")]
     public async Task<IActionResult> Send([FromBody] ContactInquiryDto dto, CancellationToken ct)
     {
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
-        // A filled honeypot is a bot: answer as if sent, mail nothing.
+        // A filled honeypot is a bot: answer as if sent, mail nothing. Logged without any of
+        // its content, so that a real visitor caught by it (an autofill tool filling every
+        // field) can at least be noticed.
         if (!string.IsNullOrWhiteSpace(dto.Website))
+        {
+            _logger.LogInformation("A contact inquiry was dropped: the honeypot field was filled.");
             return Accepted();
+        }
+
+        // [EmailAddress] only looks for one '@'. The address becomes the mail's Reply-To, and
+        // System.Net.Mail is stricter ("a@b c" throws there): say so as a bad request here,
+        // not as "could not send" after the fact.
+        if (!MailAddress.TryCreate(dto.Email.Trim(), out _))
+        {
+            ModelState.AddModelError(nameof(dto.Email), "The email address is not valid.");
+            return ValidationProblem(ModelState);
+        }
 
         // Without SMTP nothing is delivered (the fallback sender only logs). Development keeps
         // working that way: the mail is printed to the console.
@@ -68,9 +85,9 @@ public class ContactController : ControllerBase
             return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
-        if (!UnderHourlyCap())
+        if (SentThisHour().Value >= HourlyCap)
         {
-            _logger.LogWarning("Contact inquiries passed {Cap} this hour; further ones are refused.", HourlyCap);
+            _logger.LogWarning("Contact inquiries reached {Cap} this hour; further ones are refused.", HourlyCap);
             return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
@@ -98,19 +115,22 @@ public class ContactController : ControllerBase
             return StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
+        // Only mail that went out counts against the hour: failed sends cost neither inbox
+        // space nor SMTP allowance, and must not lock the form once the mail server is back.
+        Interlocked.Increment(ref SentThisHour().Value);
         return Accepted();
     }
 
-    /// <summary>Counts this inquiry against the current clock hour; false once the hour is full.</summary>
-    private bool UnderHourlyCap()
-    {
-        var counter = _cache.GetOrCreate($"contact:{DateTimeOffset.UtcNow:yyyyMMddHH}", entry =>
+    /// <summary>
+    /// The count of inquiries mailed in the current clock hour (a new counter each hour).
+    /// Requests in flight together may pass the cap by a few; it is a brake, not a quota.
+    /// </summary>
+    private Counter SentThisHour() =>
+        _cache.GetOrCreate($"contact:{DateTimeOffset.UtcNow:yyyyMMddHH}", entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
             return new Counter();
         })!;
-        return Interlocked.Increment(ref counter.Value) <= HourlyCap;
-    }
 
     private sealed class Counter
     {

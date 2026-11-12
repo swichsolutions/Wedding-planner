@@ -216,16 +216,20 @@
 
 // =============================================================================
 // 01 — Hero, and from the first scroll "where do I start?": sections 01 and 02 in one
-// stage (review of 2026-11-12). One photo, one box, two sets of words.
-//
-// Stacked (the default: phones, tablets upright, short screens, no JS): two blocks one
-// after the other, the hero's words and then the steps (heading, box, step pills), with
-// the photo held behind both while they scroll past.
+// stage (review of 2026-11-12).
 //
 // Staged (.is-staged, set by ScrollStage from 1024px wide and 600px tall): one pinned
-// screen. The box has ONE position and size; the hero's words and the steps' words take
-// turns around it. .is-run (the first scroll) swaps them with plain CSS transitions, and
-// the screen stays pinned for --hold of further scrolling before the page moves on.
+// screen. At rest it is the hero: the photo full screen, its words, and a box in the
+// middle holding the first step. .is-run (the first scroll) shrinks the photo into the
+// box, while the box moves and narrows into the second section's card; around it the
+// second section appears (its own photo, its heading, the link, the step pills, the
+// ring). The shrunken hero photo stays in the box as the first step's picture; on steps
+// two and three the box is see-through. Everything that moves runs on one clock
+// (--run-dur, --run-ease), so the photo's edge and the box's border arrive together.
+// The screen stays pinned for --hold of further scrolling before the page moves on.
+//
+// Stacked (the default: phones, tablets upright, short screens, no JS): the hero and the
+// steps are two ordinary full-screen blocks, each on its own photo.
 // =============================================================================
 .intro {
   position: relative;
@@ -233,7 +237,7 @@
   color: var(--on-spruce);
   // The one-line headline is sized from 100vw, which counts a desktop scrollbar: in a
   // narrow desktop window it can run a few pixels past the edge. Clip, not hidden: hidden
-  // would make this a scroll container and unpin the photo.
+  // would make this a scroll container and unpin the stage.
   overflow-x: clip;
 
   // The headline's size, shared with the box so the box can start below it. On phones,
@@ -241,44 +245,87 @@
   // 4.6vw on desktop, capped at 72px.
   --title-fs: clamp(1.25rem, min((100vw - 34px) / 12.6, 2.2rem + 2.6vw), 4.5rem);
 
-  // The box when staged. Sized from the screen height as well, so it keeps the same tall
-  // shape on a short laptop screen as on a big monitor; its top sits below the headline.
+  // The box at rest: the hero's frame. Sized from the screen height as well, so it keeps
+  // the same tall shape on a short laptop screen as on a big monitor; its top sits below
+  // the headline.
   --box-w: min(36rem, 40vw, 45vh);
   --box-top: max(30vh, var(--hdr-h) + 48px + var(--title-fs) + var(--space-5));
-  --box-bottom: 11vh; // room under the box for the step pills (and the scroll arrow at rest)
-  // Short wide screens: the centred box would run into the hero's text column, so it moves
-  // right, just past the paragraph, and stays inside the screen. Zero wherever the centred
-  // box already clears the text.
+  --box-bottom: 11vh; // the whole box is on screen, above the scroll arrow
+  // Short wide screens: the centred box would run into the hero's text column, so at rest
+  // it moves right, just past the paragraph, and stays inside the screen. Zero wherever
+  // the centred box already clears the text.
   --copy-right: calc(max(var(--gutter), (100vw - var(--container-max)) / 2 + var(--gutter)) + var(--space-2) + 400px + var(--space-4));
   --box-shift: clamp(0px, var(--copy-right) - (100vw - var(--box-w)) / 2, (100vw - var(--box-w)) / 2 - var(--gutter));
-  // how long the staged screen stays pinned after the first scroll
-  --hold: 55vh;
+
+  // The box once the stage has run: the second section's 4:5 card, centred. Sized from
+  // the screen height too (44vh tall at most), so the heading, the card and the step
+  // pills always fit one screen.
+  --card-w: min(24rem, 44vh * 0.8);
+  --card-h: calc(var(--card-w) * 1.25);
+  --card-bottom: clamp(4.5rem, 13vh, 9rem); // room under the card for the step pills
+  --card-top: calc(100dvh - var(--card-bottom) - var(--card-h));
+  // How far the photo zooms out while it shrinks, so the card shows the whole arch and
+  // not a full-size crop of its middle. Set by ScrollStage from the stage's and the
+  // card's sizes (the smallest scale at which the photo still covers the card).
+  --card-scale: 0.5;
+
+  --hold: 55vh; // how long the staged screen stays pinned after the first scroll
+  --run-dur: 950ms;
+  --run-ease: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-// ---- stacked: the hero's block is one screen, the steps follow at their own height ----
+// ---- stacked: the hero's block is one screen, the steps' block is at least another ----
 .intro__stage {
   position: relative;
   isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(100svh, auto) auto auto auto;
+  // hero / the steps' words / the card (takes the spare height) / the step pills.
+  // (vh first: browsers without the small-viewport unit would drop the whole declaration
+  // and the hero would lose its height)
+  grid-template-rows: minmax(100vh, auto) auto minmax(min-content, 1fr) auto;
+  grid-template-rows: minmax(100svh, auto) auto minmax(min-content, 1fr) auto;
   justify-items: center;
+  min-height: 200vh;
+  min-height: 200svh;
   background: var(--spruce);
 }
 
-// The photo layer: one screen tall, held in place while both blocks scroll past it.
-.intro__bg {
-  grid-area: 1 / 1 / -1 / -1;
+// the hero photo fills the hero's block
+.intro__photo {
+  grid-area: 1 / 1;
   justify-self: stretch;
-  align-self: start;
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: -1;
-  height: 100lvh;
   overflow: hidden;
 }
 
-// One background per slide, crossfading. Slide 1 is the hero photo (.hero__img below).
+.hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%; // the arch sits just below centre in both renders
+  filter: saturate(0.95);
+}
+
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(34, 30, 32, 0.5) 0%, rgba(34, 30, 32, 0.22) 45%, rgba(34, 30, 32, 0.45) 100%);
+}
+
+// the steps' photos fill the steps' block: one per slide, crossfading
+.intro__slides {
+  grid-area: 2 / 1 / -1 / -1;
+  justify-self: stretch;
+  position: relative;
+  z-index: -1;
+  overflow: hidden;
+}
+
 .start__bg {
   position: absolute;
   inset: 0;
@@ -294,31 +341,20 @@
   }
 }
 
-// back at the top the hero photo returns with the words, not a second after them
-.intro:not(.is-run) .start__bg {
-  transition-duration: 500ms;
-}
-
-.hero__img {
-  object-position: 50% 55%; // the arch sits just below centre in both renders
-  filter: saturate(0.95);
-}
-
-// The hero's shade, and over it a little more at the top and bottom, where the steps'
-// centred heading and the pills sit.
-.intro__scrim {
+.start__scrim {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to bottom, rgba(34, 30, 32, 0.5) 0%, rgba(34, 30, 32, 0.22) 45%, rgba(34, 30, 32, 0.45) 100%);
+    linear-gradient(to bottom, rgba(34, 30, 32, 0.6) 0%, rgba(34, 30, 32, 0.2) 40%, rgba(34, 30, 32, 0.55) 100%);
+}
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(to bottom, rgba(34, 30, 32, 0.24) 0%, rgba(34, 30, 32, 0) 40%, rgba(34, 30, 32, 0.2) 100%);
-  }
+// the size of the card the photo shrinks into, for ScrollStage to read (never shown)
+.intro__probe {
+  position: absolute;
+  width: var(--card-w);
+  height: var(--card-h);
+  visibility: hidden;
+  pointer-events: none;
 }
 
 // ---- the hero's words: top-left under the header, left-aligned, one colour ----
@@ -383,6 +419,7 @@
     @include bp.respond-to(md) {
       position: absolute;
       left: 50%;
+      top: calc(100vh - 44px - max(var(--space-6), env(safe-area-inset-bottom)));
       top: calc(100svh - 44px - max(var(--space-6), env(safe-area-inset-bottom)));
       z-index: 2;
       display: inline-flex;
@@ -403,16 +440,23 @@
   }
 }
 
-// ---- the steps' words: one heading, one line, centred ----
+// ---- the steps: one heading, one line, one button; the card; the step pills ----
 .start {
   &__copy {
     grid-area: 2 / 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: clamp(2rem, 7vh, 4rem) var(--gutter) 0;
+    // padding scales with the screen so the block is one screen on laptops too
+    padding: clamp(2.5rem, 8vh, 5rem) var(--gutter) 0;
     text-align: center;
-    scroll-margin-top: var(--hdr-h); // an anchor jump lands the heading below the bar
+    scroll-margin-top: var(--hdr-h); // a jump to it lands the heading below the bar
+
+    // it takes focus from script only (the hero's scroll arrow), as a place to continue
+    // from: no ring around a block of text
+    &:focus {
+      outline: none;
+    }
   }
 
   &__title {
@@ -423,7 +467,7 @@
   }
 
   &__lead {
-    margin: 0;
+    margin: 0 0 var(--space-6);
     max-width: 30rem;
     font-family: var(--font-statement);
     font-size: var(--fs-lead);
@@ -431,17 +475,22 @@
     color: #fff;
   }
 
-  // The box. Its text scales with its width (cqi), so every screen shows the same box,
-  // only smaller or larger.
+  // The card, centred in the spare height. It is sized from the screen height too (44vh
+  // tall at most), and its text scales with its width (cqi), so a laptop shows the same
+  // card as a big monitor, only smaller.
   &__card {
     grid-area: 3 / 1;
+    align-self: center;
     container-type: inline-size;
-    width: min(22rem, calc(100% - 2 * var(--gutter)));
-    margin-block: clamp(1.5rem, 5vh, 3rem);
+    // never under the ring beside it: on a phone the ring (48px, 12px from the edge) would
+    // otherwise sit on the card's frame and text
+    width: min(var(--card-w), calc(100% - 2 * (48px + var(--space-3) + var(--space-2))));
+    // clear of the button above; more room below than above, so it sits a little high
+    margin-block: clamp(1.25rem, 4vh, 3rem) clamp(1.5rem, 6vh, 9rem);
   }
 
-  // Revolut-style frame (their "Life, meets savings" box): a tall portrait rectangle with
-  // a crisp 1px solid white border and nothing inside it but the photo. Three rows —
+  // Revolut-style frame (their "Life, meets savings" box): a tall portrait rectangle, 4:5,
+  // with a crisp 1px solid white border and nothing inside it but the photo. Three rows —
   // empty / main block / empty — keep the step and its value in the exact middle; the
   // detail pill sits on its own near the bottom edge.
   &__card-inner {
@@ -512,7 +561,7 @@
   }
 
   // the one arrow (the global .car-arrow is pinned to its section's right edge; stacked,
-  // it sits beside the box instead)
+  // it sits beside the card instead, since the "section" here is two screens tall)
   &__arrow {
     grid-area: 3 / 1;
     justify-self: end;
@@ -532,7 +581,7 @@
     justify-content: center;
     gap: var(--space-2);
     margin: 0;
-    padding: 0 var(--gutter) clamp(1.5rem, 5vh, 3rem);
+    padding: 0 var(--gutter) clamp(1.25rem, 3.5vh, 3rem);
     list-style: none;
   }
 
@@ -570,7 +619,7 @@
   }
 }
 
-// ---- staged: one pinned screen, the box in one place, the words taking turns ----
+// ---- staged: one pinned screen; the photo shrinks into the box ----
 .intro.is-staged {
   height: calc(100dvh + var(--hold)); // the runway: the screen stays pinned for --hold
 
@@ -579,16 +628,29 @@
     top: 0;
     display: block;
     height: 100dvh;
+    min-height: 0;
     overflow: hidden;
   }
 
-  .intro__bg {
+  // the steps' photos lie under the hero photo, full screen, and show as it shrinks
+  .intro__slides {
     position: absolute;
     inset: 0;
-    // (align-self: start, kept from the stacked rule, would shrink an absolute box to its
-    // content, which is nothing: the photos inside are absolute too)
-    align-self: stretch;
-    height: 100%;
+    z-index: 0;
+  }
+
+  // the hero photo: full screen at rest; when the stage runs, clipped to the card
+  .intro__photo {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    clip-path: inset(0 0 0 0 round 0px);
+  }
+
+  // ...and zoomed out about the screen's centre, then moved to the card's centre, so the
+  // card shows the whole arch
+  .hero__img {
+    transform-origin: 50% 50%;
   }
 
   .hero__copy {
@@ -596,47 +658,48 @@
     left: 0;
     right: 0;
     top: calc(var(--hdr-h) + 48px);
-    z-index: 2;
+    z-index: 3;
     padding-top: 0;
-    transition: opacity 320ms var(--ease-out), translate 420ms var(--ease-out);
   }
 
-  // Between the bar and the box, centred on the box (which is off-centre on short wide
-  // screens). Sized from the screen height: a heading and one line must fit that band on
-  // a laptop (about 140px at 1366x640).
+  // The steps' words: between the bar and the card, centred. Sized from the screen
+  // height, so the heading, the line and the button fit that band on a laptop too.
   .start__copy {
     position: absolute;
     top: var(--hdr-h);
     left: 50%;
-    z-index: 2;
-    width: min(52rem, 100vw - 2 * var(--gutter) - 2 * var(--box-shift));
-    height: calc(var(--box-top) - var(--hdr-h));
+    z-index: 3;
+    width: min(52rem, 100% - 2 * var(--gutter));
+    height: calc(var(--card-top) - var(--hdr-h));
     justify-content: center;
     padding: 0;
-    transform: translateX(calc(-50% + var(--box-shift)));
+    transform: translateX(-50%);
     translate: 0 16px;
   }
 
   .start__title {
-    margin-bottom: clamp(0.375rem, 1.2vh, 0.75rem);
-    font-size: clamp(1.625rem, 5.4vh, 3.25rem);
+    margin-bottom: clamp(0.375rem, 1.4vh, 0.875rem);
+    font-size: clamp(1.75rem, 6vh, 3.5rem);
     line-height: 1.05;
   }
 
   .start__lead {
-    max-width: none;
-    font-size: clamp(0.9375rem, 2.2vh, 1.25rem);
-    line-height: 1.4;
-    text-wrap: balance;
+    margin-bottom: clamp(0.625rem, 2.2vh, 1.5rem);
+    font-size: clamp(0.9375rem, 2.3vh, 1.25rem);
+    line-height: 1.45;
   }
 
-  // the box: the hero's frame, and the same in both states
+  // The box: at rest the hero's frame (large, and off-centre on short wide screens); run,
+  // the second section's card. Position and size move on the same clock as the photo.
   .start__card {
     position: absolute;
     top: var(--box-top);
     bottom: var(--box-bottom);
     left: 50%;
     z-index: 2;
+    // (the stacked rule centres the card in its grid row; on an absolute box that would
+    // shrink it to its content instead of filling top-to-bottom)
+    align-self: stretch;
     width: var(--box-w);
     margin: 0 0 0 calc(var(--box-w) / -2 + var(--box-shift));
   }
@@ -644,11 +707,10 @@
   .start__card-inner {
     height: 100%;
     aspect-ratio: auto;
-    padding: clamp(1rem, 5cqi, 1.75rem);
     border-radius: 24px;
   }
 
-  // the box is larger than the stacked card, so its text may grow further with it
+  // the frame at rest is larger than the card, so its text may grow further with it
   .start__card-label {
     font-size: clamp(0.9375rem, 5.2cqi, 1.5rem);
   }
@@ -657,11 +719,10 @@
     font-size: clamp(1.125rem, 7.8cqi, 2.75rem);
   }
 
-  // one line in every box: the text follows the box's width (12px in the 288px box of a
-  // 640px-tall laptop screen, 17px in the large ones)
+  // one line in every card: the text follows the card's width
   .start__card-sub {
-    min-height: clamp(34px, 12cqi, 40px);
-    font-size: clamp(0.75rem, 4.2cqi, 1.0625rem);
+    min-height: clamp(32px, 13cqi, 40px);
+    font-size: clamp(0.75rem, 4.6cqi, 1rem);
     white-space: nowrap;
   }
 
@@ -670,26 +731,28 @@
     position: absolute;
     top: 50%;
     right: var(--space-8);
+    z-index: 3;
     margin-right: 0;
     transform: translateY(-50%);
   }
 
-  // under the box, centred on it; the scroll arrow shares the spot while at rest
+  // under the card, centred
   .start__dots {
     position: absolute;
     left: 50%;
-    bottom: calc((var(--box-bottom) - 2.25rem) / 2);
-    z-index: 2;
+    bottom: calc((var(--card-bottom) - 2.25rem) / 2);
+    z-index: 3;
     flex-wrap: nowrap;
     padding: 0;
-    transform: translateX(calc(-50% + var(--box-shift)));
+    transform: translateX(-50%);
   }
 
+  // under the hero's frame
   .hero__down {
     top: auto;
     bottom: calc((var(--box-bottom) - 44px) / 2);
     left: calc(50% + var(--box-shift));
-    transition: opacity 200ms var(--ease-out);
+    z-index: 3;
   }
 
   // ---- at rest: the hero's words are on; the steps' words, link, pills and ring wait ----
@@ -699,16 +762,80 @@
   .start__arrow {
     opacity: 0;
     pointer-events: none;
-    transition: opacity 360ms var(--ease-out), translate 480ms var(--ease-out);
   }
 
-  .intro__scrim::after {
-    opacity: 0;
-    transition: opacity 600ms var(--ease-out);
+  // ---- the transitions. Only once ScrollStage has set the stage up (.is-ready, a frame
+  // after .is-staged): the switch from the stacked layout to this one at page load, and a
+  // page opened mid-scroll, must simply appear, not animate into place. ----
+  &.is-ready {
+    .intro__photo {
+      transition: clip-path var(--run-dur) var(--run-ease), opacity 600ms var(--ease-out);
+    }
+
+    .hero__img {
+      transition: transform var(--run-dur) var(--run-ease);
+    }
+
+    .start__card {
+      transition:
+        top var(--run-dur) var(--run-ease),
+        bottom var(--run-dur) var(--run-ease),
+        width var(--run-dur) var(--run-ease),
+        margin-left var(--run-dur) var(--run-ease);
+    }
+
+    .start__card-inner {
+      transition: border-radius var(--run-dur) var(--run-ease);
+    }
+
+    .hero__copy {
+      transition: opacity 320ms var(--ease-out), translate 420ms var(--ease-out);
+    }
+
+    .hero__down {
+      transition: opacity 200ms var(--ease-out);
+    }
+
+    .start__copy,
+    .start__card-sub,
+    .start__dots,
+    .start__arrow {
+      transition: opacity 420ms var(--ease-out), translate 520ms var(--ease-out);
+    }
   }
 
-  // ---- run (the first scroll): they change places; the photo and the box do not move ----
+  // ---- run (the first scroll) ----
   &.is-run {
+    .intro__photo {
+      clip-path: inset(
+        var(--card-top)
+        calc((100% - var(--card-w)) / 2)
+        var(--card-bottom)
+        calc((100% - var(--card-w)) / 2)
+        round 14px
+      );
+
+      // steps two and three: the box is see-through over that step's own photo
+      &.is-off {
+        opacity: 0;
+      }
+    }
+
+    .hero__img {
+      transform: translateY(calc(var(--card-top) + var(--card-h) / 2 - 50dvh)) scale(var(--card-scale));
+    }
+
+    .start__card {
+      top: var(--card-top);
+      bottom: var(--card-bottom);
+      width: var(--card-w);
+      margin-left: calc(var(--card-w) / -2);
+    }
+
+    .start__card-inner {
+      border-radius: 14px;
+    }
+
     .hero__copy {
       opacity: 0;
       translate: 0 -28px;
@@ -726,15 +853,11 @@
     .start__arrow {
       opacity: 1;
       pointer-events: auto;
-      transition-delay: 200ms; // after the hero's words have begun to leave
+      transition-delay: 380ms; // once the photo is well on its way into the box
     }
 
     .start__copy {
       translate: 0 0;
-    }
-
-    .intro__scrim::after {
-      opacity: 1;
     }
   }
 }

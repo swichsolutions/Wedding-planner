@@ -14,13 +14,14 @@ import { TrustFaq } from './trust-faq/trust-faq';
 import { FinalCall } from './final-call/final-call';
 import { DayPreview } from '../../components/day-preview/day-preview';
 import { CarouselArrow } from '../../components/carousel-arrow/carousel-arrow';
+import { img } from '../../core/catalog';
 import { CategoryStat, VendorService } from '../../core/vendor.service';
 
 /**
  * Landing page, in seven sections (the order since the review of 2026-11-12): hero → three
  * steps → categories → organizer → example day schedules → FAQ → final call. The first two
- * share one stage: the hero's photo and box stay, and the words around them change on the
- * first scroll (core/scroll-stage.directive.ts, home.scss). Each section answers the question
+ * share one stage: on the first scroll the hero photo shrinks into the box in its middle,
+ * which becomes the first step's card (core/scroll-stage.directive.ts, home.scss). Each section answers the question
  * a couple naturally asks next. All copy lives in i18n under `home.*` (the schedules in
  * core/day-schedules.ts); this file only holds structure.
  */
@@ -101,16 +102,15 @@ export class Home {
     if (this.rotating()) this.startRotation();
   }
 
-  /** 02 — the three planning steps: a full-bleed photo and the step's box each.
-   * The first step has no photo of its own: it is the hero photo, so the first scroll
-   * changes the words and nothing else. The couple in the car (which used to open the
-   * section) is the second step's photo. The slides rotate on their own once the stage
-   * has run (browser only, not under reduced motion); the bottom labels switch directly. */
-  protected readonly startSlides: { key: string; img?: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
-    { key: 's1', to: 'organize' },
+  /** 02 — the three planning steps, each a full-bleed photo + the step card. On the first
+   * step the card also holds the hero photo, shrunk into it by the opening stage. The
+   * slides rotate on their own once the stage has run (browser only, not under reduced
+   * motion); the bottom labels switch directly. */
+  protected readonly startSlides: { key: string; img: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
     // couple in a convertible under cypresses, b&w, portrait (Beka's photo 156.jpg);
     // the couple sits low in the frame, so wide screens anchor the crop there
-    { key: 's2', img: '/media/plan-define-2.webp', pos: 'center 78%', to: 'find' },
+    { key: 's1', img: '/media/plan-define-2.webp', pos: 'center 78%', to: 'organize' },
+    { key: 's2', img: img('photo-1583939003579-730e3918a45a', 2400), to: 'find' },
     // Beka's photo (OneDrive Desktop/9411badc...jpg), portrait, 1067 px wide source
     { key: 's3', img: '/media/plan-details-3.webp', pos: 'center 55%', to: 'day' },
   ];
@@ -120,8 +120,8 @@ export class Home {
   /** True while the slides turn on their own (drives the ring's fill and the live region). */
   protected readonly rotating = signal(false);
 
-  /** The stage ran (the first scroll) or went back to rest (the top of the page). Rest
-   * always shows the first step on the hero photo, so the rotation stops and rewinds there. */
+  /** The stage ran (the first scroll) or went back to rest (the top of the page). Rest is
+   * the hero with the first step in its box, so the rotation stops and rewinds there. */
   protected onStage(ran: boolean): void {
     if (ran) {
       this.slidesArmed.set(true);
@@ -132,13 +132,19 @@ export class Home {
     }
   }
 
-  /** The hero's scroll arrow. In the pinned stage its target is already on screen, so a
-   * plain anchor would go nowhere: scroll just far enough to run the stage instead.
-   * Stacked, the anchor does its own job. */
+  /** The hero's scroll arrow: on to the second section, and keyboard focus with it (left
+   * on the arrow, focus would sit on a control that has just faded out). Never the plain
+   * "#start" anchor: with <base href="/"> it resolves to "/#start", which reloads the page
+   * when the address carries a query. On the pinned stage the section is already on
+   * screen, so it is focus that brings it on (ScrollStage scrolls to the state that shows
+   * a focused control); stacked, the page scrolls down to it. */
   protected runStage(event: Event): void {
-    if (!(event.currentTarget as HTMLElement).closest('.intro.is-staged')) return;
     event.preventDefault();
-    window.scrollTo({ top: Math.round(window.innerHeight * 0.2), behavior: 'smooth' });
+    const start = document.getElementById('start');
+    if (!start) return;
+    const staged = !!(event.currentTarget as HTMLElement).closest('.intro.is-staged');
+    if (!staged) start.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    start.focus({ preventScroll: true });
   }
 
   /** 03 — the categories: the 14 catalog slugs folded into nine cards (the carousel;

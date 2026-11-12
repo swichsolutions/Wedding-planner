@@ -174,8 +174,10 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   server-rendered, and the server can't see who is signed in. Never branch it on auth.
   Its sections, in order (2026-11-12 review): hero → "საიდან დავიწყო?" (three steps) →
   categories → organizer → day schedules → FAQ → final call. The first two share one stage:
-  the hero's photo and box stay and the words change on the first scroll
-  (`core/scroll-stage.directive.ts`; pinned from 1024px, plain scrolling below).
+  on the first scroll the hero photo shrinks into the box in its middle and stays there as
+  the first step's picture, with the second section (the couple-in-the-car photo, heading,
+  step pills) around it (`core/scroll-stage.directive.ts`; pinned from 1024px, two plain
+  blocks below). Beka wants this shrinking-photo effect kept: do not replace it.
 - Header (2026-11-12 review): the three menus start right after the logo, and every dropdown
   opens to the right from its own title.
 - The couple's organizer ("ჩემი ქორწილი", sitemap §06) lives at **`/planning`**. It is the
@@ -261,7 +263,8 @@ The app is deliberately config-driven; a bare deploy fails in specific known way
    appsettings.Development.json).
 3. **`ForwardedHeaders:TrustedProxies`** (array of proxy IPs) must be set behind any
    reverse proxy — otherwise every client shares the proxy's IP and the per-IP rate
-   limits (auth 10/min, messages 5/min, tracking/search 60/min) become site-wide.
+   limits (auth 10/min, messages 5/min, the contact form 3 per 10 min, tracking/search 60/min)
+   become site-wide.
 4. **Migrations do NOT auto-apply outside Development.** Run them explicitly on deploy
    (e.g. `dotnet ef database update` from WeddingPlanner.Infrastructure, or a migration bundle).
    Roles (Couple/Vendor/Admin) DO seed automatically on every startup, and so does the vendor

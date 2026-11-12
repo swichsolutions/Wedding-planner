@@ -199,8 +199,12 @@ export class App {
     this.lastY = y;
     // The landing page's opening stage is pinned for its extra height (the hero's words
     // give way to the second section's, the photo stays): the bar stays too, unchanged.
+    // Two release points, 32px apart, not one: leaving the pinned state condenses the bar
+    // by 12px, which shifts the page and would carry scrollY back across a single cutoff,
+    // and the bar would then flip between its two states for as long as the page rests there.
     const stage = document.querySelector<HTMLElement>('.intro.is-staged');
-    const pinned = !!stage && y < stage.offsetHeight - window.innerHeight;
+    const release = stage ? stage.offsetHeight - window.innerHeight : 0;
+    const pinned = !!stage && y < release + (this.introPinned() ? 16 : -16);
     this.introPinned.set(pinned);
     if (y < 8 || pinned) {
       this.hidden.set(false);

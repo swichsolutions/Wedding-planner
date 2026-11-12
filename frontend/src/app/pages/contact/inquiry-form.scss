@@ -70,6 +70,17 @@
 .iq .btn {
   justify-self: start;
   min-width: 10rem;
+
+  // while a send is on its way (the button is not truly disabled, see the template)
+  &[aria-disabled='true'] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+// the confirmation heading takes focus from script, to be read out: no ring around it
+.iq-done__title:focus {
+  outline: none;
 }
 
 // Off screen, not display:none (some bots skip hidden fields), and out of the tab order.

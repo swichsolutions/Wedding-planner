@@ -222,6 +222,7 @@
     "start": {
       "title": "Where do I start?",
       "lead": "Three steps and the plan is yours. It adapts to your date, guest count and budget.",
+      "cta": "See how planning works",
       "s1": {
         "label": "Define",
         "title": "Define your wedding",
@@ -1331,7 +1332,7 @@
       "sentBody": "Thank you! We’ll reply to the email you gave.",
       "again": "Send another message",
       "error": "The message couldn’t be sent. Try again, or write to us at {{email}}",
-      "tooMany": "Too many attempts. Try again in a minute."
+      "tooMany": "Too many attempts. Try again in a few minutes."
     }
   },
   "notFound": {

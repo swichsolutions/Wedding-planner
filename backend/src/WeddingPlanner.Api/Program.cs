@@ -147,6 +147,18 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
             }));
 
+    // The /contact inquiry form: every request is a mail to our own inbox, so it is tighter
+    // than "messages". Three in ten minutes is plenty for a person who mistypes and retries,
+    // and keeps one address well under the form's site-wide hourly cap (ContactController).
+    options.AddPolicy("contact", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromMinutes(10),
+            }));
+
     options.AddPolicy("tracking", ctx =>
         RateLimitPartition.GetFixedWindowLimiter(
             ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",

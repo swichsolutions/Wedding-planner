@@ -1,37 +1,42 @@
 <!-- ================== 01 + 02 / PROMISE → "WHERE DO I START?" ================== -->
-<!-- One photo, one box, two sets of words (review of 2026-11-12). At rest this is the hero:
-     the headline, the lead and the button, and in the middle of the photo the box that
-     already holds the first planning step. On the first scroll the photo and the box stay
-     where they are: the headline leaves, and the second section's heading arrives above
-     the box with the step's link, the step pills and the ring. From then on the three
-     steps rotate as slides (the hero photo, the couple in the car, the hall).
+<!-- The hero and the three steps share one stage (review of 2026-11-12). At rest this is
+     the hero: the photo full screen, the headline, the lead and the button, and in the
+     middle a box that already holds the first planning step. On the first scroll the
+     photo shrinks into that box (the site's own first-to-second-screen effect) and stays
+     there as the first step's picture; around it the second section appears: its photo
+     (the couple in the car) full screen, the heading, the step's link, the step pills and
+     the ring. On steps two and three the box is see-through over that step's photo.
      From 1024px the screen is pinned while this happens (ScrollStage: .is-staged, .is-run).
-     On smaller or short screens, and without JS, the two halves are ordinary blocks one
-     after the other with the photo held behind both. The second section used to be the
-     "ყველაფერი ერთ სივრცეში" three-card stage; that is gone. -->
+     On smaller or short screens, and without JS, the hero and the steps are two ordinary
+     full-screen blocks. The "ყველაფერი ერთ სივრცეში" three-card end of the old effect is
+     gone: the photo now shrinks straight into the second section. -->
 <section id="promise" class="intro" appScrollStage (ran)="onStage($event)">
   <div class="intro__stage" data-nav="dark">
-    <div class="intro__bg">
-      <!-- Slide 1 is the hero photo: the same scene rendered twice, tall for portrait
-           screens (phones), wide for everything else. -->
+    <!-- The steps' photos, one per slide, crossfading. The first is in the server HTML (the
+         steps are readable without JS); it is lazy and low priority so it never competes
+         with the hero photo. The other two join after the first scroll. -->
+    <div class="intro__slides">
+      @for (s of startSlides; track s.key; let i = $index) {
+        @if (i === 0 || slidesArmed()) {
+          <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" alt="" loading="lazy"
+            fetchpriority="low" decoding="async" [style.object-position]="s.pos ?? null" width="2000" height="1333" />
+        }
+      }
+      <div class="start__scrim" aria-hidden="true"></div>
+    </div>
+
+    <!-- The hero photo: the same scene rendered twice, tall for portrait screens (phones),
+         wide for everything else. Staged, it shrinks into the box and shows only on the
+         first step. -->
+    <div class="intro__photo" [class.is-off]="slide() !== 0">
       <picture>
         <source media="(orientation: portrait)" type="image/webp" srcset="/media/hero-tall.webp" />
         <source media="(orientation: portrait)" srcset="/media/hero-tall.jpg" />
         <source type="image/webp" srcset="/media/hero-wide.webp" />
-        <img class="start__bg hero__img" [class.is-active]="slide() === 0" src="/media/hero-wide.jpg"
-          [alt]="'home.hero.photoAlt' | translate" width="1536" height="1024" fetchpriority="high" />
+        <img class="hero__img" src="/media/hero-wide.jpg" [alt]="'home.hero.photoAlt' | translate"
+          width="1536" height="1024" fetchpriority="high" />
       </picture>
-      <!-- Slides 2 and 3 join the page only after the first scroll: sitting unseen in the
-           first screen they would load at once and compete with the hero photo. -->
-      @if (slidesArmed()) {
-        @for (s of startSlides; track s.key; let i = $index) {
-          @if (s.img) {
-            <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" alt=""
-              [style.object-position]="s.pos ?? null" width="2000" height="1333" />
-          }
-        }
-      }
-      <div class="intro__scrim" aria-hidden="true"></div>
+      <div class="hero__scrim" aria-hidden="true"></div>
     </div>
 
     <!-- the hero's words -->
@@ -47,15 +52,30 @@
       </a>
     </div>
 
-    <!-- the second section's words: one heading, one line (no button: the box has the link) -->
-    <div id="start" class="start__copy" data-stage="run">
+    <!-- The hero's scroll arrow. It comes right after the hero's words in the page so the
+         keyboard reaches it before the second section's controls (it is placed at the foot
+         of the screen by CSS). A plain "#start" link would go nowhere on the pinned stage
+         (the target is already on screen) and reloads the page when the address has a
+         query, so the click is handled in runStage. -->
+    <a class="hero__down" data-stage="rest" href="#start" (click)="runStage($event)"
+      [attr.aria-label]="'home.hero.scroll' | translate">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6 6-6"/></svg>
+    </a>
+
+    <!-- the second section's words (focusable from script only: the scroll arrow moves
+         keyboard focus here) -->
+    <div id="start" class="start__copy" data-stage="run" tabindex="-1">
       <h2 class="start__title">{{ 'home.start.title' | translate }}</h2>
       <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
+      <a class="pill-cta pill-cta--white" [routerLink]="stepLink('organize')">
+        <span>{{ 'home.start.cta' | translate }}</span>
+      </a>
     </div>
 
-    <!-- The box: the current step. It is on screen in both states and never moves; at rest
-         it shows the first step without its link. Announced when a visitor switches steps,
-         not on every turn of the automatic rotation. -->
+    <!-- The box: the current step. At rest it is the hero's frame and shows the first step
+         without its link; when the stage runs it becomes the second section's card, and the
+         shrunken hero photo fills it on the first step. Announced when a visitor switches
+         steps, not on every turn of the automatic rotation. -->
     <div class="start__card" [attr.aria-live]="rotating() ? 'off' : 'polite'">
       @for (s of startSlides; track s.key; let i = $index) {
         @if (slide() === i) {
@@ -77,6 +97,9 @@
       }
     </div>
 
+    <!-- the size of the card the photo shrinks into, for ScrollStage to read (see home.scss) -->
+    <span class="intro__probe" data-stage-probe aria-hidden="true"></span>
+
     <!-- the ring in the far right corner: fills while the slide waits (only once the slides
          rotate), one step forward on click -->
     <app-car-arrow class="start__arrow car-arrow--light" data-stage="run" [label]="'home.carousel.next' | translate"
@@ -93,13 +116,6 @@
         </li>
       }
     </ol>
-
-    <!-- pinned stage: a plain anchor would go nowhere (the target is already on screen),
-         so the click scrolls just far enough to run the stage; stacked, it is the anchor -->
-    <a class="hero__down" data-stage="rest" href="#start" (click)="runStage($event)"
-      [attr.aria-label]="'home.hero.scroll' | translate">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6-6 6"/></svg>
-    </a>
   </div>
 </section>
 

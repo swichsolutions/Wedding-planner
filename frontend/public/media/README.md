@@ -37,10 +37,10 @@ Served as-is at `/media/...`.
   Desktop/dae9be358096f0a0760c85a0d7aeed18.jpg).
 - `plan-details.webp` — the previous third-slide photo, kept for now. Beach
   ceremony aisle (Pexels, asadphoto 169189), 2400 px wide.
-- `plan-define-2.webp` — background of the second "საიდან დავიწყო?" slide ("შეარჩიე
-  მთავარი"), referenced from `startSlides` in `home.ts`. Until 2026-11-12 it was the first
-  slide's; the first slide is now the hero photo itself (`hero-wide` / `hero-tall`), so the
-  first scroll changes the words and not the picture.
+- `plan-define-2.webp` — background of the first "საიდან დავიწყო?" slide
+  ("განსაზღვრე შენი ქორწილი"), referenced from `startSlides` in `home.ts`. Since
+  2026-11-12 it is also what appears around the box when the hero photo (`hero-wide` /
+  `hero-tall`) shrinks into it on the first scroll.
   Black-and-white couple in a convertible under cypresses, portrait
   (Beka's own photo `156.jpg`, 7728×5152 source), EXIF-rotated and resized to
   2400 px wide with Pillow (webp q82). The slide anchors the crop at
