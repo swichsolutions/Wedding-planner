@@ -192,12 +192,18 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   per tool, tasks and payments included.
   Dashboard and organizer work goes there. Budget/guests/seating are its sub-tools, and so is
   the invitation (`/planning/invitation`; guests open it at `/w/<slug>`).
-- Header: logo, three section menus, sign in, and a CTA ("დაიწყე დაგეგმვა", which becomes
-  "ჩემი გეგმა" after sign-in and opens `/planning`). No "ჩემი ქორწილი" group in the header:
+- Header: logo, three section menus, sign in, and a CTA ("რეგისტრაცია" since the texts of
+  2026-11-12, which becomes "ჩემი გეგმა" after sign-in and opens `/planning`). No "ჩემი ქორწილი" group in the header:
   the organizer has its own inner menu. "დაგეგმე ქორწილი" opens `/` (there is no `/plan` page);
   its dropdown is დღის განრიგები · მოსაწვევები. Couples who sign in on `/` land on
   `/planning`. Anywhere else they stay on the page they were on.
 - "რჩევები და იდეები" (`/guides`) stays. Its mock articles get replaced with real content.
+- Site copy: the texts of the public pages follow `Homepage texts.docx` (2026-11-12, not in the
+  repo): header, the seven home sections, sign-up, vendor sign-up, about, contact, for-vendors,
+  the catalog and guides intros. The three example days (`core/day-schedules.ts`) carry that
+  file's names and moments; their times are ours. Still to do with Beka, as that file says: the
+  `/schedules` page (options per moment, music rows), the guides' blog / ideas split, and the
+  texts inside the account.
 
 - **Backend:** .NET 8.
 - **DB:** PostgreSQL.

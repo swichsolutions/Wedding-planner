@@ -7,7 +7,7 @@
     "vendors": "Venues & services",
     "guides": "Tips & ideas",
     "login": "Sign in",
-    "start": "Start planning",
+    "start": "Sign up",
     "myPlan": "My plan",
     "myProfile": "My profile",
     "menu": "Menu",
@@ -210,7 +210,7 @@
     "hero": {
       "title": "Your dream",
       "titleEm": "wedding",
-      "lead": "A clear plan, the vendors you need and everything in one place.",
+      "lead": "An unforgettable wedding is made by many details and many people. Here you’ll find them all in one place.",
       "cta": "Start planning",
       "ctaCouple": "My wedding",
       "ctaVendor": "My profile",
@@ -221,29 +221,28 @@
     },
     "start": {
       "title": "Where do I start?",
-      "lead": "Three steps and the plan is yours. It adapts to your date, guest count and budget.",
-      "cta": "See how planning works",
+      "lead": "You don’t have to decide every detail at once. Start with one step, and each decision makes the next choice easier.",
       "s1": {
         "label": "Define",
-        "title": "Define your wedding",
-        "value": "Date, guests, budget",
-        "sub": "The plan adapts to your numbers"
+        "title": "Define the main details",
+        "value": "Date, budget, guests",
+        "sub": "Start planning"
       },
       "s2": {
         "label": "Choose",
-        "title": "Choose the essentials",
-        "value": "Venue, photo, music",
-        "sub": "Compare and save favourites"
+        "title": "Choose the services you want",
+        "value": "Venue, photographer, music",
+        "sub": "See the catalog"
       },
       "s3": {
         "label": "Plan",
-        "title": "Plan the details",
-        "value": "Tasks and payments",
-        "sub": "Day schedule from a template"
+        "title": "Plan the wedding day",
+        "value": "Schedule, tasks, payments",
+        "sub": "Day schedule"
       }
     },
     "find": {
-      "leadShort": "Every vendor in one place — with photos and starting prices.",
+      "leadShort": "Choose every service in one place, compare options and save your favourites.",
       "title": "Where do I find everything?",
       "lead": "Vendors by category — with photos, location and starting price. No account needed to browse.",
       "count": "vendors",
@@ -287,10 +286,10 @@
           "sub": "Wedding cars, convertibles, guest transfers"
         }
       },
-      "cta": "See all categories"
+      "cta": "See the catalog"
     },
     "organize": {
-      "title": "How do I keep everything under control?",
+      "title": "What’s done and what’s left?",
       "lead": "The personal organizer turns tasks, budget and saved vendors into one plan. You see the next step — not everything at once.",
       "sheet": {
         "names": "Nino & Giorgi",
@@ -331,50 +330,51 @@
         "chosen": "Chosen",
         "saved": "Saved"
       },
-      "leadShort": "One plan — tasks, budget and guests. You only ever see the next step.",
+      "leadShort": "Your plan shows tasks, budget, the guest list and the next steps together, so you always know where you are.",
       "modules": {
         "m1": "Tasks & deadlines",
         "m2": "Budget & payments",
         "m3": "Guests & seating"
       },
-      "cta": "Create your wedding plan",
+      "cta": "Create your plan",
       "chips": {
         "c1": "Simple planning",
-        "c2": "Made around you",
-        "c3": "Full control"
+        "c2": "A plan made around you",
+        "c3": "Control at every stage"
       }
     },
     "day": {
       "overline": "Wedding-day schedule",
-      "leadShort": "Pick a scenario and see the key moments of the day, in order.",
+      "leadShort": "See different wedding-day schedules and plan your day the way you want it.",
       "full": "See the full schedule",
       "title": "What happens after what?",
-      "cta": "See all schedules"
+      "cta": "Create your plan"
     },
     "trust": {
-      "title": "Will it really help?",
-      "lead": "No miracles promised — just order.",
-      "getTitle": "With an account you get",
-      "get1": "A personal plan",
-      "get2": "Saved vendors",
-      "get3": "Day schedule and seating",
+      "title": "Will planning my wedding really get easier?",
+      "lead": "We don’t promise miracles. We do promise that you can easily plan the wedding you imagine, yourself.",
+      "getTitle": "Create an account and get:",
+      "get1": "A personal organizer",
+      "get2": "Saved venues and services",
+      "get3": "Invitations and a seating plan",
       "faqTitle": "Frequently asked questions",
       "faq": {
         "q1": "Do I need an account to browse?",
-        "a1": "No. Vendors, tips and schedule examples are open without registration. You only need an account when you want to save a vendor or create your own plan.",
+        "a1": "No. You can see vendors, tips and schedule examples without registering. You need an account only if you want to save a service or create your own wedding plan.",
         "q2": "We don't have a date yet — can I still start?",
-        "a2": "Yes. Date, city and budget can be skipped — “not decided yet” is a complete answer. The plan adapts once you fill in the details later.",
+        "a2": "Yes. You don’t need to have everything decided from the start. Begin with what you know and imagine, and add the rest later.",
         "q3": "How do I contact a vendor?",
-        "a3": "On the profile you see the portfolio, packages and prices, and contact them right there: by phone, Instagram, WhatsApp or a message. Check the date with the vendor — saving them doesn’t book them.",
+        "a3": "On a vendor’s profile you can see the portfolio, service packages and contact details. Always check the date with the vendor — saving them to your profile doesn’t book them.",
         "q4": "Can I plan together with my partner?",
-        "a4": "Yes. Grant your partner access from settings and you both work on the same plan.",
-        "q5": "I already found a photographer elsewhere.",
-        "a5": "Add them to My services, with their name, contacts and offer. Once you agree a price it goes into your budget, with the payment due date. Not every vendor has to be on the platform.",
+        "a4": "Yes. Sign in to your profile, open the settings and give your partner access to your account. Then you can both work on your wedding plan.",
+        "q5": "I’ve already found a photographer.",
+        "a5": "If you’ve found a service, venue or vendor that isn’t on our platform, you can still add it to “My services” in your plan, with a name, contact and price. That price goes into your budget automatically.",
         "q6": "How do I make an invitation?",
-        "a6": "In your plan, pick a design, fill in the details and publish. Guests open the invitation from a link or a QR code and reply right there. Their answers appear in your guest list."
+        "a6": "In “My wedding”, go to the invitation builder, pick a design, fill in the details and publish. Guests open the invitation from a link and confirm right there. Their answers appear in your list."
       },
-      "finalTitle": "Start your wedding plan",
-      "finalNote": "Browsing needs no account.",
+      "finalTitle": "Plan your dream wedding",
+      "finalNote": "You can browse without registering.",
+      "finalCta": "Open an account",
       "question": "Question",
       "answer": "Answer",
       "flipHint": "Tap for the answer",
@@ -388,9 +388,9 @@
     "step1": "Choose what your day looks like",
     "step2": "This is how that day goes",
     "step3": "The full schedule",
-    "leadShort": "Pick the scenario closest to your day and see what happens when.",
+    "leadShort": "A wedding day can run in many ways. Which kind of wedding do you want?",
     "pick": "Pick a scenario",
-    "tabs": {"one-venue": "All in one place", "church-restaurant": "Church + restaurant", "reception-only": "Party only"},
+    "tabs": {"one-venue": "Signing ceremony + party", "church-restaurant": "Church wedding + party", "reception-only": "Party only"},
     "phase": {"prep": "Getting ready", "ceremony": "Ceremony and reception", "reception": "Reception", "party": "Party"},
     "title": "Wedding-day schedules",
     "lead": "Three common ways the day runs: all in one place, a church wedding and then a restaurant, or an evening party only. Each shows the time, the activity and who’s responsible.",
@@ -1192,7 +1192,7 @@
     "errNeeds": "Pick at least one — or tap Skip.",
     "errGuests": "Please choose one to continue.",
     "createAccount": "Create account",
-    "intro": "With an account you save vendors and build your own plan. A few questions come next — you can skip any of them.",
+    "intro": "Save your favourite vendors and create your wedding plan.",
     "joinTitle": "Create an account and join the plan",
     "joinIntro": "Once your account is made, you go straight back to the shared plan.",
     "emailTaken": "There is already an account with this email.",
@@ -1202,8 +1202,8 @@
   },
   "auth": {
     "loginTitle": "Sign in",
-    "registerTitle": "Add your business",
-    "registerSubtitle": "Create a free profile and get messages from couples.",
+    "registerTitle": "Add your business to the wedding catalog",
+    "registerSubtitle": "Introduce your services to couples who are planning a wedding. Creating a profile is free.",
     "email": "Email",
     "password": "Password",
     "passwordHint": "At least 8 characters",
@@ -1291,28 +1291,29 @@
   },
   "forVendors": {
     "overline": "For vendors",
-    "title": "Reach couples who are looking for what you offer",
+    "title": "Introduce your services to couples",
     "subtitle": "Create a free profile and get messages directly from interested couples.",
     "ctaPrimary": "Add your business",
     "ctaSecondary": "Browse vendors",
-    "howTitle": "How it works",
+    "howTitle": "How does it work?",
     "step1Title": "Create a profile",
-    "step1Body": "Add photos, pricing, and a description of your services — completely free.",
-    "step2Title": "Get discovered",
-    "step2Body": "Couples find you by category and city, on a photo-rich profile.",
-    "step3Title": "Win bookings",
-    "step3Body": "Reply to messages and start working with new couples.",
+    "step1Body": "Upload photos, set your prices and describe what you offer couples.",
+    "step2Title": "Couples find you in the catalog",
+    "step2Body": "Couples can search for services by category and city and look through your profile.",
+    "step3Title": "Agree with couples",
+    "step3Body": "Interested couples contact you directly. Answer their questions and agree on the terms.",
     "freeNote": "Listing is completely free right now."
   },
   "about": {
     "title": "About us",
-    "body1": "WeddingPlanner is a Georgian wedding platform that helps couples find, compare, and choose the best vendors for their big day.",
-    "body2": "Our goal is to make wedding planning simple, transparent, and enjoyable — from the photographer to the venue, all in one place.",
-    "body3": "The platform is Georgian-language and built for local couples."
+    "lead": "Congratulations, you’re engaged!",
+    "body1": "Planning a wedding means making countless decisions: where to hold it, who takes the photos, how to split the budget and so on. Organizing all of that on your own is time-consuming and tiring.",
+    "body2": "That’s exactly why we created WeddingPlanner — a platform where you can choose your venue and services, keep an eye on the budget, seat your guests and put together the wedding-day schedule, all in one place.",
+    "body3": "WeddingPlanner makes it easier to bring every detail together and plan your dream wedding from start to finish. We promise that organizing your wedding will stay with you as a good memory too."
   },
   "contactPage": {
     "title": "Contact",
-    "body": "Have a question or suggestion? Write to us and we’ll reply soon.",
+    "body": "Have a question or a suggestion? Write to us or fill in the form.",
     "emailLabel": "Email",
     "email": "info@weddingplanner.ge",
     "form": {
@@ -1351,7 +1352,7 @@
   },
   "vendors": {
     "title": "Venues & services",
-    "subtitle": "Every wedding service in one place: pick a category and filter.",
+    "subtitle": "Find the right venue and services for your wedding, compare offers and save your favourites.",
     "countLabel": "vendors",
     "price": "Max price",
     "anyPrice": "Any price",
@@ -1927,7 +1928,7 @@
   },
   "guides": {
     "hubTitle": "Tips & ideas",
-    "hubLead": "Practical planning advice, visual ideas and stories of real weddings.",
+    "hubLead": "Read tips and see ideas that will help you plan your wedding.",
     "hubMeta": "Wedding planning advice for Georgia: budget, guests, choosing vendors, the day schedule, inspiration and real weddings.",
     "hubEmpty": "The first articles and ideas are coming soon.",
     "blogTitle": "Blog",

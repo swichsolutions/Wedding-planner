@@ -66,13 +66,11 @@
     </a>
 
     <!-- the second section's words (focusable from script only: the scroll arrow moves
-         keyboard focus here) -->
+         keyboard focus here). No button of its own (the texts of 2026-11-12): each step's
+         card carries its link. -->
     <div id="start" class="start__copy" data-stage="run" tabindex="-1">
       <h2 class="start__title">{{ 'home.start.title' | translate }}</h2>
       <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
-      <a class="pill-cta pill-cta--white" [routerLink]="stepLink('organize')">
-        <span>{{ 'home.start.cta' | translate }}</span>
-      </a>
     </div>
 
     <!-- The box: the current step. At rest it is the hero's frame and shows the first step
@@ -273,9 +271,10 @@
   <div class="container">
     <div class="tl" appReveal>
       <div class="tl__copy">
-        <!-- just the question (Beka, 2026-11-03): no overline pill, no lead line — the picture
-             cards below say the rest -->
+        <!-- the question and one line under it (the line came back with the texts of
+             2026-11-12); no overline pill -->
         <h2 class="tl__title">{{ 'home.day.title' | translate }}</h2>
+        <p class="tl__lead">{{ 'home.day.leadShort' | translate }}</p>
       </div>
 
       <!-- pick a scenario, see the day's key moments; the full timeline is on /schedules
@@ -297,7 +296,7 @@
      turning gold ring over the title. Clipped so the entrance motion never adds a scrollbar. -->
 <section id="final" class="chap chap--peach chap--screen chap--clip">
   <div class="container">
-    <app-final-call [cta]="heroCta()" />
+    <app-final-call [cta]="finalCta()" />
   </div>
 </section>
 </div>

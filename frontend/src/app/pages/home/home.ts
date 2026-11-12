@@ -63,6 +63,13 @@ export class Home {
     return { link: '/signup', key: 'home.hero.cta' };
   });
 
+  /** The last section's button: a visitor is asked to open an account; signed-in users get
+   * the same button as in the hero. */
+  protected readonly finalCta = computed<{ link: string; key: string }>(() => {
+    const cta = this.heroCta();
+    return cta.link === '/signup' ? { link: cta.link, key: 'home.trust.finalCta' } : cta;
+  });
+
   constructor() {
     const destroyRef = inject(DestroyRef);
     const translate = inject(TranslateService);

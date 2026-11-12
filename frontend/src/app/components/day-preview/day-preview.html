@@ -12,9 +12,12 @@
       {{ 'home.day.full' | translate }}
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
     </a>
-    <!-- vendors and admins have no wedding day to fill -->
+    <!-- vendors and admins have no wedding day to fill. A visitor is asked to create a plan
+         (sign-up, then this schedule opens in it); a couple takes the schedule into theirs. -->
     @if (!auth.isAuthenticated() || auth.isCouple()) {
-      <button type="button" class="btn btn--outline-ink" (click)="use()">{{ 'schedules.use' | translate }}</button>
+      <button type="button" class="btn btn--outline-ink" (click)="use()">
+        {{ (auth.isCouple() ? 'schedules.use' : 'home.day.cta') | translate }}
+      </button>
     }
   </div>
 </div>

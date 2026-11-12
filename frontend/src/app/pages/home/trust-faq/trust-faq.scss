@@ -33,17 +33,26 @@
   }
 }
 
+// The words' column: the title is sized from its width, so the longest word of the question
+// („გამიმარტივდება", 8.4em wide in the heading face) fits on one line at every screen size
+// and never runs under the cards.
+.intro {
+  container-type: inline-size;
+}
+
 .title {
   margin: 0 0 var(--space-6);
-  font-size: clamp(2.5rem, 1.5rem + 3vw, 4.25rem);
+  font-size: clamp(2.5rem, 1.5rem + 3vw, 4.25rem); // where container units are unknown
+  font-size: min(clamp(2.5rem, 1.5rem + 3vw, 4.25rem), 100cqi / 8.6);
   line-height: var(--lh-heading);
 }
 
+// two sentences since the texts of 2026-11-12, so a step smaller than the one-line promise was
 .lead {
   margin: 0;
   max-width: 30rem;
   font-family: var(--font-statement);
-  font-size: clamp(1.25rem, 0.9rem + 1.1vw, 2rem);
+  font-size: clamp(1.125rem, 0.85rem + 0.8vw, 1.5rem);
   line-height: 1.4;
   color: var(--ink-700);
 }

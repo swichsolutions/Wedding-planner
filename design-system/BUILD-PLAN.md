@@ -154,6 +154,11 @@ All drafts in `PROPOSALS.md` (P1–P11) are approved as written (2026-10-21).
   the first scroll the hero photo fades into the first step's photo, the words change, and the
   box in the middle of the hero becomes the first step's card (see-through, like the others).
   The "ყველაფერი ერთ სივრცეში" three-card stage is gone, and nothing shrinks.
+  **Texts of 2026-11-12 („Homepage texts“):** new copy in all seven sections; no button under
+  "საიდან დავიწყო?" (each step's card has its own); the day section has a lead line again and
+  its three days are now „ხელის მოწერა + წვეულება“, „ჯვრისწერა + წვეულება“, „მხოლოდ წვეულება“ with
+  that file's moments (this replaces the P7 rows; the times are a starting point of ours); a
+  visitor's last button reads „გახსენი ანგარიში“; the header button reads „რეგისტრაცია“.
   The day section shows the three P7 schedules as cards with „ნახე განრიგი“ (the full schedule in
   a dialog) and „ნახე ყველა განრიგი“ → `/schedules` (built now: B2's public half). The FAQ gains
   the invitation question, with P9's answer (link or QR code, replies in the guest list) since B6. The own-vendor answer points to

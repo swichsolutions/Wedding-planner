@@ -1582,9 +1582,10 @@
     text-wrap: balance;
   }
 
+  // one line where the screen has the width for it, so the section still fits one screen
   &__lead {
     margin: 0;
-    max-width: 34rem;
+    max-width: 56rem;
     font-family: var(--font-statement);
     font-size: 1.0625rem;
     line-height: 1.4;
