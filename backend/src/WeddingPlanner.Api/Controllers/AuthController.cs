@@ -51,6 +51,11 @@ public class AuthController : ControllerBase
         if (category is null)
             return BadRequest("Unknown category.");
 
+        // The vendor row and its account are saved together or not at all: a failure between
+        // the two (anything but the cases answered below) used to leave a vendor nobody owns.
+        // Leaving this method without committing rolls everything back.
+        await using var tx = await _db.Database.BeginTransactionAsync();
+
         // Create the vendor first (unapproved) so we have an id for a unique slug.
         // The placeholder must itself be unique: a constant ("pending") violates the
         // (CategoryId, CitySlug, Slug) unique index when two registrations race.
@@ -90,20 +95,14 @@ public class AuthController : ControllerBase
         catch (DbUpdateException ex) when (DbErrors.IsUniqueViolation(ex))
         {
             // A concurrent registration with the same email slipped past the
-            // FindByEmail pre-check. Clean up the orphaned vendor row.
-            _db.ChangeTracker.Clear();
-            _db.Vendors.Remove(vendor);
-            await _db.SaveChangesAsync();
+            // FindByEmail pre-check. The vendor row goes with the rollback.
             return Conflict("Email already registered.");
         }
         if (!created.Succeeded)
-        {
-            _db.Vendors.Remove(vendor);
-            await _db.SaveChangesAsync();
-            return BadRequest(created.Errors.Select(e => e.Description));
-        }
+            return BadRequest(created.Errors.Select(e => e.Description)); // rolled back, vendor row included
 
         await _users.AddToRoleAsync(user, Roles.Vendor);
+        await tx.CommitAsync();
         var roles = await _users.GetRolesAsync(user);
         return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
     }
@@ -320,6 +319,18 @@ public class AuthController : ControllerBase
                 }
                 isNew = true;
             }
+        }
+        else if (!user.EmailConfirmed && user.PasswordHash is not null)
+        {
+            // Password sign-up never checks that the address is the person's own, so this
+            // account may have been made by someone else with the owner's Gmail, waiting for
+            // the owner to arrive through Google and fill in a plan the other person can read.
+            // Google has now vouched for the real owner: the unproven password goes (the owner
+            // can set one with "forgot password"), and the address counts as confirmed.
+            user.EmailConfirmed = true;
+            var secured = await _users.RemovePasswordAsync(user); // saves both changes
+            if (!secured.Succeeded)
+                return BadRequest(secured.Errors.Select(e => e.Description));
         }
 
         var roles = await _users.GetRolesAsync(user);

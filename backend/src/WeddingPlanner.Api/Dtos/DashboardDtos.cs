@@ -38,6 +38,17 @@ public class VendorEditDto
     [MaxLength(5)] public List<VendorPackageEditDto>? Packages { get; set; }
 }
 
+/// <summary>
+/// A profile for a vendor account that has none (POST /api/vendor/me): the same three answers
+/// as vendor registration, under the same names.
+/// </summary>
+public class VendorProfileCreateDto
+{
+    [Required, MaxLength(200)] public string VendorName { get; set; } = string.Empty;
+    [Required, MaxLength(120)] public string CategorySlug { get; set; } = string.Empty;
+    [MaxLength(120)] public string? City { get; set; }
+}
+
 public class VendorPackageEditDto
 {
     [Required, MaxLength(120)] public string Name { get; set; } = string.Empty;

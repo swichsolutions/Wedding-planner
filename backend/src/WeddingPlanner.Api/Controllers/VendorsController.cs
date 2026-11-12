@@ -4,6 +4,7 @@ using WeddingPlanner.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace WeddingPlanner.Api.Controllers;
 
@@ -12,8 +13,13 @@ namespace WeddingPlanner.Api.Controllers;
 public class VendorsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IMemoryCache _cache;
 
-    public VendorsController(AppDbContext db) => _db = db;
+    public VendorsController(AppDbContext db, IMemoryCache cache)
+    {
+        _db = db;
+        _cache = cache;
+    }
 
     /// <summary>
     /// Admin-added profiles nobody owns yet, by name: the vendor registration form offers them so a
@@ -21,7 +27,9 @@ public class VendorsController : ControllerBase
     /// and cities are public on the profiles anyway.
     /// </summary>
     [HttpGet("claimable")]
-    [EnableRateLimiting("auth")]
+    // A search-as-you-type box: on the "auth" policy (10 a minute, shared with sign-up and
+    // sign-in) a vendor typing their name used up the attempts they needed to register.
+    [EnableRateLimiting("tracking")]
     public async Task<ActionResult<IEnumerable<ClaimableVendorDto>>> Claimable([FromQuery] string? q)
     {
         q = q?.Trim();
@@ -82,9 +90,14 @@ public class VendorsController : ControllerBase
             query = query.Where(v => v.Category.Slug == category || v.AlsoOffers.Contains(category));
         if (!string.IsNullOrWhiteSpace(city))
             query = query.Where(v => v.CitySlug == city);
-        // A region matches the vendor's own region and the regions they travel to.
+        // A region matches the vendor's own region and the regions they travel to. A vendor who
+        // never picked a region (sign-up asks only for a city) is found through their city.
         if (CatalogRules.OneOf(region, CatalogRules.Regions) is string r)
-            query = query.Where(v => v.Region == r || v.ServedRegions.Contains(r));
+        {
+            var regionCities = CatalogRules.CitySlugsIn(r);
+            query = query.Where(v => v.Region == r || v.ServedRegions.Contains(r)
+                || (v.Region == null && regionCities.Contains(v.CitySlug)));
+        }
         if (minPrice.HasValue)
             query = query.Where(v => v.PriceMin >= minPrice.Value);
         if (maxPrice.HasValue)
@@ -227,7 +240,8 @@ public class VendorsController : ControllerBase
     {
         var rows = await _db.Vendors
             .AsNoTracking()
-            .Where(v => v.IsApproved && v.CitySlug != "")
+            // A vendor without a city still has a slug ("city-<id>"): no landing-page link for those.
+            .Where(v => v.IsApproved && v.CitySlug != "" && v.City != "")
             .GroupBy(v => new { CategorySlug = v.Category.Slug, v.CitySlug })
             .Select(g => new
             {
@@ -329,17 +343,25 @@ public class VendorsController : ControllerBase
     /// </summary>
     [HttpPost("{id:int}/track-view")]
     [EnableRateLimiting("tracking")]
-    public Task<IActionResult> TrackView(int id) => Track(id, views: 1);
+    public Task<IActionResult> TrackView(int id) => Track(id, "view", views: 1);
 
     /// <summary>Anonymous engagement ping: a contact interaction (call/WhatsApp/social/message).</summary>
     [HttpPost("{id:int}/track-contact")]
     [EnableRateLimiting("tracking")]
-    public Task<IActionResult> TrackContact(int id) => Track(id, contacts: 1);
+    public Task<IActionResult> TrackContact(int id) => Track(id, "contact", contacts: 1);
 
-    private async Task<IActionResult> Track(int id, int views = 0, int contacts = 0)
+    private async Task<IActionResult> Track(int id, string kind, int views = 0, int contacts = 0)
     {
         var exists = await _db.Vendors.AnyAsync(v => v.Id == id && v.IsApproved);
         if (!exists) return NotFound();
+
+        // One view and one contact per vendor per address per day: reloading a profile (or a
+        // script pinging it) must not inflate the numbers vendors will be shown. The answer is
+        // the same either way.
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var seenKey = $"track:{kind}:{id}:{ip}:{DateTime.UtcNow:yyyyMMdd}";
+        if (_cache.TryGetValue(seenKey, out _)) return NoContent();
+        _cache.Set(seenKey, true, TimeSpan.FromDays(1));
 
         await VendorStatTracking.IncrementAsync(_db, id, views: views, contacts: contacts);
         return NoContent();

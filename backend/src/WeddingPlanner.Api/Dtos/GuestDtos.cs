@@ -68,4 +68,9 @@ public class GuestCreateDto
 
 public class GuestUpdateDto : GuestCreateDto
 {
+    /// <summary>
+    /// The guest's RsvpAt as the client last saw it (null = had not answered). If the guest has
+    /// answered on the invitation since then, the update keeps their answer (GuestsController.Update).
+    /// </summary>
+    public DateTimeOffset? RsvpAt { get; set; }
 }

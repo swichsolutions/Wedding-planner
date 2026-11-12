@@ -93,6 +93,12 @@ var jwtKey = jwt["Key"];
 if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
     throw new InvalidOperationException(
         "Jwt:Key is missing or shorter than 32 characters. Set it in appsettings.Development.json (dev) or environment configuration (production).");
+// Fail fast here too: without an issuer or audience the API starts, hands out tokens at
+// sign-in and then rejects every one of them, which looks like "nobody can stay signed in".
+if (!builder.Environment.IsDevelopment()
+    && (string.IsNullOrWhiteSpace(jwt["Issuer"]) || string.IsNullOrWhiteSpace(jwt["Audience"])))
+    throw new InvalidOperationException(
+        "Jwt:Issuer and Jwt:Audience are required. Set them in environment configuration (Jwt__Issuer, Jwt__Audience).");
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -256,7 +262,7 @@ using (var scope = app.Services.CreateScope())
             await DbSeeder.SeedAsync(db);
 
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-        await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
+        await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration, app.Logger);
     }
     catch (Exception ex)
     {

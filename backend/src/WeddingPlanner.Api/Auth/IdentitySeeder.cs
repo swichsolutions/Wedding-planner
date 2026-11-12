@@ -21,7 +21,8 @@ public static class IdentitySeeder
 
     public static async Task SeedAdminAsync(
         UserManager<AppUser> users,
-        IConfiguration config)
+        IConfiguration config,
+        ILogger logger)
     {
         // No fallback credentials: anything hardcoded here is public in the repo.
         // Without explicit Seed config the admin user simply isn't seeded.
@@ -42,6 +43,13 @@ public static class IdentitySeeder
             var created = await users.CreateAsync(admin, adminPassword);
             if (created.Succeeded)
                 await users.AddToRoleAsync(admin, Roles.Admin);
+            else
+                // Usually a Seed:AdminPassword that breaks the password rules: without this line
+                // the site simply has no admin and nothing says why. Identity's errors name the
+                // rule that failed ("Passwords must have at least one digit"), never the password.
+                logger.LogWarning(
+                    "The admin account from Seed:AdminEmail was not created: {Errors}",
+                    string.Join("; ", created.Errors.Select(e => $"{e.Code}: {e.Description}")));
         }
     }
 }

@@ -22,7 +22,8 @@ public class PublicSitesController : ControllerBase
     /// Guest-facing site finder (Zola-style). First name, last name AND year are all
     /// required so published sites can't be browsed wholesale — a guest has to know
     /// who they're looking for. The name matches either partner, case-insensitively,
-    /// as a substring; results are ordered by closeness to the requested month.
+    /// as a substring of at least two letters each; results are ordered by closeness to the
+    /// requested month.
     /// </summary>
     [HttpGet("search")]
     // The most expensive anonymous endpoint (three-column ILIKE scan) — throttled so
@@ -40,6 +41,11 @@ public class PublicSitesController : ControllerBase
             return BadRequest();
         if (first.Length > 100 || last.Length > 100)
             return BadRequest();
+        // A single letter is a substring of almost every name: "a" + "i" would list most of a
+        // year's couples. Two letters is the floor (Georgian names can be that short); below it
+        // nothing is found, like the vendor name search in VendorsController.
+        if (first.Length < 2 || last.Length < 2)
+            return Ok(Array.Empty<SiteSearchResultDto>());
 
         // Escape LIKE wildcards so "%"/"_" match literally — otherwise firstName=%
         // lists every published couple, defeating the you-must-know-them design.

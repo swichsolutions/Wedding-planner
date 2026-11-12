@@ -134,6 +134,17 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Remove one review (spam, abuse, a vendor's justified complaint). The vendor's rating and
+    /// review count are worked out from the remaining rows on every read, so nothing else to fix.
+    /// </summary>
+    [HttpDelete("reviews/{id:int}")]
+    public async Task<IActionResult> DeleteReview(int id)
+    {
+        var deleted = await _db.Reviews.Where(r => r.Id == id).ExecuteDeleteAsync();
+        return deleted == 0 ? NotFound() : NoContent();
+    }
+
     /// <summary>Toggle the (dormant-monetization) featured flag.</summary>
     [HttpPost("vendors/{id:int}/feature")]
     public async Task<IActionResult> ToggleFeature(int id)

@@ -13,6 +13,34 @@ public static class CatalogRules
         "samtskhe-javakheti", "samegrelo-zemo-svaneti", "guria", "racha-lechkhumi",
     };
 
+    /// <summary>
+    /// City slug (<see cref="Slugs.From"/>) → region, for vendors who have a city but never chose
+    /// a region: the region filter finds them through this. Only places that belong to one region
+    /// without doubt; both spellings where the Georgian and the English name give different slugs.
+    /// </summary>
+    private static readonly Dictionary<string, string> CityRegions = new()
+    {
+        ["tbilisi"] = "tbilisi",
+        ["batumi"] = "adjara", ["kobuleti"] = "adjara", ["qobuleti"] = "adjara",
+        ["kutaisi"] = "imereti", ["qutaisi"] = "imereti", ["zestaponi"] = "imereti",
+        ["tskaltubo"] = "imereti", ["tsqaltubo"] = "imereti",
+        ["telavi"] = "kakheti", ["sighnaghi"] = "kakheti", ["signagi"] = "kakheti", ["kvareli"] = "kakheti",
+        ["qvareli"] = "kakheti", ["gurjaani"] = "kakheti", ["lagodekhi"] = "kakheti", ["sagarejo"] = "kakheti",
+        ["tsinandali"] = "kakheti",
+        ["mtskheta"] = "mtskheta-mtianeti", ["dusheti"] = "mtskheta-mtianeti", ["gudauri"] = "mtskheta-mtianeti",
+        ["stepantsminda"] = "mtskheta-mtianeti", ["kazbegi"] = "mtskheta-mtianeti", ["qazbegi"] = "mtskheta-mtianeti",
+        ["rustavi"] = "kvemo-kartli", ["marneuli"] = "kvemo-kartli", ["bolnisi"] = "kvemo-kartli",
+        ["gori"] = "shida-kartli", ["khashuri"] = "shida-kartli",
+        ["akhaltsikhe"] = "samtskhe-javakheti", ["borjomi"] = "samtskhe-javakheti", ["bakuriani"] = "samtskhe-javakheti",
+        ["zugdidi"] = "samegrelo-zemo-svaneti", ["poti"] = "samegrelo-zemo-svaneti", ["mestia"] = "samegrelo-zemo-svaneti",
+        ["ozurgeti"] = "guria",
+        ["ambrolauri"] = "racha-lechkhumi", ["oni"] = "racha-lechkhumi",
+    };
+
+    /// <summary>The city slugs known to lie in a region (an array, so a query can use Contains).</summary>
+    public static string[] CitySlugsIn(string region) =>
+        CityRegions.Where(c => c.Value == region).Select(c => c.Key).ToArray();
+
     /// <summary>What a price is for (P2).</summary>
     public static readonly string[] PriceUnits = { "event", "guest", "hour", "kg", "item" };
 

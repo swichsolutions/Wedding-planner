@@ -10,12 +10,11 @@ public static class PartnerInviteEmail
     public static readonly TimeSpan LinkLifetime = TimeSpan.FromDays(14);
 
     private record Copy(
-        string Subject, string SubjectNamed, string Greeting, string Intro, string IntroNamed,
+        string Subject, string Greeting, string Intro, string IntroNamed,
         string Button, string Validity, string Ignore, string Fallback);
 
     private static readonly Copy Ka = new(
         Subject: "{0}: მოგიწვიეს ქორწილის საერთო გეგმაზე",
-        SubjectNamed: "{1} გიწვევს ქორწილის საერთო გეგმაზე",
         Greeting: "გამარჯობა!",
         Intro: "მოგიწვიეს ქორწილის საერთო გეგმაზე: დავალებები, ბიუჯეტი, სტუმრები და დანარჩენი ერთად გექნებათ.",
         IntroNamed: "{1} გიწვევს ქორწილის საერთო გეგმაზე: დავალებები, ბიუჯეტი, სტუმრები და დანარჩენი ერთად გექნებათ.",
@@ -26,7 +25,6 @@ public static class PartnerInviteEmail
 
     private static readonly Copy En = new(
         Subject: "{0}: you're invited to a shared wedding plan",
-        SubjectNamed: "{1} invited you to plan your wedding together",
         Greeting: "Hi,",
         Intro: "You've been invited to a shared wedding plan: tasks, budget, guests and the rest, together.",
         IntroNamed: "{1} invited you to a shared wedding plan: tasks, budget, guests and the rest, together.",
@@ -40,7 +38,10 @@ public static class PartnerInviteEmail
         var en = string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         var c = en ? En : Ka;
         var named = !string.IsNullOrWhiteSpace(inviter);
-        var subject = string.Format(named ? c.SubjectNamed : c.Subject, brand, inviter);
+        // The subject is fixed: the inviter's name is free text the couple typed, and the mail
+        // goes to an address they typed too, so a name in the subject line would let anyone
+        // send a stranger a subject of their choosing under our name. The name stays in the body.
+        var subject = string.Format(c.Subject, brand);
         var intro = string.Format(named ? c.IntroNamed : c.Intro, brand, inviter);
 
         var text = $"{c.Greeting}\n\n{intro}\n\n{link}\n\n{c.Validity}\n\n{c.Ignore}\n\n{brand}\n";

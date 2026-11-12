@@ -117,7 +117,9 @@ public class BudgetController : ControllerBase
         var reminders = await _db.BudgetItems
             .AsNoTracking()
             .Where(i => i.CoupleId == cid && i.ReminderDate != null)
-            .Where(i => !(i.ActualCost > 0 && i.Paid >= i.ActualCost))
+            // Spelled out for the nullable columns: in SQL, NOT (… AND …) is NULL for a line with no
+            // agreed price or no payment yet, which dropped exactly the lines still to be paid.
+            .Where(i => i.ActualCost == null || i.ActualCost <= 0 || i.Paid == null || i.Paid < i.ActualCost)
             .OrderBy(i => i.ReminderDate)
             .Select(i => new BudgetReminderDto(
                 i.Id, i.Name, i.ReminderDate!.Value, i.Estimate, i.ActualCost, i.Paid))

@@ -6,8 +6,8 @@ namespace WeddingPlanner.Infrastructure.Data;
 /// <summary>
 /// The first blog articles, one per topic, created and published once on startup (every
 /// environment). The admin content editor owns them after that: edits, photos and unpublishing
-/// happen there, and survive deploys. Skipped when any of them already exists,
-/// so deleting one article doesn't bring it back. Georgian only for now; the page falls back to
+/// happen there, and survive deploys. Skipped when the blog has any article,
+/// so deleting these doesn't bring them back (only a blog with no articles at all is seeded again). Georgian only for now; the page falls back to
 /// Georgian in English. The cover photos are the site's own, in /media; replace them in the editor.
 /// </summary>
 public static class BlogArticlesSeeder
@@ -18,8 +18,9 @@ public static class BlogArticlesSeeder
 
     public static async Task SeedAsync(AppDbContext db)
     {
-        var slugs = Drafts.Select(d => d.Slug).ToArray();
-        if (await db.ContentPages.AnyAsync(c => c.Type == ContentPageType.Article && slugs.Contains(c.Slug)))
+        // Any article at all means the blog has been started. Looking only for these slugs
+        // brought all six back on the next restart once the admin had deleted the last of them.
+        if (await db.ContentPages.AnyAsync(c => c.Type == ContentPageType.Article))
             return;
 
         var now = DateTimeOffset.UtcNow;

@@ -7,6 +7,7 @@ using WeddingPlanner.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace WeddingPlanner.Api.Controllers;
@@ -52,6 +53,8 @@ public class ReviewsController : ControllerBase
     /// <summary>Create or update the signed-in couple's review of this vendor.</summary>
     [HttpPost]
     [Authorize(Roles = Roles.Couple)]
+    // Public text under a vendor's name: the same per-address brake as messages to vendors.
+    [EnableRateLimiting("messages")]
     public async Task<ActionResult<ReviewDto>> Submit(int vendorId, [FromBody] SubmitReviewDto dto)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);

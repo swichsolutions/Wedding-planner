@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace WeddingPlanner.Api.Controllers;
 
@@ -28,6 +29,11 @@ public class PlanController : ControllerBase
     /// <summary>The guest-count choices (frontend core/onboarding.ts).</summary>
     private static readonly string[] GuestRanges = { "0-50", "51-100", "101-150", "151-200", "201-300", "300plus", "notSure" };
     private const int MaxMembers = 2;
+    /// <summary>
+    /// Invitations mailed per plan per day. The address is whatever the couple types, so without
+    /// a cap the form could mail a stranger over and over. A link without mail is not counted.
+    /// </summary>
+    private const int MaxEmailedInvitesPerDay = 3;
 
     private readonly AppDbContext _db;
     private readonly CoupleScope _couple;
@@ -35,10 +41,11 @@ public class PlanController : ControllerBase
     private readonly EmailOutbox _outbox;
     private readonly EmailDelivery _delivery;
     private readonly IConfiguration _config;
+    private readonly IMemoryCache _cache;
 
     public PlanController(
         AppDbContext db, CoupleScope couple, UserManager<AppUser> users,
-        EmailOutbox outbox, EmailDelivery delivery, IConfiguration config)
+        EmailOutbox outbox, EmailDelivery delivery, IConfiguration config, IMemoryCache cache)
     {
         _db = db;
         _couple = couple;
@@ -46,6 +53,7 @@ public class PlanController : ControllerBase
         _outbox = outbox;
         _delivery = delivery;
         _config = config;
+        _cache = cache;
     }
 
     [HttpGet]
@@ -77,9 +85,10 @@ public class PlanController : ControllerBase
     }
 
     /// <summary>
-    /// Start over with new answers: overwrites the details and wipes the checklist, budget and
-    /// guests, which reseed from the new answers on their next load. Destructive by design (the
-    /// client confirms first); it affects both partners.
+    /// Start over with new answers: overwrites the details and wipes the checklist and budget,
+    /// which reseed from the new answers on their next load. Destructive by design (the client
+    /// confirms first); it affects both partners. The guest list stays: the couple is only told
+    /// about tasks and budget, and guests may already have answered their invitations.
     /// </summary>
     [HttpPut("restart")]
     public async Task<ActionResult<PlanDto>> Restart([FromBody] CoupleRestartDto dto)
@@ -102,8 +111,6 @@ public class PlanController : ControllerBase
         await _db.ChecklistItems.Where(c => c.CoupleId == cid).ExecuteDeleteAsync();
         await _db.BudgetItems.Where(b => b.CoupleId == cid).ExecuteDeleteAsync();
         await _db.CategoryBudgets.Where(c => c.CoupleId == cid).ExecuteDeleteAsync();
-        await _db.Guests.Where(g => g.CoupleId == cid).ExecuteDeleteAsync();
-        await _db.GuestFamilies.Where(f => f.CoupleId == cid).ExecuteDeleteAsync();
 
         await _db.SaveChangesAsync();
         await tx.CommitAsync();
@@ -114,7 +121,8 @@ public class PlanController : ControllerBase
 
     /// <summary>
     /// A new invitation link (replacing any open one), shown once. With an email and mail set up,
-    /// the link is also emailed; the response says whether it was.
+    /// the link is also emailed; the response says whether it was. Emailed invitations are capped
+    /// per plan per day (429 with code "mailLimit" over the cap; the open link is left as it was).
     /// </summary>
     [HttpPost("invite")]
     [EnableRateLimiting("auth")]
@@ -126,12 +134,20 @@ public class PlanController : ControllerBase
         var members = await _db.CoupleMembers.Where(m => m.CoupleId == cid).ToListAsync();
         if (members.Count >= MaxMembers) return Conflict(new { code = "full" });
 
+        var email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.Trim();
+        var willMail = email is not null && _delivery.Enabled;
+        // Checked before anything changes, so a refused request doesn't replace the open link.
+        // Requests in flight together may pass the cap by one; it is a brake, not a quota.
+        var mailedKey = $"partner-invite-mail:{cid}:{DateTimeOffset.UtcNow:yyyyMMdd}";
+        var mailedToday = _cache.TryGetValue(mailedKey, out int mailed) ? mailed : 0;
+        if (willMail && mailedToday >= MaxEmailedInvitesPerDay)
+            return StatusCode(StatusCodes.Status429TooManyRequests, new { code = "mailLimit" });
+
         await _db.CoupleInvites.Where(i => i.CoupleId == cid && i.AcceptedAt == null).ExecuteDeleteAsync();
 
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
             .TrimEnd('=').Replace('+', '-').Replace('/', '_');
         var now = DateTimeOffset.UtcNow;
-        var email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.Trim();
         var invite = new CoupleInvite
         {
             CoupleId = cid,
@@ -146,12 +162,14 @@ public class PlanController : ControllerBase
 
         var link = $"{SiteLinks.FrontendOrigin(_config)}/partner/{token}";
         var emailed = false;
-        if (email is not null && _delivery.Enabled)
+        if (willMail)
         {
             var me = members.First(m => m.UserId == uid);
             var plan = await _db.Couples.AsNoTracking().FirstAsync(c => c.Id == cid);
             var inviter = me.IsPartner ? plan.PartnerFirstName : plan.FirstName;
-            emailed = _outbox.TryEnqueue(PartnerInviteEmail.Build(email, link, inviter, dto.Lang, SiteLinks.Brand(_config)));
+            emailed = _outbox.TryEnqueue(PartnerInviteEmail.Build(email!, link, inviter, dto.Lang, SiteLinks.Brand(_config)));
+            // Only mail that was queued counts against the day.
+            if (emailed) _cache.Set(mailedKey, mailedToday + 1, TimeSpan.FromDays(1));
         }
 
         return Ok(new PlanInviteCreatedDto(link, invite.ExpiresAt, emailed));

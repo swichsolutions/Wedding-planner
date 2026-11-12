@@ -79,8 +79,15 @@ public class GuestsController : ControllerBase
         return Ok(ToDto(guest));
     }
 
+    /// <summary>
+    /// Save the couple's edit of a guest. The page sends its whole copy of the row, and that copy
+    /// may be older than the guest's own answer on the invitation (B6): the client says which
+    /// answer it last saw (<see cref="GuestUpdateDto.RsvpAt"/>), and when the stored one is newer,
+    /// the guest's answer stands (attendance, dietary needs, the plus-one) while the rest of the
+    /// edit is saved. The saved row comes back so the page can show what is really there.
+    /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] GuestUpdateDto dto)
+    public async Task<ActionResult<GuestDto>> Update(int id, [FromBody] GuestUpdateDto dto)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         if (await _couple.IdAsync() is not int cid) return Forbid();
@@ -88,11 +95,22 @@ public class GuestsController : ControllerBase
         var guest = await _db.Guests.FirstOrDefaultAsync(g => g.Id == id && g.CoupleId == cid);
         if (guest is null) return NotFound();
 
+        // Compared to the millisecond: the database keeps microseconds, a browser's Date doesn't.
+        var answeredSince = guest.RsvpAt is DateTimeOffset stored
+            && (dto.RsvpAt is not DateTimeOffset seen || stored.ToUnixTimeMilliseconds() > seen.ToUnixTimeMilliseconds());
+        var answer = (guest.Attendance, guest.DietaryNeeds, guest.HasPlusOne,
+            guest.PlusOneFirstName, guest.PlusOneLastName, guest.PlusOneNameUnknown);
+
         dto.FamilyId = await OwnFamilyAsync(cid, dto.FamilyId);
         Apply(guest, dto);
+        if (answeredSince)
+        {
+            (guest.Attendance, guest.DietaryNeeds, guest.HasPlusOne,
+                guest.PlusOneFirstName, guest.PlusOneLastName, guest.PlusOneNameUnknown) = answer;
+        }
         await _db.SaveChangesAsync();
         await FreeSeatsAsync(guest);
-        return NoContent();
+        return Ok(ToDto(guest));
     }
 
     /// <summary>The seating chart follows the guest: a declined party gives up all its seats, a

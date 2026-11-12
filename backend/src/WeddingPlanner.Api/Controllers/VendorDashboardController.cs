@@ -2,8 +2,11 @@ using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
+using WeddingPlanner.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace WeddingPlanner.Api.Controllers;
@@ -14,8 +17,15 @@ namespace WeddingPlanner.Api.Controllers;
 public class VendorDashboardController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly UserManager<AppUser> _users;
+    private readonly TokenService _tokens;
 
-    public VendorDashboardController(AppDbContext db) => _db = db;
+    public VendorDashboardController(AppDbContext db, UserManager<AppUser> users, TokenService tokens)
+    {
+        _db = db;
+        _users = users;
+        _tokens = tokens;
+    }
 
     /// <summary>The vendor's own record, or any vendor for an admin on the admin routes.</summary>
     private int? VendorId => VendorScope.Resolve(User, RouteData);
@@ -54,6 +64,63 @@ public class VendorDashboardController : ControllerBase
                 c.VendorId, c.Vendor.Name, c.Vendor.Category.Slug, c.Vendor.City, c.Status.ToString(), c.CreatedAt))
             .FirstOrDefaultAsync();
         return claim is null ? NotFound() : Ok(claim);
+    }
+
+    /// <summary>
+    /// A profile for a vendor account that has none. A rejected takeover request (A3), or a
+    /// profile an admin removed, used to leave the account with nothing it could do. Same rules
+    /// as registration: unapproved, the same slugs. It answers like sign-in, because the token
+    /// names the vendor: the client replaces its token with the one in the answer.
+    /// </summary>
+    [HttpPost("vendor/me")]
+    [Authorize(Roles = Roles.Vendor)]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<AuthResponseDto>> CreateMe([FromBody] VendorProfileCreateDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var user = userId is null ? null : await _users.FindByIdAsync(userId);
+        if (user is null) return Forbid();
+
+        // Asked of the account, not the token: a token from before an approval still says "no vendor".
+        if (user.VendorId is not null) return Conflict("The account already owns a profile.");
+        // While a request waits, an admin may still link this account to the profile it asked for.
+        if (await _db.VendorClaims.AnyAsync(c => c.UserId == user.Id && c.Status == VendorClaimStatus.Pending))
+            return Conflict("A takeover request is still waiting for an answer.");
+
+        var category = await _db.Categories.FirstOrDefaultAsync(c => c.Slug == dto.CategorySlug);
+        if (category is null) return BadRequest("Unknown category.");
+
+        // The vendor row and the link from the account are saved together or not at all.
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        var vendor = new Vendor
+        {
+            Name = dto.VendorName.Trim(),
+            Slug = $"pending-{Guid.NewGuid():N}", // unique until the id is known (see AuthController)
+            CategoryId = category.Id,
+            City = dto.City?.Trim() ?? string.Empty,
+            CitySlug = Slugs.From(dto.City),
+            Bio = string.Empty,
+            IsApproved = false,
+            IsFeatured = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+        _db.Vendors.Add(vendor);
+        await _db.SaveChangesAsync();
+
+        var nameSlug = Slugs.From(dto.VendorName);
+        vendor.Slug = string.IsNullOrEmpty(nameSlug) ? $"vendor-{vendor.Id}" : $"{nameSlug}-{vendor.Id}";
+        if (string.IsNullOrEmpty(vendor.CitySlug))
+            vendor.CitySlug = $"city-{vendor.Id}";
+        user.VendorId = vendor.Id;
+        // UpdateAsync saves the slugs too, and fails if the account changed meanwhile (the same
+        // form sent twice, an admin approving a request): then nothing is kept.
+        var linked = await _users.UpdateAsync(user);
+        if (!linked.Succeeded) return Conflict("The account changed meanwhile. Reload and try again.");
+        await tx.CommitAsync();
+
+        var roles = await _users.GetRolesAsync(user);
+        return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
     }
 
     [HttpPut("vendor/me")]

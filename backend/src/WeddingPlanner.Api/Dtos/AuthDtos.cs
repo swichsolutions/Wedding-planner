@@ -4,7 +4,7 @@ namespace WeddingPlanner.Api.Dtos;
 
 public class RegisterVendorDto
 {
-    [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required, EmailAddress, MaxLength(256)] public string Email { get; set; } = string.Empty;
     [Required, MinLength(8)] public string Password { get; set; } = string.Empty;
     [Required, MaxLength(200)] public string VendorName { get; set; } = string.Empty;
     /// <summary>Required unless the vendor claims an admin-added profile (ClaimVendorId), which has one already.</summary>
@@ -19,7 +19,7 @@ public class RegisterVendorDto
 
 public class RegisterCoupleDto
 {
-    [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required, EmailAddress, MaxLength(256)] public string Email { get; set; } = string.Empty;
     [Required, MinLength(8)] public string Password { get; set; } = string.Empty;
 
     // Optional details for the new plan. Sign-up asks for the account first and the details
