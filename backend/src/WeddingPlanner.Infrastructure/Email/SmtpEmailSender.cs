@@ -36,6 +36,8 @@ public class SmtpEmailSender : IEmailSender
             IsBodyHtml = false,
         };
         mail.To.Add(message.To);
+        if (!string.IsNullOrWhiteSpace(message.ReplyTo))
+            mail.ReplyToList.Add(new MailAddress(message.ReplyTo));
         if (message.HtmlBody is not null)
         {
             // Text first, HTML last: clients show the last alternative they can render.

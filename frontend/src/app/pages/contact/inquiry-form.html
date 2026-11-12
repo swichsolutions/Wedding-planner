@@ -1,0 +1,76 @@
+@if (state() === 'sent') {
+  <div class="iq-done" role="status">
+    <span class="iq-done__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+    </span>
+    <h2 class="iq-done__title">{{ 'contactPage.form.sentTitle' | translate }}</h2>
+    <p class="iq-done__body">{{ 'contactPage.form.sentBody' | translate }}</p>
+    <button type="button" class="btn btn--ghost" (click)="again()">{{ 'contactPage.form.again' | translate }}</button>
+  </div>
+} @else {
+  <form class="iq" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2 class="iq__title">{{ 'contactPage.form.title' | translate }}</h2>
+
+    <div class="iq__row">
+      <div class="auth__field">
+        <label for="iq-name">{{ 'contactPage.form.name' | translate }}</label>
+        <input id="iq-name" type="text" formControlName="name" autocomplete="name" maxlength="200" aria-required="true"
+          [class.is-invalid]="invalid('name')" [attr.aria-invalid]="invalid('name') ? 'true' : null"
+          [attr.aria-describedby]="invalid('name') ? 'iq-name-err' : null" />
+        @if (invalid('name')) {
+          <span id="iq-name-err" class="auth__err">{{ 'contactPage.form.nameRequired' | translate }}</span>
+        }
+      </div>
+
+      <div class="auth__field">
+        <label for="iq-email">{{ 'contactPage.form.email' | translate }}</label>
+        <input id="iq-email" type="email" inputmode="email" formControlName="email" autocomplete="email"
+          spellcheck="false" maxlength="256" aria-required="true"
+          [class.is-invalid]="invalid('email')" [attr.aria-invalid]="invalid('email') ? 'true' : null"
+          [attr.aria-describedby]="invalid('email') ? 'iq-email-err' : null" />
+        @if (invalid('email')) {
+          <span id="iq-email-err" class="auth__err">
+            {{ (form.controls.email.hasError('required') ? 'contactPage.form.emailRequired' : 'contactPage.form.emailInvalid') | translate }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="auth__field iq__phone">
+      <label for="iq-phone">{{ 'contactPage.form.phone' | translate }}</label>
+      <input id="iq-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" maxlength="40" />
+    </div>
+
+    <div class="auth__field">
+      <label for="iq-message">{{ 'contactPage.form.message' | translate }}</label>
+      <textarea id="iq-message" rows="6" formControlName="message" maxlength="4000" aria-required="true"
+        [class.is-invalid]="invalid('message')" [attr.aria-invalid]="invalid('message') ? 'true' : null"
+        [attr.aria-describedby]="invalid('message') ? 'iq-message-err' : null"></textarea>
+      @if (invalid('message')) {
+        <span id="iq-message-err" class="auth__err">
+          {{ (form.controls.message.hasError('minlength') ? 'contactPage.form.messageShort' : 'contactPage.form.messageRequired') | translate }}
+        </span>
+      }
+    </div>
+
+    <!-- Honeypot: off screen and out of the tab order, so people never fill it; a bot that
+         fills every field gives itself away (the API then mails nothing). -->
+    <div class="iq__hp" aria-hidden="true">
+      <label for="iq-website">Website</label>
+      <input id="iq-website" type="text" formControlName="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    @if (state() === 'error') {
+      <p class="auth__error" role="alert">
+        {{ 'contactPage.form.error' | translate: { email: ('contactPage.email' | translate) } }}
+      </p>
+    } @else if (state() === 'tooMany') {
+      <p class="auth__error" role="alert">{{ 'contactPage.form.tooMany' | translate }}</p>
+    }
+
+    <button type="submit" class="btn btn--primary" [disabled]="state() === 'sending'">
+      {{ (state() === 'sending' ? 'contactPage.form.sending' : 'contactPage.form.send') | translate }}
+    </button>
+  </form>
+}

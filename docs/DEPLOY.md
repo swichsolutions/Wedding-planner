@@ -64,6 +64,9 @@ Everything here needs the account owner; nothing in the repo changes.
    settings for Render: `Email__Smtp__Host=smtp.resend.com`, `Email__Smtp__Port=587`,
    `Email__Smtp__Username=resend`, `Email__Smtp__Password=<the API key>`,
    `Email__From=no-reply@weddingplanner.ge`. Any other SMTP relay (Brevo, Mailgun) works the same.
+   The form on `/contact` mails each inquiry to `Email__ContactTo` (default
+   `info@weddingplanner.ge`) and stores nothing, so that mailbox must exist and be read; replying
+   to such a mail answers the visitor. Without SMTP the form tells the visitor it could not send.
 8. **Google sign-in:** Google Cloud Console → the OAuth client used in
    `frontend/src/environments/environment.live.ts` → *Authorized JavaScript origins* add
    `https://weddingplanner.ge`; put the same client id in Render `Google__ClientId`. Until then

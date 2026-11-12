@@ -65,7 +65,8 @@ services:
         sync: false
       - key: Cloudinary__ApiSecret
         sync: false
-      # ---- "forgot password" e-mails (SMTP). Without these the API only logs them. ----
+      # ---- Outgoing e-mail (SMTP): "forgot password", partner invites and the /contact form.
+      # Without these the API only logs them, and the contact form answers "could not send". ----
       - key: Email__Smtp__Host
         sync: false # e.g. smtp.resend.com
       - key: Email__Smtp__Port
@@ -78,6 +79,9 @@ services:
         value: no-reply@weddingplanner.ge
       - key: Email__FromName
         value: WeddingPlanner
+      # the inbox that receives the /contact form (nothing is stored, the mail is the only copy)
+      - key: Email__ContactTo
+        value: info@weddingplanner.ge
       # ---- Google sign-in: the same OAuth client id as frontend/src/environments/environment.live.ts
       - key: Google__ClientId
         sync: false

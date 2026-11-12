@@ -1,0 +1,110 @@
+// The inquiry form on /contact. Brand theme: a sunken ivory panel on the white page with white
+// fields (the global .auth__field look), charcoal text, evergreen only on the send button.
+// The page's own rule `.static-page p` sets a lead size on every paragraph, so the paragraphs
+// in here state their size.
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+  margin-top: var(--space-8);
+}
+
+.iq,
+.iq-done {
+  padding: var(--space-6) var(--space-5);
+  border-radius: 20px;
+  background: var(--paper-deep);
+
+  @include bp.respond-to(sm) {
+    padding: var(--space-8);
+  }
+}
+
+.iq__title,
+.iq-done__title {
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-h4);
+  line-height: 1.2;
+}
+
+// name and email side by side once there is room; the fields keep their own bottom margin
+.iq__row {
+  display: grid;
+  column-gap: var(--space-5);
+
+  @include bp.respond-to(sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.iq__phone {
+  @include bp.respond-to(sm) {
+    max-width: calc(50% - var(--space-5) / 2);
+  }
+}
+
+// the global .auth__field styles inputs and selects; the message box follows them
+.auth__field textarea {
+  min-height: 9rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  resize: vertical;
+
+  &.is-invalid {
+    border-color: var(--color-danger-600);
+    box-shadow: 0 0 0 1px var(--color-danger-600);
+  }
+}
+
+.iq .auth__error {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+.iq .btn {
+  justify-self: start;
+  min-width: 10rem;
+}
+
+// Off screen, not display:none (some bots skip hidden fields), and out of the tab order.
+.iq__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+// ---- after a send ----
+.iq-done {
+  display: grid;
+  justify-items: start;
+}
+
+.iq-done__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: #fff;
+}
+
+.iq-done__title {
+  margin-bottom: var(--space-2);
+}
+
+.iq-done .iq-done__body {
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-700);
+}

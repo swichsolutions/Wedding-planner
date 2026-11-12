@@ -1338,7 +1338,26 @@
     "title": "Contact",
     "body": "Have a question or suggestion? Write to us and we’ll reply soon.",
     "emailLabel": "Email",
-    "email": "info@weddingplanner.ge"
+    "email": "info@weddingplanner.ge",
+    "form": {
+      "title": "Send us a message",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone (optional)",
+      "message": "Message",
+      "nameRequired": "Enter your name",
+      "emailRequired": "Enter your email so we can reply",
+      "emailInvalid": "Enter a valid email address",
+      "messageRequired": "Write your message",
+      "messageShort": "The message is too short",
+      "send": "Send",
+      "sending": "Sending…",
+      "sentTitle": "Message sent",
+      "sentBody": "Thank you! We’ll reply to the email you gave.",
+      "again": "Send another message",
+      "error": "The message couldn’t be sent. Try again, or write to us at {{email}}",
+      "tooMany": "Too many attempts. Try again in a minute."
+    }
   },
   "notFound": {
     "title": "Page not found",
