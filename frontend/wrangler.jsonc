@@ -19,6 +19,10 @@
   "observability": {
     "enabled": true
   },
+  // The deploy's version id, read by the edge page cache (server.edge.ts) so a page rendered by
+  // an earlier deploy, whose script files are gone, is never served. A binding is not inherited:
+  // each env below repeats it.
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "workers_dev": false,
   // Always deploy with --env (the npm scripts do): a bare `wrangler deploy` would create a
   // Worker with no address at all.
@@ -26,6 +30,7 @@
     "live": {
       "name": "weddingplanner-web",
       "workers_dev": false,
+      "version_metadata": { "binding": "CF_VERSION_METADATA" },
       // `wrangler deploy --env live` creates the DNS records and certificates for these itself.
       // The hostnames must not already have DNS records in the zone, and the zone must be active.
       "routes": [
@@ -36,7 +41,8 @@
     "preview": {
       // The same bundle on a workers.dev URL, for checking a build before it goes to the domain.
       "name": "weddingplanner-web-preview",
-      "workers_dev": true
+      "workers_dev": true,
+      "version_metadata": { "binding": "CF_VERSION_METADATA" }
     }
   }
 }

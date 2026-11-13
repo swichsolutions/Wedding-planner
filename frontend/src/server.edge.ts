@@ -1,10 +1,47 @@
 // What keeps server-rendered pages cheap and up on the Cloudflare Worker. A render costs 45–120 ms of
 // CPU, more than the Workers free plan allows per request: Cloudflare tolerates that now and then, but a
 // burst (a crawler, a shared link) gets requests killed with error 1102. So a public page is rendered
-// once and served from the edge for a few minutes. Pure, so server.edge.spec.ts can test it.
+// once and served from the edge: as it is for a few minutes, and for a day after that while a new
+// copy is rendered behind the visitor's back. Pure, so server.edge.spec.ts can test it.
 
-/** How long a rendered page is reused. Also how long an edit can take to show to first-time loads. */
+/** How long a rendered page is served without rendering it again. */
 export const EDGE_CACHE_SECONDS = 300;
+
+/**
+ * How long a rendered page is kept. Past the fresh window above it is still what the visitor
+ * gets, at once, and a new copy is rendered after the answer has gone out and stored for the
+ * next visitor (stale-while-revalidate). Until 2026-11-13 the page was dropped after the fresh
+ * window and the next visitor waited for the render: about three seconds on the home page.
+ * The price: on a page nobody opened for a while, an edit shows to the second visitor after
+ * it, not the first.
+ */
+export const EDGE_KEEP_SECONDS = 86_400;
+
+/** On a stored page: when it was rendered (ms since 1970). Never sent to a visitor. */
+const RENDERED_AT = 'x-edge-rendered-at';
+
+/**
+ * On a stored page: the Worker version that rendered it. Never sent to a visitor. A page from
+ * an earlier deploy names script and style files that are gone (every build renames them), so
+ * it is never served, however young: without this a page kept for a day would come up without
+ * its scripts for the first visitor after a deploy.
+ */
+const RENDERED_BY = 'x-edge-build';
+
+/**
+ * What to do with a stored page of the given age: serve it as it is, serve it and render a
+ * new copy in the background, or not use it at all. A copy with no readable time (stored by
+ * an older version of this code, which kept pages for the fresh window only) counts as stale.
+ */
+export function storedPageState(renderedAt: string | null, now: number): 'fresh' | 'stale' | 'expired' {
+  const at = renderedAt === null || renderedAt.trim() === '' ? NaN : Number(renderedAt);
+  if (!Number.isFinite(at)) return 'stale';
+  const age = (now - at) / 1000;
+  // (a time in the future means a clock that moved: render again rather than trust it)
+  if (age < 0) return 'stale';
+  if (age <= EDGE_CACHE_SECONDS) return 'fresh';
+  return age <= EDGE_KEEP_SECONDS ? 'stale' : 'expired';
+}
 
 /** Pages that must stay per-visitor or fresh: personal invitation links and one-time token links. */
 const NEVER_CACHED = [/^\/w(\/|$)/, /^\/partner(\/|$)/, /^\/join(\/|$)/, /^\/reset-password(\/|$)/];
@@ -55,25 +92,56 @@ export function isCacheablePage(req: Request): boolean {
   return !NEVER_CACHED.some((re) => re.test(pathname));
 }
 
-/** Serves `req` from the edge, or renders it and stores a successful page for next time. */
+/** Pages being rendered again in the background by this isolate: one render per page at a time. */
+const refreshing = new Set<string>();
+
+/**
+ * Serves `req` from the edge, or renders it and stores a successful page for next time. A stored
+ * page past its fresh window is served all the same (x-edge-cache: STALE) and rendered again once
+ * the answer is on its way; if that render fails, the stored copy stays for the next visitor.
+ * `build` names the running deploy (the Worker's version id): a page stored by another one is
+ * rendered again while the visitor waits. Without it (wrangler dev, tests) age alone decides.
+ */
 export async function withEdgeCache(
   req: Request,
   cache: EdgeCache,
   ctx: EdgeContext,
   render: () => Promise<Response>,
+  now: () => number = Date.now,
+  build?: string,
 ): Promise<Response> {
   if (!isCacheablePage(req)) return render();
 
   const key = edgeCacheKey(req.url);
+  const store = (res: Response) => {
+    const stored = new Response(res.body, res);
+    stored.headers.set('cache-control', `public, max-age=${EDGE_KEEP_SECONDS}`);
+    stored.headers.set(RENDERED_AT, String(now()));
+    if (build) stored.headers.set(RENDERED_BY, build);
+    return cache.put(key, stored).catch(() => undefined);
+  };
+
   const hit = await cache.match(key).catch(() => undefined);
-  if (hit) return forVisitor(hit, 'HIT');
+  const otherBuild = !!hit && !!build && hit.headers.get(RENDERED_BY) !== build;
+  const state = hit && !otherBuild ? storedPageState(hit.headers.get(RENDERED_AT), now()) : 'expired';
+  if (hit && state === 'fresh') return forVisitor(hit, 'HIT');
+  if (hit && state === 'stale') {
+    if (!refreshing.has(key)) {
+      refreshing.add(key);
+      ctx.waitUntil(
+        render()
+          .then((res) => (canStore(res) ? store(res) : undefined))
+          .catch(() => undefined)
+          .finally(() => refreshing.delete(key)),
+      );
+    }
+    return forVisitor(hit, 'STALE');
+  }
 
   const res = await render();
   if (!canStore(res)) return res;
 
-  const stored = new Response(res.clone().body, res);
-  stored.headers.set('cache-control', `public, max-age=${EDGE_CACHE_SECONDS}`);
-  ctx.waitUntil(cache.put(key, stored).catch(() => undefined));
+  ctx.waitUntil(store(res.clone()));
   return forVisitor(res, 'MISS');
 }
 
@@ -87,10 +155,12 @@ function canStore(res: Response): boolean {
 }
 
 /** The browser always asks again, so only the edge holds on to a page. */
-function forVisitor(res: Response, state: 'HIT' | 'MISS'): Response {
+function forVisitor(res: Response, state: 'HIT' | 'STALE' | 'MISS'): Response {
   const out = new Response(res.body, res);
   out.headers.set('cache-control', 'no-cache');
   out.headers.set('x-edge-cache', state);
+  out.headers.delete(RENDERED_AT);
+  out.headers.delete(RENDERED_BY);
   return out;
 }
 

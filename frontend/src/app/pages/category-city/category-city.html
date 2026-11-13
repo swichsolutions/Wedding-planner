@@ -35,12 +35,12 @@
 
       <ul class="vendor-grid" role="list">
         @for (v of vendors(); track v.id) {
-          <li><app-vendor-card [vendor]="v" /></li>
+          <li><app-vendor-card [vendor]="v" [eager]="$index < 4" [priority]="$index === 0" /></li>
         }
       </ul>
 
       <p class="landing__browse">
-        <a class="link-arrow" [routerLink]="['/', categorySlug()]">
+        <a class="link-arrow" [routerLink]="['/', categorySlug()]" [attr.title]="categoryPlural()">
           {{ 'landing.browseCta' | translate }}
         </a>
       </p>
@@ -54,7 +54,7 @@
               <ul class="landing__xlist" role="list">
                 @for (x of crossCities(); track x.link) {
                   <li>
-                    <a class="landing__xlink" [routerLink]="x.link">
+                    <a class="landing__xlink" [routerLink]="x.link" [attr.title]="x.title">
                       {{ x.label }} <span class="num landing__xcount">({{ x.count }})</span>
                     </a>
                   </li>
@@ -68,7 +68,7 @@
               <ul class="landing__xlist" role="list">
                 @for (x of crossCategories(); track x.link) {
                   <li>
-                    <a class="landing__xlink" [routerLink]="x.link">
+                    <a class="landing__xlink" [routerLink]="x.link" [attr.title]="x.title">
                       {{ x.label }} <span class="num landing__xcount">({{ x.count }})</span>
                     </a>
                   </li>
@@ -82,7 +82,7 @@
       <div class="landing__state">
         <h1>{{ 'landing.notFoundTitle' | translate }}</h1>
         <p>{{ 'landing.notFoundBody' | translate }}</p>
-        <a class="btn btn--primary" routerLink="/vendors">{{ 'landing.browseAll' | translate }}</a>
+        <a class="btn btn--primary" routerLink="/vendors" [attr.title]="'nav.g.vendors.d' | translate">{{ 'landing.browseAll' | translate }}</a>
       </div>
     }
   </div>

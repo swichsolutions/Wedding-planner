@@ -5,7 +5,12 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
-import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions } from '@angular/platform-browser';
+import {
+  provideClientHydration,
+  withEventReplay,
+  withHttpTransferCacheOptions,
+  withIncrementalHydration,
+} from '@angular/platform-browser';
 import { HttpRequest, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideTranslateService, provideTranslateLoader } from '@ngx-translate/core';
 
@@ -45,6 +50,11 @@ export const appConfig: ApplicationConfig = {
     ),
     provideClientHydration(
       withEventReplay(),
+      // Parts of a server-rendered page can stay as plain HTML until they are needed
+      // (@defer (hydrate on viewport) in a template, e.g. the home page's sections below the
+      // first screen): their code is fetched and run when they scroll into view, or at once
+      // when a visitor clicks or types in them (the event is replayed).
+      withIncrementalHydration(),
       withHttpTransferCacheOptions({ includeRequestsWithAuthHeaders: true, filter: reusableFromServer }),
     ),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),

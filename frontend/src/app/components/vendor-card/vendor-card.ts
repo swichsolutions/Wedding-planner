@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { cityDisplayEn } from '../../core/city-name';
 import { LanguageService } from '../../i18n/language.service';
@@ -19,11 +19,23 @@ import { formatGel } from '../../core/money';
 })
 export class VendorCard {
   readonly vendor = input.required<Vendor>();
+  /** In the first row of a list: the photo shouldn't wait for the scroll. */
+  readonly eager = input(false);
+  /** The list's first card: its photo is likely the page's largest picture, so it loads first. */
+  readonly priority = input(false);
 
   private readonly lang = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
   protected readonly cityLabel = computed(() => {
     const v = this.vendor();
     return this.lang.current() === 'en' && v.citySlug ? cityDisplayEn(v.citySlug) : v.city;
+  });
+  /** The profile link's tooltip: what the name alone doesn't say (category and city). */
+  protected readonly linkTitle = computed(() => {
+    const v = this.vendor();
+    void this.lang.current();
+    const where = [this.translate.instant(v.categoryKey), this.cityLabel()].filter(Boolean).join(', ');
+    return where ? `${v.name} — ${where}` : v.name;
   });
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);

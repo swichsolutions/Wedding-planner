@@ -30,6 +30,7 @@ import { VendorService } from '../../core/vendor.service';
 import { Vendor } from '../../core/vendor.models';
 import { Review, ReviewService } from '../../core/review.service';
 import { ContactForm } from '../../components/contact-form/contact-form';
+import { ShareButton } from '../../components/share-button/share-button';
 import { BudgetVendorsService } from '../../core/budget-vendors.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
@@ -44,7 +45,7 @@ type LoadParams = { category: string; city: string; slug: string };
 
 @Component({
   selector: 'app-vendor-profile',
-  imports: [RouterLink, TranslatePipe, ContactForm],
+  imports: [RouterLink, TranslatePipe, ContactForm, ShareButton],
   host: { class: 'theme-brand' },
   templateUrl: './vendor-profile.html',
   styleUrl: './vendor-profile.scss',
@@ -223,12 +224,13 @@ export class VendorProfile implements OnDestroy {
   /** "Up" goes to the vendor's own category×city landing page, not the generic browse. */
   protected backLink(): string {
     const v = this.vendor();
-    return v && v.categorySlug && v.citySlug ? `/${v.categorySlug}/${v.citySlug}` : '/vendors';
+    // no city name, no landing page (it answers 404): back to the catalog then
+    return v && v.categorySlug && v.citySlug && v.city.trim() ? `/${v.categorySlug}/${v.citySlug}` : '/vendors';
   }
 
   protected backLabel(): string {
     const v = this.vendor();
-    if (!v || !v.categorySlug || !v.citySlug) return this.translate.instant('profile.backToVendors');
+    if (!v || !v.categorySlug || !v.citySlug || !v.city.trim()) return this.translate.instant('profile.backToVendors');
     const plural = this.translate.instant(
       categoryKey(v.categorySlug).replace('category.', 'categoryPlural.'),
     );

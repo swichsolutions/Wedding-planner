@@ -1,10 +1,10 @@
-<a class="skip-link" href="#main" (click)="skipToMain($event)">{{ 'common.skipToContent' | translate }}</a>
+<a class="skip-link" href="#main" [attr.title]="'common.skipToContent' | translate" (click)="skipToMain($event)">{{ 'common.skipToContent' | translate }}</a>
 
 @if (!chromeless()) {
 <header class="hdr theme-brand" [class.is-open]="menuOpen()" [class.is-scrolled]="scrolled() && !overlay()" [class.is-overlay]="overlay() && !menuOpen()"
   [class.is-hidden]="hidden() && !menuOpen()" [class.is-dark]="navDark() && !menuOpen() && !overlay()">
   <div class="container hdr__bar">
-    <a routerLink="/" class="wordmark" translate="no" (click)="closeMenu()">
+    <a routerLink="/" class="wordmark" translate="no" [attr.title]="'nav.home' | translate" (click)="closeMenu()">
       <svg class="wordmark__knot" viewBox="1 13 62 38" aria-hidden="true"><path d="M32 32 C23.3 14.6 5.9 17.5 5.9 32 C5.9 46.5 23.3 49.4 32 32 C40.7 14.6 58.1 17.5 58.1 32 C58.1 46.5 40.7 49.4 32 32 Z"/></svg>{{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
     </a>
 
@@ -17,7 +17,7 @@
             (mouseenter)="hoverGroup(g.key)" (mouseleave)="hoverGroup(null)"
             (focusout)="onGroupBlur($event, g.key)">
             <div class="hdr__group-row">
-              <a class="hdr__group" [routerLink]="g.link"
+              <a class="hdr__group" [routerLink]="g.link" [attr.title]="'nav.g.' + g.key + '.d' | translate"
                 [class.is-active]="activeGroup() === g.key" (click)="closeMenu()">
                 {{ 'nav.g.' + g.key + '.title' | translate }}
               </a>
@@ -32,6 +32,7 @@
                 @for (it of g.items; track it.key) {
                   <li>
                     <a class="hdr__panel-link" [routerLink]="it.link"
+                      [attr.title]="'nav.g.' + g.key + '.i.' + it.key + '.d' | translate"
                       [fragment]="it.fragment" (click)="closeMenu()">
                       <span class="hdr__panel-t">{{ 'nav.g.' + g.key + '.i.' + it.key + '.t' | translate }}</span>
                     </a>
@@ -52,7 +53,7 @@
           <a class="btn btn--ink btn--lg" [routerLink]="myLink().link" (click)="closeMenu()">{{ myLink().key | translate }}</a>
           <button type="button" class="hdr__text-btn" (click)="logout()">{{ 'auth.logout' | translate }}</button>
         } @else {
-          <a class="btn btn--clay btn--lg" routerLink="/signup" (click)="closeMenu()">{{ 'nav.start' | translate }}</a>
+          <a class="btn btn--clay btn--lg" routerLink="/signup" [attr.title]="'nav.startTitle' | translate" (click)="closeMenu()">{{ 'nav.start' | translate }}</a>
           <button type="button" class="hdr__text-btn" (click)="openLogin()">{{ 'nav.login' | translate }}</button>
         }
         <div class="lang" role="group" [attr.aria-label]="'common.language' | translate">
@@ -89,7 +90,7 @@
           <a class="btn btn--ink hdr__cta" [routerLink]="myLink().link">{{ myLink().key | translate }}</a>
         } @else {
           <button type="button" class="hdr__text-btn" (click)="openLogin()">{{ 'nav.login' | translate }}</button>
-          <a class="btn btn--ink hdr__cta" routerLink="/signup">{{ 'nav.start' | translate }}</a>
+          <a class="btn btn--ink hdr__cta" routerLink="/signup" [attr.title]="'nav.startTitle' | translate">{{ 'nav.start' | translate }}</a>
         }
       </div>
 
@@ -114,7 +115,7 @@
 <footer class="ftr theme-brand">
   <div class="container ftr__top">
     <div class="ftr__brand">
-      <a routerLink="/" class="wordmark wordmark--light" translate="no">
+      <a routerLink="/" class="wordmark wordmark--light" translate="no" [attr.title]="'nav.home' | translate">
         <svg class="wordmark__knot" viewBox="1 13 62 38" aria-hidden="true"><path d="M32 32 C23.3 14.6 5.9 17.5 5.9 32 C5.9 46.5 23.3 49.4 32 32 C40.7 14.6 58.1 17.5 58.1 32 C58.1 46.5 40.7 49.4 32 32 Z"/></svg>{{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
       </a>
       <p class="ftr__promise">{{ 'footer.promise' | translate }}</p>
@@ -122,17 +123,17 @@
 
     <!-- Sitemap footer: five links, nothing else. -->
     <nav class="ftr__links" [attr.aria-label]="'footer.links' | translate">
-      <a routerLink="/about">{{ 'footer.about' | translate }}</a>
-      <a routerLink="/contact">{{ 'footer.help' | translate }}</a>
-      <a routerLink="/for-vendors">{{ 'footer.vendors' | translate }}</a>
-      <a routerLink="/terms">{{ 'footer.terms' | translate }}</a>
-      <a routerLink="/privacy">{{ 'footer.privacy' | translate }}</a>
+      <a routerLink="/about" [attr.title]="'footer.t.about' | translate">{{ 'footer.about' | translate }}</a>
+      <a routerLink="/contact" [attr.title]="'footer.t.help' | translate">{{ 'footer.help' | translate }}</a>
+      <a routerLink="/for-vendors" [attr.title]="'footer.t.vendors' | translate">{{ 'footer.vendors' | translate }}</a>
+      <a routerLink="/terms" [attr.title]="'footer.t.terms' | translate">{{ 'footer.terms' | translate }}</a>
+      <a routerLink="/privacy" [attr.title]="'footer.t.privacy' | translate">{{ 'footer.privacy' | translate }}</a>
     </nav>
   </div>
 
   <div class="container ftr__bottom">
     <span>© {{ year }} <span translate="no">{{ 'brand.name' | translate }}</span> · {{ 'footer.rights' | translate }}
-      <span class="ftr__by">· {{ 'footer.madeByPrefix' | translate }}<a href="https://swichsolutions.ge" target="_blank" rel="noopener" translate="no">Swich</a>{{ 'footer.madeBySuffix' | translate }}</span></span>
+      <span class="ftr__by">· {{ 'footer.madeByPrefix' | translate }}<a href="https://swichsolutions.ge" target="_blank" rel="noopener" translate="no" title="Swich Solutions">Swich</a>{{ 'footer.madeBySuffix' | translate }}</span></span>
     <div class="lang lang--footer" role="group" [attr.aria-label]="'common.language' | translate">
       @for (l of lang.supported; track l.code) {
         <button type="button" class="lang__btn" (click)="setLang(l.code)"

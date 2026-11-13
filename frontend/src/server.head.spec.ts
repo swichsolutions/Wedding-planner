@@ -37,6 +37,19 @@ describe('finishHead', () => {
     expect(html).not.toContain('rel="canonical"');
   });
 
+  it('names the page itself as the Georgian and the default version', () => {
+    const html = finishHead(page(TITLE), `${B}/ganrigebi/jvristsera?x=1`);
+    expect(html).toContain(`<link rel="alternate" hreflang="ka" href="${B}/ganrigebi/jvristsera">`);
+    expect(html).toContain(`<link rel="alternate" hreflang="x-default" href="${B}/ganrigebi/jvristsera">`);
+  });
+
+  it('points hreflang at a page\'s own canonical, and gives noindex pages none', () => {
+    const own = finishHead(page(`${TITLE}<link rel="canonical" href="${B}/own">`), `${B}/other`);
+    expect(own).toContain(`hreflang="ka" href="${B}/own"`);
+    expect(count(own, 'hreflang=')).toBe(2);
+    expect(finishHead(page(`${TITLE}<meta name="robots" content="noindex">`), `${B}/signup`)).not.toContain('hreflang');
+  });
+
   it('fills link previews from the page\'s title and description', () => {
     const html = finishHead(page(TITLE), `${B}/rchevebi/blogi`);
     expect(html).toContain('<meta property="og:title" content="ბლოგი">');
@@ -68,6 +81,13 @@ describe('finishHead', () => {
   it('makes a relative image in structured data absolute', () => {
     const html = finishHead(page(`${TITLE}<script type="application/ld+json">{"image":"/media/x.webp"}</script>`), `${B}/a`);
     expect(html).toContain(`{"image":"${B}/media/x.webp"}`);
+  });
+
+  it('makes a relative page address in structured data absolute, and leaves a full one alone', () => {
+    const ld = '{"@type":"ListItem","url":"/fotografi/tbilisi/a"},{"url":"https://example.com/b"}';
+    const html = finishHead(page(`${TITLE}<script type="application/ld+json">[${ld}]</script>`), `${B}/fotografi/tbilisi`);
+    expect(html).toContain(`"url":"${B}/fotografi/tbilisi/a"`);
+    expect(html).toContain('"url":"https://example.com/b"');
   });
 
   it('escapes quotes from a title into the attribute', () => {
@@ -105,8 +125,14 @@ describe('withFinishedHead', () => {
     expect(await res.text()).toContain('og:title');
   });
 
+  it('tells header readers where the sitemap and the site description are', async () => {
+    const res = await withFinishedHead(new Response(page(TITLE), { headers: { 'content-type': 'text/html' } }), `${B}/`);
+    expect(res.headers.get('link')).toBe('</sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; type="text/plain"');
+  });
+
   it('passes anything else through', async () => {
     const res = new Response('{}', { headers: { 'content-type': 'application/json' } });
     expect(await withFinishedHead(res, `${B}/x`)).toBe(res);
+    expect(res.headers.get('link')).toBeNull();
   });
 });

@@ -14,6 +14,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, map, of, switchMap } from 'rxjs';
 
 import { ContentCard } from '../../components/content-card/content-card';
+import { ShareButton } from '../../components/share-button/share-button';
 import { ContentDetail as Detail, ContentKind, KIND_SECTION } from '../../core/content.models';
 import { AuthService } from '../../core/auth.service';
 import { ContentApiService } from '../../core/content-api.service';
@@ -36,7 +37,7 @@ const JSON_LD_ID = 'content-jsonld';
  */
 @Component({
   selector: 'app-content-detail',
-  imports: [RouterLink, TranslatePipe, ContentCard, NotFound],
+  imports: [RouterLink, TranslatePipe, ContentCard, ShareButton, NotFound],
   host: { class: 'theme-brand' },
   templateUrl: './content-detail.html',
   styleUrl: './guides.scss',

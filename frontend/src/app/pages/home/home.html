@@ -21,7 +21,7 @@
       @for (s of startSlides; track s.key; let i = $index) {
         @if (i === 0 || slidesArmed()) {
           <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" [attr.srcset]="s.srcset ?? null"
-            sizes="100vw" alt="" loading="lazy" fetchpriority="low" decoding="async"
+            sizes="100vw" [alt]="'home.start.' + s.key + '.photoAlt' | translate" loading="lazy" fetchpriority="low" decoding="async"
             [style.object-position]="s.pos ?? null" />
         }
       }
@@ -33,6 +33,8 @@
          when the stage runs. -->
     <div class="intro__photo">
       <picture>
+        <!-- phones get the 828px copy (123 kB against 286 kB; preloaded with the same queries in home.ts) -->
+        <source media="(orientation: portrait) and (max-width: 600px)" type="image/webp" srcset="/media/hero-tall-828.webp" />
         <source media="(orientation: portrait)" type="image/webp" srcset="/media/hero-tall.webp" />
         <source media="(orientation: portrait)" srcset="/media/hero-tall.jpg" />
         <source type="image/webp" srcset="/media/hero-wide.webp" />
@@ -50,7 +52,8 @@
       </h1>
       <p class="hero__lead">{{ 'home.hero.lead' | translate }}</p>
       <!-- white on the photo (2026-11-12): the evergreen pill could not be seen there -->
-      <a class="pill-cta pill-cta--white" [routerLink]="heroCta().link">
+      <a class="pill-cta pill-cta--white" [routerLink]="heroCta().link"
+        [attr.title]="(heroCta().link === '/signup' ? 'nav.startTitle' : heroCta().key) | translate">
         <span>{{ heroCta().key | translate }}</span>
       </a>
     </div>
@@ -61,7 +64,7 @@
          (the target is already on screen) and reloads the page when the address has a
          query, so the click is handled in runStage. -->
     <a class="hero__down" data-stage="rest" href="#start" (click)="runStage($event)"
-      [attr.aria-label]="'home.hero.scroll' | translate">
+      [attr.aria-label]="'home.hero.scroll' | translate" [attr.title]="'home.hero.scroll' | translate">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="m6 14 6 6 6-6"/></svg>
     </a>
 
@@ -91,7 +94,8 @@
             </div>
             <!-- the pill is a link (Beka, 2026-11-03): define → the organizer (sign-up first),
                  choose → the catalog, plan the details → the day schedules -->
-            <a class="start__card-sub" data-stage="run" [routerLink]="stepLink(s.to)">
+            <a class="start__card-sub" data-stage="run" [routerLink]="stepLink(s.to)"
+              [attr.title]="'home.start.' + s.key + '.title' | translate">
               {{ 'home.start.' + s.key + '.sub' | translate }}
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
             </a>
@@ -119,7 +123,12 @@
   </div>
 </section>
 
-<!-- Everything below the stage. -->
+<!-- Everything below the stage. Each section is its own @defer block with "hydrate on viewport":
+     the server still renders all of it (the words are in the page for search engines), but in
+     the browser its code is fetched and run only when the section scrolls into view, or at
+     once if a visitor clicks in it. Reached from another page (no server HTML), a section
+     loads right away; until it has, an empty screen of its colour holds its place, so the
+     page keeps its height (the back button returns to the right spot). -->
 <div class="after-hero">
 <!-- ===================== 03 / CATEGORIES (PEOPLE & PLACE) ===================== -->
 <!-- The order since the review of 2026-11-12: hero → three steps (both in the stage above)
@@ -130,13 +139,14 @@
      fading out; the list rotates through the slots on its own and on a swipe; dots
      underneath). Cards share one dark colour with the visual filling the card and the
      text at the top. -->
+@defer (on immediate; hydrate on viewport) {
 <section id="find" class="chap chap--orbit">
   <div class="container">
     <div class="orbit" appReveal>
       <div class="orbit__copy">
         <h2 class="orbit__title">{{ 'home.find.title' | translate }}</h2>
         <p class="orbit__lead">{{ 'home.find.leadShort' | translate }}</p>
-        <a class="pill-cta orbit__cta" routerLink="/vendors">
+        <a class="pill-cta orbit__cta" routerLink="/vendors" [attr.title]="'nav.g.vendors.d' | translate">
           <span>{{ 'home.find.cta' | translate }}</span>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
         </a>
@@ -154,6 +164,7 @@
             <li class="orbit__item" [style.--s]="s" [class.is-off]="s === null"
               [class.is-side]="s !== null && s !== 0" [attr.aria-hidden]="s === null">
               <a class="orbit__card" [class.orbit__card--print]="g.print" [routerLink]="g.link"
+                [attr.title]="('home.find.cat.' + g.key + '.name' | translate) + (g.count > 0 ? ' — ' + g.count + ' ' + ((g.count === 1 ? 'home.find.countOne' : 'home.find.count') | translate) : '')"
                 [attr.tabindex]="s === null ? -1 : 0"
                 (click)="onOrbitClick($event)">
                 <span class="orbit__card-name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
@@ -165,10 +176,13 @@
                 }
                 <!-- the render fills the card (its backdrop IS the card colour); prints sit at the bottom -->
                 <span class="orbit__card-visual">
-                  <!-- cover-fitted by height: the image is 0.75 x the card height wide -->
+                  <!-- cover-fitted by height: the image is 0.75 x the card height wide. On phones
+                       it is about 310px, but "sizes" says 240px on purpose: at 3 device pixels
+                       per px that still picks the 720px file (25–66 kB) instead of the 1086px
+                       one (37–101 kB), six of which load with the page. -->
                   <img class="orbit__card-img" [src]="g.img" [attr.srcset]="g.srcset"
-                    sizes="(max-width: 767px) min(39vh, 19.5rem, 76vw), min(39vh, 24rem)"
-                    alt="" loading="lazy" width="720" height="960" />
+                    sizes="(max-width: 767px) 240px, min(39vh, 24rem)"
+                    [alt]="'home.find.cat.' + g.key + '.sub' | translate" loading="lazy" width="720" height="960" />
                 </span>
               </a>
             </li>
@@ -190,72 +204,18 @@
       </div>
 
     </div>
-
-    <!-- ---- previous version: the editorial index (kept in case the cloud is dropped) ----
-    <header class="chap__head chap__head--row" appReveal>
-      <div>
-        <h2 class="chap__title">{{ 'home.find.title' | translate }}</h2>
-      </div>
-      <p class="chap__lead">{{ 'home.find.lead' | translate }}</p>
-    </header>
-
-    <!~~ Editorial index: eight numbered rows on the left, one stage photo on the right
-         that follows the hovered/focused row. Each row carries live inventory (count,
-         starting price, cities); rows with nothing approved yet show their blurb. ~~>
-    <div class="index" appReveal>
-      <ol class="index__list" role="list">
-        @for (g of categoryRows(); track g.key; let i = $index) {
-          <li class="index__row" [class.is-active]="activeRow() === i">
-            <a class="index__link" [routerLink]="g.link"
-              (mouseenter)="activeRow.set(i)" (focus)="activeRow.set(i)">
-              <span class="index__num" aria-hidden="true">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
-              <img class="index__thumb" [src]="g.img" alt="" loading="lazy" width="112" height="140" />
-              <span class="index__body">
-                <span class="index__name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
-                <span class="index__meta">{{ 'home.find.cat.' + g.key + '.sub' | translate }}</span>
-              </span>
-              <!~~ the figure column: approved profiles in this group, or "soon" when empty ~~>
-              <span class="index__count" [class.index__count--empty]="g.count === 0">
-                @if (g.count > 0) {
-                  <span class="index__count-n">{{ g.count }}</span>
-                  <span class="index__count-l">{{ 'home.find.count' | translate }}</span>
-                } @else {
-                  <span class="index__count-l">{{ 'home.find.soon' | translate }}</span>
-                }
-              </span>
-              <span class="index__arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-              </span>
-              <span class="index__sr">{{ 'home.find.open' | translate }}</span>
-            </a>
-          </li>
-        }
-      </ol>
-
-      <!~~ the stage: all eight photos stacked, the active one fades in ~~>
-      <div class="index__stage" aria-hidden="true">
-        <div class="index__frame">
-          @for (g of categoryRows(); track g.key; let i = $index) {
-            <img class="index__photo" [class.is-active]="activeRow() === i" [src]="g.img" alt=""
-              loading="lazy" width="900" height="1125" />
-          }
-        </div>
-      </div>
-    </div>
-
-    <p class="chap__cta" appReveal>
-      <a class="btn btn--ink" routerLink="/vendors">{{ 'home.find.cta' | translate }}</a>
-    </p>
-  
-    ---- end of previous version ---- -->
   </div>
 </section>
+} @placeholder {
+  <section class="chap chap--orbit"></section>
+}
 
 <!-- ============================ 04 / ORGANIZE ============================ -->
 <!-- Colour band (zola.com-style, ColorBand): one surface whose colour follows the
      scroll. It holds the organizer alone, in brand ivory (the organizer panel is
      ivory, between the mint categories and the mint day); add a second section +
      colour to get the blend back. -->
+@defer (on immediate; hydrate on viewport) {
 <div class="band" [appColorBand]="['#ffffff']">
 <section id="organize" class="chap chap--spruce chap--charcoal chap--screen chap--organizer">
   <!-- copy + a tilted phone playing a clip of the planning tool; the cream panel IS the
@@ -263,11 +223,15 @@
   <app-organizer-hero appReveal />
 </section>
 </div>
+} @placeholder {
+  <section class="chap chap--screen"></section>
+}
 
 <!-- ============================== 05 / DAY ============================== -->
 <!-- Three example schedules (guide §3, PROPOSALS.md P7): a card each, the full schedule in a
      dialog, and the /ganrigebi page with all of them. -->
 <!-- on ivory (2026-11-12): apart from the white organizer above; the schedule cards stay white -->
+@defer (on immediate; hydrate on viewport) {
 <section id="day" class="chap chap--deep chap--screen">
   <div class="container">
     <div class="tl" appReveal>
@@ -284,20 +248,31 @@
     </div>
   </div>
 </section>
+} @placeholder {
+  <section class="chap chap--deep chap--screen"></section>
+}
 
 <!-- ============================= 06 / TRUST ============================= -->
+@defer (on immediate; hydrate on viewport) {
 <section id="trust" class="chap chap--paper chap--screen chap--clip">
   <div class="container">
     <app-trust-faq appReveal />
   </div>
 </section>
+} @placeholder {
+  <section class="chap chap--paper chap--screen"></section>
+}
 
 <!-- ============================ 07 / START ============================ -->
 <!-- the peach callout: the last stop of the journey, above the evergreen footer, with the
      turning gold ring over the title. Clipped so the entrance motion never adds a scrollbar. -->
+@defer (on immediate; hydrate on viewport) {
 <section id="final" class="chap chap--peach chap--screen chap--clip">
   <div class="container">
     <app-final-call [cta]="finalCta()" />
   </div>
 </section>
+} @placeholder {
+  <section class="chap chap--peach chap--screen"></section>
+}
 </div>

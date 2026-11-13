@@ -16,9 +16,11 @@
     <!-- The 8 groups (guide §4: categories switch the results in place). -->
     <nav class="cat__groups" [attr.aria-label]="'vendors.groupsLabel' | translate">
       <a class="cat__group" [routerLink]="groupPath(null)" [queryParams]="searchParams()" [class.is-on]="!group()"
+        [attr.title]="'nav.g.vendors.i.all.d' | translate"
         [attr.aria-current]="!group() ? 'page' : null">{{ 'vendors.allGroups' | translate }}</a>
       @for (g of groups; track g) {
         <a class="cat__group" [routerLink]="groupPath(g)" [queryParams]="searchParams()" [class.is-on]="group() === g"
+          [attr.title]="'nav.g.vendors.i.' + g + '.d' | translate"
           [attr.aria-current]="group() === g ? 'page' : null">{{ 'catalog.groups.' + g | translate }}</a>
       }
     </nav>
@@ -26,9 +28,11 @@
     @if (subtypes().length > 1) {
       <nav class="cat__subs" [attr.aria-label]="'catalog.groups.' + group() | translate">
         <a class="cat__sub" [routerLink]="groupPath(group())" [queryParams]="filterParams()" [class.is-on]="!filter().category"
+          [attr.title]="'nav.g.vendors.i.' + group() + '.d' | translate"
           [attr.aria-current]="!filter().category ? 'page' : null">{{ 'vendors.allInGroup' | translate }}</a>
         @for (c of subtypes(); track c.slug) {
           <a class="cat__sub" [routerLink]="categoryPath(c.slug)" [queryParams]="filterParams()"
+            [attr.title]="c.key.replace('category.', 'categoryPlural.') | translate"
             [class.is-on]="filter().category === c.slug"
             [attr.aria-current]="filter().category === c.slug ? 'page' : null">{{ c.key | translate }}</a>
         }
@@ -162,7 +166,7 @@
       <p class="cat__count" role="status"><span class="num">{{ results().length }}</span> {{ (results().length === 1 ? 'vendors.countLabelOne' : 'vendors.countLabel') | translate }}</p>
       <ul class="vendor-grid" role="list">
         @for (v of results(); track v.id) {
-          <li><app-vendor-card [vendor]="v" /></li>
+          <li><app-vendor-card [vendor]="v" [eager]="$index < 4" [priority]="$index === 0" /></li>
         }
       </ul>
     } @else {

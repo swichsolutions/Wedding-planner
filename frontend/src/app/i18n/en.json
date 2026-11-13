@@ -12,9 +12,12 @@
     "myProfile": "My profile",
     "menu": "Menu",
     "notifications": "Messages",
+    "home": "Home page",
+    "startTitle": "Create an account and start planning your wedding",
     "g": {
       "plan": {
         "title": "Plan your wedding",
+        "d": "Wedding planning step by step: the home page",
         "i": {
           "schedules": {
             "t": "Day schedules",
@@ -28,6 +31,7 @@
       },
       "vendors": {
         "title": "Venues & services",
+        "d": "The catalog of wedding venues and services",
         "i": {
           "venues": {
             "t": "Venues & catering",
@@ -73,6 +77,7 @@
       },
       "guides": {
         "title": "Tips & ideas",
+        "d": "Advice, inspiration and real weddings",
         "i": {
           "blog": {
             "t": "Blog",
@@ -204,9 +209,16 @@
     "skipToContent": "Skip to content",
     "dismiss": "Dismiss"
   },
+  "share": {
+    "label": "Share",
+    "copy": "Copy link",
+    "copied": "Link copied.",
+    "copyError": "Couldn’t copy the link.",
+    "facebook": "Share on Facebook"
+  },
   "home": {
-    "metaTitle": "WeddingPlanner — plan your own wedding",
-    "metaDescription": "Plan your own wedding with a clear plan, the right people and everything in one place.",
+    "metaTitle": "Plan your dream wedding | WeddingPlanner",
+    "metaDescription": "Wedding planning in one place: a catalog of venues and services in Georgia, a personal organizer with tasks, budget, guests and seating, and online invitations.",
     "carousel": { "prev": "Previous", "next": "Next" },
     "hero": {
       "title": "Your dream",
@@ -227,19 +239,22 @@
         "label": "Define",
         "title": "Define the main details",
         "value": "Date, budget, guests",
-        "sub": "Start planning"
+        "sub": "Start planning",
+        "photoAlt": "A couple in a convertible on a cypress-lined road"
       },
       "s2": {
         "label": "Choose",
         "title": "Choose the services you want",
         "value": "Venue, photographer, music",
-        "sub": "See the catalog"
+        "sub": "See the catalog",
+        "photoAlt": "A couple kissing while guests throw flower petals"
       },
       "s3": {
         "label": "Plan",
         "title": "Plan the wedding day",
         "value": "Schedule, tasks, payments",
-        "sub": "Day schedule"
+        "sub": "Day schedule",
+        "photoAlt": "A hall decorated for a wedding, with a vaulted ceiling and a dance floor"
       }
     },
     "find": {
@@ -1990,6 +2005,13 @@
     "vendors": "For vendors",
     "terms": "Terms & conditions",
     "privacy": "Privacy",
+    "t": {
+      "about": "Who we are and what WeddingPlanner offers",
+      "help": "Write to us: questions and help",
+      "vendors": "List your business in the catalog for free",
+      "terms": "The terms and conditions of using the site",
+      "privacy": "Privacy policy: how personal data is handled"
+    },
     "rights": "All rights reserved.",
     "madeByPrefix": "Built by ",
     "madeBySuffix": ""

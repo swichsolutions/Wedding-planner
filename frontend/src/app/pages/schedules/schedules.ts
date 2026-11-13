@@ -8,9 +8,10 @@ import { map } from 'rxjs';
 import { DayBar } from '../../components/day-bar/day-bar';
 import { DayIcon } from '../../components/day-icon/day-icon';
 import { DayScenarios } from '../../components/day-scenarios/day-scenarios';
+import { ShareButton } from '../../components/share-button/share-button';
 import { AuthService } from '../../core/auth.service';
 import { DAY_SCHEDULES, iconFor, local, phaseOf } from '../../core/day-schedules';
-import { scheduleBySlug, schedulePath } from '../../core/schedule-addresses';
+import { scheduleBySlug } from '../../core/schedule-addresses';
 import { LanguageService } from '../../i18n/language.service';
 
 /**
@@ -23,7 +24,7 @@ import { LanguageService } from '../../i18n/language.service';
  */
 @Component({
   selector: 'app-schedules',
-  imports: [RouterLink, TranslatePipe, DayScenarios, DayBar, DayIcon],
+  imports: [RouterLink, TranslatePipe, DayScenarios, DayBar, DayIcon, ShareButton],
   templateUrl: './schedules.html',
   styleUrl: './schedules.scss',
   host: { class: 'theme-brand' },
@@ -65,7 +66,8 @@ export class Schedules {
     const t = inject(TranslateService);
     const title = inject(Title);
     const meta = inject(Meta);
-    // An effect, not once: picking a scenario changes the address without leaving the page.
+    // An effect, not once: a scenario's card opens its address without leaving the page (one
+    // route for all of them).
     effect(() => {
       const lang = this.lang.current();
       const page = `${t.instant('schedules.title')} | ${t.instant('brand.name')}`;
@@ -81,11 +83,6 @@ export class Schedules {
         meta.updateTag({ name: 'description', content: t.instant('schedules.meta', { names }) });
       }
     });
-  }
-
-  /** Picking a scenario opens its address; the page stays (one route for all of them). */
-  protected pick(key: string): void {
-    void this.router.navigateByUrl(schedulePath(key));
   }
 
   /**

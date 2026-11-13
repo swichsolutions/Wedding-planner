@@ -4,17 +4,42 @@
 
 WeddingPlanner არის ქართული პლატფორმა ქორწილის დასაგეგმად: უფასო ხელსაწყო წყვილებისთვის, საქორწილო სივრცეებისა და მომსახურებების კატალოგი საქართველოში, ონლაინ მოსაწვევები დასწრების დადასტურებით და რჩევები ქართულად.
 
-The site is in Georgian, with an English interface. Using the service is currently free. It's run by Swich Solutions. Contact: info@weddingplanner.ge
+The site is in Georgian, with an English interface on the same addresses. Page addresses are Georgian words in Latin letters. Using the service is currently free. It's run by Swich Solutions. Contact: info@weddingplanner.ge
+
+Articles can be read as Markdown: request an article's address with `Accept: text/markdown`. The full list of pages is in the [sitemap](https://weddingplanner.ge/sitemap.xml).
 
 ## For couples
 
-- [Wedding planning tool](https://weddingplanner.ge/planning): a task list by stage, budget, guest list, seating on the venue's floor plan, and the wedding day schedule
+- [Wedding planning tool](https://weddingplanner.ge/planning): a task list by stage, budget, guest list, seating on the venue's floor plan, and the wedding day schedule (needs a free account)
 - [Online invitations](https://weddingplanner.ge/invitations): 14 designs, a personal link and QR code per family, replies land in the guest list
-- [Wedding day schedules](https://weddingplanner.ge/ganrigebi): example timelines for three kinds of wedding day
-- [Venues and services](https://weddingplanner.ge/vendors): wedding venues, photographers, decor, music, cakes and more in Georgia
+
+## Wedding day schedules (example timelines)
+
+- [All three examples](https://weddingplanner.ge/ganrigebi)
+- [Civil signing ceremony and party in one venue](https://weddingplanner.ge/ganrigebi/khelis-motsera)
+- [Church wedding, then the party](https://weddingplanner.ge/ganrigebi/jvristsera)
+- [Party only](https://weddingplanner.ge/ganrigebi/mkholod-tsveuleba)
+
+## Venues and services in Georgia
+
+Each profile has photos, a starting price, the areas served and contact details. Bookings and payments are made directly with the vendor, not through the site.
+
+- [Whole catalog, with filters](https://weddingplanner.ge/vendors)
+- [Venues and catering](https://weddingplanner.ge/sivrtseebi-da-kveba)
+- [Photo and video](https://weddingplanner.ge/foto-da-video)
+- [Decor and flowers](https://weddingplanner.ge/dekori-da-qvavilebi)
+- [Music and entertainment](https://weddingplanner.ge/musika-da-gartoba)
+- [Cake and sweets](https://weddingplanner.ge/torti-da-tkbileuli)
+- [Attire](https://weddingplanner.ge/samosi)
+- [Accessories and rings](https://weddingplanner.ge/aqsesuarebi)
+- [Beauty and preparation](https://weddingplanner.ge/silamaze-da-momzadeba)
+- [Other services: transport, printed invitations, coordinators](https://weddingplanner.ge/skhva-momsakhurebebi)
+
+A single category has its own page, e.g. [wedding venues](https://weddingplanner.ge/darbazi) or [photographers](https://weddingplanner.ge/fotografi), and a category in one city another, e.g. [photographers in Tbilisi](https://weddingplanner.ge/fotografi/tbilisi).
 
 ## Advice (in Georgian)
 
+- [Tips and ideas](https://weddingplanner.ge/rchevebi): the hub
 - [Blog](https://weddingplanner.ge/rchevebi/blogi): practical wedding planning articles
 - [Where to start planning a wedding](https://weddingplanner.ge/rchevebi/blogi/saidan-davitsyo-qortsilis-dagegmva)
 - [Wedding budget](https://weddingplanner.ge/rchevebi/blogi/qortsilis-biujeti)
@@ -30,5 +55,6 @@ The site is in Georgian, with an English interface. Using the service is current
 ## About
 
 - [About WeddingPlanner](https://weddingplanner.ge/about)
+- [Contact](https://weddingplanner.ge/contact)
 - [Terms](https://weddingplanner.ge/terms)
 - [Privacy](https://weddingplanner.ge/privacy)

@@ -1,7 +1,7 @@
 @if (vendor(); as v) {
   <article class="profile">
     <div class="container">
-      <a class="profile__back" [routerLink]="backLink()">{{ backLabel() }}</a>
+      <a class="profile__back" [routerLink]="backLink()" [attr.title]="backLabel()">{{ backLabel() }}</a>
 
       <div class="profile__layout">
         <!-- ---------- gallery ---------- -->
@@ -43,8 +43,9 @@
                 <li>
                   <button type="button" class="gallery__thumb" [class.is-active]="i === activePhoto()"
                     (click)="selectPhoto(i)" aria-controls="profile-gallery-main"
-                    [attr.aria-label]="p.alt" [attr.aria-pressed]="i === activePhoto()">
-                    <img [src]="p.url" alt="" loading="lazy" width="160" height="120" />
+                    [attr.aria-pressed]="i === activePhoto()">
+                    <!-- the photo's description names the button -->
+                    <img [src]="p.url" [alt]="p.alt" loading="lazy" width="160" height="120" />
                   </button>
                 </li>
               }
@@ -93,6 +94,8 @@
               {{ (wishlist.isSaved(v.id) ? 'profile.saved' : 'profile.save') | translate }}
             </button>
 
+            <app-share-button [title]="v.name" [block]="true" />
+
             @if (showAddToBudget()) {
               <button type="button" class="btn btn--ghost info__add-budget" [class.is-added]="inBudget()"
                 [disabled]="inBudget() || addingToBudget()" (click)="addToBudget()">
@@ -120,7 +123,7 @@
             @if (v.instagram || v.facebook || v.mapUrl || v.whatsapp) {
               <div class="social" role="group" [attr.aria-label]="'profile.contact' | translate">
                 @if (v.whatsapp) {
-                  <a class="social__btn social__btn--wa" aria-label="WhatsApp"
+                  <a class="social__btn social__btn--wa" aria-label="WhatsApp" title="WhatsApp"
                     [href]="'https://wa.me/' + v.whatsapp" target="_blank" rel="noopener"
                     (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -129,7 +132,7 @@
                   </a>
                 }
                 @if (v.instagram) {
-                  <a class="social__btn social__btn--ig" aria-label="Instagram"
+                  <a class="social__btn social__btn--ig" aria-label="Instagram" title="Instagram"
                     [href]="socialUrl(v.instagram, 'https://instagram.com/')" target="_blank" rel="noopener"
                     (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -138,7 +141,7 @@
                   </a>
                 }
                 @if (v.facebook) {
-                  <a class="social__btn social__btn--fb" aria-label="Facebook"
+                  <a class="social__btn social__btn--fb" aria-label="Facebook" title="Facebook"
                     [href]="socialUrl(v.facebook, 'https://facebook.com/')" target="_blank" rel="noopener"
                     (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -147,7 +150,7 @@
                   </a>
                 }
                 @if (v.mapUrl) {
-                  <a class="social__btn social__btn--map" [attr.aria-label]="'profile.maps' | translate"
+                  <a class="social__btn social__btn--map" [attr.aria-label]="'profile.maps' | translate" [attr.title]="'profile.maps' | translate"
                     [href]="ensureHttp(v.mapUrl)" target="_blank" rel="noopener"
                     (click)="trackContact()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -434,7 +437,7 @@
   <div class="container profile-missing">
     <h1>{{ 'profile.notFoundTitle' | translate }}</h1>
     <p>{{ 'profile.notFoundBody' | translate }}</p>
-    <a class="btn btn--primary" routerLink="/vendors">{{ 'profile.backToVendors' | translate }}</a>
+    <a class="btn btn--primary" routerLink="/vendors" [attr.title]="'nav.g.vendors.d' | translate">{{ 'profile.backToVendors' | translate }}</a>
   </div>
 } @else {
   <!-- loading — hold the page shape instead of rendering blank -->

@@ -8,6 +8,7 @@ import express from 'express';
 import { join } from 'node:path';
 
 import { movedAddress } from './app/core/old-addresses';
+import { SITE_LINKS } from './server.head';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -56,9 +57,12 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => {
+      if (!response) return next();
+      // the same Link header the live Worker sends with a page (server.head.ts)
+      if (response.headers.get('content-type')?.includes('text/html')) res.setHeader('Link', SITE_LINKS);
+      return writeResponseToNodeResponse(response, res);
+    })
     .catch(next);
 });
 

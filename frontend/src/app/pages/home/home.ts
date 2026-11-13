@@ -1,8 +1,8 @@
 import { DOCUMENT, isPlatformServer } from '@angular/common';
-import { Component, DestroyRef, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../core/auth.service';
@@ -39,8 +39,7 @@ interface CategoryGroup {
 /** A row with its live inventory folded in (approved vendors summed across the group's slugs). */
 interface CategoryRow extends CategoryGroup {
   count: number;
-  thumb: string; // small square crop of `img` for the category tile
-  srcset: string; // the render at 720 and 1086 px wide (sharp on 2x/3x screens)
+  srcset: string; // the render at 720 and 1086 px wide (the template's `sizes` picks: 720 on phones)
 }
 
 @Component({
@@ -49,10 +48,19 @@ interface CategoryRow extends CategoryGroup {
   templateUrl: './home.html',
   styleUrl: './home.scss',
   // brand theme (Mint & Peach + GF Aisi) for the whole page, see styles/_brand.scss
-  host: { class: 'theme-brand' },
+  host: { class: 'theme-brand', '[class.home--lean]': 'lean' },
 })
 export class Home {
   private readonly auth = inject(AuthService);
+
+  /**
+   * True on the server and while the browser is still on the page it loaded: the sections
+   * below the first screen are then left out of layout until they come near it (home.scss,
+   * .home--lean), which is what keeps a phone responsive while the page loads. False when the
+   * home page is reached from another page of the site: nothing is loading then, and with every
+   * section measured the back button returns to the exact spot.
+   */
+  protected readonly lean = !inject(Router).navigated;
 
   /** Hero CTA follows the visitor: guests are asked to start; signed-in users go to
    * their own surface instead of a registration page they can't use. */
@@ -79,9 +87,9 @@ export class Home {
     // preloaded from here (in the server-rendered head of '/'), not from index.html for
     // every route.
     if (isPlatformServer(inject(PLATFORM_ID))) this.preloadAssets(inject(DOCUMENT));
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     afterNextRender(() => {
-      this.setUpOrbit(destroyRef);
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.reelPlays.set(false);
+      this.setUpOrbit(host, destroyRef);
       destroyRef.onDestroy(() => this.stopRotation());
     });
   }
@@ -118,11 +126,12 @@ export class Home {
   protected readonly startSlides: { key: string; img: string; srcset?: string; pos?: string; to: 'find' | 'organize' | 'day' }[] = [
     // couple in a convertible under cypresses, b&w, portrait (Beka's photo 156.jpg);
     // the couple sits low in the frame, so wide screens anchor the crop there. The 1200px
-    // copy is what phones load (the 2400px original is 855 kB).
+    // copy is what phones load and the 1600px one most laptops (269 kB; the 2400px original
+    // is 855 kB, and on the pinned stage this photo loads with the page, under the hero's).
     {
       key: 's1',
       img: '/media/plan-define-2.webp',
-      srcset: '/media/plan-define-2-1200.webp 1200w, /media/plan-define-2.webp 2400w',
+      srcset: '/media/plan-define-2-1200.webp 1200w, /media/plan-define-2-1600.webp 1600w, /media/plan-define-2.webp 2400w',
       pos: 'center 78%',
       to: 'organize',
     },
@@ -170,8 +179,8 @@ export class Home {
     start.focus({ preventScroll: true });
   }
 
-  /** 03 — the categories: the 14 catalog slugs folded into nine cards (the carousel;
-   * the older editorial index is commented out in the template). Inventory comes from
+  /** 03 — the categories: the catalog's slugs folded into nine cards (the carousel; the older
+   * editorial index went on 2026-11-13, it is in git history). Inventory comes from
    * the API; a card with no approved vendors shows no count instead of a zero. */
   private readonly categoryGroups: CategoryGroup[] = [
     // Revolut-style cards: Beka's renders, one scene or object on a shared peach backdrop
@@ -197,7 +206,6 @@ export class Home {
     return this.categoryGroups.map((g) => ({
       ...g,
       count: g.slugs.reduce((n, s) => n + (bySlug.get(s) ?? 0), 0),
-      thumb: g.img.replace(/w=\d+/, 'w=128&h=128'),
       srcset: `${g.img} 720w, ${g.img.replace(/\.webp$/, '-1086.webp')} 1086w`,
     }));
   });
@@ -210,10 +218,17 @@ export class Home {
       for (const [k, v] of Object.entries(attrs)) link.setAttribute(k, v);
       doc.head.appendChild(link);
     };
-    // the hero: the orientation-specific render (same files as the <picture>)
+    // the hero: the orientation-specific render (same files and queries as the <picture>;
+    // phones take the 828px copy of the tall one)
     add({ as: 'image', type: 'image/webp', href: '/media/hero-wide.webp', media: '(orientation: landscape)' });
-    add({ as: 'image', type: 'image/webp', href: '/media/hero-tall.webp', media: '(orientation: portrait)' });
-    // (the brand faces are Noto Sans Georgian since 2026-11-03, loaded by index.html's font link)
+    add({ as: 'image', type: 'image/webp', href: '/media/hero-tall-828.webp', media: '(orientation: portrait) and (max-width: 600px)' });
+    add({ as: 'image', type: 'image/webp', href: '/media/hero-tall.webp', media: '(orientation: portrait) and (min-width: 600.01px)' });
+    // The Georgian letters of Noto Sans Georgian: every word on the first screen waits for this
+    // one file to be drawn in the site's face. The production build inlines Google's font rules
+    // into index.html (a <style> in the head), so the file's address is read from there rather
+    // than written here, where it would go stale with Google's next version of the font.
+    const georgian = georgianFontFile(doc);
+    if (georgian) add({ as: 'font', type: 'font/woff2', href: georgian, crossorigin: '' });
   }
 
   /** Where a stage card or a step pill leads (Beka, 2026-11-03): the catalog for "find the
@@ -230,13 +245,6 @@ export class Home {
     const n = this.startSlides.length;
     this.goToSlide((this.slide() + dir + n) % n);
   }
-
-  /** Which row the stage photo shows; follows hover/focus, keeps the last one on leave.
-   * (Used by the editorial index, currently commented out in the template.) */
-  protected readonly activeRow = signal(0);
-
-  /** False under reduced motion (kept for any film we add later). */
-  protected readonly reelPlays = signal(true);
 
   // ---- the category carousel around the ring ----
   /** Index of the centred card. */
@@ -337,27 +345,62 @@ export class Home {
 
   private orbitAuto = false;
 
-  /** Browser only: start auto-advance (not under reduced motion). */
-  private setUpOrbit(destroyRef: DestroyRef): void {
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  /** Browser only: the carousel turns on its own (not under reduced motion) while its section
+   * is on screen, and rests while it is not. The section is server HTML until it is scrolled
+   * to (@defer, hydrate on viewport), so a timer running from page load would only move a
+   * number nobody sees, and the cards would jump to it the moment the section came alive. */
+  private setUpOrbit(host: HTMLElement, destroyRef: DestroyRef): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) {
       this.orbitAuto = true;
       this.startOrbit();
+      destroyRef.onDestroy(() => this.stopOrbit());
+      return;
     }
-    destroyRef.onDestroy(() => this.stopOrbit());
+    // (looked up under the host each time: reached from another page, the section is not there yet)
+    const section = () => host.querySelector<HTMLElement>('#find');
+    let watched: HTMLElement | null = null;
+    const io = new IntersectionObserver((entries) => {
+      const onScreen = entries.some((e) => e.isIntersecting);
+      if (onScreen === this.orbitAuto) return;
+      this.orbitAuto = onScreen;
+      if (!onScreen) return this.stopOrbit();
+      this.startOrbit();
+      // the ring's fill is a CSS animation that has been running since the page was drawn:
+      // start it again with the timer
+      for (const a of section()?.querySelector('.ca__fill')?.getAnimations?.() ?? []) a.currentTime = 0;
+    });
+    const watch = () => {
+      const el = section();
+      if (!el || el === watched) return;
+      if (watched) io.unobserve(watched);
+      io.observe((watched = el));
+    };
+    watch();
+    // a section that arrives later (see above) replaces its placeholder: watch that one
+    const arrivals = new MutationObserver(watch);
+    arrivals.observe(host.querySelector('.after-hero') ?? host, { childList: true });
+    destroyRef.onDestroy(() => {
+      io.disconnect();
+      arrivals.disconnect();
+      this.stopOrbit();
+    });
   }
+}
 
-  protected readonly tasks = [
-    { key: '1', done: true },
-    { key: '2', done: true },
-    { key: '3', done: false },
-    { key: '4', done: false },
-  ];
-
-  protected readonly budgetRows = ['1', '2', '3', '4'];
-
-  protected readonly savedVendors = [
-    { key: '1', chosen: true },
-    { key: '2', chosen: true },
-    { key: '3', chosen: false },
-  ];
+/** The address of the font file that holds the Georgian letters (U+10D0…) of Noto Sans Georgian,
+ * from the @font-face rules the build inlined into the page's head; null when they are not
+ * there (the development server leaves Google's stylesheet as a link). */
+function georgianFontFile(doc: Document): string | null {
+  for (const style of Array.from(doc.head.querySelectorAll('style'))) {
+    const css = style.textContent ?? '';
+    if (!css.includes('@font-face')) continue;
+    for (const rule of css.split('@font-face').slice(1)) {
+      const face = rule.slice(0, rule.indexOf('}'));
+      if (!/font-family:\s*['"]?Noto Sans Georgian/.test(face) || !/U\+10A0-10FF/i.test(face)) continue;
+      const url = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.woff2)\)/.exec(face);
+      if (url) return url[1];
+    }
+  }
+  return null;
 }

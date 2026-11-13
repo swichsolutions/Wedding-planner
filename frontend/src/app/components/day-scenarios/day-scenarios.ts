@@ -1,17 +1,22 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { DAY_SCHEDULES, SCENARIO_ICON, local, minutesOf, phaseOf, phaseStarts } from '../../core/day-schedules';
+import { schedulePath } from '../../core/schedule-addresses';
 import { LanguageService } from '../../i18n/language.service';
 import { DayIcon } from '../day-icon/day-icon';
 
 /**
  * The scenario picker: three cards, one per example day — an icon, the name, the day's span and
  * a small bar showing how the day divides into its phases. The chosen one is marked.
+ * The cards switch the scenario in place (home page), or with `links` each is a link to the
+ * scenario's own page (/ganrigebi/<slug>).
  */
 @Component({
   selector: 'app-day-scenarios',
-  imports: [TranslatePipe, DayIcon],
+  imports: [NgTemplateOutlet, RouterLink, TranslatePipe, DayIcon],
   templateUrl: './day-scenarios.html',
   styleUrl: './day-scenarios.scss',
 })
@@ -21,6 +26,8 @@ export class DayScenarios {
   /** The chosen scenario's key. */
   readonly active = input.required<string>();
   readonly pick = output<string>();
+  /** Cards as links to each scenario's page instead of buttons that emit `pick`. */
+  readonly links = input(false);
 
   protected readonly cards = computed(() => {
     const lang = this.lang.current();
@@ -35,6 +42,7 @@ export class DayScenarios {
       });
       return {
         key: s.key,
+        path: schedulePath(s.key),
         icon: SCENARIO_ICON[s.key] ?? 'dot',
         title: local(s.title, lang),
         first: s.rows[0].time,

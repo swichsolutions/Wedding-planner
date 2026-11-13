@@ -2,8 +2,11 @@
 <html lang="ka">
 <head>
   <meta charset="utf-8">
-  <title>WeddingPlanner — დაგეგმე საკუთარი ქორწილი</title>
-  <meta name="description" content="დაგეგმე საკუთარი ქორწილი მკაფიო გეგმით, საჭირო ადამიანებთან ერთად და ერთ სივრცეში თავმოყრილი ინფორმაციით — სივრცეები, მომსახურებები და ქორწილის დღის განრიგი.">
+  <!-- Marks a page whose scripts run, before anything is drawn: the home page's opening is
+       laid out as its pinned stage only then (home.scss, html.js). -->
+  <script>document.documentElement.classList.add('js')</script>
+  <title>დაგეგმე შენი ოცნების ქორწილი | WeddingPlanner</title>
+  <meta name="description" content="ქორწილის დაგეგმვა ერთ სივრცეში: სივრცეებისა და მომსახურებების კატალოგი, პირადი ორგანიზატორი დავალებებით, ბიუჯეტით, სტუმრებითა და დასხდომით, ონლაინ მოსაწვევები.">
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
@@ -12,16 +15,20 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
 
-  <!-- Georgian-capable type: Noto Serif Georgian (display) + Noto Sans Georgian (body).
-       Both cover Mkhedruli + Mtavruli + Latin so bilingual ka/en strings stay coherent.
-       Loaded as VARIABLE fonts (full weight range + width axis) — the wedding-site
-       themes draw their per-design typography from these axes. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Georgian-capable type: Noto Sans Georgian (the site's face) + Noto Serif Georgian (the
+       invitation designs at /w/… and their builder only). Both cover Mkhedruli + Mtavruli +
+       Latin. Loaded as VARIABLE fonts (full weight range + width axis): the site's headings are
+       condensed on the width axis and the invitation designs draw their typography from both.
+       Checked 2026-11-13: narrower ranges get the same files from Google (only dropping the
+       width axis makes them smaller), and a browser fetches a face's file only when text on
+       the page uses it, so the serif costs the other pages nothing but its three rules.
+       The production build inlines this stylesheet's rules into the page, so the browser only
+       ever talks to fonts.gstatic.com (the files), hence the one preconnect. -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Imagery CDN (placeholder photography) — preconnect to speed up LCP. -->
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
-  <!-- The landing hero render and the brand fonts are preloaded by the home page itself
-       (home.ts preloadAssets, server render of / only). -->
+  <!-- The landing hero render and the Georgian letters' font file are preloaded by the home
+       page itself (home.ts preloadAssets, server render of / only). -->
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wdth,wght@62.5..100,100..900&family=Noto+Serif+Georgian:wght@100..900&display=swap">
 </head>

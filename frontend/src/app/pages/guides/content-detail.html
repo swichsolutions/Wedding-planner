@@ -8,12 +8,13 @@
   <article class="gd cd" [class.cd--idea]="kind === 'inspiration'">
     <header class="cd__head cd__col">
       <nav class="gd__crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
-        <a routerLink="/rchevebi">{{ 'guides.hubTitle' | translate }}</a>
+        <a routerLink="/rchevebi" [attr.title]="'nav.g.guides.d' | translate">{{ 'guides.hubTitle' | translate }}</a>
         <span aria-hidden="true">/</span>
-        <a [routerLink]="section">{{ 'guides.' + prefix + 'Title' | translate }}</a>
+        <a [routerLink]="section" [attr.title]="'nav.g.guides.i.' + prefix + '.d' | translate">{{ 'guides.' + prefix + 'Title' | translate }}</a>
       </nav>
       @if (p.summary.topic) {
-        <a class="cd__topic" [routerLink]="section" [queryParams]="{ topic: p.summary.topic }">
+        <a class="cd__topic" [routerLink]="section" [queryParams]="{ topic: p.summary.topic }"
+          [attr.title]="('guides.' + prefix + 'Title' | translate) + ': ' + ('guides.topics.' + p.summary.topic | translate)">
           {{ 'guides.topics.' + p.summary.topic | translate }}
         </a>
       }
@@ -24,6 +25,7 @@
       @if (date()) {
         <p class="cd__date">{{ 'guides.published' | translate }}: <time [attr.datetime]="p.summary.publishedAt">{{ date() }}</time></p>
       }
+      <app-share-button [title]="title()" />
     </header>
 
     @if (cover() && kind !== 'inspiration') {
@@ -90,7 +92,7 @@
 
     @if (action(); as a) {
       <div class="cd__action cd__col">
-        <a class="btn btn--primary btn--lg" [routerLink]="a.tree">{{ a.label }}</a>
+        <a class="btn btn--primary btn--lg" [routerLink]="a.tree" [attr.title]="a.label">{{ a.label }}</a>
       </div>
     }
 

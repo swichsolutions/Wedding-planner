@@ -8,7 +8,7 @@
   </div>
 
   <div class="dp__cta">
-    <a class="btn btn--ink" [routerLink]="fullSchedule()">
+    <a class="btn btn--ink" [routerLink]="fullSchedule()" [attr.title]="'schedules.tabs.' + activeKey() | translate">
       {{ 'home.day.full' | translate }}
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
     </a>

@@ -2,7 +2,7 @@
   <div class="hero__copy">
     <h2 class="hero__title">{{ 'home.organize.title' | translate }}</h2>
     <p class="hero__lead">{{ 'home.organize.leadShort' | translate }}</p>
-    <a class="hero__cta" routerLink="/signup">
+    <a class="hero__cta" routerLink="/signup" [attr.title]="'home.organize.cta' | translate">
       <span>{{ 'home.organize.cta' | translate }}</span>
       <span aria-hidden="true">↗</span>
     </a>

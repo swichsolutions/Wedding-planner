@@ -1,23 +1,40 @@
-<div class="sn" role="radiogroup" [attr.aria-label]="'schedules.pick' | translate">
-  @for (c of cards(); track c.key) {
-    <button type="button" class="sn__card" role="radio" [class.is-active]="c.key === active()"
-      [attr.aria-checked]="c.key === active()" (click)="pick.emit(c.key)">
-      <span class="sn__icon"><app-day-icon [name]="c.icon" /></span>
-      <span class="sn__title">{{ 'schedules.tabs.' + c.key | translate }}</span>
-      <span class="sn__span">
-        <span class="num">{{ c.first }}–{{ c.last }}</span>
-        <span class="sn__sep" aria-hidden="true">·</span>
-        <span>{{ 'schedules.hours' | translate: { n: c.hours } }}</span>
-      </span>
-      <!-- how the day divides: getting ready · ceremony / reception · party -->
-      <span class="sn__bar" aria-hidden="true">
-        @for (seg of c.segments; track $index) {
-          <span class="sn__seg" [class]="'sn__seg sn__seg--' + seg.phase" [style.width.%]="seg.width"></span>
-        }
-      </span>
-      <span class="sn__check" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
-      </span>
-    </button>
-  }
-</div>
+@if (links()) {
+  <!-- Each scenario's own page: real links, so the three pages lead to each other for
+       crawlers and for anyone opening one in a new tab. -->
+  <nav class="sn" [attr.aria-label]="'schedules.pick' | translate">
+    @for (c of cards(); track c.key) {
+      <a class="sn__card" [routerLink]="c.path" [attr.title]="c.title" [class.is-active]="c.key === active()"
+        [attr.aria-current]="c.key === active() ? 'page' : null">
+        <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: c }" />
+      </a>
+    }
+  </nav>
+} @else {
+  <div class="sn" role="radiogroup" [attr.aria-label]="'schedules.pick' | translate">
+    @for (c of cards(); track c.key) {
+      <button type="button" class="sn__card" role="radio" [class.is-active]="c.key === active()"
+        [attr.aria-checked]="c.key === active()" (click)="pick.emit(c.key)">
+        <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: c }" />
+      </button>
+    }
+  </div>
+}
+
+<ng-template #card let-c>
+  <span class="sn__icon"><app-day-icon [name]="c.icon" /></span>
+  <span class="sn__title">{{ 'schedules.tabs.' + c.key | translate }}</span>
+  <span class="sn__span">
+    <span class="num">{{ c.first }}–{{ c.last }}</span>
+    <span class="sn__sep" aria-hidden="true">·</span>
+    <span>{{ 'schedules.hours' | translate: { n: c.hours } }}</span>
+  </span>
+  <!-- how the day divides: getting ready · ceremony / reception · party -->
+  <span class="sn__bar" aria-hidden="true">
+    @for (seg of c.segments; track $index) {
+      <span class="sn__seg" [class]="'sn__seg sn__seg--' + seg.phase" [style.width.%]="seg.width"></span>
+    }
+  </span>
+  <span class="sn__check" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+  </span>
+</ng-template>

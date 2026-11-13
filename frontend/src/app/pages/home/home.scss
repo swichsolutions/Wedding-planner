@@ -41,14 +41,6 @@
     background: var(--spruce);
     color: var(--on-spruce);
     border-top-color: var(--spruce-700);
-
-    .chap__title {
-      color: var(--on-spruce);
-    }
-
-    .chap__lead {
-      color: var(--on-spruce-muted);
-    }
   }
 
   // One full screen with the content centred (every chapter after the categories):
@@ -66,27 +58,6 @@
     > .container {
       width: 100%;
     }
-
-    .chap__head {
-      margin-bottom: clamp(1.25rem, 4vh, 2.5rem);
-    }
-
-    .chap__cta {
-      margin-top: clamp(1rem, 3.5vh, 2.5rem);
-    }
-
-    // short desktop screens (a 1080p laptop at 125% leaves ~750px): tighter type so a
-    // chapter still fits one screen
-    @media (min-width: 768px) and (max-height: 900px) {
-      .chap__title {
-        font-size: clamp(1.875rem, 1.3rem + 2vw, 2.75rem);
-      }
-
-      .chap__lead {
-        font-size: 1.0625rem;
-        line-height: 1.4;
-      }
-    }
   }
 
   // painted by the colour band around it (see .band); no hairline at the seam
@@ -94,62 +65,10 @@
     background: transparent;
     border-top: 0;
     color: #fff;
-
-    .chap__title {
-      color: #fff;
-    }
-
-    .chap__lead {
-      color: rgba(255, 255, 255, 0.7);
-    }
-  }
-
-  &__head {
-    margin-bottom: var(--space-10);
-    max-width: 44rem;
-
-    &--row {
-      max-width: none;
-    }
-  }
-
-  &__title {
-    margin: 0 0 var(--space-5);
-    font-size: var(--fs-h2);
-    line-height: var(--lh-heading);
-  }
-
-  &__lead {
-    margin: 0;
-    max-width: 36rem;
-    font-size: var(--fs-lead);
-    line-height: 1.5;
-    color: var(--ink-700);
-  }
-
-  &__cta {
-    margin: var(--space-10) 0 0;
-    text-align: center;
-
-    &--left {
-      text-align: left;
-      margin-top: var(--space-6);
-    }
   }
 
   @include bp.respond-to(md) {
     padding-block: var(--space-24);
-
-    &__head--row {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      align-items: end;
-      gap: var(--space-10);
-
-      .chap__lead {
-        margin-bottom: var(--space-2);
-      }
-    }
   }
 
   @include bp.respond-to(lg) {
@@ -157,68 +76,11 @@
   }
 }
 
-// Dotted leaders: `label ........ value` — the program/menu idiom.
-.leaders {
-  margin: 0;
-
-  &__row {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
-    padding: var(--space-2) 0;
-    font-family: var(--font-ui);
-    font-stretch: var(--stretch-ui);
-    font-size: var(--fs-small);
-
-    dt {
-      color: var(--ink-700);
-      white-space: nowrap;
-    }
-
-    &::after {
-      content: '';
-      flex: 1;
-      order: 2;
-      min-width: var(--space-4);
-      border-bottom: 1px dotted var(--paper-line-strong);
-      transform: translateY(-5px);
-    }
-
-    dd {
-      order: 3;
-      margin: 0;
-      font-weight: var(--fw-semibold);
-      color: var(--ink);
-      white-space: nowrap;
-    }
-
-    &--total {
-      margin-top: var(--space-2);
-      padding-top: var(--space-3);
-      border-top: 1px solid var(--paper-line);
-
-      dt {
-        color: var(--ink);
-        font-weight: var(--fw-semibold);
-      }
-    }
-
-    &--muted dd {
-      color: var(--ink-700);
-      font-weight: var(--fw-medium);
-    }
-
-    &--next dd {
-      color: var(--ink);
-    }
-  }
-}
-
 // =============================================================================
 // 01 — Hero, and from the first scroll "where do I start?": sections 01 and 02 in one
 // stage (review of 2026-11-12).
 //
-// Staged (.is-staged, set by ScrollStage from 1024px wide and 600px tall): one pinned
+// Staged (from 1024px wide and 600px tall, where scripts run): one pinned
 // screen. At rest it is the hero: the photo full screen, its words, and a box in the
 // middle holding the first step. .is-run (the first scroll) fades the hero photo into the
 // second section's photo, which lies under it, while the hero's words give way to the
@@ -356,6 +218,10 @@
     padding-top: calc(var(--hdr-h) + 48px);
     text-align: left;
 
+    // The entrance is a short rise only. It used to fade in from nothing as well, which left
+    // the words invisible in the page's first paint: on a slow phone they showed up to two
+    // seconds late (the paragraph is the page's largest text, so that was the "largest
+    // contentful paint" the speed checkers timed).
     > * {
       animation: hero-in var(--dur-reveal) var(--ease-out) both;
     }
@@ -444,14 +310,6 @@
     &:focus {
       outline: none;
       box-shadow: none;
-    }
-
-    // the narrowest phones: the button's one-line label is wider than the screen
-    @media (max-width: 359px) {
-      .pill-cta {
-        white-space: normal;
-        text-align: center;
-      }
     }
   }
 
@@ -621,225 +479,233 @@
 }
 
 // ---- staged: one pinned screen; the hero fades into the second section ----
-.intro.is-staged {
-  height: calc(100dvh + var(--hold)); // the runway: the screen stays pinned for --hold
+// Decided by the window's size alone, in CSS, so the page the server sent is drawn staged in
+// its first paint. (Until 2026-11-13 a class set by ScrollStage decided it: the page was drawn
+// stacked and laid out again, with the box jumping into the hero, when Angular started.)
+// `html.js` is set by one line of script in index.html: without JavaScript nothing could
+// run the stage, so the page stays stacked. ScrollStage uses the same query for .is-staged,
+// which scripts read (the header, the hero's scroll arrow) and no rule here does.
+@media (min-width: 1024px) and (min-height: 600px) {
+  :host-context(html.js) .intro {
+    height: calc(100dvh + var(--hold)); // the runway: the screen stays pinned for --hold
 
-  .intro__stage {
-    position: sticky;
-    top: 0;
-    display: block;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
+    .intro__stage {
+      position: sticky;
+      top: 0;
+      display: block;
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+    }
 
-  // the steps' photos lie under the hero photo, full screen, and show as it fades
-  .intro__slides {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
+    // the steps' photos lie under the hero photo, full screen, and show as it fades
+    .intro__slides {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
 
-  // the hero photo: full screen over them at rest; gone once the stage has run
-  .intro__photo {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-  }
-
-  .hero__copy {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(var(--hdr-h) + 48px);
-    z-index: 3;
-    padding-top: 0;
-  }
-
-  // The steps' words: between the bar and the card, centred. Sized from the screen
-  // height, so the heading, the line and the button fit that band on a laptop too.
-  .start__copy {
-    position: absolute;
-    top: var(--hdr-h);
-    left: 50%;
-    z-index: 3;
-    width: min(52rem, 100% - 2 * var(--gutter));
-    height: calc(var(--card-top) - var(--hdr-h));
-    justify-content: center;
-    padding: 0;
-    transform: translateX(-50%);
-    translate: 0 16px;
-  }
-
-  .start__title {
-    margin-bottom: clamp(0.375rem, 1.4vh, 0.875rem);
-    font-size: clamp(1.75rem, 6vh, 3.5rem);
-    line-height: 1.05;
-  }
-
-  .start__lead {
-    margin-bottom: clamp(0.625rem, 2.2vh, 1.5rem);
-    font-size: clamp(0.9375rem, 2.3vh, 1.25rem);
-    line-height: 1.45;
-  }
-
-  // The box: at rest the hero's frame (large, and off-centre on short wide screens); run,
-  // the second section's card. Position and size move on the same clock as the photo.
-  .start__card {
-    position: absolute;
-    top: var(--box-top);
-    bottom: var(--box-bottom);
-    left: 50%;
-    z-index: 2;
-    // (the stacked rule centres the card in its grid row; on an absolute box that would
-    // shrink it to its content instead of filling top-to-bottom)
-    align-self: stretch;
-    width: var(--box-w);
-    margin: 0 0 0 calc(var(--box-w) / -2 + var(--box-shift));
-  }
-
-  .start__card-inner {
-    height: 100%;
-    aspect-ratio: auto;
-    border-radius: 24px;
-  }
-
-  // the frame at rest is larger than the card, so its text may grow further with it
-  .start__card-label {
-    font-size: clamp(0.9375rem, 5.2cqi, 1.5rem);
-  }
-
-  .start__card-value {
-    font-size: clamp(1.125rem, 7.8cqi, 2.75rem);
-  }
-
-  // The text follows the card's width (12px in the smallest card, 16px in the large ones),
-  // which keeps the link on one line wherever it can fit, and the link never leaves the
-  // card: where a long label still does not fit (the card is ~230px on a 650px-tall laptop
-  // screen) it wraps to two lines, centred.
-  .start__card-sub {
-    max-width: 100%;
-    min-height: clamp(34px, 13cqi, 40px);
-    font-size: clamp(0.75rem, 4.6cqi, 1rem);
-    line-height: 1.25;
-    text-align: center;
-  }
-
-  // back to the global .car-arrow placement: the far right edge, vertically centred
-  .start__arrow {
-    position: absolute;
-    top: 50%;
-    right: var(--space-8);
-    z-index: 3;
-    margin-right: 0;
-    transform: translateY(-50%);
-  }
-
-  // under the card, centred
-  .start__dots {
-    position: absolute;
-    left: 50%;
-    bottom: calc((var(--card-bottom) - 2.25rem) / 2);
-    z-index: 3;
-    flex-wrap: nowrap;
-    padding: 0;
-    transform: translateX(-50%);
-  }
-
-  // under the hero's frame
-  .hero__down {
-    top: auto;
-    bottom: calc((var(--box-bottom) - 44px) / 2);
-    left: calc(50% + var(--box-shift));
-    z-index: 3;
-  }
-
-  // ---- at rest: the hero's words are on; the steps' words, link, pills and ring wait ----
-  .start__copy,
-  .start__card-sub,
-  .start__dots,
-  .start__arrow {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  // ---- the transitions. Only once ScrollStage has set the stage up (.is-ready, a frame
-  // after .is-staged): the switch from the stacked layout to this one at page load, and a
-  // page opened mid-scroll, must simply appear, not animate into place. ----
-  &.is-ready {
+    // the hero photo: full screen over them at rest; gone once the stage has run
     .intro__photo {
-      transition: opacity var(--run-dur) var(--run-ease);
-    }
-
-    .start__card {
-      transition:
-        top var(--run-dur) var(--run-ease),
-        bottom var(--run-dur) var(--run-ease),
-        width var(--run-dur) var(--run-ease),
-        margin-left var(--run-dur) var(--run-ease);
-    }
-
-    .start__card-inner {
-      transition: border-radius var(--run-dur) var(--run-ease);
+      position: absolute;
+      inset: 0;
+      z-index: 1;
     }
 
     .hero__copy {
-      transition: opacity 320ms var(--ease-out), translate 420ms var(--ease-out);
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(var(--hdr-h) + 48px);
+      z-index: 3;
+      padding-top: 0;
     }
 
-    .hero__down {
-      transition: opacity 200ms var(--ease-out);
-    }
-
-    .start__copy,
-    .start__card-sub,
-    .start__dots,
-    .start__arrow {
-      transition: opacity 420ms var(--ease-out), translate 520ms var(--ease-out);
-    }
-  }
-
-  // ---- run (the first scroll) ----
-  &.is-run {
-    // the hero photo fades away over the second section's photo; nothing shrinks, and the
-    // box is see-through on the first step as on the others
-    .intro__photo {
-      opacity: 0;
-    }
-
-    .start__card {
-      top: var(--card-top);
-      bottom: var(--card-bottom);
-      width: var(--card-w);
-      margin-left: calc(var(--card-w) / -2);
-    }
-
-    .start__card-inner {
-      border-radius: 14px;
-    }
-
-    .hero__copy {
-      opacity: 0;
-      translate: 0 -28px;
-      pointer-events: none;
-    }
-
-    .hero__down {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .start__copy,
-    .start__card-sub,
-    .start__dots,
-    .start__arrow {
-      opacity: 1;
-      pointer-events: auto;
-      transition-delay: 380ms; // once the photo is well on its way into the box
-    }
-
+    // The steps' words: between the bar and the card, centred. Sized from the screen
+    // height, so the heading, the line and the button fit that band on a laptop too.
     .start__copy {
-      translate: 0 0;
+      position: absolute;
+      top: var(--hdr-h);
+      left: 50%;
+      z-index: 3;
+      width: min(52rem, 100% - 2 * var(--gutter));
+      height: calc(var(--card-top) - var(--hdr-h));
+      justify-content: center;
+      padding: 0;
+      transform: translateX(-50%);
+      translate: 0 16px;
+    }
+
+    .start__title {
+      margin-bottom: clamp(0.375rem, 1.4vh, 0.875rem);
+      font-size: clamp(1.75rem, 6vh, 3.5rem);
+      line-height: 1.05;
+    }
+
+    .start__lead {
+      margin-bottom: clamp(0.625rem, 2.2vh, 1.5rem);
+      font-size: clamp(0.9375rem, 2.3vh, 1.25rem);
+      line-height: 1.45;
+    }
+
+    // The box: at rest the hero's frame (large, and off-centre on short wide screens); run,
+    // the second section's card. Position and size move on the same clock as the photo.
+    .start__card {
+      position: absolute;
+      top: var(--box-top);
+      bottom: var(--box-bottom);
+      left: 50%;
+      z-index: 2;
+      // (the stacked rule centres the card in its grid row; on an absolute box that would
+      // shrink it to its content instead of filling top-to-bottom)
+      align-self: stretch;
+      width: var(--box-w);
+      margin: 0 0 0 calc(var(--box-w) / -2 + var(--box-shift));
+    }
+
+    .start__card-inner {
+      height: 100%;
+      aspect-ratio: auto;
+      border-radius: 24px;
+    }
+
+    // the frame at rest is larger than the card, so its text may grow further with it
+    .start__card-label {
+      font-size: clamp(0.9375rem, 5.2cqi, 1.5rem);
+    }
+
+    .start__card-value {
+      font-size: clamp(1.125rem, 7.8cqi, 2.75rem);
+    }
+
+    // The text follows the card's width (12px in the smallest card, 16px in the large ones),
+    // which keeps the link on one line wherever it can fit, and the link never leaves the
+    // card: where a long label still does not fit (the card is ~230px on a 650px-tall laptop
+    // screen) it wraps to two lines, centred.
+    .start__card-sub {
+      max-width: 100%;
+      min-height: clamp(34px, 13cqi, 40px);
+      font-size: clamp(0.75rem, 4.6cqi, 1rem);
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    // back to the global .car-arrow placement: the far right edge, vertically centred
+    .start__arrow {
+      position: absolute;
+      top: 50%;
+      right: var(--space-8);
+      z-index: 3;
+      margin-right: 0;
+      transform: translateY(-50%);
+    }
+
+    // under the card, centred
+    .start__dots {
+      position: absolute;
+      left: 50%;
+      bottom: calc((var(--card-bottom) - 2.25rem) / 2);
+      z-index: 3;
+      flex-wrap: nowrap;
+      padding: 0;
+      transform: translateX(-50%);
+    }
+
+    // under the hero's frame
+    .hero__down {
+      top: auto;
+      bottom: calc((var(--box-bottom) - 44px) / 2);
+      left: calc(50% + var(--box-shift));
+      z-index: 3;
+    }
+
+    // ---- at rest: the hero's words are on; the steps' words, link, pills and ring wait ----
+    .start__copy,
+    .start__card-sub,
+    .start__dots,
+    .start__arrow {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    // ---- the transitions. Only once ScrollStage is running (.is-ready, a frame after it
+    // has set .is-run for the scroll position): a page opened mid-scroll, and a window resized
+    // across the breakpoint, must simply appear, not animate into place. ----
+    &.is-ready {
+      .intro__photo {
+        transition: opacity var(--run-dur) var(--run-ease);
+      }
+
+      .start__card {
+        transition:
+          top var(--run-dur) var(--run-ease),
+          bottom var(--run-dur) var(--run-ease),
+          width var(--run-dur) var(--run-ease),
+          margin-left var(--run-dur) var(--run-ease);
+      }
+
+      .start__card-inner {
+        transition: border-radius var(--run-dur) var(--run-ease);
+      }
+
+      .hero__copy {
+        transition: opacity 320ms var(--ease-out), translate 420ms var(--ease-out);
+      }
+
+      .hero__down {
+        transition: opacity 200ms var(--ease-out);
+      }
+
+      .start__copy,
+      .start__card-sub,
+      .start__dots,
+      .start__arrow {
+        transition: opacity 420ms var(--ease-out), translate 520ms var(--ease-out);
+      }
+    }
+
+    // ---- run (the first scroll) ----
+    &.is-run {
+      // the hero photo fades away over the second section's photo; nothing shrinks, and the
+      // box is see-through on the first step as on the others
+      .intro__photo {
+        opacity: 0;
+      }
+
+      .start__card {
+        top: var(--card-top);
+        bottom: var(--card-bottom);
+        width: var(--card-w);
+        margin-left: calc(var(--card-w) / -2);
+      }
+
+      .start__card-inner {
+        border-radius: 14px;
+      }
+
+      .hero__copy {
+        opacity: 0;
+        translate: 0 -28px;
+        pointer-events: none;
+      }
+
+      .hero__down {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .start__copy,
+      .start__card-sub,
+      .start__dots,
+      .start__arrow {
+        opacity: 1;
+        pointer-events: auto;
+        transition-delay: 380ms; // once the photo is well on its way into the box
+      }
+
+      .start__copy {
+        translate: 0 0;
+      }
     }
   }
 }
@@ -907,12 +773,10 @@
 
 @keyframes hero-in {
   from {
-    opacity: 0;
     transform: translateY(14px);
   }
 
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -939,261 +803,27 @@
   position: relative;
   z-index: 1;
   background: var(--paper);
+
+}
+
+// Each section after the stage is a screen of its own and nothing in one reaches into another,
+// so on a page that arrives from the server (.home--lean, see home.ts) the browser may skip a
+// section's layout and painting, and the fonts and pictures only it uses, until it comes near
+// the screen. Without this every font file that arrived laid the whole page out again: over
+// two seconds of a mid-range phone's processor during loading. A skipped section is as tall as
+// its min-height, one screen (the size below only has to stay under that), and afterwards as
+// tall as it last measured.
+:host(.home--lean) .after-hero section {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 50vh;
 }
 
 // =============================================================================
-// 03 — People & place: an editorial index. Eight numbered rows, one stage photo that
-// follows the hovered row (md+); on phones each row carries its own thumbnail.
-// =============================================================================
-.index {
-  display: grid;
-  gap: var(--space-8);
-
-  &__list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid var(--paper-line-strong);
-  }
-
-  &__row {
-    border-bottom: 1px solid var(--paper-line-strong);
-  }
-
-  &__link {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto auto 1fr auto auto;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-4) 0;
-    color: var(--ink);
-    text-decoration: none;
-
-    &:hover {
-      color: var(--ink);
-    }
-
-    &:focus-visible {
-      outline: none;
-      box-shadow: inset 0 0 0 2px var(--ink);
-      border-radius: var(--radius-sm);
-    }
-  }
-
-  // the index numeral: statement face, clay when the row is live
-  &__num {
-    font-family: var(--font-statement);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: var(--tracking-overline);
-    color: var(--ink-500);
-    transition: color var(--dur-base) var(--ease-out);
-  }
-
-  &__thumb {
-    width: 56px;
-    height: 70px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    filter: saturate(0.85);
-    background: var(--paper-deep);
-  }
-
-  &__body {
-    display: grid;
-    gap: var(--space-1);
-    min-width: 0;
-  }
-
-  &__name {
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-display);
-    font-size: var(--fs-h5);
-    font-weight: var(--fw-bold);
-    line-height: 1.1;
-    letter-spacing: var(--tracking-tight);
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-
-  // the blurb under the name: what the group contains
-  &__meta {
-    font-family: var(--font-ui);
-    font-size: var(--fs-caption);
-    line-height: 1.4;
-    color: var(--ink-500);
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  // the figure column: a tabular display numeral with a tiny overline label beneath,
-  // right-aligned so the eight counts stack into one column
-  &__count {
-    display: grid;
-    justify-items: end;
-    gap: 2px;
-    min-width: 3rem;
-    text-align: right;
-  }
-
-  &__count-n {
-    font-family: var(--font-display);
-    font-stretch: var(--stretch-display);
-    font-size: var(--fs-h5);
-    font-weight: var(--fw-bold);
-    line-height: 1;
-    letter-spacing: var(--tracking-tight);
-    font-variant-numeric: tabular-nums;
-    color: var(--ink);
-  }
-
-  &__count-l {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: var(--fw-semibold);
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--ink-500);
-  }
-
-  &__count--empty &__count-l {
-    padding: 3px var(--space-2);
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--paper-line-strong);
-    color: var(--ink-500);
-  }
-
-  &__arrow {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--paper-line-strong);
-    color: var(--ink-500);
-    transition:
-      background var(--dur-base) var(--ease-out),
-      border-color var(--dur-base) var(--ease-out),
-      color var(--dur-base) var(--ease-out),
-      transform var(--dur-base) var(--ease-out);
-  }
-
-  // screen-reader-only action label on each row
-  &__sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  &__row.is-active &__num,
-  &__link:hover &__num {
-    color: var(--ink);
-  }
-
-  &__link:hover &__arrow,
-  &__row.is-active &__arrow {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--paper-white);
-    transform: translateX(2px);
-  }
-
-  // the stage: hidden on phones (rows carry thumbnails), sticky on md+
-  &__stage {
-    display: none;
-  }
-
-  &__frame {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    background: var(--spruce);
-  }
-
-  &__photo {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: saturate(0.85);
-    opacity: 0;
-    transform: scale(1.03);
-    transition:
-      opacity var(--dur-slow) var(--ease-out),
-      transform 1200ms var(--ease-out);
-
-    &.is-active {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @include bp.respond-to(md) {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
-    gap: var(--space-12);
-    align-items: start;
-
-    &__link {
-      grid-template-columns: auto 1fr auto auto;
-      gap: var(--space-6);
-      padding: var(--space-5) 0;
-    }
-
-    &__count {
-      min-width: 4.5rem;
-    }
-
-    &__count-n {
-      font-size: var(--fs-h4);
-    }
-
-    &__thumb {
-      display: none;
-    }
-
-    &__name {
-      font-size: var(--fs-h4);
-    }
-
-    &__row.is-active &__name,
-    &__link:hover &__name {
-      transform: translateX(var(--space-2));
-    }
-
-    &__stage {
-      display: block;
-      position: sticky;
-      top: calc(var(--hdr-h) + var(--space-6));
-    }
-  }
-
-  @include bp.respond-to(lg) {
-    grid-template-columns: minmax(0, 1fr) minmax(22rem, 28rem);
-    gap: var(--space-16);
-
-    &__name {
-      font-size: var(--fs-h3);
-    }
-  }
-}
-
-// =============================================================================
-// 03b — Orbit: a black, one-screen stage. Compact copy, the golden ring, then a
+// 03 — Orbit: a black, one-screen stage. Compact copy, the golden ring, then a
 // card carousel after Revolut's business page: fixed slots -2 -1 [0] 1 2, centre full
 // size, the sides at 90%, the next ones parked invisible; the list rotates through
 // the slots on its own, on a drag/swipe, and from the dots. Cards share the renders'
 // peach backdrop: the visual fills the card, the evergreen text sits on top.
-// The editorial index above stays available (commented out in the template).
 // =============================================================================
 .chap--orbit {
   display: flex;
@@ -1465,95 +1095,6 @@
 @media (prefers-reduced-motion: reduce) {
   .orbit__item {
     transition: none;
-  }
-}
-
-.tasks {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.task {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--paper-line);
-  font-family: var(--font-ui);
-  font-size: var(--fs-small);
-
-  &:last-child {
-    border-bottom: 0;
-  }
-
-  &__box {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border: 1.5px solid var(--paper-line-strong);
-    border-radius: var(--radius-sm);
-    color: #fff;
-  }
-
-  &.is-done &__box {
-    background: var(--spruce);
-    border-color: var(--spruce);
-  }
-
-  &.is-done &__text {
-    color: var(--ink-500);
-    text-decoration: line-through;
-    text-decoration-color: var(--paper-line-strong);
-  }
-
-  &__due {
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
-    color: var(--ink-700);
-  }
-
-  &:not(.is-done) &__due {
-    color: var(--ink);
-  }
-}
-
-.saved {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  &__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-3) 0;
-    border-bottom: 1px solid var(--paper-line);
-    font-family: var(--font-ui);
-    font-size: var(--fs-small);
-
-    &:last-child {
-      border-bottom: 0;
-    }
-  }
-
-  &__status {
-    flex: none;
-    padding: 2px var(--space-2);
-    border-radius: var(--radius-sm);
-    background: var(--paper-deep);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-semibold);
-    color: var(--ink-700);
-
-    &.is-chosen {
-      background: var(--success-100);
-      color: var(--success-600);
-    }
   }
 }
 

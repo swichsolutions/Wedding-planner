@@ -8,9 +8,12 @@ import { DestroyRef, Directive, ElementRef, afterNextRender, inject, output } fr
  *
  * - `is-run` on the host once the page has been scrolled a little (off again at the very top,
  *   with hysteresis so it cannot flicker), and the `ran` output with the same value.
- * - `is-staged` on the host while the window is wide and tall enough for the pinned version
- *   (see home.scss), and `is-ready` a frame later, which is when the SCSS turns its
- *   transitions on. Below that size, and without JS, the host stays two ordinary blocks.
+ * - `is-staged` on the host while the window is wide and tall enough for the pinned version,
+ *   and `is-ready` a frame later, which is when the SCSS turns its transitions on. The
+ *   pinned layout itself comes from a media query with the same sizes in home.scss, so the
+ *   server's HTML is drawn pinned before this code runs; `is-staged` is for scripts that
+ *   ask (the header, the hero's scroll arrow). Below that size, and without JS, the host
+ *   stays two ordinary blocks.
  *
  * Inside the host, mark what belongs to each state with `data-stage="rest"` / `"run"`. When
  * keyboard focus lands on something of the state that is not showing, the page scrolls to
@@ -31,6 +34,7 @@ export class ScrollStage {
     afterNextRender(() => {
       const host = this.el.nativeElement;
       // the pinned version needs room for the heading, the card and the step pills
+      // (the same query as home.scss's staged rules: change both together)
       const roomy = window.matchMedia('(min-width: 1024px) and (min-height: 600px)');
 
       const TRIGGER_DOWN = 16; // px scrolled: run

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, RESPONSE_INIT, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -66,6 +66,8 @@ export class VendorBrowse {
   private readonly t = inject(TranslateService);
   private readonly titleService = inject(Title);
   private readonly meta = inject(Meta);
+  /** SSR only (null in the browser): a failed load answers 503. */
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
 
   protected readonly groups = GROUPS;
   protected readonly regions = REGIONS;
@@ -153,6 +155,9 @@ export class VendorBrowse {
           catchError(() => {
             this.loading.set(false);
             this.loadError.set(true);
+            // 503, not a 200 with an error message in it: a crawler comes back later instead of
+            // taking the empty catalog for the page (the landing and profile pages do the same).
+            if (this.responseInit) this.responseInit.status = 503;
             return of([] as Vendor[]);
           }),
         );
@@ -180,11 +185,11 @@ export class VendorBrowse {
       }
     });
     // A group, a category or a filtered view with no vendors in it is a thin page: out of the
-    // index until it has some. (App clears the tag on every navigation; the list loads again
-    // after each one, so this runs again too.)
+    // index until it has some. So is a page whose list failed to load. (App clears the tag on
+    // every navigation; the list loads again after each one, so this runs again too.)
     effect(() => {
       const empty = !this.loading() && !this.loadError() && this.results().length === 0;
-      if (empty && (this.group() || this.hasFilters())) this.meta.updateTag({ name: 'robots', content: 'noindex' });
+      if (this.loadError() || (empty && (this.group() || this.hasFilters()))) this.meta.updateTag({ name: 'robots', content: 'noindex' });
       else this.meta.removeTag("name='robots'");
     });
     // Open „მეტი ფილტრი" when the URL already uses one of its filters.

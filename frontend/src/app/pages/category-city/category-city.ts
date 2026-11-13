@@ -98,12 +98,20 @@ export class CategoryCity implements OnDestroy {
     return this.vendors()[0]?.city || cityName(this.citySlug());
   }
 
-  protected readonly h1 = computed(() => {
-    const en = this.lang.current() === 'en';
-    const plural = this.translate.instant(this.pluralKey());
-    return en
-      ? `${plural} in ${cityDisplayEn(this.citySlug())}`
-      : `${plural} ${cityLocativeKa(this.cityKa())}`;
+  /** A landing page's name: "<category, plural> in <city>". Also the tooltip of a link to it. */
+  private landingName(categorySlug: string, citySlug: string, cityKa: string): string {
+    const plural = this.translate.instant(categoryKey(categorySlug).replace('category.', 'categoryPlural.'));
+    return this.lang.current() === 'en'
+      ? `${plural} in ${cityDisplayEn(citySlug)}`
+      : `${plural} ${cityLocativeKa(cityKa)}`;
+  }
+
+  protected readonly h1 = computed(() => this.landingName(this.categorySlug(), this.citySlug(), this.cityKa()));
+
+  /** The category's own name, for the link to its catalog page. */
+  protected readonly categoryPlural = computed(() => {
+    void this.lang.current();
+    return this.translate.instant(this.pluralKey());
   });
 
   /** 1–3 data-driven sentences — the page's unique intro AND its meta description. */
@@ -155,6 +163,7 @@ export class CategoryCity implements OnDestroy {
       .map((p) => ({
         link: `/${p.categorySlug}/${p.citySlug}`,
         label: en ? cityDisplayEn(p.citySlug) : p.city,
+        title: this.landingName(p.categorySlug, p.citySlug, p.city),
         count: p.count,
       }));
   });
@@ -173,6 +182,7 @@ export class CategoryCity implements OnDestroy {
         label: this.translate.instant(
           categoryKey(p.categorySlug).replace('category.', 'categoryPlural.'),
         ),
+        title: this.landingName(p.categorySlug, p.citySlug, p.city),
         count: p.count,
       }));
   });
@@ -211,7 +221,11 @@ export class CategoryCity implements OnDestroy {
         }),
         takeUntilDestroyed(),
       )
-      .subscribe(({ vendors, pairs, failed }) => {
+      .subscribe(({ vendors: found, pairs, failed }) => {
+        // A vendor saved without a city gets the address segment "city-<id>". Such a "city" has
+        // no name to put in the heading or the title, so it is not a landing page: it answers
+        // like any unknown one. (A city-<id> whose city has a name is a normal landing.)
+        const vendors = found.some((v) => v.city.trim()) ? found : [];
         this.vendors.set(vendors);
         this.pairings.set(pairs);
         this.loaded.set(true);

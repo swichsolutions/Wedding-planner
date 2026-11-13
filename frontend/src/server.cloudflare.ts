@@ -11,6 +11,7 @@ import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 import { environment } from './environments/environment';
 import { EdgeContext, browserRenderedShell, sitemapFromApi, withEdgeCache } from './server.edge';
 import { withFinishedHead } from './server.head';
+import { articleAsMarkdown, isArticlePath } from './server.markdown';
 import { APEX, redirectFor } from './server.redirects';
 import { AssetFetcher, isVideoPath, serveVideo } from './server.video';
 
@@ -38,20 +39,34 @@ export const reqHandler = createRequestHandler(async (req) => {
 const edgeCache = () => (caches as unknown as { default: Cache }).default;
 
 export default {
-  async fetch(req: Request, env: { ASSETS: AssetFetcher }, ctx: EdgeContext) {
+  // CF_VERSION_METADATA: the deploy's version id (wrangler.jsonc), so the edge never serves a page
+  // rendered by an earlier deploy, whose script files are gone
+  async fetch(req: Request, env: { ASSETS: AssetFetcher; CF_VERSION_METADATA?: { id: string } }, ctx: EdgeContext) {
     const { pathname } = new URL(req.url);
     if (isVideoPath(pathname)) return serveVideo(req, env.ASSETS);
     // The sitemap is the API's, served from this domain (robots.txt points here).
     if (pathname === '/sitemap.xml') return sitemapFromApi(req, environment.apiBaseUrl, edgeCache(), ctx);
 
-    return withEdgeCache(req, edgeCache(), ctx, async () => {
+    // An article asked for as Markdown (AI agents). Answered before the edge cache, which stores
+    // one copy per address and would hand such a reader the HTML page.
+    const markdown = await articleAsMarkdown(req, environment.apiBaseUrl);
+    if (markdown) return markdown;
+
+    const page = await withEdgeCache(req, edgeCache(), ctx, async () => {
       try {
         const res = (await reqHandler(req)) ?? new Response('Not found', { status: 404 });
+        // also adds the Link header (sitemap, llms.txt) to HTML pages
         return await withFinishedHead(res, req.url);
       } catch (err) {
         console.error('Server render failed; serving the browser-rendered shell.', err);
         return browserRenderedShell(req, env.ASSETS);
       }
-    });
+    }, Date.now, env.CF_VERSION_METADATA?.id);
+    // An article's address answers in two forms, so caches between here and the reader must keep
+    // them apart. Said on the way out, so the copy stored at the edge stays as it was.
+    if (isArticlePath(pathname) && (page.headers.get('content-type') ?? '').includes('text/html')) {
+      page.headers.append('vary', 'Accept');
+    }
+    return page;
   },
 };

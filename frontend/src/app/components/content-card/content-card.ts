@@ -14,7 +14,7 @@ import { LanguageService } from '../../i18n/language.service';
   selector: 'app-content-card',
   imports: [RouterLink, TranslatePipe],
   template: `
-    <a class="ccard" [class.ccard--idea]="variant() === 'idea'" [routerLink]="path()">
+    <a class="ccard" [class.ccard--idea]="variant() === 'idea'" [routerLink]="path()" [attr.title]="title()">
       <span class="ccard__media">
         @if (image()) {
           <img [src]="image()" [alt]="alt()" [attr.loading]="eager() ? null : 'lazy'" width="800" height="600" />

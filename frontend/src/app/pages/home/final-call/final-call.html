@@ -21,5 +21,6 @@
       </li>
     }
   </ul>
-  <a class="btn btn--ink btn--lg" [routerLink]="cta().link">{{ cta().key | translate }}</a>
+  <a class="btn btn--ink btn--lg" [routerLink]="cta().link"
+    [attr.title]="(cta().link === '/signup' ? 'nav.startTitle' : cta().key) | translate">{{ cta().key | translate }}</a>
 </div>

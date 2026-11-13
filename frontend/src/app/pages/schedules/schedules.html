@@ -1,7 +1,7 @@
 <div class="sc">
   <header class="sc__intro container">
     <nav class="sc__crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
-      <a routerLink="/">{{ 'nav.g.plan.title' | translate }}</a>
+      <a routerLink="/" [attr.title]="'nav.g.plan.d' | translate">{{ 'nav.g.plan.title' | translate }}</a>
       <span aria-hidden="true">/</span>
       <span aria-current="page">{{ 'schedules.title' | translate }}</span>
     </nav>
@@ -14,7 +14,7 @@
     <!-- 1 · which kind of day: three picture cards -->
     <section class="sc__step">
       <h2 class="sc__step-h"><span class="sc__n" aria-hidden="true">1</span>{{ 'schedules.step1' | translate }}</h2>
-      <app-day-scenarios [active]="s.key" (pick)="pick($event)" />
+      <app-day-scenarios [active]="s.key" [links]="true" />
     </section>
 
     <!-- 2 · the day as a picture: the axis with the big moments on it -->
@@ -59,6 +59,7 @@
       @if (!auth.isAuthenticated() || auth.isCouple()) {
         <button type="button" class="btn btn--primary btn--lg" (click)="use()">{{ 'schedules.use' | translate }}</button>
       }
+      <app-share-button [title]="s.title" />
       <p class="sc__hint">{{ 'schedules.hint' | translate }}</p>
     </div>
   </div>

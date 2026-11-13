@@ -2,10 +2,11 @@
   <!-- The same destination as the name below, which is the card's one link for keyboards and
        screen readers: this one had no name when the vendor has no photo, and doubled every
        tab stop when it has. A click or tap on the photo still opens the profile. -->
-  <a class="vendor-card__media" aria-hidden="true" tabindex="-1"
+  <a class="vendor-card__media" aria-hidden="true" tabindex="-1" [attr.title]="linkTitle()"
     [routerLink]="['/', vendor().categorySlug, vendor().citySlug, vendor().slug]">
     @if (vendor().photos[0]; as photo) {
-      <img [src]="photo.url" [alt]="photo.alt" loading="lazy" width="700" height="875" />
+      <img [src]="photo.url" [alt]="photo.alt" [attr.loading]="eager() ? 'eager' : 'lazy'"
+        [attr.fetchpriority]="priority() ? 'high' : null" width="700" height="875" />
     }
   </a>
 
@@ -32,7 +33,7 @@
   }
 
   <div class="vendor-card__body">
-    <a class="vendor-card__name"
+    <a class="vendor-card__name" [attr.title]="linkTitle()"
       [routerLink]="['/', vendor().categorySlug, vendor().citySlug, vendor().slug]">{{ vendor().name }}</a>
     @if (vendor().reviewCount) {
       <p class="vendor-card__rating"

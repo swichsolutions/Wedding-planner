@@ -2,7 +2,7 @@
 // the Open Graph and Twitter tags. Done here, on the finished HTML, so every page gets them whatever it set
 // itself and whenever its data arrived; a page's own tags win. Pure, so server.head.spec.ts can test it.
 
-const ORIGIN = 'https://weddingplanner.ge';
+export const ORIGIN = 'https://weddingplanner.ge';
 const DEFAULT_IMAGE = `${ORIGIN}/media/og-default.jpg`;
 const SITE = 'WeddingPlanner';
 
@@ -49,7 +49,16 @@ export function finishHead(html: string, requestUrl: string): string {
   const address = ORIGIN + path;
   const hidden = /noindex/i.test(metaContent(head, 'name', 'robots') ?? '');
 
-  if (!hidden && !/<link\b[^>]*\brel="canonical"/i.test(head)) add.push(`<link rel="canonical" href="${address}">`);
+  if (!hidden) {
+    const canonical = head.match(/<link\b[^>]*\brel="canonical"[^>]*>/i)?.[0].match(/\bhref="([^"]*)"/i)?.[1];
+    if (!canonical) add.push(`<link rel="canonical" href="${address}">`);
+    // English is served on the same address (chosen by a cookie, not by the URL), so there is no
+    // separate English page to name: Georgian and the default both point at the page itself.
+    if (!/<link\b[^>]*\bhreflang=/i.test(head)) {
+      const href = canonical ?? address;
+      add.push(`<link rel="alternate" hreflang="ka" href="${href}">`, `<link rel="alternate" hreflang="x-default" href="${href}">`);
+    }
+  }
 
   const title = head.match(/<title>([\s\S]*?)<\/title>/i)?.[1].trim() ?? SITE;
   const description = metaContent(head, 'name', 'description');
@@ -73,21 +82,29 @@ export function finishHead(html: string, requestUrl: string): string {
       `<meta property="og:image" content="${DEFAULT_IMAGE}">`,
       '<meta property="og:image:width" content="1200">',
       '<meta property="og:image:height" content="630">',
-      '<meta property="og:image:alt" content="WeddingPlanner — დაგეგმე საკუთარი ქორწილი">',
+      '<meta property="og:image:alt" content="WeddingPlanner — დაგეგმე შენი ოცნების ქორწილი">',
     );
   }
   if (metaContent(head, 'name', 'twitter:card') === null) add.push('<meta name="twitter:card" content="summary_large_image">');
 
-  head = head.replace(/"image":"\/(?!\/)/g, `"image":"${ORIGIN}/`);
+  // structured data: an image or a page named by its path gets the full address too
+  head = head.replace(/"(image|url)":"\/(?!\/)/g, `"$1":"${ORIGIN}/`);
   if (path === '/') add.push(`<script type="application/ld+json">${HOME_JSON_LD}</script>`);
 
   return head + add.join('') + html.slice(end);
 }
+
+/**
+ * Sent with every HTML page as a Link header, for crawlers and AI agents that read headers before
+ * (or instead of) the page: where the sitemap is, and the plain-text description of the site.
+ */
+export const SITE_LINKS = '</sitemap.xml>; rel="sitemap", </llms.txt>; rel="describedby"; type="text/plain"';
 
 /** The same, on a response: only for HTML pages. */
 export async function withFinishedHead(res: Response, requestUrl: string): Promise<Response> {
   if (!(res.headers.get('content-type') ?? '').includes('text/html')) return res;
   const headers = new Headers(res.headers);
   headers.delete('content-length');
+  headers.set('link', SITE_LINKS);
   return new Response(finishHead(await res.text(), requestUrl), { status: res.status, statusText: res.statusText, headers });
 }

@@ -1,17 +1,18 @@
 <div class="iv">
   <header class="iv-intro container">
     <nav class="iv-crumbs" [attr.aria-label]="'guides.breadcrumb' | translate">
-      <a routerLink="/">{{ 'nav.g.plan.title' | translate }}</a>
+      <a routerLink="/" [attr.title]="'nav.g.plan.d' | translate">{{ 'nav.g.plan.title' | translate }}</a>
       <span aria-hidden="true">/</span>
       <span aria-current="page">{{ 'invitationsPage.title' | translate }}</span>
     </nav>
     <h1 class="iv-title">{{ 'invitationsPage.title' | translate }}</h1>
     <p class="iv-lead">{{ 'invitationsPage.lead' | translate }}</p>
     <div class="iv-cta">
-      <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query">
+      <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query"
+        [attr.title]="'nav.g.plan.i.invitations.d' | translate">
         {{ 'invitationsPage.cta' | translate }}
       </a>
-      <a class="iv-quiet" routerLink="/invitations/find">{{ 'invitationsPage.find' | translate }} →</a>
+      <a class="iv-quiet" routerLink="/invitations/find" [attr.title]="'invitationsPage.find' | translate">{{ 'invitationsPage.find' | translate }} →</a>
     </div>
   </header>
 
@@ -38,7 +39,8 @@
     <p class="iv-sub">{{ 'invitationsPage.designsLead' | translate }}</p>
     <div class="iv-designs__body">
       <div class="iv-example">
-        <div class="iv-phone" [attr.aria-label]="'invitationsPage.exampleLabel' | translate" role="img">
+        <div class="iv-phone" role="img"
+          [attr.aria-label]="('invitationsPage.exampleLabel' | translate) + ': ' + ('wsTemplate.' + shown() | translate)">
           <div class="iv-phone__screen" inert>
             <app-wedding-site [data]="example()" [template]="shown()">
               <app-rsvp-form slug="example" [site]="example()" />
@@ -81,7 +83,8 @@
     <div class="container iv-final__inner">
       <h2 id="iv-final-title" class="iv-h2">{{ 'invitationsPage.finalTitle' | translate }}</h2>
       <p class="iv-sub">{{ 'invitationsPage.finalBody' | translate }}</p>
-      <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query">
+      <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query"
+        [attr.title]="'nav.g.plan.i.invitations.d' | translate">
         {{ 'invitationsPage.cta' | translate }}
       </a>
     </div>
