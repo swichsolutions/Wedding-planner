@@ -15,20 +15,20 @@
 
     <!-- The 8 groups (guide §4: categories switch the results in place). -->
     <nav class="cat__groups" [attr.aria-label]="'vendors.groupsLabel' | translate">
-      <a class="cat__group" [routerLink]="[]" [queryParams]="groupParams(null)" [class.is-on]="!group()"
+      <a class="cat__group" [routerLink]="groupPath(null)" [queryParams]="searchParams()" [class.is-on]="!group()"
         [attr.aria-current]="!group() ? 'page' : null">{{ 'vendors.allGroups' | translate }}</a>
       @for (g of groups; track g) {
-        <a class="cat__group" [routerLink]="[]" [queryParams]="groupParams(g)" [class.is-on]="group() === g"
+        <a class="cat__group" [routerLink]="groupPath(g)" [queryParams]="searchParams()" [class.is-on]="group() === g"
           [attr.aria-current]="group() === g ? 'page' : null">{{ 'catalog.groups.' + g | translate }}</a>
       }
     </nav>
 
     @if (subtypes().length > 1) {
       <nav class="cat__subs" [attr.aria-label]="'catalog.groups.' + group() | translate">
-        <a class="cat__sub" [routerLink]="[]" [queryParams]="categoryParams(null)" [class.is-on]="!filter().category"
+        <a class="cat__sub" [routerLink]="groupPath(group())" [queryParams]="filterParams()" [class.is-on]="!filter().category"
           [attr.aria-current]="!filter().category ? 'page' : null">{{ 'vendors.allInGroup' | translate }}</a>
         @for (c of subtypes(); track c.slug) {
-          <a class="cat__sub" [routerLink]="[]" [queryParams]="categoryParams(c.slug)"
+          <a class="cat__sub" [routerLink]="categoryPath(c.slug)" [queryParams]="filterParams()"
             [class.is-on]="filter().category === c.slug"
             [attr.aria-current]="filter().category === c.slug ? 'page' : null">{{ c.key | translate }}</a>
         }

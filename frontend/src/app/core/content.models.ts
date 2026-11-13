@@ -17,11 +17,14 @@ export const CONTENT_TOPICS: Record<ContentKind, string[]> = {
 /** Legal pages live at the top level, so only these slugs exist. */
 export const LEGAL_SLUGS = ['terms', 'privacy'];
 
-/** URL section per kind (PROPOSALS.md P11; mirrors ContentRules.PublicPath on the API). */
+/** „რჩევები და იდეები“: the hub's address (Georgian in Latin letters since 2026-11-13; was /guides). */
+export const GUIDES_PATH = '/rchevebi';
+
+/** URL section per kind (mirrors SiteAddresses and ContentRules.PublicPath on the API). */
 export const KIND_SECTION: Record<Exclude<ContentKind, 'legal'>, string> = {
-  article: '/guides/blog',
-  inspiration: '/guides/inspiration',
-  'real-wedding': '/guides/real-weddings',
+  article: `${GUIDES_PATH}/blogi`,
+  inspiration: `${GUIDES_PATH}/shtagoneba`,
+  'real-wedding': `${GUIDES_PATH}/realuri-qortsilebi`,
 };
 
 /** Public URL of a published page. */

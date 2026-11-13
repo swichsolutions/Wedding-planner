@@ -818,8 +818,7 @@
     } @else if (pickerResults().length === 0) {
       <p class="bpicker__empty">
         {{ 'budgetPage.pickerEmpty' | translate }}
-        <a class="blink" routerLink="/vendors"
-          [queryParams]="item.categorySlug ? { category: item.categorySlug } : {}">
+        <a class="blink" [routerLink]="categoryPath(item.categorySlug)">
           {{ 'budgetPage.pickerBrowse' | translate }}
         </a>
       </p>
@@ -842,8 +841,7 @@
           </li>
         }
       </ul>
-      <a class="blink bpicker__all" routerLink="/vendors"
-        [queryParams]="item.categorySlug ? { category: item.categorySlug } : {}">
+      <a class="blink bpicker__all" [routerLink]="categoryPath(item.categorySlug)">
         {{ 'budgetPage.pickerBrowse' | translate }} →
       </a>
     }

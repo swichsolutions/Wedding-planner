@@ -26,7 +26,7 @@ interface WhoSuggestion {
 
 /**
  * „ქორწილის დღე“ (BUILD-PLAN B2, guide §7): the couple's own day, in time order — each activity
- * with its time, who's responsible and how to reach them. Starts from an example (/schedules →
+ * with its time, who's responsible and how to reach them. Starts from an example (/ganrigebi →
  * „გამოიყენე ეს განრიგი“ lands here with ?use=<key>) or blank; add, edit, delete; activities at
  * the same time can be moved up or down. Shared by both partners.
  */

@@ -40,7 +40,7 @@ public class ContentPage
     public string? MetaDescriptionKa { get; set; }
     public string? MetaDescriptionEn { get; set; }
 
-    /// <summary>The page's one related action, e.g. "/vendors?category=fotografi" + „ნახე ფოტოგრაფები".</summary>
+    /// <summary>The page's one related action, e.g. "/fotografi" +„ნახე ფოტოგრაფები".</summary>
     public string? ActionPath { get; set; }
     public string? ActionLabelKa { get; set; }
     public string? ActionLabelEn { get; set; }

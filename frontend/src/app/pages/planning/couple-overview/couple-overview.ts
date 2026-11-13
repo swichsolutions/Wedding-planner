@@ -3,7 +3,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { categoryKey, cityName } from '../../../core/catalog';
+import { categoryKey, cityName, groupPath } from '../../../core/catalog';
+import { KIND_SECTION } from '../../../core/content.models';
 import { ChecklistItem, ChecklistService, taskEdit, taskTitle } from '../../../core/checklist.service';
 import { CoupleProfile } from '../../../core/couple.service';
 import { formatDate } from '../../../core/dates';
@@ -52,6 +53,9 @@ export class CoupleOverview {
   private readonly toast = inject(ToastService);
   protected readonly planPhotos = inject(PlanPhotosService);
   protected readonly contentSections = inject(ContentSections);
+  /** Addresses the template links to: a catalog group's page and the inspiration section. */
+  protected readonly groupPath = groupPath;
+  protected readonly ideasPath = KIND_SECTION.inspiration;
 
   protected readonly data = signal<Overview | null>(null);
   protected readonly loadError = signal(false);
@@ -176,11 +180,11 @@ export class CoupleOverview {
    * budget shapes everything, then the venue, then late tasks, then who's coming, the invitation,
    * the seating and the day. Every check reads real data.
    */
-  protected readonly nextStep = computed<{ link: string; query?: Record<string, string>; key: string } | null>(() => {
+  protected readonly nextStep = computed<{ link: string; key: string } | null>(() => {
     const o = this.data();
     if (!o) return null;
     if (o.budget.total == null) return { link: '/budget', key: 'overview.next.budget' };
-    if (!o.banner.venueName) return { link: '/vendors', query: { group: 'venues' }, key: 'overview.next.venue' };
+    if (!o.banner.venueName) return { link: groupPath('venues'), key: 'overview.next.venue' };
     if (this.overdue() > 0) return { link: '/planning/tasks', key: 'overview.next.overdue' };
     if (o.guests.parties === 0) return { link: '/guests', key: 'overview.next.guests' };
     if (o.invitation.status === 'none') return { link: '/planning/invitation', key: 'overview.next.invitation' };

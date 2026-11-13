@@ -7,7 +7,6 @@ interface NavItem {
   content?: ContentKind;
   key: string;
   link: string;
-  query?: Record<string, string>;
   fragment?: string;
 }
 
@@ -34,7 +33,9 @@ import { LanguageService } from './i18n/language.service';
 import { LangCode } from './i18n/languages';
 import { AuthService } from './core/auth.service';
 import { ContentSections } from './core/content-sections.service';
-import { ContentKind } from './core/content.models';
+import { GROUPS, groupBySlug, groupPath, isCategory } from './core/catalog';
+import { ContentKind, GUIDES_PATH, KIND_SECTION } from './core/content.models';
+import { SCHEDULES_PATH } from './core/schedule-addresses';
 import { AuthModalService } from './core/auth-modal.service';
 import { NotificationService } from './core/notification.service';
 import { LoginModal } from './components/login-modal/login-modal';
@@ -81,33 +82,23 @@ export class App {
       key: 'plan',
       link: '/',
       items: [
-        { key: 'schedules', link: '/schedules' },
+        { key: 'schedules', link: SCHEDULES_PATH },
         { key: 'invitations', link: '/invitations' },
       ],
     },
     {
       key: 'vendors',
       link: '/vendors',
-      items: [
-        { key: 'venues', link: '/vendors', query: { group: 'venues' } },
-        { key: 'photo', link: '/vendors', query: { group: 'photo' } },
-        { key: 'decor', link: '/vendors', query: { group: 'decor' } },
-        { key: 'music', link: '/vendors', query: { group: 'music' } },
-        { key: 'cake', link: '/vendors', query: { group: 'cake' } },
-        { key: 'attire', link: '/vendors', query: { group: 'attire' } },
-        { key: 'accessories', link: '/vendors', query: { group: 'accessories' } },
-        { key: 'beauty', link: '/vendors', query: { group: 'beauty' } },
-        { key: 'other', link: '/vendors', query: { group: 'other' } },
-        { key: 'all', link: '/vendors' },
-      ],
+      // each catalog group's own page (/foto-da-video…), in the catalog's order
+      items: [...GROUPS.map((g) => ({ key: g, link: groupPath(g) })), { key: 'all', link: '/vendors' }],
     },
     {
       key: 'guides',
-      link: '/guides',
+      link: GUIDES_PATH,
       items: [
-        { key: 'blog', link: '/guides/blog', content: 'article' },
-        { key: 'inspiration', link: '/guides/inspiration', content: 'inspiration' },
-        { key: 'real', link: '/guides/real-weddings', content: 'real-wedding' },
+        { key: 'blog', link: KIND_SECTION.article, content: 'article' },
+        { key: 'inspiration', link: KIND_SECTION.inspiration, content: 'inspiration' },
+        { key: 'real', link: KIND_SECTION['real-wedding'], content: 'real-wedding' },
       ],
     },
   ];
@@ -159,6 +150,15 @@ export class App {
   protected readonly inOrganizer = computed(() =>
     ORGANIZER_PATHS.includes(this.currentUrl().split(/[?#]/)[0]),
   );
+
+  /** The header section the open page belongs to (its title is marked). Read from the address:
+   * the catalog's groups and categories have top-level addresses of their own (/foto-da-video,
+   * /fotografi), which a prefix test on /vendors (routerLinkActive) would not find. */
+  protected readonly activeGroup = computed(() => {
+    const [, first = '', deeper] = this.currentUrl().split(/[?#]/)[0].split('/');
+    if (first === 'vendors' || (deeper === undefined && (isCategory(first) || groupBySlug(first)))) return 'vendors';
+    return `/${first}` === GUIDES_PATH ? 'guides' : null;
+  });
 
   /** The landing page: its header sits over the full-screen hero photo (see overlay). */
   protected readonly onHome = computed(() => this.currentUrl().split(/[?#]/)[0] === '/');

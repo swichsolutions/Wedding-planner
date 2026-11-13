@@ -443,7 +443,7 @@ public class AppDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContex
         // ---- ContentPage (+ photos, credits) ----
         b.Entity<ContentPage>(e =>
         {
-            // URLs are per section (/guides/blog/x, /guides/inspiration/x), so slugs are unique per type.
+            // URLs are per section (/rchevebi/blogi/x, /rchevebi/shtagoneba/x), so slugs are unique per type.
             e.HasIndex(x => new { x.Type, x.Slug }).IsUnique();
             e.HasIndex(x => new { x.Type, x.IsPublished, x.PublishedAt });
             e.Property(x => x.Slug).HasMaxLength(120).IsRequired();

@@ -153,8 +153,8 @@
             @let s = orbitSlot(i);
             <li class="orbit__item" [style.--s]="s" [class.is-off]="s === null"
               [class.is-side]="s !== null && s !== 0" [attr.aria-hidden]="s === null">
-              <a class="orbit__card" [class.orbit__card--print]="g.print" routerLink="/vendors"
-                [queryParams]="g.query" [attr.tabindex]="s === null ? -1 : 0"
+              <a class="orbit__card" [class.orbit__card--print]="g.print" [routerLink]="g.link"
+                [attr.tabindex]="s === null ? -1 : 0"
                 (click)="onOrbitClick($event)">
                 <span class="orbit__card-name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
                 @if (g.count > 0) {
@@ -206,7 +206,7 @@
       <ol class="index__list" role="list">
         @for (g of categoryRows(); track g.key; let i = $index) {
           <li class="index__row" [class.is-active]="activeRow() === i">
-            <a class="index__link" routerLink="/vendors" [queryParams]="g.query"
+            <a class="index__link" [routerLink]="g.link"
               (mouseenter)="activeRow.set(i)" (focus)="activeRow.set(i)">
               <span class="index__num" aria-hidden="true">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
               <img class="index__thumb" [src]="g.img" alt="" loading="lazy" width="112" height="140" />
@@ -266,7 +266,7 @@
 
 <!-- ============================== 05 / DAY ============================== -->
 <!-- Three example schedules (guide §3, PROPOSALS.md P7): a card each, the full schedule in a
-     dialog, and the /schedules page with all of them. -->
+     dialog, and the /ganrigebi page with all of them. -->
 <!-- on ivory (2026-11-12): apart from the white organizer above; the schedule cards stay white -->
 <section id="day" class="chap chap--deep chap--screen">
   <div class="container">
@@ -278,7 +278,7 @@
         <p class="tl__lead">{{ 'home.day.leadShort' | translate }}</p>
       </div>
 
-      <!-- pick a scenario, see the day's key moments; the full timeline is on /schedules
+      <!-- pick a scenario, see the day's key moments; the full timeline is on its /ganrigebi/… page
            (the three text cards went on 2026-11-03: hard to take in) -->
       <app-day-preview />
     </div>

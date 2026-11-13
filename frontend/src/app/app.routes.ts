@@ -1,16 +1,59 @@
 import { inject } from '@angular/core';
-import { Router, Routes } from '@angular/router';
+import { CanActivateFn, RedirectFunction, Router, Routes, UrlMatcher } from '@angular/router';
 
 import { roleGuard } from './core/auth.guard';
+import { groupBySlug, isCategory } from './core/catalog';
+import { movedAddress } from './core/old-addresses';
+import { scheduleBySlug } from './core/schedule-addresses';
+
+/**
+ * The catalog is one page at three kinds of address: /vendors (everything), a group's
+ * (/foto-da-video) and a category's (/fotografi). One route for all three, so moving between
+ * them changes the results in place. Only a known slug matches: any other single segment goes
+ * on to the 404 at the end of the list.
+ */
+export const catalogAddress: UrlMatcher = (segments) => {
+  if (segments.length !== 1) return null;
+  const [first] = segments;
+  if (first.path === 'vendors') return { consumed: segments };
+  return isCategory(first.path) || groupBySlug(first.path)
+    ? { consumed: segments, posParams: { slug: first } }
+    : null;
+};
+
+/** /ganrigebi and one address per example day (/ganrigebi/jvristsera): one page, as above. */
+export const schedulesAddress: UrlMatcher = (segments) => {
+  if (segments[0]?.path !== 'ganrigebi' || segments.length > 2) return null;
+  if (segments.length === 1) return { consumed: segments };
+  return scheduleBySlug(segments[1].path)
+    ? { consumed: segments, posParams: { slug: segments[1] } }
+    : null;
+};
+
+// Addresses from before 2026-11-13 (core/old-addresses.ts). A request from outside gets a 301
+// from the server before Angular runs (server.redirects.ts, server.ts); the three below cover
+// links followed inside the app: couples' saved tasks, article texts, bookmarks of the open tab.
+
+/** /guides… and /schedules moved whatever their parameters say. */
+const oldAddress: UrlMatcher = (segments) =>
+  movedAddress('/' + segments.map((s) => encodeURIComponent(s.path)).join('/')) ? { consumed: segments } : null;
+
+const toNewAddress: RedirectFunction = ({ url, queryParams }) => {
+  const router = inject(Router);
+  const old = router.serializeUrl(router.createUrlTree(['/', ...url.map((s) => s.path)], { queryParams }));
+  return router.parseUrl(movedAddress(old) ?? '/');
+};
+
+/** /vendors?group=… and /vendors?category=… open the group's or the category's own address. */
+const cleanCatalogAddress: CanActivateFn = (_route, state) => {
+  const moved = movedAddress(state.url);
+  return moved ? inject(Router).parseUrl(moved) : true;
+};
 
 export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./pages/home/home').then((m) => m.Home),
-  },
-  {
-    path: 'vendors',
-    loadComponent: () => import('./pages/vendors/vendor-browse').then((m) => m.VendorBrowse),
   },
   {
     path: 'budget',
@@ -171,50 +214,55 @@ export const routes: Routes = [
     data: { slug: 'privacy' },
     loadComponent: () => import('./pages/legal/legal-page').then((m) => m.LegalPage),
   },
-  // "რჩევები და იდეები" (guide §5; URLs per PROPOSALS.md P11). Static sections come before
-  // the old /guides/:slug redirect and the vendor routes below.
+  { matcher: oldAddress, redirectTo: toNewAddress },
   {
-    // Example wedding-day schedules (guide §3; URL from PROPOSALS.md P11).
-    path: 'schedules',
-    loadComponent: () => import('./pages/schedules/schedules').then((m) => m.Schedules),
+    // „სივრცეები და მომსახურებები“: /vendors, /<group> and /<category>. After every static
+    // single-segment route above, though no slug is the same as one of them (app.routes.spec.ts).
+    matcher: catalogAddress,
+    canActivate: [cleanCatalogAddress],
+    loadComponent: () => import('./pages/vendors/vendor-browse').then((m) => m.VendorBrowse),
   },
   {
-    path: 'guides',
+    // Example wedding-day schedules (guide §3): /ganrigebi and /ganrigebi/<example>.
+    matcher: schedulesAddress,
+    loadComponent: () => import('./pages/schedules/schedules').then((m) => m.Schedules),
+  },
+  // "რჩევები და იდეები" (guide §5). The sections' addresses are also in core/content.models.ts
+  // (KIND_SECTION), which builds the links.
+  {
+    path: 'rchevebi',
     loadComponent: () => import('./pages/guides/guides-hub').then((m) => m.GuidesHub),
   },
   {
-    path: 'guides/blog',
+    path: 'rchevebi/blogi',
     data: { kind: 'article' },
     loadComponent: () => import('./pages/guides/content-list').then((m) => m.ContentList),
   },
   {
-    path: 'guides/inspiration',
+    path: 'rchevebi/shtagoneba',
     data: { kind: 'inspiration' },
     loadComponent: () => import('./pages/guides/content-list').then((m) => m.ContentList),
   },
   {
-    path: 'guides/real-weddings',
+    path: 'rchevebi/realuri-qortsilebi',
     data: { kind: 'real-wedding' },
     loadComponent: () => import('./pages/guides/content-list').then((m) => m.ContentList),
   },
   {
-    path: 'guides/blog/:slug',
+    path: 'rchevebi/blogi/:slug',
     data: { kind: 'article' },
     loadComponent: () => import('./pages/guides/content-detail').then((m) => m.ContentDetailPage),
   },
   {
-    path: 'guides/inspiration/:slug',
+    path: 'rchevebi/shtagoneba/:slug',
     data: { kind: 'inspiration' },
     loadComponent: () => import('./pages/guides/content-detail').then((m) => m.ContentDetailPage),
   },
   {
-    path: 'guides/real-weddings/:slug',
+    path: 'rchevebi/realuri-qortsilebi/:slug',
     data: { kind: 'real-wedding' },
     loadComponent: () => import('./pages/guides/content-detail').then((m) => m.ContentDetailPage),
   },
-  // Old article URLs (/guides/<slug>) moved under the blog. Requests from outside get a 301
-  // in server.ts before Angular runs; this covers in-app navigation only.
-  { path: 'guides/:slug', redirectTo: ({ params }) => `/guides/blog/${params['slug']}` },
 
   // Vendor profile — SEO URL shape /{category}/{city}/{slug}. Three segments, so it
   // doesn't collide with the single-segment routes above.
@@ -226,7 +274,8 @@ export const routes: Routes = [
 
   // Category×city landing — SEO URL shape /{category}/{city} (e.g. /fotografi/tbilisi).
   // Two segments, so every static two-segment route above (invitations/find, w/:slug,
-  // guides/blog, guides/:slug…) still wins; unknown category slugs 404 inside the component.
+  // rchevebi/blogi, ganrigebi/<example>…) still wins; unknown category slugs 404 inside the
+  // component (an unknown /ganrigebi/<x> ends there too).
   {
     path: ':category/:city',
     loadComponent: () =>

@@ -1,3 +1,4 @@
+import { categoryPath } from './catalog';
 import { ChecklistItem } from './checklist.service';
 
 /**
@@ -81,10 +82,13 @@ export interface TaskLink {
 export function taskLink(link: string | null): TaskLink | null {
   if (!link) return null;
   if (link.startsWith('catalog:')) {
-    // catalog:<slug>, optionally followed by ?<catalog filters>
+    // catalog:<slug>, optionally followed by ?<catalog filters>: the category's own page
+    // (/darbazi), with the filters as its parameters
     const [category, filters] = link.slice('catalog:'.length).split('?');
-    const query = { category, ...Object.fromEntries(new URLSearchParams(filters ?? '')) };
-    return { route: '/vendors', query, key: 'tasks.open.catalog' };
+    const route = categoryPath(category);
+    return filters
+      ? { route, query: Object.fromEntries(new URLSearchParams(filters)), key: 'tasks.open.catalog' }
+      : { route, key: 'tasks.open.catalog' };
   }
   const pages: Record<string, string> = {
     budget: '/budget',

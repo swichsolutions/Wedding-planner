@@ -115,8 +115,15 @@ run on startup (`Database__MigrateOnStartup`). Watch the first deploy's logs for
   contains the app shell, the Worker logs (Cloudflare → Workers → `weddingplanner-web` → Logs)
   show an `allowedHosts` or `x-forwarded-*` warning.
 - `https://www.weddingplanner.ge/vendors` → 301 to the apex.
-  `https://weddingplanner.ge/guides/<old-slug>` → 301 to `/guides/blog/<old-slug>`.
-- `/sitemap.xml` and `/robots.txt` answer; sitemap URLs start with `https://weddingplanner.ge`.
+  The addresses from before 2026-11-13 → 301 to the Georgian ones, in one hop
+  (`frontend/src/app/core/old-addresses.ts`): `/guides/<old-slug>` → `/rchevebi/blogi/<old-slug>`,
+  `/vendors?category=fotografi` → `/fotografi`, `/vendors?group=venues` → `/sivrtseebi-da-kveba`,
+  `/schedules?s=one-venue` → `/ganrigebi/khelis-motsera`.
+- `https://weddingplanner.ge/sitemap.xml` and `/robots.txt` answer. The sitemap is the API's,
+  fetched by the Worker, which keeps its copy for 10 minutes; its URLs start with
+  `https://weddingplanner.ge`, and `robots.txt` points at it. When page addresses change, deploy
+  the frontend first and the API right after: an API that lists new addresses the site does not
+  have yet sends crawlers to 404s, while old addresses in the sitemap only redirect.
 - Sign up a couple, log in, upload a vendor photo (lands on Cloudinary), request a password
   reset (the mail arrives), Google sign-in.
 - Admin login with `Seed__AdminEmail`.

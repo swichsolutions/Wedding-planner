@@ -55,10 +55,13 @@ describe('byDeadline', () => {
 
 describe('taskLink', () => {
   it('opens a catalog category or an organizer page', () => {
-    expect(taskLink('catalog:darbazi')).toEqual({ route: '/vendors', query: { category: 'darbazi' }, key: 'tasks.open.catalog' });
+    // the category's own page, with no parameters unless the task names a filter
+    expect(taskLink('catalog:darbazi')).toStrictEqual({ route: '/darbazi', key: 'tasks.open.catalog' });
     expect(taskLink('catalog:darbazi?features=accommodation')).toEqual({
-      route: '/vendors', query: { category: 'darbazi', features: 'accommodation' }, key: 'tasks.open.catalog',
+      route: '/darbazi', query: { features: 'accommodation' }, key: 'tasks.open.catalog',
     });
+    // a category that left the catalog opens the whole of it
+    expect(taskLink('catalog:gantavseba')).toEqual({ route: '/vendors', key: 'tasks.open.catalog' });
     expect(taskLink('day')).toEqual({ route: '/planning/day', key: 'tasks.open.day' });
     expect(taskLink('nope')).toBeNull();
     expect(taskLink(null)).toBeNull();

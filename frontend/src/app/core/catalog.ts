@@ -94,6 +94,38 @@ export const TRAVEL_POLICIES = ['included', 'extra', 'none'];
 /** Guest-capacity buckets for the venue filter (keys the API understands). */
 export const GUEST_BUCKETS = ['100', '200', '350', '350plus'];
 
+/**
+ * Each group's page address (2026-11-13): one segment, the group's Georgian name in Latin letters
+ * with the letter table of the API's Slugs.cs, e.g. /foto-da-video (ფ is "f", as in the category
+ * slugs fotografi and floristi). The catalog root stays /vendors and a category's page is /<its
+ * slug>. Live URLs: never change one without a redirect. The API's sitemap lists the same nine
+ * (SiteAddresses.cs): keep the two equal.
+ */
+export const GROUP_SLUGS: Record<GroupKey, string> = {
+  venues: 'sivrtseebi-da-kveba',
+  photo: 'foto-da-video',
+  decor: 'dekori-da-qvavilebi',
+  music: 'musika-da-gartoba',
+  cake: 'torti-da-tkbileuli',
+  attire: 'samosi',
+  accessories: 'aqsesuarebi',
+  beauty: 'silamaze-da-momzadeba',
+  other: 'skhva-momsakhurebebi',
+};
+
+export const groupBySlug = (slug: string | null | undefined): GroupKey | undefined =>
+  GROUPS.find((g) => GROUP_SLUGS[g] === slug);
+
+export const isCategory = (slug: string | null | undefined): boolean => CATEGORIES.some((c) => c.slug === slug);
+
+/** A group's page; the whole catalog without one. */
+export const groupPath = (group: GroupKey | null | undefined): string =>
+  group && GROUP_SLUGS[group] ? `/${GROUP_SLUGS[group]}` : '/vendors';
+
+/** A category's page; the whole catalog for a slug that has none (retired, or a couple's own budget line). */
+export const categoryPath = (slug: string | null | undefined): string =>
+  slug && isCategory(slug) ? `/${slug}` : '/vendors';
+
 export const categoriesIn = (group: GroupKey): CategoryRef[] => CATEGORIES.filter((c) => c.group === group);
 
 export const groupOf = (slug: string): GroupKey | undefined => CATEGORIES.find((c) => c.slug === slug)?.group;

@@ -16,7 +16,7 @@ const PREFIX: Record<ListKind, string> = { article: 'blog', inspiration: 'inspir
 const CARD: Record<ListKind, 'article' | 'idea' | 'story'> = { article: 'article', inspiration: 'idea', 'real-wedding': 'story' };
 
 /**
- * /guides/blog, /guides/inspiration, /guides/real-weddings — everything published in one
+ * /rchevebi/blogi, /rchevebi/shtagoneba, /rchevebi/realuri-qortsilebi — everything published in one
  * section, newest first, with topic chips (real links, ?topic=, so crawlers follow them too).
  */
 @Component({

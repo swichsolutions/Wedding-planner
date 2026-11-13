@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthService } from '../../core/auth.service';
 import { DAY_SCHEDULES } from '../../core/day-schedules';
+import { schedulePath } from '../../core/schedule-addresses';
 import { DayBar } from '../day-bar/day-bar';
 import { DayScenarios } from '../day-scenarios/day-scenarios';
 
@@ -23,6 +24,8 @@ export class DayPreview {
   protected readonly auth = inject(AuthService);
 
   protected readonly activeKey = signal(DAY_SCHEDULES[0].key);
+  /** The chosen scenario's own page, with the whole timeline. */
+  protected readonly fullSchedule = computed(() => schedulePath(this.activeKey()));
 
   /** „გამოიყენე ეს განრიგი“: a couple's wedding day takes the example; a visitor signs up first. */
   protected use(): void {

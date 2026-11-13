@@ -12,7 +12,7 @@ namespace WeddingPlanner.Api.Controllers;
 /// <summary>
 /// „ქორწილის დღე“ (BUILD-PLAN B2, guide §7): the couple's own wedding-day schedule, shared by both
 /// partners. Activities come back in time order; a schedule can start from one of the examples
-/// (/schedules sends its rows) or blank.
+/// (/ganrigebi sends its rows) or blank.
 /// </summary>
 [ApiController]
 [Route("api/planning/day")]

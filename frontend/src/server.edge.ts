@@ -11,7 +11,7 @@ const NEVER_CACHED = [/^\/w(\/|$)/, /^\/partner(\/|$)/, /^\/join(\/|$)/, /^\/res
 
 /**
  * The query parameters a page can read (grep the app for queryParamMap): the catalog's filters,
- * the schedule and topic pickers, the budget's view, and the sign-in pages' returnUrl / expired
+ * the topic picker, the budget's view, and the sign-in pages' returnUrl / expired
  * (they change the words on the page). Nothing else can change what is rendered, so nothing
  * else is part of the cache key: a link shared on Facebook or Instagram arrives with its own
  * ?fbclid=… / ?igsh=… / utm_* on every click, and each one used to be rendered again.
@@ -20,9 +20,12 @@ const NEVER_CACHED = [/^\/w(\/|$)/, /^\/partner(\/|$)/, /^\/join(\/|$)/, /^\/res
  */
 const PAGE_PARAMS = new Set([
   'group', 'category', 'city', 'region', 'maxPrice', 'styles', 'guests', 'setting', 'venueType',
-  'features', 'q', 'sort', 'vip', // /vendors
-  's', // /schedules
-  'topic', // /guides/…
+  // the catalog (/vendors, /<group>, /<category>). A group and a category are in the path since
+  // 2026-11-13 and a known ?group= / ?category= is redirected there, but the page still reads
+  // the two for values that name nothing, so they stay in the key. (/schedules?s= is gone: each
+  // schedule has its own path.)
+  'features', 'q', 'sort', 'vip',
+  'topic', // /rchevebi/…
   'view', // /budget
   'returnUrl', 'expired', // /login, /signup, /planning/start
   'tab', 'use', 'step', // dashboard, admin and organizer pages (rendered signed-out on the server)
@@ -89,6 +92,47 @@ function forVisitor(res: Response, state: 'HIT' | 'MISS'): Response {
   out.headers.set('cache-control', 'no-cache');
   out.headers.set('x-edge-cache', state);
   return out;
+}
+
+/** How long the sitemap is reused: the API builds it from the database on every request. */
+export const SITEMAP_CACHE_SECONDS = 600;
+
+/**
+ * /sitemap.xml on the site's own domain (robots.txt points here). The API generates it
+ * (SitemapController, with weddingplanner.ge addresses), but search engines expect a site's
+ * sitemap on the site itself. Fetched from the API and kept at the edge for a few minutes. When
+ * the API can't be reached the answer is a 503, which tells a crawler to come back later; never
+ * an empty sitemap, which would tell it the pages are gone.
+ */
+export async function sitemapFromApi(
+  req: Request,
+  apiOrigin: string,
+  cache: EdgeCache,
+  ctx: EdgeContext,
+  fetcher: (url: string) => Promise<Response> = (url) => fetch(url),
+): Promise<Response> {
+  const key = new URL('/sitemap.xml', req.url).toString();
+  const hit = await cache.match(key).catch(() => undefined);
+  if (hit) return hit;
+
+  try {
+    const res = await fetcher(`${apiOrigin}/sitemap.xml`);
+    if (!res.ok) throw new Error(`the API answered ${res.status}`);
+    const out = new Response(await res.text(), {
+      headers: {
+        'content-type': 'application/xml; charset=utf-8',
+        'cache-control': `public, max-age=${SITEMAP_CACHE_SECONDS}`,
+      },
+    });
+    ctx.waitUntil(cache.put(key, out.clone()).catch(() => undefined));
+    return out;
+  } catch (err) {
+    console.error('The sitemap could not be fetched from the API.', err);
+    return new Response('Sitemap temporarily unavailable', {
+      status: 503,
+      headers: { 'retry-after': '300', 'cache-control': 'no-store' },
+    });
+  }
 }
 
 /**

@@ -15,6 +15,14 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<img src="https://x.test/a.webp" alt="ფოტო">');
   });
 
+  it('links to today’s address where a text still has one that moved', () => {
+    const html = renderMarkdown('[a](/vendors?category=fotografi) [b](/schedules) [c](/budget?view=overview) [d](https://x.test/guides)');
+    expect(html).toContain('<a href="/fotografi">a</a>');
+    expect(html).toContain('<a href="/ganrigebi">b</a>');
+    expect(html).toContain('<a href="/budget?view=overview">c</a>');
+    expect(html).toContain('<a href="https://x.test/guides">d</a>');
+  });
+
   it('escapes raw HTML instead of passing it through', () => {
     const html = renderMarkdown('<script>alert(1)</script>\n\ntext <img src=x onerror=alert(1)>');
     expect(html).not.toContain('<script>');

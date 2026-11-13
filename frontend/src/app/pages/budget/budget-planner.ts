@@ -36,7 +36,7 @@ import {
 } from '../../core/budget.service';
 import { formatDate, todayIso } from '../../core/dates';
 import { trapTabKey } from '../../core/a11y';
-import { CATEGORIES, CategoryRef } from '../../core/catalog';
+import { CATEGORIES, CategoryRef, categoryPath } from '../../core/catalog';
 import { BudgetVendorsService, plannedFromPrice } from '../../core/budget-vendors.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CoupleService } from '../../core/couple.service';
@@ -358,6 +358,8 @@ export class BudgetPlanner {
   protected readonly showAdd = signal(false);
   protected readonly addBusy = signal(false);
   protected readonly vendorCategories = CATEGORIES;
+  /** The catalog page for a line's category (the whole catalog for a line of the couple's own). */
+  protected readonly categoryPath = categoryPath;
 
   // ---- guest estimator (kept — the public SEO tool) ----
   protected readonly estCategories = BUDGET_CATEGORIES;

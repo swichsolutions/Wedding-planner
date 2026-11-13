@@ -12,6 +12,16 @@ describe('finishHead', () => {
     expect(finishHead(page(TITLE), `${B}/`)).toContain(`<link rel="canonical" href="${B}/">`);
   });
 
+  it('points a filtered catalog page at the clean one, and each schedule and article at itself', () => {
+    const canonical = (path: string) => finishHead(page(TITLE), B + path).match(/rel="canonical" href="([^"]*)"/)?.[1];
+    expect(canonical('/fotografi?region=kakheti&sort=price_asc')).toBe(`${B}/fotografi`);
+    expect(canonical('/foto-da-video?q=x')).toBe(`${B}/foto-da-video`);
+    expect(canonical('/ganrigebi')).toBe(`${B}/ganrigebi`);
+    expect(canonical('/ganrigebi/jvristsera')).toBe(`${B}/ganrigebi/jvristsera`);
+    expect(canonical('/rchevebi/blogi?topic=budget')).toBe(`${B}/rchevebi/blogi`);
+    expect(canonical('/rchevebi/blogi/qortsilis-biujeti')).toBe(`${B}/rchevebi/blogi/qortsilis-biujeti`);
+  });
+
   it('uses the live address on any host', () => {
     expect(finishHead(page(TITLE), 'http://localhost:8799/about')).toContain(`href="${B}/about"`);
   });
@@ -28,10 +38,10 @@ describe('finishHead', () => {
   });
 
   it('fills link previews from the page\'s title and description', () => {
-    const html = finishHead(page(TITLE), `${B}/guides/blog`);
+    const html = finishHead(page(TITLE), `${B}/rchevebi/blogi`);
     expect(html).toContain('<meta property="og:title" content="ბლოგი">');
     expect(html).toContain('<meta property="og:description" content="აღწერა">');
-    expect(html).toContain(`<meta property="og:url" content="${B}/guides/blog">`);
+    expect(html).toContain(`<meta property="og:url" content="${B}/rchevebi/blogi">`);
     expect(html).toContain('<meta property="og:type" content="website">');
     expect(html).toContain('<meta property="og:site_name" content="WeddingPlanner">');
     expect(html).toContain(`<meta property="og:image" content="${B}/media/og-default.jpg">`);
@@ -41,7 +51,7 @@ describe('finishHead', () => {
   it('keeps tags a page set itself, and makes a relative image absolute', () => {
     const html = finishHead(
       page(`${TITLE}<meta property="og:title" content="საკუთარი"><meta property="og:type" content="article"><meta property="og:image" content="/media/x.webp">`),
-      `${B}/guides/blog/a`,
+      `${B}/rchevebi/blogi/a`,
     );
     expect(count(html, 'property="og:title"')).toBe(1);
     expect(html).toContain('content="საკუთარი"');

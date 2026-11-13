@@ -39,13 +39,13 @@ public static class ContentRules
 
     public static string PublicPath(ContentPageType type, string slug) => type switch
     {
-        ContentPageType.Article => $"/guides/blog/{slug}",
-        ContentPageType.Inspiration => $"/guides/inspiration/{slug}",
-        ContentPageType.RealWedding => $"/guides/real-weddings/{slug}",
+        ContentPageType.Article => $"{SiteAddresses.Blog}/{slug}",
+        ContentPageType.Inspiration => $"{SiteAddresses.Inspiration}/{slug}",
+        ContentPageType.RealWedding => $"{SiteAddresses.RealWeddings}/{slug}",
         _ => $"/{slug}",
     };
 
-    /// <summary>An in-site link only: "/vendors?category=x" yes; "//evil.com", "https://…" or whitespace no.</summary>
+    /// <summary>An in-site link only: "/fotografi" or "/budget?view=overview" yes; "//evil.com", "https://…" or whitespace no.</summary>
     public static bool IsValidActionPath(string path) =>
         path.StartsWith('/') && !path.StartsWith("//") && !path.Contains('\\') && !path.Any(char.IsWhiteSpace);
 }

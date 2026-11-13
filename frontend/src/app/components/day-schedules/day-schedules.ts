@@ -11,7 +11,7 @@ import { LanguageService } from '../../i18n/language.service';
 const PREVIEW_ROWS = 4;
 
 /**
- * The example day schedules as cards (home section 5 and /schedules, guide §3): a short
+ * The example day schedules as cards (home section 5 and /ganrigebi, guide §3): a short
  * description and the start of the timeline, and the full schedule in a dialog. The dialogs are
  * native <dialog> elements in the server-rendered HTML, so every schedule is in the page source
  * for crawlers; the browser handles focus and Esc. No page per example (BUILD-PLAN B2).
@@ -28,7 +28,7 @@ export class DaySchedules {
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
 
-  /** Card titles are h3 under the home chapter's h2, h2 on the /schedules page. */
+  /** Card titles are h3 under the home chapter's h2, h2 on the /ganrigebi page. */
   readonly headingLevel = input<2 | 3>(3);
 
   protected readonly schedules = computed(() => {

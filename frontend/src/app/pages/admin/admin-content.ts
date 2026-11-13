@@ -34,8 +34,10 @@ import {
   LEGAL_SLUGS,
 } from '../../core/content.models';
 import { AdminService, AdminVendor } from '../../core/admin.service';
-import { CATEGORIES } from '../../core/catalog';
+import { CATEGORIES, categoryPath } from '../../core/catalog';
 import { ConfirmService } from '../../core/confirm.service';
+import { movedAddress } from '../../core/old-addresses';
+import { SCHEDULES_PATH } from '../../core/schedule-addresses';
 import { formatDate } from '../../core/dates';
 import { focusFirstInvalid } from '../../core/forms';
 import { renderMarkdown } from '../../core/markdown';
@@ -55,7 +57,7 @@ interface ActionPreset {
 }
 
 const TOOL_PRESETS: ActionPreset[] = [
-  { id: 'tool:schedules', path: '/schedules', labelKa: 'ნახე განრიგის შაბლონები', labelEn: 'See schedule templates' },
+  { id: 'tool:schedules', path: SCHEDULES_PATH, labelKa: 'ნახე განრიგის შაბლონები', labelEn: 'See schedule templates' },
   { id: 'tool:invitation', path: '/invitations', labelKa: 'შექმენი შენი მოსაწვევი', labelEn: 'Create your invitation' },
   { id: 'tool:budget', path: '/budget', labelKa: 'დაგეგმე ბიუჯეტი', labelEn: 'Plan your budget' },
   { id: 'tool:guests', path: '/guests', labelKa: 'შეადგინე სტუმრების სია', labelEn: 'Build your guest list' },
@@ -68,7 +70,7 @@ const CATEGORY_PRESETS: ActionPreset[] = CATEGORIES.map((c) => {
   const key = c.key.split('.')[1];
   return {
     id: `cat:${c.slug}`,
-    path: `/vendors?category=${c.slug}`,
+    path: categoryPath(c.slug),
     labelKa: `ნახე: ${(ka.category as CategoryNames)[key] ?? c.slug}`,
     labelEn: `See: ${(en.category as CategoryNames)[key] ?? c.slug}`,
   };
@@ -504,7 +506,9 @@ export class AdminContent {
 
   private presetFor(path: string | null, labelKa: string | null): string {
     if (!path) return '';
-    const preset = [...TOOL_PRESETS, ...CATEGORY_PRESETS].find((p) => p.path === path && p.labelKa === labelKa);
+    // a page saved before 2026-11-13 holds the preset's old address ("/vendors?category=…")
+    const now = movedAddress(path) ?? path;
+    const preset = [...TOOL_PRESETS, ...CATEGORY_PRESETS].find((p) => p.path === now && p.labelKa === labelKa);
     return preset?.id ?? 'custom';
   }
 

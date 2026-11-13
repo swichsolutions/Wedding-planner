@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, map, of, switchMap, tap } from 'rxjs';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { VendorCard } from '../../components/vendor-card/vendor-card';
@@ -17,8 +17,13 @@ import {
   SETTINGS,
   VENUE_TYPES,
   categoriesIn,
+  categoryKey,
+  categoryPath,
   defaultUnit,
+  groupBySlug,
   groupOf,
+  groupPath,
+  isCategory,
   stylesFor,
 } from '../../core/catalog';
 import { LanguageService } from '../../i18n/language.service';
@@ -42,7 +47,9 @@ const csv = (v: string | null): string[] | undefined => (v ? v.split(',').filter
 /**
  * /vendors — „სივრცეები და მომსახურებები" (guide §4): every category on one page. Picking a
  * group or category changes the results and filters in place; every filter lives in the URL,
- * so any view is shareable and server-rendered.
+ * so any view is shareable and server-rendered. A group and a category have addresses of their
+ * own (/foto-da-video, /fotografi: the route's `slug`, since 2026-11-13); the filters are
+ * parameters on whichever address is open.
  */
 @Component({
   selector: 'app-vendor-browse',
@@ -67,15 +74,20 @@ export class VendorBrowse {
   protected readonly venueTypes = VENUE_TYPES;
 
   private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
+  /** The address's own segment: a group's or a category's. None on /vendors. */
+  private readonly slug = toSignal(this.route.paramMap.pipe(map((p) => p.get('slug'))), { requireSync: true });
 
   /** Active filter, derived from the URL so every view is shareable/deep-linkable. */
   protected readonly filter = computed<VendorFilter>(() => {
     const p = this.params();
+    const slug = this.slug();
     // Ignore non-numeric ?maxPrice (e.g. "abc" → NaN) instead of sending it to the API.
     const maxPrice = Number(p.get('maxPrice'));
     return {
-      group: p.get('group') ?? undefined,
-      category: p.get('category') ?? undefined,
+      // The address names the group or the category. ?group= and ?category= are the old form:
+      // known values are redirected to their address, so only unknown ones are still read here.
+      group: (isCategory(slug) ? undefined : groupBySlug(slug)) ?? p.get('group') ?? undefined,
+      category: (isCategory(slug) ? slug : null) ?? p.get('category') ?? undefined,
       city: p.get('city') ?? undefined,
       region: p.get('region') ?? undefined,
       maxPrice: Number.isFinite(maxPrice) && maxPrice > 0 ? maxPrice : undefined,
@@ -90,7 +102,7 @@ export class VendorBrowse {
     };
   });
 
-  /** The group in view — named in the URL, or implied by a category (?category=darbazi). */
+  /** The group in view: the address names it, or names one of its categories (/darbazi). */
   protected readonly group = computed<GroupKey | null>(() => {
     const f = this.filter();
     const g = (f.group as GroupKey | undefined) ?? (f.category ? groupOf(f.category) : undefined);
@@ -150,18 +162,30 @@ export class VendorBrowse {
   );
 
   constructor() {
-    // Title + description follow the group in view (each group is its own search entry).
+    // Title + description follow the category or group in view: each is its own search entry at
+    // its own address, so a category must not repeat its group's title.
     effect(() => {
       const g = this.group();
+      const c = this.filter().category;
       const brand = this.t.instant('brand.name');
       if (g) {
-        const name = this.t.instant(`catalog.groups.${g}`);
+        const name = this.t.instant(
+          c && isCategory(c) ? categoryKey(c).replace('category.', 'categoryPlural.') : `catalog.groups.${g}`,
+        );
         this.titleService.setTitle(`${name} | ${brand}`);
         this.meta.updateTag({ name: 'description', content: this.t.instant('vendors.metaGroup', { group: name }) });
       } else {
         this.titleService.setTitle(`${this.t.instant('vendors.title')} | ${brand}`);
         this.meta.updateTag({ name: 'description', content: this.t.instant('vendors.metaAll') });
       }
+    });
+    // A group, a category or a filtered view with no vendors in it is a thin page: out of the
+    // index until it has some. (App clears the tag on every navigation; the list loads again
+    // after each one, so this runs again too.)
+    effect(() => {
+      const empty = !this.loading() && !this.loadError() && this.results().length === 0;
+      if (empty && (this.group() || this.hasFilters())) this.meta.updateTag({ name: 'robots', content: 'noindex' });
+      else this.meta.removeTag("name='robots'");
     });
     // Open „მეტი ფილტრი" when the URL already uses one of its filters.
     effect(() => {
@@ -170,16 +194,15 @@ export class VendorBrowse {
     });
   }
 
-  /** Query params for a group link: a new group starts clean (keeps only the search). */
-  protected groupParams(g: GroupKey | null): Params {
-    return { group: g, q: this.filter().q ?? null };
-  }
+  /** A group's address (/vendors for all of them). A new group starts clean: its link keeps
+   * only the search (searchParams). */
+  protected readonly groupPath = groupPath;
+  protected readonly searchParams = computed<Params>(() => ({ q: this.filter().q ?? null }));
 
-  /** Query params for a category chip within the current group. The group is named too: when
-   * it was only implied by ?category=…, „ყველა" would otherwise drop it and show every group. */
-  protected categoryParams(slug: string | null): Params {
-    return { ...this.currentParams(), group: this.group(), category: slug };
-  }
+  /** A category chip's address; the first chip is the group's own. The chips keep the filters
+   * that are on (filterParams), so with none of them the links carry no parameters. */
+  protected readonly categoryPath = categoryPath;
+  protected readonly filterParams = computed<Params>(() => ({ ...this.currentParams(), group: null, category: null }));
 
   protected setParam(key: string, event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -207,7 +230,7 @@ export class VendorBrowse {
 
   /** Clears the filters but stays in the current group. */
   protected clearFilters(): void {
-    this.router.navigate([], { relativeTo: this.route, queryParams: { group: this.group() } });
+    this.router.navigate([groupPath(this.group())]);
   }
 
   protected formatPrice(amount: number): string {

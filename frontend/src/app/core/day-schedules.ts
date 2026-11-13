@@ -2,7 +2,7 @@ import { LangCode } from '../i18n/languages';
 
 /**
  * Example wedding-day schedules (design-system/PROPOSALS.md P7, approved 2026-10-21): the guide's
- * three scenarios, shown on the home page and on /schedules. Times are a realistic starting point.
+ * three scenarios, shown on the home page and on /ganrigebi. Times are a realistic starting point.
  * Each text carries both languages, since the rows are content rather than interface copy; B2's
  * „ქორწილის დღე“ tool starts a couple's own schedule from these.
  */
@@ -45,7 +45,7 @@ export function scheduleRows(key: string, lang: LangCode) {
   }));
 }
 
-/** The phases of a wedding day, for the timeline views (/schedules and the home chapter). */
+/** The phases of a wedding day, for the timeline views (/ganrigebi and the home chapter). */
 export type Phase = 'prep' | 'ceremony' | 'reception' | 'party';
 
 /** Where each example's rows change phase: row index → the phase that starts there. */

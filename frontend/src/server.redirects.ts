@@ -1,12 +1,10 @@
 // Redirects the live site answers before Angular sees the request. Pure (no Angular imports) so
 // server.redirects.spec.ts can test them; `wrangler dev` rewrites the host to 127.0.0.1, which
 // makes the www rule impossible to observe locally.
+import { movedAddress } from './app/core/old-addresses';
 
 /** The canonical host of the live site. */
 export const APEX = 'weddingplanner.ge';
-
-/** Article sections under /guides; anything else at /guides/<slug> is an old article URL. */
-const GUIDE_SECTIONS = new Set(['blog', 'inspiration', 'real-weddings']);
 
 /** A redirect response for `req`, or null when the request should be rendered. */
 export function redirectFor(req: Request): Response | null {
@@ -21,14 +19,12 @@ export function redirectFor(req: Request): Response | null {
     return Response.redirect(url.toString(), 301);
   }
 
-  // Old article URLs (/guides/<slug>) moved to /guides/blog/<slug> (design-system/PROPOSALS.md
-  // P11), same rule as the Express server.ts. Redirected so search engines carry the old URL's
-  // standing over, and a missing article still ends as a plain 404 at its new address.
-  const article = url.pathname.match(/^\/guides\/([^/]+)$/);
-  if (article && !GUIDE_SECTIONS.has(article[1])) {
-    url.pathname = `/guides/blog/${article[1]}`;
-    return Response.redirect(url.toString(), 301);
-  }
+  // Addresses from before 2026-11-13 (/guides…, /schedules, /vendors?group=…, /vendors?category=…)
+  // → the Georgian ones, same rule as the Express server.ts and the router. Permanent, so search
+  // engines carry the old address's standing over, and in one hop: an old /guides/<slug> goes
+  // straight to /rchevebi/blogi/<slug>, where a missing article still ends as a plain 404.
+  const moved = movedAddress(url.pathname + url.search);
+  if (moved) return Response.redirect(new URL(moved, url.origin).toString(), 301);
 
   return null;
 }

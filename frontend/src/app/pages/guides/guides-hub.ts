@@ -7,10 +7,10 @@ import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { ContentCard } from '../../components/content-card/content-card';
 import { AuthService } from '../../core/auth.service';
 import { ContentApiService } from '../../core/content-api.service';
-import { ContentSummary } from '../../core/content.models';
+import { ContentSummary, KIND_SECTION } from '../../core/content.models';
 
 /**
- * /guides — „რჩევები და იდეები" hub (guide §5): a short intro, then a few items from each
+ * /rchevebi — „რჩევები და იდეები" hub (guide §5): a short intro, then a few items from each
  * section with a link to the full list. A section with nothing published stays hidden
  * (real weddings appear only once real stories exist); an empty hub is kept out of search.
  */
@@ -26,6 +26,9 @@ export class GuidesHub {
   private readonly meta = inject(Meta);
   private readonly t = inject(TranslateService);
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
+
+  /** Each section's full list. */
+  protected readonly sections = KIND_SECTION;
 
   protected readonly articles = signal<ContentSummary[]>([]);
   protected readonly ideas = signal<ContentSummary[]>([]);

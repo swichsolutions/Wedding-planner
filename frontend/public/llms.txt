@@ -10,18 +10,18 @@ The site is in Georgian, with an English interface. Using the service is current
 
 - [Wedding planning tool](https://weddingplanner.ge/planning): a task list by stage, budget, guest list, seating on the venue's floor plan, and the wedding day schedule
 - [Online invitations](https://weddingplanner.ge/invitations): 14 designs, a personal link and QR code per family, replies land in the guest list
-- [Wedding day schedules](https://weddingplanner.ge/schedules): example timelines for three kinds of wedding day
+- [Wedding day schedules](https://weddingplanner.ge/ganrigebi): example timelines for three kinds of wedding day
 - [Venues and services](https://weddingplanner.ge/vendors): wedding venues, photographers, decor, music, cakes and more in Georgia
 
 ## Advice (in Georgian)
 
-- [Blog](https://weddingplanner.ge/guides/blog): practical wedding planning articles
-- [Where to start planning a wedding](https://weddingplanner.ge/guides/blog/saidan-davitsyo-qortsilis-dagegmva)
-- [Wedding budget](https://weddingplanner.ge/guides/blog/qortsilis-biujeti)
-- [Guest list](https://weddingplanner.ge/guides/blog/stumrebis-sia)
-- [Choosing a wedding venue](https://weddingplanner.ge/guides/blog/rogor-avirchiot-darbazi)
-- [Wedding day schedule](https://weddingplanner.ge/guides/blog/qortsilis-dghis-ganrigi)
-- [Online invitations: what to write and when to send](https://weddingplanner.ge/guides/blog/onlain-mosatsvevi)
+- [Blog](https://weddingplanner.ge/rchevebi/blogi): practical wedding planning articles
+- [Where to start planning a wedding](https://weddingplanner.ge/rchevebi/blogi/saidan-davitsyo-qortsilis-dagegmva)
+- [Wedding budget](https://weddingplanner.ge/rchevebi/blogi/qortsilis-biujeti)
+- [Guest list](https://weddingplanner.ge/rchevebi/blogi/stumrebis-sia)
+- [Choosing a wedding venue](https://weddingplanner.ge/rchevebi/blogi/rogor-avirchiot-darbazi)
+- [Wedding day schedule](https://weddingplanner.ge/rchevebi/blogi/qortsilis-dghis-ganrigi)
+- [Online invitations: what to write and when to send](https://weddingplanner.ge/rchevebi/blogi/onlain-mosatsvevi)
 
 ## For vendors
 

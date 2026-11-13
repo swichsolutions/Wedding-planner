@@ -18,7 +18,7 @@
             (focusout)="onGroupBlur($event, g.key)">
             <div class="hdr__group-row">
               <a class="hdr__group" [routerLink]="g.link"
-                [routerLinkActive]="g.link === '/' ? [] : 'is-active'" (click)="closeMenu()">
+                [class.is-active]="activeGroup() === g.key" (click)="closeMenu()">
                 {{ 'nav.g.' + g.key + '.title' | translate }}
               </a>
               <button type="button" class="hdr__chev-btn" [attr.aria-expanded]="openGroup() === g.key"
@@ -31,7 +31,7 @@
               <ul class="hdr__panel-list">
                 @for (it of g.items; track it.key) {
                   <li>
-                    <a class="hdr__panel-link" [routerLink]="it.link" [queryParams]="it.query ?? null"
+                    <a class="hdr__panel-link" [routerLink]="it.link"
                       [fragment]="it.fragment" (click)="closeMenu()">
                       <span class="hdr__panel-t">{{ 'nav.g.' + g.key + '.i.' + it.key + '.t' | translate }}</span>
                     </a>

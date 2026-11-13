@@ -14,7 +14,7 @@ import { TrustFaq } from './trust-faq/trust-faq';
 import { FinalCall } from './final-call/final-call';
 import { DayPreview } from '../../components/day-preview/day-preview';
 import { CarouselArrow } from '../../components/carousel-arrow/carousel-arrow';
-import { img } from '../../core/catalog';
+import { categoryPath, groupPath, img } from '../../core/catalog';
 import { CategoryStat, VendorService } from '../../core/vendor.service';
 
 /**
@@ -31,7 +31,7 @@ import { CategoryStat, VendorService } from '../../core/vendor.service';
 interface CategoryGroup {
   key: string; // i18n key under home.find.cat
   slugs: string[]; // catalog slugs folded into this row (their vendor counts are summed)
-  query: Record<string, string>; // the catalog view this row opens: a group, or one category
+  link: string; // the catalog page this row opens: a group's, or one category's
   img: string; // the card visual: a full-card render (object on the peach backdrop) or, with `print`, a scene
   print?: boolean; // show the visual as a rounded print instead of a cut-out
 }
@@ -178,15 +178,15 @@ export class Home {
     // with a floor reflection; each has a `-1086` twin for dense screens
     // (public/media/README.md)
     // Rows open the catalog's group (guide §4); rings and transport open their one category.
-    { key: 'venues', slugs: ['darbazi', 'keiteringi'], query: { group: 'venues' }, img: '/media/cat/venues.webp' },
-    { key: 'photo', slugs: ['fotografi', 'videografi'], query: { group: 'photo' }, img: '/media/cat/photo.webp' },
-    { key: 'decor', slugs: ['dekori', 'floristi', 'inventari'], query: { group: 'decor' }, img: '/media/cat/decor.webp' },
-    { key: 'music', slugs: ['musika', 'tamada', 'tsamqvani', 'gasartobi'], query: { group: 'music' }, img: '/media/cat/music.webp' },
-    { key: 'cake', slugs: ['torti', 'tkbileuli'], query: { group: 'cake' }, img: '/media/cat/cake.webp' },
-    { key: 'attire', slugs: ['kaba', 'kostiumi', 'pekhsatsmeli'], query: { group: 'attire' }, img: '/media/cat/attire.webp' },
-    { key: 'rings', slugs: ['bechdebi'], query: { category: 'bechdebi' }, img: '/media/cat/rings.webp' },
-    { key: 'beauty', slugs: ['makiaji', 'tmis-stili', 'manikiuri', 'saloni', 'movla'], query: { group: 'beauty' }, img: '/media/cat/beauty.webp' },
-    { key: 'transport', slugs: ['transporti'], query: { category: 'transporti' }, img: '/media/cat/transport.webp' },
+    { key: 'venues', slugs: ['darbazi', 'keiteringi'], link: groupPath('venues'), img: '/media/cat/venues.webp' },
+    { key: 'photo', slugs: ['fotografi', 'videografi'], link: groupPath('photo'), img: '/media/cat/photo.webp' },
+    { key: 'decor', slugs: ['dekori', 'floristi', 'inventari'], link: groupPath('decor'), img: '/media/cat/decor.webp' },
+    { key: 'music', slugs: ['musika', 'tamada', 'tsamqvani', 'gasartobi'], link: groupPath('music'), img: '/media/cat/music.webp' },
+    { key: 'cake', slugs: ['torti', 'tkbileuli'], link: groupPath('cake'), img: '/media/cat/cake.webp' },
+    { key: 'attire', slugs: ['kaba', 'kostiumi', 'pekhsatsmeli'], link: groupPath('attire'), img: '/media/cat/attire.webp' },
+    { key: 'rings', slugs: ['bechdebi'], link: categoryPath('bechdebi'), img: '/media/cat/rings.webp' },
+    { key: 'beauty', slugs: ['makiaji', 'tmis-stili', 'manikiuri', 'saloni', 'movla'], link: groupPath('beauty'), img: '/media/cat/beauty.webp' },
+    { key: 'transport', slugs: ['transporti'], link: categoryPath('transporti'), img: '/media/cat/transport.webp' },
   ];
 
   private readonly vendors = inject(VendorService);
@@ -221,7 +221,7 @@ export class Home {
    * means sign-up (or sign-in) first for a visitor, and their own page for a signed-in user. */
   protected stepLink(key: 'find' | 'organize' | 'day'): string {
     if (key === 'find') return '/vendors';
-    if (key === 'day') return '/schedules';
+    if (key === 'day') return '/ganrigebi';
     return this.heroCta().link;
   }
 

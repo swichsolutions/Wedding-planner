@@ -4,11 +4,12 @@
 //
 // Files in dist/frontend/browser are served by Workers Static Assets before this code runs,
 // so only page requests reach the handler below, plus the videos that need byte ranges
-// (server.video.ts). Rendered pages are reused from the edge (server.edge.ts). See wrangler.jsonc
-// and docs/DEPLOY.md.
+// (server.video.ts) and /sitemap.xml, which is fetched from the API. Rendered pages are reused
+// from the edge (server.edge.ts). See wrangler.jsonc and docs/DEPLOY.md.
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 
-import { EdgeContext, browserRenderedShell, withEdgeCache } from './server.edge';
+import { environment } from './environments/environment';
+import { EdgeContext, browserRenderedShell, sitemapFromApi, withEdgeCache } from './server.edge';
 import { withFinishedHead } from './server.head';
 import { APEX, redirectFor } from './server.redirects';
 import { AssetFetcher, isVideoPath, serveVideo } from './server.video';
@@ -38,7 +39,10 @@ const edgeCache = () => (caches as unknown as { default: Cache }).default;
 
 export default {
   async fetch(req: Request, env: { ASSETS: AssetFetcher }, ctx: EdgeContext) {
-    if (isVideoPath(new URL(req.url).pathname)) return serveVideo(req, env.ASSETS);
+    const { pathname } = new URL(req.url);
+    if (isVideoPath(pathname)) return serveVideo(req, env.ASSETS);
+    // The sitemap is the API's, served from this domain (robots.txt points here).
+    if (pathname === '/sitemap.xml') return sitemapFromApi(req, environment.apiBaseUrl, edgeCache(), ctx);
 
     return withEdgeCache(req, edgeCache(), ctx, async () => {
       try {

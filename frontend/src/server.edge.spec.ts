@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { EDGE_CACHE_SECONDS, EdgeCache, browserRenderedShell, edgeCacheKey, isCacheablePage, withEdgeCache } from './server.edge';
+import {
+  EDGE_CACHE_SECONDS,
+  EdgeCache,
+  SITEMAP_CACHE_SECONDS,
+  browserRenderedShell,
+  edgeCacheKey,
+  isCacheablePage,
+  sitemapFromApi,
+  withEdgeCache,
+} from './server.edge';
 
 const B = 'https://weddingplanner.ge';
 const html = (status = 200, extra: Record<string, string> = {}) =>
@@ -17,7 +26,7 @@ function fakeCache() {
 
 describe('isCacheablePage', () => {
   it('caches public pages', () => {
-    for (const p of ['/', '/vendors?group=venues', '/guides/blog/qortsilis-biujeti', '/tamada/tbilisi/x-1', '/invitations', '/wedding']) {
+    for (const p of ['/', '/sivrtseebi-da-kveba', '/fotografi?region=kakheti', '/rchevebi/blogi/qortsilis-biujeti', '/ganrigebi/jvristsera', '/tamada/tbilisi/x-1', '/invitations', '/wedding']) {
       expect(isCacheablePage(new Request(B + p))).toBe(true);
     }
   });
@@ -37,19 +46,22 @@ describe('isCacheablePage', () => {
 
 describe('edgeCacheKey', () => {
   it('drops the parameters social networks and ads add', () => {
-    expect(edgeCacheKey(`${B}/vendors?fbclid=abc&group=photo&utm_source=ig&igsh=x`)).toBe(`${B}/vendors?group=photo`);
+    expect(edgeCacheKey(`${B}/fotografi?fbclid=abc&region=kakheti&utm_source=ig&igsh=x`)).toBe(`${B}/fotografi?region=kakheti`);
     expect(edgeCacheKey(`${B}/?fbclid=abc`)).toBe(`${B}/`);
     expect(edgeCacheKey(`${B}/tamada/tbilisi/x-1?igsh=1#reviews`)).toBe(`${B}/tamada/tbilisi/x-1`);
   });
 
   it('keeps what the pages read, in one order', () => {
-    const a = edgeCacheKey(`${B}/vendors?region=kakheti&group=venues&q=${encodeURIComponent('ეზო')}`);
-    const b = edgeCacheKey(`${B}/vendors?q=${encodeURIComponent('ეზო')}&group=venues&region=kakheti`);
+    const a = edgeCacheKey(`${B}/darbazi?region=kakheti&guests=200&q=${encodeURIComponent('ეზო')}`);
+    const b = edgeCacheKey(`${B}/darbazi?q=${encodeURIComponent('ეზო')}&guests=200&region=kakheti`);
     expect(a).toBe(b);
-    expect(a).toContain('group=venues');
+    expect(a).toContain('guests=200');
     expect(a).toContain('region=kakheti');
-    expect(edgeCacheKey(`${B}/schedules?s=classic`)).toBe(`${B}/schedules?s=classic`);
-    expect(edgeCacheKey(`${B}/guides/blog?topic=budget`)).toBe(`${B}/guides/blog?topic=budget`);
+    expect(edgeCacheKey(`${B}/rchevebi/blogi?topic=budget`)).toBe(`${B}/rchevebi/blogi?topic=budget`);
+    // an old ?group= that names nothing is still read by the catalog (a known one is redirected)
+    expect(edgeCacheKey(`${B}/vendors?group=zzz`)).toBe(`${B}/vendors?group=zzz`);
+    // each schedule has its own path now: nothing reads ?s= any more
+    expect(edgeCacheKey(`${B}/ganrigebi/jvristsera?s=one-venue`)).toBe(`${B}/ganrigebi/jvristsera`);
     expect(edgeCacheKey(`${B}/login?expired=1&returnUrl=%2Fplanning`)).not.toBe(edgeCacheKey(`${B}/login`));
   });
 });
@@ -83,18 +95,18 @@ describe('withEdgeCache', () => {
   it('keeps different queries apart', async () => {
     const { cache, ctx, settle } = fakeCache();
     const render = vi.fn(async () => html());
-    await withEdgeCache(new Request(`${B}/vendors?group=photo`), cache, ctx, render);
+    await withEdgeCache(new Request(`${B}/fotografi?region=kakheti`), cache, ctx, render);
     await settle();
-    await withEdgeCache(new Request(`${B}/vendors?group=decor`), cache, ctx, render);
+    await withEdgeCache(new Request(`${B}/fotografi?region=imereti`), cache, ctx, render);
     expect(render).toHaveBeenCalledTimes(2);
   });
 
   it('serves one stored page to every tracking link', async () => {
     const { cache, ctx, settle } = fakeCache();
     const render = vi.fn(async () => html());
-    await withEdgeCache(new Request(`${B}/vendors?group=photo&fbclid=one`), cache, ctx, render);
+    await withEdgeCache(new Request(`${B}/foto-da-video?fbclid=one`), cache, ctx, render);
     await settle();
-    const second = await withEdgeCache(new Request(`${B}/vendors?fbclid=two&group=photo`), cache, ctx, render);
+    const second = await withEdgeCache(new Request(`${B}/foto-da-video?fbclid=two`), cache, ctx, render);
     expect(second.headers.get('x-edge-cache')).toBe('HIT');
     expect(render).toHaveBeenCalledTimes(1);
   });
@@ -130,6 +142,46 @@ describe('withEdgeCache', () => {
     const cache: EdgeCache = { match: () => Promise.reject(new Error('down')), put: () => Promise.reject(new Error('down')) };
     const res = await withEdgeCache(new Request(`${B}/`), cache, ctx, async () => html());
     expect(res.status).toBe(200);
+  });
+});
+
+describe('sitemapFromApi', () => {
+  const API = 'https://api.weddingplanner.ge';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset><url><loc>${B}/</loc></url></urlset>`;
+
+  it('serves the API\'s sitemap from the site\'s own address, as XML', async () => {
+    const { cache, ctx } = fakeCache();
+    const asked: string[] = [];
+    const res = await sitemapFromApi(new Request(`${B}/sitemap.xml`), API, cache, ctx, async (url) => {
+      asked.push(url);
+      return new Response(xml, { headers: { 'content-type': 'application/xml' } });
+    });
+    expect(asked).toEqual([`${API}/sitemap.xml`]);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('application/xml');
+    expect(res.headers.get('cache-control')).toBe(`public, max-age=${SITEMAP_CACHE_SECONDS}`);
+    expect(await res.text()).toBe(xml);
+  });
+
+  it('asks the API once and reuses the answer', async () => {
+    const { cache, ctx, settle } = fakeCache();
+    const fetcher = vi.fn(async () => new Response(xml));
+    await sitemapFromApi(new Request(`${B}/sitemap.xml`), API, cache, ctx, fetcher);
+    await settle();
+    const second = await sitemapFromApi(new Request(`${B}/sitemap.xml?x=1`), API, cache, ctx, fetcher);
+    expect(await second.text()).toBe(xml);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('answers 503, and stores nothing, when the API fails or is unreachable', async () => {
+    for (const fetcher of [async () => new Response('down', { status: 502 }), async () => Promise.reject(new Error('offline'))]) {
+      const { cache, ctx, settle, store } = fakeCache();
+      const res = await sitemapFromApi(new Request(`${B}/sitemap.xml`), API, cache, ctx, fetcher);
+      await settle();
+      expect(res.status).toBe(503);
+      expect(res.headers.get('retry-after')).toBe('300');
+      expect(store.size).toBe(0);
+    }
   });
 });
 

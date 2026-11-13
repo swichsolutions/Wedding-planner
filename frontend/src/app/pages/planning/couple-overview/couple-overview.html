@@ -71,7 +71,7 @@
         } @else {
           <p class="ov-note">
             {{ 'overview.venueHint' | translate }}
-            <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'venues' }">{{ 'overview.venueBrowse' | translate }} →</a>
+            <a class="ov-quiet" [routerLink]="groupPath('venues')">{{ 'overview.venueBrowse' | translate }} →</a>
           </p>
         }
       </div>
@@ -102,10 +102,10 @@
         <h3 class="ov-h3">{{ 'overview.photosTitle' | translate }}</h3>
         <p class="ov-note">
           {{ 'overview.photosHint' | translate }}
-          <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'decor' }">{{ 'overview.photosDecor' | translate }}</a> ·
-          <a class="ov-quiet" routerLink="/vendors" [queryParams]="{ group: 'cake' }">{{ 'overview.photosCake' | translate }}</a> ·
+          <a class="ov-quiet" [routerLink]="groupPath('decor')">{{ 'overview.photosDecor' | translate }}</a> ·
+          <a class="ov-quiet" [routerLink]="groupPath('cake')">{{ 'overview.photosCake' | translate }}</a> ·
           @if (contentSections.has('inspiration')) {
-            <a class="ov-quiet" routerLink="/guides/inspiration">{{ 'overview.photosIdeas' | translate }}</a>
+            <a class="ov-quiet" [routerLink]="ideasPath">{{ 'overview.photosIdeas' | translate }}</a>
           }
         </p>
         @if (photos().length) {
@@ -136,7 +136,7 @@
 
   <!-- ================= the next step ================= -->
   @if (nextStep(); as step) {
-    <a class="ovn" [routerLink]="step.link" [queryParams]="step.query ?? null">
+    <a class="ovn" [routerLink]="step.link">
       <span class="ovn__label">{{ 'overview.nextLabel' | translate }}</span>
       <span class="ovn__text">{{ step.key | translate: { n: overdue() } }}</span>
       <span class="ovn__arrow" aria-hidden="true">→</span>
@@ -343,7 +343,7 @@
         </div>
         @if (o.day.items === 0) {
           <p class="ov-note">{{ 'overview.day.empty' | translate }}</p>
-          <a class="ov-quiet" routerLink="/schedules">{{ 'overview.day.examples' | translate }} →</a>
+          <a class="ov-quiet" routerLink="/ganrigebi">{{ 'overview.day.examples' | translate }} →</a>
         } @else {
           <ol class="ovd" role="list">
             @for (d of o.day.first; track $index) {

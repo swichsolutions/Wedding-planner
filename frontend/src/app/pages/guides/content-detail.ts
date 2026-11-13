@@ -20,6 +20,7 @@ import { ContentApiService } from '../../core/content-api.service';
 import { formatDate } from '../../core/dates';
 import { sizedImage } from '../../core/images';
 import { renderMarkdown } from '../../core/markdown';
+import { movedAddress } from '../../core/old-addresses';
 import { MARKABLE_TOPICS, PlanPhotosService } from '../../core/plan-photos.service';
 import { LanguageService } from '../../i18n/language.service';
 import { NotFound } from '../not-found/not-found';
@@ -103,11 +104,13 @@ export class ContentDetailPage implements OnDestroy {
   protected readonly credits = computed(() =>
     (this.page()?.credits ?? []).map((c) => ({ ...c, role: this.pick(c.roleKa, c.roleEn) })),
   );
-  /** The related action as a router target ("/vendors?category=x" → path + query). */
+  /** The related action as a router target ("/budget?view=overview" → path + query). A page
+   * saved with an address from before 2026-11-13 ("/vendors?category=x") links to today's. */
   protected readonly action = computed<{ tree: UrlTree; label: string } | null>(() => {
     const p = this.page();
     if (!p?.actionPath) return null;
-    return { tree: this.router.parseUrl(p.actionPath), label: this.pick(p.actionLabelKa, p.actionLabelEn) };
+    const path = movedAddress(p.actionPath) ?? p.actionPath;
+    return { tree: this.router.parseUrl(path), label: this.pick(p.actionLabelKa, p.actionLabelEn) };
   });
 
   constructor() {

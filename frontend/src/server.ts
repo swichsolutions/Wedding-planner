@@ -7,6 +7,8 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 
+import { movedAddress } from './app/core/old-addresses';
+
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
@@ -25,21 +27,16 @@ const angularApp = new AngularNodeAppEngine();
  */
 
 /**
- * Old article URLs (/guides/<slug>) moved to /guides/blog/<slug> (design-system/PROPOSALS.md
- * P11). Redirected here, permanently and before Angular: search engines carry the old URL's
- * standing over, and a missing article still ends as a plain 404 at its new address (inside
- * Angular, a redirect whose target page answers 404 crashes the SSR response).
+ * Addresses from before 2026-11-13 (/guides…, /schedules, /vendors?group=…, /vendors?category=…)
+ * moved to the Georgian ones (core/old-addresses.ts; the same rule as the live Worker's
+ * server.redirects.ts). Redirected here, permanently and before Angular: search engines carry
+ * the old URL's standing over, and a missing article still ends as a plain 404 at its new
+ * address (inside Angular, a redirect whose target page answers 404 crashes the SSR response).
  */
-const GUIDE_SECTIONS = new Set(['blog', 'inspiration', 'real-weddings']);
-app.get('/guides/:slug', (req, res, next) => {
-  const { slug } = req.params;
-  if (GUIDE_SECTIONS.has(slug)) {
-    next();
-    return;
-  }
-  const at = req.originalUrl.indexOf('?');
-  const query = at === -1 ? '' : req.originalUrl.slice(at);
-  res.redirect(301, `/guides/blog/${encodeURIComponent(slug)}${query}`);
+app.use((req, res, next) => {
+  const moved = req.method === 'GET' || req.method === 'HEAD' ? movedAddress(req.originalUrl) : null;
+  if (moved) res.redirect(301, moved);
+  else next();
 });
 
 /**
