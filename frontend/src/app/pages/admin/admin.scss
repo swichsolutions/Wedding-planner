@@ -141,7 +141,9 @@
   border-radius: var(--radius-lg);
 
   @include bp.respond-to(md) {
-    grid-template-columns: 1fr auto auto;
+    // the name keeps its room; badges and buttons wrap inside their own columns (with the code
+    // badges and buttons of 2026-11-13, "auto" columns squeezed the name to one word per line)
+    grid-template-columns: minmax(14rem, 1fr) minmax(0, 20rem) minmax(0, 26rem);
     align-items: center;
     gap: var(--space-6);
   }
@@ -212,4 +214,50 @@
 
 .admin__btn--danger {
   color: var(--danger-600);
+}
+
+// the one-time code just made, under its row across the full width
+.admin__code {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md, 12px);
+  background: var(--paper-deep, #f0ece6);
+}
+
+.admin__code-head {
+  margin: 0;
+  font-size: var(--fs-small);
+}
+
+.admin__code-value {
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin__code-label {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--ink-700);
+}
+
+.admin__code-msg {
+  width: 100%;
+  max-width: 46rem;
+  padding: var(--space-3);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--paper-white, #fff);
+  font: inherit;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.admin__code-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }

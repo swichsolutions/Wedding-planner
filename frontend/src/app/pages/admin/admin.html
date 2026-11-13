@@ -175,6 +175,11 @@
             }
             @if (!v.hasOwner) {
               <span class="admin__badge admin__badge--plain">{{ 'adminPage.noOwner' | translate }}</span>
+            } @else if (v.ownerEmail) {
+              <span class="admin__badge admin__badge--plain">{{ 'adminPage.owner' | translate }} {{ v.ownerEmail }}</span>
+            }
+            @if (!v.hasOwner && v.claimCodeExpiresAt) {
+              <span class="admin__badge">{{ 'adminPage.codeOpen' | translate: { date: formatDate(v.claimCodeExpiresAt) } }}</span>
             }
             @if (v.photoCount === 0) {
               <span class="admin__badge">{{ 'adminPage.noPhotos' | translate }}</span>
@@ -193,10 +198,49 @@
               [attr.aria-pressed]="v.isFeatured">
               {{ 'adminPage.feature' | translate }}
             </button>
+            @if (!v.hasOwner) {
+              <button type="button" class="btn btn--ghost admin__btn" (click)="createCode(v)">
+                {{ (v.claimCodeExpiresAt ? 'adminPage.codeNew' : 'adminPage.codeCreate') | translate }}
+              </button>
+              @if (v.claimCodeExpiresAt) {
+                <button type="button" class="btn btn--ghost admin__btn" (click)="cancelCode(v)">
+                  {{ 'adminPage.codeCancel' | translate }}
+                </button>
+              }
+            } @else {
+              <button type="button" class="btn btn--ghost admin__btn" (click)="unlinkOwner(v)">
+                {{ 'adminPage.unlink' | translate }}
+              </button>
+            }
             <button type="button" class="btn btn--ghost admin__btn admin__btn--danger" (click)="deleteVendor(v)">
               {{ 'adminPage.delete' | translate }}
             </button>
           </div>
+          <!-- the code just made: shown once (the API keeps only its hash), with the ready message -->
+          @if (newCode(); as c) {
+            @if (c.vendorId === v.id) {
+              <div class="admin__code" role="status">
+                <p class="admin__code-head">
+                  {{ 'adminPage.codeMade' | translate }} <strong class="admin__code-value">{{ c.code }}</strong>
+                  · {{ 'adminPage.codeUntil' | translate: { date: formatDate(c.expiresAt) } }}
+                </p>
+                <label class="admin__code-label" [for]="'code-msg-' + v.id">{{ 'adminPage.codeMessageLabel' | translate }}</label>
+                <textarea class="admin__code-msg" [id]="'code-msg-' + v.id" rows="4" readonly>{{ codeMessage(c) }}</textarea>
+                <div class="admin__code-actions">
+                  <button type="button" class="btn btn--primary admin__btn" (click)="copy(codeMessage(c))">
+                    {{ 'adminPage.codeCopyMessage' | translate }}
+                  </button>
+                  <button type="button" class="btn btn--ghost admin__btn" (click)="copy(codeLink(c.code))">
+                    {{ 'adminPage.codeCopyLink' | translate }}
+                  </button>
+                  <button type="button" class="btn btn--ghost admin__btn" (click)="newCode.set(null)">
+                    {{ 'adminPage.codeClose' | translate }}
+                  </button>
+                </div>
+                <p class="admin__hint">{{ 'adminPage.codeHint' | translate }}</p>
+              </div>
+            }
+          }
         </li>
       }
     </ul>

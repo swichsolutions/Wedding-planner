@@ -17,6 +17,16 @@ export interface AdminVendor {
   /** A vendor account manages the profile (false for admin-added ones nobody has claimed). */
   hasOwner: boolean;
   photoCount: number;
+  /** The owner account's email, when there is one. */
+  ownerEmail?: string | null;
+  /** When the open one-time code stops working; null when none is open. */
+  claimCodeExpiresAt?: string | null;
+}
+
+/** A new one-time code: shown once (only its hash is kept), to send to the vendor. */
+export interface ClaimCodeCreated {
+  code: string;
+  expiresAt: string;
 }
 
 /** One vendor added by hand from the admin panel. */
@@ -76,6 +86,21 @@ export class AdminService {
 
   approve(id: number): Observable<void> {
     return this.http.post<void>(`${this.base}/api/admin/vendors/${id}/approve`, {});
+  }
+
+  /** A new one-time code for a profile nobody owns; replaces any open one. 409 when it has an owner. */
+  createClaimCode(id: number): Observable<ClaimCodeCreated> {
+    return this.http.post<ClaimCodeCreated>(`${this.base}/api/admin/vendors/${id}/claim-code`, {});
+  }
+
+  /** Cancels the open code: its link stops working at once. */
+  deleteClaimCode(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/admin/vendors/${id}/claim-code`);
+  }
+
+  /** Takes the profile away from its owner account (the account stays, without a profile). */
+  unlinkOwner(id: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/api/admin/vendors/${id}/unlink-owner`, {});
   }
 
   /** Permanent: the profile, its photos, packages, reviews and messages. */

@@ -118,6 +118,23 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateLifetime = true,
         };
+        options.Events = new JwtBearerEvents
+        {
+            // A vendor token names a profile (the "vendorId" claim). It counts only while the
+            // account still owns that profile: an admin can unlink a profile that went to the
+            // wrong person, and that must hold at once, not when the 72-hour token runs out.
+            OnTokenValidated = async ctx =>
+            {
+                var claimed = ctx.Principal?.FindFirst("vendorId")?.Value;
+                if (claimed is null) return;
+                var userId = ctx.Principal!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                             ?? ctx.Principal.FindFirst("sub")?.Value;
+                var db = ctx.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var owns = userId is not null && int.TryParse(claimed, out var vendorId)
+                           && await db.Users.AnyAsync(u => u.Id == userId && u.VendorId == vendorId);
+                if (!owns) ctx.Fail("The account no longer owns this vendor profile.");
+            },
+        };
     });
 builder.Services.AddAuthorization();
 

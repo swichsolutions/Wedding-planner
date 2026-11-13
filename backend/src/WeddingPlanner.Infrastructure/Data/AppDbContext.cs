@@ -96,6 +96,9 @@ public class AppDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContex
             e.HasIndex(x => new { x.CategoryId, x.CitySlug, x.Slug }).IsUnique();
             e.HasIndex(x => x.IsApproved);
             e.HasIndex(x => x.IsFeatured);
+            // a code is looked up by its hash, and two profiles must never share one
+            e.Property(x => x.ClaimCodeHash).HasMaxLength(64);
+            e.HasIndex(x => x.ClaimCodeHash).IsUnique().HasFilter("\"ClaimCodeHash\" IS NOT NULL");
 
             e.HasOne(x => x.Category)
                 .WithMany(c => c.Vendors)

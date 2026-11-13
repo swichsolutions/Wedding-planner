@@ -5,7 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AdminClaim, AdminService, AdminVendor } from '../../core/admin.service';
+import { AdminClaim, AdminService, AdminVendor, ClaimCodeCreated } from '../../core/admin.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
@@ -163,6 +163,91 @@ export class Admin {
       },
       error: () => this.toast.error('adminPage.saveError'),
     });
+  }
+
+  // ---- One-time codes (2026-11-13): the admin sends one to the vendor, who takes the profile with it ----
+  /** The code just made, shown under its vendor's row until closed: the API keeps only its hash. */
+  protected readonly newCode = signal<(ClaimCodeCreated & { vendorId: number; name: string }) | null>(null);
+  private readonly translate = inject(TranslateService);
+
+  protected async createCode(v: AdminVendor): Promise<void> {
+    // a new code replaces an open one: the link already sent stops working
+    if (v.claimCodeExpiresAt) {
+      const ok = await this.confirm.confirm({
+        title: 'adminPage.codeReplaceTitle',
+        detail: v.name,
+        body: 'adminPage.codeReplaceBody',
+        confirmLabel: 'adminPage.codeNew',
+      });
+      if (!ok) return;
+    }
+    this.admin.createClaimCode(v.id).subscribe({
+      next: (c) => {
+        this.newCode.set({ ...c, vendorId: v.id, name: v.name });
+        this.vendors.update((list) => list.map((x) => (x.id === v.id ? { ...x, claimCodeExpiresAt: c.expiresAt } : x)));
+      },
+      error: (err: { status?: number }) =>
+        this.toast.error(err.status === 409 ? 'adminPage.codeHasOwner' : 'adminPage.saveError'),
+    });
+  }
+
+  protected async cancelCode(v: AdminVendor): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'adminPage.codeCancelTitle',
+      detail: v.name,
+      body: 'adminPage.codeCancelBody',
+      confirmLabel: 'adminPage.codeCancel',
+      danger: true,
+    });
+    if (!ok) return;
+    this.admin.deleteClaimCode(v.id).subscribe({
+      next: () => {
+        this.vendors.update((list) => list.map((x) => (x.id === v.id ? { ...x, claimCodeExpiresAt: null } : x)));
+        if (this.newCode()?.vendorId === v.id) this.newCode.set(null);
+      },
+      error: () => this.toast.error('adminPage.saveError'),
+    });
+  }
+
+  protected async unlinkOwner(v: AdminVendor): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: 'adminPage.unlinkTitle',
+      detail: `${v.name} · ${v.ownerEmail ?? ''}`,
+      body: 'adminPage.unlinkBody',
+      confirmLabel: 'adminPage.unlink',
+      danger: true,
+    });
+    if (!ok) return;
+    this.admin.unlinkOwner(v.id).subscribe({
+      next: () =>
+        this.vendors.update((list) => list.map((x) => (x.id === v.id ? { ...x, hasOwner: false, ownerEmail: null } : x))),
+      error: () => this.toast.error('adminPage.saveError'),
+    });
+  }
+
+  /** The link in the message: lower case, the site's addresses are (the code itself isn't case-sensitive). */
+  protected codeLink(code: string): string {
+    const origin = this.isBrowser ? window.location.origin : '';
+    return `${origin}/kodi/${code.toLowerCase()}`;
+  }
+
+  /** The ready message for Instagram, WhatsApp or SMS, in the panel's language. */
+  protected codeMessage(c: ClaimCodeCreated & { name: string }): string {
+    return this.translate.instant('adminPage.codeMessage', {
+      name: c.name,
+      link: this.codeLink(c.code),
+      code: c.code,
+      date: this.formatDate(c.expiresAt),
+    });
+  }
+
+  protected async copy(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.toast.success('adminPage.copied');
+    } catch {
+      this.toast.error('adminPage.copyError');
+    }
   }
 
   // ---- Takeover requests (A3): vendor accounts asking for an admin-added profile ----

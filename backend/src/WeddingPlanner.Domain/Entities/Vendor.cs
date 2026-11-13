@@ -92,6 +92,16 @@ public class Vendor
     /// <summary>Admin moderation gate. Only approved vendors are shown publicly.</summary>
     public bool IsApproved { get; set; }
 
+    /// <summary>
+    /// One-time code for taking over a profile an admin made (SHA-256 of the normalized code, never
+    /// the code itself). The admin sends the code to the vendor; whoever registers with it owns the
+    /// profile at once. Cleared when used or replaced. See ClaimCodes in the API.
+    /// </summary>
+    public string? ClaimCodeHash { get; set; }
+
+    /// <summary>The code stops working after this; null when there is no code.</summary>
+    public DateTimeOffset? ClaimCodeExpiresAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public ICollection<VendorPhoto> Photos { get; set; } = new List<VendorPhoto>();

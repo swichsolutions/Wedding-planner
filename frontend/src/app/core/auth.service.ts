@@ -24,15 +24,22 @@ interface AuthResponse {
 export interface RegisterVendorPayload {
   email: string;
   password: string;
-  vendorName: string;
-  /** Required unless claimVendorId is set: the claimed profile has a category already. */
+  /** Required unless claimCode is set: the profile has a name, category and city already. */
+  vendorName?: string;
   categorySlug?: string;
   city?: string;
-  /** An admin-added profile the vendor says is theirs (A3 takeover); the account then waits for admin approval. */
-  claimVendorId?: number;
+  /** The one-time code an admin sent for a profile they made: the new account owns it at once. */
+  claimCode?: string;
 }
 
-/** An admin-added profile nobody owns yet, offered on the vendor sign-up form. */
+/** The profile a one-time code is for, shown on the code's page before signing up. */
+export interface ClaimCodeInfo {
+  name: string;
+  categorySlug: string;
+  city: string;
+}
+
+/** An admin-added profile nobody owns yet, mentioned on the vendor sign-up form. */
 export interface ClaimableVendor {
   id: number;
   name: string;
@@ -256,9 +263,14 @@ export class AuthService {
       );
   }
 
-  /** Admin-added profiles nobody owns yet whose name matches `q` (A3 takeover). */
+  /** Admin-added profiles nobody owns yet whose name matches `q`: the sign-up form mentions them. */
   claimableVendors(q: string): Observable<ClaimableVendor[]> {
     return this.http.get<ClaimableVendor[]>(`${this.base}/api/vendors/claimable`, { params: { q } });
+  }
+
+  /** Which profile a one-time code is for; 404 when the code can't be used (any reason). */
+  claimCodeInfo(code: string): Observable<ClaimCodeInfo> {
+    return this.http.get<ClaimCodeInfo>(`${this.base}/api/auth/vendor-code/${encodeURIComponent(code)}`);
   }
 
   registerVendor(payload: RegisterVendorPayload): Observable<AuthResponse> {

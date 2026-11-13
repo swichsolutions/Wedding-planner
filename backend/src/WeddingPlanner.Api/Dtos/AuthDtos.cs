@@ -6,15 +6,16 @@ public class RegisterVendorDto
 {
     [Required, EmailAddress, MaxLength(256)] public string Email { get; set; } = string.Empty;
     [Required, MinLength(8)] public string Password { get; set; } = string.Empty;
-    [Required, MaxLength(200)] public string VendorName { get; set; } = string.Empty;
-    /// <summary>Required unless the vendor claims an admin-added profile (ClaimVendorId), which has one already.</summary>
+    /// <summary>Required unless the vendor takes over an admin-added profile with a code (ClaimCode).</summary>
+    [MaxLength(200)] public string? VendorName { get; set; }
+    /// <summary>Required unless ClaimCode is given: the profile has one already.</summary>
     public string? CategorySlug { get; set; }
     [MaxLength(120)] public string? City { get; set; }
     /// <summary>
-    /// An admin-added profile the vendor says is theirs (A3 takeover). The account is then created
-    /// without a vendor and an admin links the two after checking (AdminClaimsController).
+    /// The one-time code an admin sent for a profile they made (ClaimCodes). With it the new account
+    /// owns that profile at once; name, category and city then come from the profile.
     /// </summary>
-    public int? ClaimVendorId { get; set; }
+    [MaxLength(20)] public string? ClaimCode { get; set; }
 }
 
 public class RegisterCoupleDto

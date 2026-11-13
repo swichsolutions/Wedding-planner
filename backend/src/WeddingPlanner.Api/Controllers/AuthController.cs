@@ -42,11 +42,15 @@ public class AuthController : ControllerBase
         if (await _users.FindByEmailAsync(dto.Email) is not null)
             return Conflict("Email already registered.");
 
-        // A3 takeover: the vendor says an admin-added profile is theirs. The account is created
-        // without a vendor of its own; an admin links the two after checking (AdminClaimsController).
-        if (dto.ClaimVendorId is int claimVendorId)
-            return await RegisterClaim(dto, claimVendorId);
+        // A profile an admin made, taken over with the one-time code the admin sent (ClaimCodes).
+        if (!string.IsNullOrWhiteSpace(dto.ClaimCode))
+            return await RegisterWithCode(dto);
 
+        if (string.IsNullOrWhiteSpace(dto.VendorName))
+        {
+            ModelState.AddModelError(nameof(dto.VendorName), "The vendor name is required.");
+            return ValidationProblem(ModelState);
+        }
         var category = await _db.Categories.FirstOrDefaultAsync(c => c.Slug == dto.CategorySlug);
         if (category is null)
             return BadRequest("Unknown category.");
@@ -61,7 +65,7 @@ public class AuthController : ControllerBase
         // (CategoryId, CitySlug, Slug) unique index when two registrations race.
         var vendor = new Vendor
         {
-            Name = dto.VendorName.Trim(),
+            Name = dto.VendorName!.Trim(),
             Slug = $"pending-{Guid.NewGuid():N}",
             CategoryId = category.Id,
             City = dto.City?.Trim() ?? string.Empty,
@@ -84,7 +88,7 @@ public class AuthController : ControllerBase
         {
             UserName = dto.Email,
             Email = dto.Email,
-            DisplayName = dto.VendorName.Trim(),
+            DisplayName = dto.VendorName!.Trim(),
             VendorId = vendor.Id,
         };
         IdentityResult created;
@@ -108,24 +112,36 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Vendor registration that claims an admin-added profile instead of creating one: a Vendor-role
-    /// user with no VendorId plus a pending VendorClaim. The dashboard shows the request's state
-    /// until an admin approves it (the vendor then signs in again for a token with the vendorId).
+    /// Vendor registration with the one-time code an admin sent for a profile they made: the new
+    /// account owns that profile at once, and the code is used up. Every failure about the code
+    /// answers the same 404 (unknown, used, expired or already owned look alike to a guesser).
     /// </summary>
-    private async Task<ActionResult<AuthResponseDto>> RegisterClaim(RegisterVendorDto dto, int vendorId)
+    private async Task<ActionResult<AuthResponseDto>> RegisterWithCode(RegisterVendorDto dto)
     {
-        var vendor = await _db.Vendors.AsNoTracking().FirstOrDefaultAsync(v => v.Id == vendorId);
-        if (vendor is null)
-            return BadRequest("Unknown vendor.");
-        if (await _db.Users.AnyAsync(u => u.VendorId == vendorId))
-            return Conflict("This profile already has an owner.");
+        var hash = ClaimCodes.Hash(dto.ClaimCode);
+        if (hash is null) return NotFound("invalid_code");
+
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        var vendor = await _db.Vendors.AsNoTracking().FirstOrDefaultAsync(v =>
+            v.ClaimCodeHash == hash && v.ClaimCodeExpiresAt > DateTimeOffset.UtcNow);
+        if (vendor is null || await _db.Users.AnyAsync(u => u.VendorId == vendor.Id))
+            return NotFound("invalid_code");
+
+        // Used up first, in one conditional update: of two sign-ups racing with the same code the
+        // second waits on the row and then finds no code left. A failure below rolls this back.
+        var taken = await _db.Vendors
+            .Where(v => v.Id == vendor.Id && v.ClaimCodeHash == hash)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(v => v.ClaimCodeHash, (string?)null)
+                .SetProperty(v => v.ClaimCodeExpiresAt, (DateTimeOffset?)null));
+        if (taken == 0) return NotFound("invalid_code");
 
         var user = new AppUser
         {
             UserName = dto.Email,
             Email = dto.Email,
             DisplayName = vendor.Name,
-            VendorId = null,
+            VendorId = vendor.Id,
         };
         IdentityResult created;
         try
@@ -140,19 +156,28 @@ public class AuthController : ControllerBase
             return BadRequest(created.Errors.Select(e => e.Description));
 
         await _users.AddToRoleAsync(user, Roles.Vendor);
-        _db.VendorClaims.Add(new VendorClaim
-        {
-            VendorId = vendorId,
-            UserId = user.Id,
-            UserEmail = dto.Email.Trim(),
-            EmailMatches = !string.IsNullOrWhiteSpace(vendor.MessageEmail)
-                && string.Equals(vendor.MessageEmail.Trim(), dto.Email.Trim(), StringComparison.OrdinalIgnoreCase),
-            CreatedAt = DateTimeOffset.UtcNow,
-        });
-        await _db.SaveChangesAsync();
+        await tx.CommitAsync();
 
         var roles = await _users.GetRolesAsync(user);
-        return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), null));
+        return Ok(new AuthResponseDto(_tokens.Create(user, roles), user.Email!, roles.ToArray(), user.VendorId));
+    }
+
+    /// <summary>
+    /// What a code is for, before the vendor fills in the form: the profile's name, category and
+    /// city. 404 for anything that can't be used (same answer for every reason).
+    /// </summary>
+    [HttpGet("vendor-code/{code}")]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<ClaimCodeInfoDto>> VendorCode(string code)
+    {
+        var hash = ClaimCodes.Hash(code);
+        if (hash is null) return NotFound();
+        var info = await _db.Vendors.AsNoTracking()
+            .Where(v => v.ClaimCodeHash == hash && v.ClaimCodeExpiresAt > DateTimeOffset.UtcNow
+                        && !_db.Users.Any(u => u.VendorId == v.Id))
+            .Select(v => new ClaimCodeInfoDto(v.Name, v.Category.Slug, v.City))
+            .FirstOrDefaultAsync();
+        return info is null ? NotFound() : Ok(info);
     }
 
     /// <summary>Couple self-registration (planning tools, wishlist sync, etc.).</summary>

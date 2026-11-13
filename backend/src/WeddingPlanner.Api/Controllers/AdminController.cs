@@ -42,10 +42,62 @@ public class AdminController : ControllerBase
                 v.Id, v.Name, v.Category.Slug, v.City, v.IsApproved, v.IsFeatured, v.CreatedAt,
                 v.Slug, v.CitySlug,
                 _db.Users.Any(u => u.VendorId == v.Id),
-                v.Photos.Count))
+                v.Photos.Count,
+                _db.Users.Where(u => u.VendorId == v.Id).Select(u => u.Email).FirstOrDefault(),
+                v.ClaimCodeExpiresAt > DateTimeOffset.UtcNow ? v.ClaimCodeExpiresAt : null))
             .ToListAsync();
 
         return Ok(vendors);
+    }
+
+    /// <summary>
+    /// A new one-time code for a profile nobody owns yet (ClaimCodes): shown to the admin once, to
+    /// send to the vendor's own Instagram, WhatsApp or phone. Replaces any earlier code.
+    /// </summary>
+    [HttpPost("vendors/{id:int}/claim-code")]
+    public async Task<ActionResult<ClaimCodeCreatedDto>> CreateClaimCode(int id)
+    {
+        var v = await _db.Vendors.FindAsync(id);
+        if (v is null) return NotFound();
+        if (await _db.Users.AnyAsync(u => u.VendorId == id)) return Conflict(new { code = "has_owner" });
+
+        // a fresh code until its hash is free (a clash is astronomically rare, but the index is unique)
+        string code, hash;
+        do
+        {
+            code = ClaimCodes.Generate();
+            hash = ClaimCodes.Hash(code)!;
+        } while (await _db.Vendors.AnyAsync(x => x.ClaimCodeHash == hash));
+
+        v.ClaimCodeHash = hash;
+        v.ClaimCodeExpiresAt = DateTimeOffset.UtcNow.Add(ClaimCodes.Lifetime);
+        await _db.SaveChangesAsync();
+        return Ok(new ClaimCodeCreatedDto(code, v.ClaimCodeExpiresAt.Value));
+    }
+
+    /// <summary>Cancels the open code (sent to the wrong person, say): the link stops working at once.</summary>
+    [HttpDelete("vendors/{id:int}/claim-code")]
+    public async Task<IActionResult> DeleteClaimCode(int id)
+    {
+        var v = await _db.Vendors.FindAsync(id);
+        if (v is null) return NotFound();
+        v.ClaimCodeHash = null;
+        v.ClaimCodeExpiresAt = null;
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Takes the profile away from its owner account (the wrong person got it): the account stays,
+    /// without a profile, and the admin can make a new code for the right vendor. The account's
+    /// current sign-in still names the profile until it expires or the person signs in again.
+    /// </summary>
+    [HttpPost("vendors/{id:int}/unlink-owner")]
+    public async Task<IActionResult> UnlinkOwner(int id)
+    {
+        var unlinked = await _db.Users.Where(u => u.VendorId == id)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.VendorId, (int?)null));
+        return unlinked == 0 ? NotFound() : NoContent();
     }
 
     /// <summary>

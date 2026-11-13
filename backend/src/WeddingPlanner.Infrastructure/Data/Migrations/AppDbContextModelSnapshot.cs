@@ -1263,6 +1263,13 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<DateTimeOffset?>("ClaimCodeExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ClaimCodeHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("ConsentBy")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -1373,6 +1380,10 @@ namespace WeddingPlanner.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClaimCodeHash")
+                        .IsUnique()
+                        .HasFilter("\"ClaimCodeHash\" IS NOT NULL");
 
                     b.HasIndex("IsApproved");
 

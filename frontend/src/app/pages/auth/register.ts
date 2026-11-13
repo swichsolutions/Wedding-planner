@@ -35,30 +35,27 @@ import { pageTitle } from '../../core/page-title';
                 <span id="r-name-err" class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
-            <!-- A3 takeover: listings the platform added that match the typed name -->
-            @if (claim(); as c) {
-              <div class="auth__claim" role="status">
-                <span>{{ 'auth.claimChosen' | translate }} <strong>{{ c.name }}</strong>
-                  · {{ categoryKey(c.categorySlug) | translate }}@if (c.city) { · {{ c.city }} }</span>
-                <button type="button" class="auth__claim-btn" (click)="clearClaim()">{{ 'auth.claimChange' | translate }}</button>
-                <p class="auth__claim-note">{{ 'auth.claimNote' | translate }}</p>
-              </div>
-            } @else if (matches().length) {
-              <div class="auth__claims">
-                <p class="auth__claims-title">{{ 'auth.claimPrompt' | translate }}</p>
+            <!-- Profiles the platform added under a name like the typed one. They are taken over
+                 only with the one-time code the admin sends (2026-11-13), so this is a note, not a
+                 button: whoever types a name can't ask for that profile. A different business
+                 with a similar name simply goes on and registers. -->
+            @if (matches().length) {
+              <div class="auth__claims" role="status">
+                <p class="auth__claims-title">{{ 'auth.claimFound' | translate }}</p>
                 <ul class="auth__claims-list" role="list">
                   @for (m of matches(); track m.id) {
                     <li>
                       <span>{{ m.name }}
                         <span class="auth__claims-sub">· {{ categoryKey(m.categorySlug) | translate }}@if (m.city) { · {{ m.city }} }</span>
                       </span>
-                      <button type="button" class="auth__claim-btn" (click)="pickClaim(m)">{{ 'auth.claimThis' | translate }}</button>
                     </li>
                   }
                 </ul>
+                <p class="auth__claim-note">{{ 'auth.claimFoundNote' | translate }}
+                  <a routerLink="/contact">{{ 'auth.claimContact' | translate }}</a> ·
+                  <a routerLink="/kodi">{{ 'auth.haveCode' | translate }}</a></p>
               </div>
             }
-            @if (!claim()) {
             <div class="auth__field">
               <label for="r-cat">{{ 'auth.category' | translate }}</label>
               <select id="r-cat" formControlName="categorySlug" aria-required="true"
@@ -78,7 +75,6 @@ import { pageTitle } from '../../core/page-title';
                 <span id="r-cat-err" class="auth__err">{{ 'auth.required' | translate }}</span>
               }
             </div>
-            }
             <div class="auth__field">
               <label for="r-email">{{ 'auth.email' | translate }}</label>
               <input id="r-email" type="email" formControlName="email" autocomplete="email" spellcheck="false" aria-required="true"
@@ -120,6 +116,9 @@ import { pageTitle } from '../../core/page-title';
           <p class="auth__alt">
             {{ 'auth.haveAccount' | translate }} <a routerLink="/login">{{ 'auth.login' | translate }}</a>
           </p>
+          <p class="auth__alt">
+            {{ 'auth.haveCodeQ' | translate }} <a routerLink="/kodi">{{ 'auth.haveCode' | translate }}</a>
+          </p>
       </div>
     </section>
   `,
@@ -135,9 +134,8 @@ export class Register {
   protected readonly groups = GROUPS;
   protected readonly categoriesIn = categoriesIn;
   protected readonly categoryKey = categoryKey;
-  /** Admin-added listings matching the typed business name, and the one the vendor says is theirs. */
+  /** Admin-added profiles (nobody owns them yet) whose name is like the typed one. */
   protected readonly matches = signal<ClaimableVendor[]>([]);
-  protected readonly claim = signal<ClaimableVendor | null>(null);
   /** i18n key of the failure banner, or null. */
   protected readonly error = signal<string | null>(null);
   protected readonly loading = signal(false);
@@ -165,34 +163,17 @@ export class Register {
       if (user && !this.loading()) this.router.navigateByUrl(defaultRouteFor(user));
     });
 
-    // As the name is typed, offer admin-added listings with that name (A3 takeover). Quiet on
-    // failure: the form still works as a plain sign-up.
+    // As the name is typed, mention admin-added profiles with that name: the vendor may already
+    // have one, waiting for its code. Quiet on failure: the form still works as a plain sign-up.
     this.form.controls.vendorName.valueChanges
       .pipe(
         map((v) => (v ?? '').trim()),
         debounceTime(300),
         distinctUntilChanged(),
-        switchMap((q) =>
-          q.length < 2 || this.claim() ? of([]) : this.auth.claimableVendors(q).pipe(catchError(() => of([]))),
-        ),
+        switchMap((q) => (q.length < 2 ? of([]) : this.auth.claimableVendors(q).pipe(catchError(() => of([]))))),
         takeUntilDestroyed(),
       )
       .subscribe((list) => this.matches.set(list));
-  }
-
-  /** The vendor picked an admin-added listing as theirs: no category to choose, the listing has one. */
-  protected pickClaim(v: ClaimableVendor): void {
-    this.claim.set(v);
-    this.matches.set([]);
-    this.form.controls.vendorName.setValue(v.name);
-    this.form.controls.categorySlug.clearValidators();
-    this.form.controls.categorySlug.updateValueAndValidity();
-  }
-
-  protected clearClaim(): void {
-    this.claim.set(null);
-    this.form.controls.categorySlug.setValidators([Validators.required]);
-    this.form.controls.categorySlug.updateValueAndValidity();
   }
 
   /** Live per-rule state for the password requirements checklist (updates as the user types). */
@@ -210,13 +191,12 @@ export class Register {
     this.loading.set(true);
     this.error.set(null);
     const v = this.form.getRawValue();
-    const claim = this.claim();
     this.auth
       .registerVendor({
         email: v.email!,
         password: v.password!,
         vendorName: v.vendorName!,
-        ...(claim ? { claimVendorId: claim.id } : { categorySlug: v.categorySlug! }),
+        categorySlug: v.categorySlug!,
       })
       .subscribe({
         next: () => this.router.navigateByUrl('/dashboard'),

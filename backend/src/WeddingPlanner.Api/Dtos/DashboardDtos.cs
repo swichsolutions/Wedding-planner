@@ -134,4 +134,8 @@ public record AdminVendorDto(
     string CitySlug,
     /// <summary>A vendor account manages the profile (false for admin-added, unclaimed ones).</summary>
     bool HasOwner,
-    int PhotoCount);
+    int PhotoCount,
+    /// <summary>The owner account's email, so the admin sees who took the profile.</summary>
+    string? OwnerEmail = null,
+    /// <summary>When the open one-time code stops working; null when there is none.</summary>
+    DateTimeOffset? ClaimCodeExpiresAt = null);

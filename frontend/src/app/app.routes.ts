@@ -117,6 +117,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/register').then((m) => m.Register),
   },
   {
+    // A vendor takes over the profile an admin made with the one-time code the admin sent
+    // (/kodi/K7QM-4P2X from the link, or typed at /kodi).
+    path: 'kodi',
+    loadComponent: () => import('./pages/auth/claim-code').then((m) => m.ClaimCode),
+  },
+  {
+    path: 'kodi/:code',
+    loadComponent: () => import('./pages/auth/claim-code').then((m) => m.ClaimCode),
+  },
+  {
     path: 'signup',
     loadComponent: () => import('./pages/auth/signup').then((m) => m.Signup),
   },
