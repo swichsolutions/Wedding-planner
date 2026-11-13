@@ -1,0 +1,243 @@
+// The overview's badge block: the same card as "პროფილის სისრულე" above it.
+:host {
+  display: block;
+  margin-top: var(--space-6);
+}
+
+.sbadge {
+  container-type: inline-size;
+  padding: var(--space-6);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+}
+
+.sbadge__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-h5);
+}
+
+.sbadge__why {
+  max-width: 46rem;
+  margin: 0 0 var(--space-6);
+  color: var(--ink-700);
+}
+
+.sbadge__muted {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+// the choices beside the code on a wide panel, above it on a narrow one
+.sbadge__grid {
+  display: grid;
+  gap: var(--space-6);
+
+  > * {
+    min-width: 0;
+  }
+
+  @container (min-width: 46rem) {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+}
+
+.sbadge__pick {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+.sbadge__set {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.sbadge__label {
+  display: block;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  color: var(--ink);
+
+  &--gap {
+    margin-top: var(--space-6);
+  }
+}
+
+.sbadge__hint {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink-500);
+}
+
+// a radio kept for keyboards and screen readers; the card around it is what shows
+.sbadge__theme input,
+.sbadge__lang input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+// ---- light / dark: each choice is the badge itself ----
+.sbadge__themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.sbadge__theme {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: var(--paper-white, #fff);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  &:hover {
+    border-color: var(--paper-line-strong);
+  }
+
+  &.is-on {
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+
+  &:has(input:focus-visible) {
+    box-shadow: var(--ring);
+  }
+}
+
+.sbadge__theme-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--ink-700);
+
+  // the radio's dot, drawn
+  &::before {
+    content: '';
+    flex: none;
+    width: 0.95rem;
+    height: 0.95rem;
+    border: 1.5px solid var(--paper-line-strong);
+    border-radius: 50%;
+    background: var(--paper-white, #fff);
+  }
+
+  .is-on & {
+    color: var(--ink);
+    font-weight: var(--fw-semibold);
+
+    &::before {
+      border-color: var(--ink);
+      background: radial-gradient(circle, var(--ink) 0 38%, transparent 42%);
+    }
+  }
+}
+
+// ---- language: two pills side by side ----
+.sbadge__langs {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-pill);
+  background: var(--paper-white, #fff);
+}
+
+.sbadge__lang {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    background: var(--paper-deep);
+    color: var(--ink);
+  }
+
+  &.is-on {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  &:has(input:focus-visible) {
+    box-shadow: var(--ring);
+  }
+}
+
+// ---- the code and the plain link ----
+.sbadge__code,
+.sbadge__url {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--paper-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--paper-deep);
+  color: var(--ink);
+  // code fonts have no Georgian letters (the vendor's name in the title): those come from ours
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, Menlo, 'Noto Sans Georgian', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+  }
+}
+
+.sbadge__code {
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+
+.sbadge__btn {
+  margin-top: var(--space-3);
+}
+
+.sbadge__link-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+
+  .sbadge__url {
+    flex: 1 1 16rem;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .sbadge__btn {
+    margin-top: 0;
+  }
+}

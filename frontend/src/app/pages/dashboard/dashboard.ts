@@ -45,12 +45,13 @@ import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { NotificationService } from '../../core/notification.service';
 import { formatDate } from '../../core/dates';
+import { SiteBadge } from './site-badge/site-badge';
 
 type DashSection = 'overview' | 'profile' | 'photos' | 'messages';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, CdkDropList, CdkDrag, CdkDragHandle],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, CdkDropList, CdkDrag, CdkDragHandle, SiteBadge],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   host: { class: 'theme-brand' },

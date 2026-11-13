@@ -6,6 +6,7 @@ import {
   afterNextRender,
   effect,
   inject,
+  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -23,7 +24,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true' },
   template: `
-    <img class="still" [class.is-hidden]="playing()" src="/media/gold-ring.webp" alt="" width="720" height="720"
+    <img class="still" [class.is-hidden]="playing()" src="/media/gold-ring.webp" [alt]="alt()" width="720" height="720"
       loading="lazy" fetchpriority="low" />
     @if (motion() === 'image') {
       <img class="film" [class.is-on]="playing()" src="/media/gold-ring-turn.webp" alt="" width="400" height="400"
@@ -74,6 +75,10 @@ import {
   `,
 })
 export class GoldRing {
+  /** What the still shows, for search engines and anything else that reads images without the
+   * page around them. Screen readers skip it all the same (the host is aria-hidden). */
+  readonly alt = input('');
+
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly video = viewChild<ElementRef<HTMLVideoElement>>('video');
 

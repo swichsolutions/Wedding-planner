@@ -15,7 +15,7 @@ import { catchError, map, of, switchMap } from 'rxjs';
 
 import { ContentCard } from '../../components/content-card/content-card';
 import { ShareButton } from '../../components/share-button/share-button';
-import { ContentDetail as Detail, ContentKind, KIND_SECTION } from '../../core/content.models';
+import { ContentDetail as Detail, ContentKind, GUIDES_PATH, KIND_SECTION } from '../../core/content.models';
 import { AuthService } from '../../core/auth.service';
 import { ContentApiService } from '../../core/content-api.service';
 import { formatDate } from '../../core/dates';
@@ -23,6 +23,8 @@ import { sizedImage } from '../../core/images';
 import { renderMarkdown } from '../../core/markdown';
 import { movedAddress } from '../../core/old-addresses';
 import { MARKABLE_TOPICS, PlanPhotosService } from '../../core/plan-photos.service';
+import { relatedPages } from '../../core/related-pages';
+import { breadcrumbList, webPage } from '../../core/structured-data';
 import { LanguageService } from '../../i18n/language.service';
 import { NotFound } from '../not-found/not-found';
 
@@ -113,6 +115,12 @@ export class ContentDetailPage implements OnDestroy {
     const path = movedAddress(p.actionPath) ?? p.actionPath;
     return { tree: this.router.parseUrl(path), label: this.pick(p.actionLabelKa, p.actionLabelEn) };
   });
+  /** An article's „დაკავშირებული გვერდები“: the tool or catalog page its topic is about. */
+  protected readonly relatedPages = computed(() => {
+    const p = this.page();
+    if (!p || this.kind !== 'article') return [];
+    return relatedPages(p.summary.topic, p.summary.slug, p.actionPath && (movedAddress(p.actionPath) ?? p.actionPath));
+  });
 
   constructor() {
     this.route.paramMap
@@ -161,18 +169,30 @@ export class ContentDetailPage implements OnDestroy {
     else this.meta.removeTag("property='og:image'");
     this.meta.removeTag('name="robots"');
 
-    this.setJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline,
-      description,
-      ...(image ? { image: sizedImage(image, 1200) } : {}),
-      ...(p.summary.publishedAt ? { datePublished: p.summary.publishedAt } : {}),
-      ...(p.updatedAt ? { dateModified: p.updatedAt } : {}),
-      inLanguage: this.en() ? 'en' : 'ka',
-      author: { '@type': 'Organization', name: brand },
-      publisher: { '@type': 'Organization', name: brand },
-    });
+    const lang = this.en() ? 'en' : 'ka';
+    const path = `${this.section}/${p.summary.slug}`;
+    this.setJsonLd([
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline,
+        description,
+        ...(image ? { image: sizedImage(image, 1200) } : {}),
+        ...(p.summary.publishedAt ? { datePublished: p.summary.publishedAt } : {}),
+        ...(p.updatedAt ? { dateModified: p.updatedAt } : {}),
+        inLanguage: lang,
+        author: { '@type': 'Organization', name: brand },
+        publisher: { '@type': 'Organization', name: brand },
+      },
+      webPage('WebPage', { name: headline, description, path, lang }),
+      // the page's visible trail (hub → section), from the home page, ending at the article
+      breadcrumbList([
+        { name: this.t.instant('nav.home'), path: '/' },
+        { name: this.t.instant('guides.hubTitle'), path: GUIDES_PATH },
+        { name: this.t.instant(`guides.${this.prefix}Title`), path: this.section },
+        { name: headline, path },
+      ]),
+    ]);
   }
 
   private setJsonLd(data: unknown): void {

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, DOCUMENT, DestroyRef, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -11,8 +11,11 @@ import { DayScenarios } from '../../components/day-scenarios/day-scenarios';
 import { ShareButton } from '../../components/share-button/share-button';
 import { AuthService } from '../../core/auth.service';
 import { DAY_SCHEDULES, iconFor, local, phaseOf } from '../../core/day-schedules';
-import { scheduleBySlug } from '../../core/schedule-addresses';
+import { SCHEDULES_PATH, scheduleBySlug, schedulePath } from '../../core/schedule-addresses';
+import { Crumb, breadcrumbList, removeJsonLd, setJsonLd, webPage } from '../../core/structured-data';
 import { LanguageService } from '../../i18n/language.service';
+
+const JSON_LD_ID = 'schedules-jsonld';
 
 /**
  * „დღის განრიგები“ (/ganrigebi; rebuilt 2026-11-03 on Beka's feedback that it
@@ -66,22 +69,40 @@ export class Schedules {
     const t = inject(TranslateService);
     const title = inject(Title);
     const meta = inject(Meta);
+    const doc = inject(DOCUMENT);
+    inject(DestroyRef).onDestroy(() => removeJsonLd(doc, JSON_LD_ID));
     // An effect, not once: a scenario's card opens its address without leaving the page (one
     // route for all of them).
     effect(() => {
       const lang = this.lang.current();
-      const page = `${t.instant('schedules.title')} | ${t.instant('brand.name')}`;
+      const brand = t.instant('brand.name');
+      const section = t.instant('schedules.title');
+      const page = `${section} | ${brand}`;
+      // the page's visible trail („დაგეგმე ქორწილი“ is the home page) → (one example)
+      const crumbs: Crumb[] = [
+        { name: t.instant('nav.g.plan.title'), path: '/' },
+        { name: section, path: SCHEDULES_PATH },
+      ];
+      let name = section;
+      let description: string;
+      let path = SCHEDULES_PATH;
       if (this.slug()) {
         // One scenario's own page: its name and summary, so the three don't share a title.
         const s = this.active();
         title.setTitle(`${s.title} — ${page}`);
-        meta.updateTag({ name: 'description', content: `${s.title}: ${s.summary}` });
+        description = `${s.title}: ${s.summary}`;
+        name = s.title;
+        path = schedulePath(s.key);
+        crumbs.push({ name, path });
       } else {
-        title.setTitle(page);
+        // its own title for the search it answers (SEO round, 2026-11-13); the count is the data's
+        title.setTitle(`${t.instant('schedules.seoTitle', { n: DAY_SCHEDULES.length })} | ${brand}`);
         // The description names the actual examples, so it changes when they do.
         const names = DAY_SCHEDULES.map((s) => local(s.title, lang)).join('; ');
-        meta.updateTag({ name: 'description', content: t.instant('schedules.meta', { names }) });
+        description = t.instant('schedules.meta', { names, n: DAY_SCHEDULES.length });
       }
+      meta.updateTag({ name: 'description', content: description });
+      setJsonLd(doc, JSON_LD_ID, [webPage('WebPage', { name, description, path, lang }), breadcrumbList(crumbs)]);
     });
   }
 

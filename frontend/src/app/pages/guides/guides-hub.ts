@@ -1,4 +1,4 @@
-import { Component, RESPONSE_INIT, computed, inject, signal } from '@angular/core';
+import { Component, DOCUMENT, DestroyRef, RESPONSE_INIT, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -7,7 +7,11 @@ import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { ContentCard } from '../../components/content-card/content-card';
 import { AuthService } from '../../core/auth.service';
 import { ContentApiService } from '../../core/content-api.service';
-import { ContentSummary, KIND_SECTION } from '../../core/content.models';
+import { ContentSummary, GUIDES_PATH, KIND_SECTION } from '../../core/content.models';
+import { breadcrumbList, removeJsonLd, setJsonLd, webPage } from '../../core/structured-data';
+import { LanguageService } from '../../i18n/language.service';
+
+const JSON_LD_ID = 'hub-jsonld';
 
 /**
  * /rchevebi — „რჩევები და იდეები" hub (guide §5): a short intro, then a few items from each
@@ -45,8 +49,13 @@ export class GuidesHub {
   );
 
   constructor() {
-    inject(Title).setTitle(`${this.t.instant('guides.hubTitle')} | ${this.t.instant('brand.name')}`);
-    this.meta.updateTag({ name: 'description', content: this.t.instant('guides.hubMeta') });
+    const name = this.t.instant('guides.hubTitle');
+    const description = this.t.instant('guides.hubMeta');
+    inject(Title).setTitle(`${name} | ${this.t.instant('brand.name')}`);
+    this.meta.updateTag({ name: 'description', content: description });
+    const doc = inject(DOCUMENT);
+    const lang = inject(LanguageService).current();
+    inject(DestroyRef).onDestroy(() => removeJsonLd(doc, JSON_LD_ID));
 
     const api = inject(ContentApiService);
     let errors = 0;
@@ -64,8 +73,18 @@ export class GuidesHub {
       this.failed.set(errors === 3);
       if (errors === 3 && this.responseInit) this.responseInit.status = 503;
       // Nothing published yet → a thin page: keep it out of the index until there is.
-      if (this.failed() || this.empty()) this.meta.updateTag({ name: 'robots', content: 'noindex' });
-      else this.meta.removeTag('name="robots"');
+      if (this.failed() || this.empty()) {
+        this.meta.updateTag({ name: 'robots', content: 'noindex' });
+      } else {
+        this.meta.removeTag('name="robots"');
+        setJsonLd(doc, JSON_LD_ID, [
+          webPage('CollectionPage', { name, description, path: GUIDES_PATH, lang }),
+          breadcrumbList([
+            { name: this.t.instant('nav.home'), path: '/' },
+            { name, path: GUIDES_PATH },
+          ]),
+        ]);
+      }
     });
   }
 }

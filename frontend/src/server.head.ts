@@ -87,8 +87,9 @@ export function finishHead(html: string, requestUrl: string): string {
   }
   if (metaContent(head, 'name', 'twitter:card') === null) add.push('<meta name="twitter:card" content="summary_large_image">');
 
-  // structured data: an image or a page named by its path gets the full address too
-  head = head.replace(/"(image|url)":"\/(?!\/)/g, `"$1":"${ORIGIN}/`);
+  // structured data: an image or a page named by its path (a breadcrumb's "item" too) gets the
+  // full address
+  head = head.replace(/"(image|url|item)":"\/(?!\/)/g, `"$1":"${ORIGIN}/`);
   if (path === '/') add.push(`<script type="application/ld+json">${HOME_JSON_LD}</script>`);
 
   return head + add.join('') + html.slice(end);

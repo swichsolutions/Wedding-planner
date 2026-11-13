@@ -819,6 +819,15 @@ main {
     color: var(--on-spruce-muted);
   }
 
+  // the small description under the promise: plain sentences about the site
+  &__about {
+    margin: var(--space-3) 0 0;
+    max-width: 34rem;
+    font-size: var(--fs-caption);
+    line-height: 1.55;
+    color: var(--on-spruce-muted);
+  }
+
   &__links {
     display: flex;
     flex-wrap: wrap;

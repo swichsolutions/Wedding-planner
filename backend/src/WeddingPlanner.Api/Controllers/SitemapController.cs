@@ -16,8 +16,11 @@ namespace WeddingPlanner.Api.Controllers;
 /// non-empty section) and the legal pages. Signed-in and personal pages are deliberately absent.
 /// Search engines read it at the site's own /sitemap.xml: the live Worker fetches it from here
 /// (frontend/src/server.edge.ts); behind a reverse proxy, route /sitemap.xml to the API alongside
-/// /api and /uploads (CLAUDE.md §10). No lastmod: vendors don't carry an UpdatedAt, and a
-/// fabricated timestamp is worse than none.
+/// /api and /uploads (CLAUDE.md §10). A lastmod only where a real date exists, since a
+/// fabricated one is worse than none: a vendor page's is the newer of the vendor's CreatedAt (a
+/// vendor carries no UpdatedAt) and its newest review; a catalog or landing page takes the newest
+/// of the vendors it lists; an editorial page its UpdatedAt ?? PublishedAt, its section the newest
+/// of its pages. The home page, the schedules, the tools and the company pages have none.
 /// </summary>
 [ApiController]
 public class SitemapController : ControllerBase
@@ -45,30 +48,47 @@ public class SitemapController : ControllerBase
         var vendors = await _db.Vendors
             .AsNoTracking()
             .Where(v => v.IsApproved && v.CitySlug != "" && v.City != "")
-            .Select(v => new { CategorySlug = v.Category.Slug, v.Category.GroupKey, v.CitySlug, v.Slug })
+            .Select(v => new
+            {
+                CategorySlug = v.Category.Slug,
+                v.Category.GroupKey,
+                v.CitySlug,
+                v.Slug,
+                v.CreatedAt,
+                LastReview = v.Reviews.Max(r => (DateTimeOffset?)(r.UpdatedAt ?? r.CreatedAt)),
+            })
             .OrderBy(v => v.CategorySlug).ThenBy(v => v.CitySlug).ThenBy(v => v.Slug)
             .ToListAsync();
+        // a vendor page last changed when the vendor joined or a review was written or edited
+        var listed = vendors
+            .Select(v => (v.GroupKey, v.CategorySlug, v.CitySlug, v.Slug,
+                          At: v.LastReview > v.CreatedAt ? v.LastReview.Value : v.CreatedAt))
+            .ToList();
 
         var sb = new StringBuilder();
         sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.Append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
 
         AppendUrl(sb, $"{origin}/");
-        AppendUrl(sb, $"{origin}/vendors");
+        AppendUrl(sb, $"{origin}/vendors", Newest(listed.Select(v => v.At)));
         // A group's and a category's own page (/foto-da-video, /fotografi), in the catalog's
         // order, once it has a vendor. Only today's categories: a retired one has no page.
-        var groupsInUse = vendors.Select(v => v.GroupKey).ToHashSet();
         foreach (var group in CategoryCatalog.Groups)
-            if (groupsInUse.Contains(group) && SiteAddresses.GroupSlugs.TryGetValue(group, out var groupSlug))
-                AppendUrl(sb, $"{origin}/{groupSlug}");
-        var categoriesInUse = vendors.Select(v => v.CategorySlug).ToHashSet();
+        {
+            var inGroup = listed.Where(v => v.GroupKey == group).ToList();
+            if (inGroup.Count > 0 && SiteAddresses.GroupSlugs.TryGetValue(group, out var groupSlug))
+                AppendUrl(sb, $"{origin}/{groupSlug}", Newest(inGroup.Select(v => v.At)));
+        }
         foreach (var category in CategoryCatalog.Categories)
-            if (categoriesInUse.Contains(category.Slug))
-                AppendUrl(sb, $"{origin}/{category.Slug}");
-        foreach (var p in vendors.Select(v => (v.CategorySlug, v.CitySlug)).Distinct())
-            AppendUrl(sb, $"{origin}/{p.CategorySlug}/{p.CitySlug}");
-        foreach (var v in vendors)
-            AppendUrl(sb, $"{origin}/{v.CategorySlug}/{v.CitySlug}/{v.Slug}");
+        {
+            var inCategory = listed.Where(v => v.CategorySlug == category.Slug).ToList();
+            if (inCategory.Count > 0)
+                AppendUrl(sb, $"{origin}/{category.Slug}", Newest(inCategory.Select(v => v.At)));
+        }
+        foreach (var p in listed.GroupBy(v => (v.CategorySlug, v.CitySlug)))
+            AppendUrl(sb, $"{origin}/{p.Key.CategorySlug}/{p.Key.CitySlug}", Newest(p.Select(v => v.At)));
+        foreach (var v in listed)
+            AppendUrl(sb, $"{origin}/{v.CategorySlug}/{v.CitySlug}/{v.Slug}", v.At);
 
         // Pages that are always there: the example day schedules (each has its own page), what
         // the couples' tools do, and the company pages.
@@ -85,7 +105,7 @@ public class SitemapController : ControllerBase
             .AsNoTracking()
             .Where(c => c.IsPublished)
             .OrderBy(c => c.Type).ThenByDescending(c => c.PublishedAt)
-            .Select(c => new { c.Type, c.Slug })
+            .Select(c => new { c.Type, c.Slug, At = c.UpdatedAt ?? c.PublishedAt })
             .ToListAsync();
         var sections = new Dictionary<ContentPageType, string>
         {
@@ -93,20 +113,34 @@ public class SitemapController : ControllerBase
             [ContentPageType.Inspiration] = SiteAddresses.Inspiration,
             [ContentPageType.RealWedding] = SiteAddresses.RealWeddings,
         };
-        if (content.Any(c => sections.ContainsKey(c.Type)))
-            AppendUrl(sb, $"{origin}{SiteAddresses.Guides}");
+        var editorial = content.Where(c => sections.ContainsKey(c.Type)).ToList();
+        if (editorial.Count > 0)
+            AppendUrl(sb, $"{origin}{SiteAddresses.Guides}", Newest(editorial.Select(c => c.At)));
         foreach (var (type, path) in sections)
-            if (content.Any(c => c.Type == type))
-                AppendUrl(sb, $"{origin}{path}");
+        {
+            var inSection = content.Where(c => c.Type == type).ToList();
+            if (inSection.Count > 0)
+                AppendUrl(sb, $"{origin}{path}", Newest(inSection.Select(c => c.At)));
+        }
         foreach (var c in content)
-            AppendUrl(sb, $"{origin}{ContentRules.PublicPath(c.Type, c.Slug)}");
+            AppendUrl(sb, $"{origin}{ContentRules.PublicPath(c.Type, c.Slug)}", c.At);
 
         sb.Append("</urlset>\n");
         return Content(sb.ToString(), "application/xml", Encoding.UTF8);
     }
 
-    private static void AppendUrl(StringBuilder sb, string loc) =>
-        sb.Append("  <url><loc>")
-          .Append(System.Security.SecurityElement.Escape(loc))
-          .Append("</loc></url>\n");
+    /// <summary>The latest of some dates, or null when none of them is known.</summary>
+    private static DateTimeOffset? Newest(IEnumerable<DateTimeOffset?> dates) => dates.Max();
+
+    private static DateTimeOffset? Newest(IEnumerable<DateTimeOffset> dates) =>
+        dates.Select(d => (DateTimeOffset?)d).Max();
+
+    private static void AppendUrl(StringBuilder sb, string loc, DateTimeOffset? lastmod = null)
+    {
+        sb.Append("  <url><loc>").Append(System.Security.SecurityElement.Escape(loc)).Append("</loc>");
+        // a W3C date (the UTC day): the day is all a search engine needs
+        if (lastmod is { } at)
+            sb.Append("<lastmod>").Append(at.UtcDateTime.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)).Append("</lastmod>");
+        sb.Append("</url>\n");
+    }
 }

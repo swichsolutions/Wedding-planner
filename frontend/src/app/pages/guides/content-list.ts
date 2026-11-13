@@ -1,4 +1,4 @@
-import { Component, RESPONSE_INIT, computed, inject, signal } from '@angular/core';
+import { Component, DOCUMENT, DestroyRef, RESPONSE_INIT, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -7,7 +7,11 @@ import { map } from 'rxjs';
 
 import { ContentCard } from '../../components/content-card/content-card';
 import { ContentApiService } from '../../core/content-api.service';
-import { CONTENT_TOPICS, ContentKind, ContentSummary, KIND_SECTION } from '../../core/content.models';
+import { CONTENT_TOPICS, ContentKind, ContentSummary, GUIDES_PATH, KIND_SECTION } from '../../core/content.models';
+import { breadcrumbList, removeJsonLd, setJsonLd, webPage } from '../../core/structured-data';
+import { LanguageService } from '../../i18n/language.service';
+
+const JSON_LD_ID = 'section-jsonld';
 
 type ListKind = Exclude<ContentKind, 'legal'>;
 
@@ -57,8 +61,12 @@ export class ContentList {
 
   constructor() {
     const title = this.t.instant(`guides.${this.prefix}Title`);
+    const description = this.t.instant(`guides.${this.prefix}Meta`);
     this.titleService.setTitle(`${title} | ${this.t.instant('brand.name')}`);
-    this.meta.updateTag({ name: 'description', content: this.t.instant(`guides.${this.prefix}Meta`) });
+    this.meta.updateTag({ name: 'description', content: description });
+    const doc = inject(DOCUMENT);
+    const lang = inject(LanguageService).current();
+    inject(DestroyRef).onDestroy(() => removeJsonLd(doc, JSON_LD_ID));
 
     inject(ContentApiService)
       .list(this.kind, undefined, 100)
@@ -69,6 +77,17 @@ export class ContentList {
           // An empty section is a thin page: out of the index until something is published.
           if (rows.length) this.meta.removeTag('name="robots"');
           else this.meta.updateTag({ name: 'robots', content: 'noindex' });
+          // what the page is (a list) and its trail: home → the hub (its visible breadcrumb) → here
+          if (rows.length) {
+            setJsonLd(doc, JSON_LD_ID, [
+              webPage('CollectionPage', { name: title, description, path: this.section, lang }),
+              breadcrumbList([
+                { name: this.t.instant('nav.home'), path: '/' },
+                { name: this.t.instant('guides.hubTitle'), path: GUIDES_PATH },
+                { name: title, path: this.section },
+              ]),
+            ]);
+          }
         },
         error: () => {
           this.failed.set(true);

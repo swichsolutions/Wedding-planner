@@ -26,7 +26,7 @@ import { ToastService } from '../../core/toast.service';
     @if (open()) {
       <div class="share__menu">
         <button type="button" class="share__item" (click)="copy()">{{ 'share.copy' | translate }}</button>
-        <a class="share__item" [href]="facebookUrl()" target="_blank" rel="noopener" (click)="open.set(false)">
+        <a class="share__item" [href]="facebookUrl()" target="_blank" rel="noopener nofollow" (click)="open.set(false)">
           {{ 'share.facebook' | translate }}
         </a>
       </div>

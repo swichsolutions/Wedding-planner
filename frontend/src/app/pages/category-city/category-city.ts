@@ -20,6 +20,7 @@ import { Vendor } from '../../core/vendor.models';
 import { CATEGORIES, categoryKey, cityName } from '../../core/catalog';
 import { cityDisplayEn, cityLocativeKa } from '../../core/city-name';
 import { formatGel } from '../../core/money';
+import { breadcrumbList, catalogTrail, webPage } from '../../core/structured-data';
 
 const JSON_LD_ID = 'landing-jsonld';
 
@@ -288,18 +289,25 @@ export class CategoryCity implements OnDestroy {
     if (image) this.meta.updateTag({ property: 'og:image', content: image });
     else this.meta.removeTag("property='og:image'");
 
-    this.setJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'ItemList',
-      name: this.h1(),
-      numberOfItems: count,
-      itemListElement: vendors.map((v, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: v.name,
-        url: `/${v.categorySlug}/${v.citySlug}/${v.slug}`,
-      })),
-    });
+    const path = `/${this.categorySlug()}/${this.citySlug()}`;
+    const tr = (key: string): string => this.translate.instant(key);
+    this.setJsonLd([
+      {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: this.h1(),
+        numberOfItems: count,
+        itemListElement: vendors.map((v, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: v.name,
+          url: `/${v.categorySlug}/${v.citySlug}/${v.slug}`,
+        })),
+      },
+      webPage('CollectionPage', { name: this.h1(), description, path, lang: this.lang.current() }),
+      // the catalog's trail down to the category, then this city's page
+      breadcrumbList([...catalogTrail(tr, null, this.categorySlug()), { name: this.h1(), path }]),
+    ]);
   }
 
   private setJsonLd(data: unknown): void {

@@ -1,7 +1,7 @@
 <div class="final" appReveal>
   <!-- the gold ring turning above the title (public/media/gold-ring.webm; a still where video
        can't be transparent or motion is reduced) -->
-  <app-gold-ring class="ring" />
+  <app-gold-ring class="ring" [alt]="'home.trust.ringAlt' | translate" />
 
   @let title = 'home.trust.finalTitle' | translate;
   <h2 class="title" [attr.aria-label]="title">
@@ -21,6 +21,10 @@
       </li>
     }
   </ul>
-  <a class="btn btn--ink btn--lg" [routerLink]="cta().link"
-    [attr.title]="(cta().link === '/signup' ? 'nav.startTitle' : cta().key) | translate">{{ cta().key | translate }}</a>
+  <!-- the button, and beside it a quiet way to pass the site on -->
+  <div class="actions">
+    <a class="btn btn--ink btn--lg" [routerLink]="cta().link"
+      [attr.title]="(cta().link === '/signup' ? 'nav.startTitle' : cta().key) | translate">{{ cta().key | translate }}</a>
+    <app-share-button class="share" />
+  </div>
 </div>

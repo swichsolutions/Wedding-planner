@@ -11,7 +11,7 @@ import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 import { environment } from './environments/environment';
 import { EdgeContext, browserRenderedShell, sitemapFromApi, withEdgeCache } from './server.edge';
 import { withFinishedHead } from './server.head';
-import { articleAsMarkdown, isArticlePath } from './server.markdown';
+import { hasMarkdown, pageAsMarkdown } from './server.markdown';
 import { APEX, redirectFor } from './server.redirects';
 import { AssetFetcher, isVideoPath, serveVideo } from './server.video';
 
@@ -47,9 +47,10 @@ export default {
     // The sitemap is the API's, served from this domain (robots.txt points here).
     if (pathname === '/sitemap.xml') return sitemapFromApi(req, environment.apiBaseUrl, edgeCache(), ctx);
 
-    // An article asked for as Markdown (AI agents). Answered before the edge cache, which stores
-    // one copy per address and would hand such a reader the HTML page.
-    const markdown = await articleAsMarkdown(req, environment.apiBaseUrl);
+    // A page asked for as Markdown (AI agents): an article, a legal page, the home page, a day
+    // schedule. Answered before the edge cache, which stores one copy per address and would hand
+    // such a reader the HTML page. The home page's text is the site's own llms.txt.
+    const markdown = await pageAsMarkdown(req, environment.apiBaseUrl, undefined, (url) => env.ASSETS.fetch(new Request(url)));
     if (markdown) return markdown;
 
     const page = await withEdgeCache(req, edgeCache(), ctx, async () => {
@@ -62,9 +63,9 @@ export default {
         return browserRenderedShell(req, env.ASSETS);
       }
     }, Date.now, env.CF_VERSION_METADATA?.id);
-    // An article's address answers in two forms, so caches between here and the reader must keep
+    // Such an address answers in two forms, so caches between here and the reader must keep
     // them apart. Said on the way out, so the copy stored at the edge stays as it was.
-    if (isArticlePath(pathname) && (page.headers.get('content-type') ?? '').includes('text/html')) {
+    if (hasMarkdown(pathname) && (page.headers.get('content-type') ?? '').includes('text/html')) {
       page.headers.append('vary', 'Accept');
     }
     return page;

@@ -16,13 +16,25 @@
     (focusout)="introFocus.set(stage.contains($any($event).relatedTarget))">
     <!-- The steps' photos, one per slide, crossfading. The first is in the server HTML (the
          steps are readable without JS); it is lazy and low priority so it never competes
-         with the hero photo. The other two join after the first scroll. -->
+         with the hero photo. The other two join after the first scroll. On the stacked
+         layout (phones, small windows) the first starts right under the first screen, inside
+         the browser's generous lazy-load distance, so it would still load with the page: there
+         an empty <source> holds it back until the first scroll (slidesArmed), a screen before
+         the photo shows. The query is the opposite of the pinned stage's
+         (scroll-stage.directive.ts, home.scss), where the photo loads with the page. -->
     <div class="intro__slides">
       @for (s of startSlides; track s.key; let i = $index) {
         @if (i === 0 || slidesArmed()) {
-          <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" [attr.srcset]="s.srcset ?? null"
-            sizes="100vw" [alt]="'home.start.' + s.key + '.photoAlt' | translate" loading="lazy" fetchpriority="low" decoding="async"
-            [style.object-position]="s.pos ?? null" />
+          <picture>
+            @if (i === 0 && !slidesArmed()) {
+              <!-- a 1×1 transparent GIF: costs no request -->
+              <source media="(max-width: 1023.98px), (max-height: 599.98px)"
+                srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+            }
+            <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" [attr.srcset]="s.srcset ?? null"
+              sizes="100vw" [alt]="'home.start.' + s.key + '.photoAlt' | translate" loading="lazy" fetchpriority="low" decoding="async"
+              [style.object-position]="s.pos ?? null" />
+          </picture>
         }
       }
       <div class="start__scrim" aria-hidden="true"></div>

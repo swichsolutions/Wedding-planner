@@ -24,6 +24,7 @@ import { Subject, catchError, map, merge, of, switchMap } from 'rxjs';
 import { trapTabKey } from '../../core/a11y';
 import { categoryKey } from '../../core/catalog';
 import { cityDisplayEn, cityLocativeKa } from '../../core/city-name';
+import { breadcrumbList, catalogTrail, webPage } from '../../core/structured-data';
 import { LanguageService } from '../../i18n/language.service';
 import { AuthService } from '../../core/auth.service';
 import { VendorService } from '../../core/vendor.service';
@@ -560,7 +561,27 @@ export class VendorProfile implements OnDestroy {
     if (image) this.meta.updateTag({ property: 'og:image', content: image });
     else this.meta.removeTag("property='og:image'"); // no photos → no borrowed card image
 
-    this.setJsonLd({
+    // Where the profile sits: the catalog down to its category, then its city's page (the
+    // profile's own "back" link) when there is one.
+    const path = `/${v.categorySlug}/${v.citySlug}/${v.slug}`;
+    const tr = (key: string): string => this.translate.instant(key);
+    const landing = this.backLink();
+    const trail = [
+      ...catalogTrail(tr, null, v.categorySlug),
+      ...(landing !== '/vendors' ? [{ name: this.backLabel(), path: landing }] : []),
+      { name: v.name, path },
+    ];
+
+    this.setJsonLd([
+      this.businessJsonLd(v),
+      webPage('WebPage', { name: v.name, description, path, lang: this.lang.current() }),
+      breadcrumbList(trail),
+    ]);
+  }
+
+  /** The vendor as a schema.org LocalBusiness, from the profile's real data only. */
+  private businessJsonLd(v: Vendor) {
+    return {
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
       name: v.name,
@@ -602,7 +623,7 @@ export class VendorProfile implements OnDestroy {
             },
           }
         : {}),
-    });
+    };
   }
 
   private setJsonLd(data: unknown): void {

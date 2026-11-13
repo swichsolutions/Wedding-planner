@@ -6,7 +6,7 @@ WeddingPlanner არის ქართული პლატფორმა �
 
 The site is in Georgian, with an English interface on the same addresses. Page addresses are Georgian words in Latin letters. Using the service is currently free. It's run by Swich Solutions. Contact: info@weddingplanner.ge
 
-Articles can be read as Markdown: request an article's address with `Accept: text/markdown`. The full list of pages is in the [sitemap](https://weddingplanner.ge/sitemap.xml).
+Articles, the day schedules, the terms and privacy pages and this home page can be read as Markdown: request the page's address with `Accept: text/markdown`. The full list of pages is in the [sitemap](https://weddingplanner.ge/sitemap.xml).
 
 ## For couples
 

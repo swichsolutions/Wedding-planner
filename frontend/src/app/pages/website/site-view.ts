@@ -39,6 +39,10 @@ export class SiteView {
     const params = inject(ActivatedRoute).snapshot.paramMap;
     this.slug = params.get('slug') ?? '';
     this.code = params.get('code');
+    // A couple's invitation is for their guests, never for search results (the owner's decision,
+    // 2026-11-13; robots.txt says the same): noindex from the first render, whatever loads.
+    // server.head.ts then adds no canonical or hreflang to it.
+    this.meta.updateTag({ name: 'robots', content: 'noindex' });
     this.load();
   }
 
@@ -61,11 +65,6 @@ export class SiteView {
               ? `${names} — ${this.translate.instant('wsite.eyebrow')}`
               : this.translate.instant('wsite.eyebrow'),
           );
-          // The site finder sets noindex and never removes it — a live site
-          // reached from there must not inherit the tag.
-          // A personal link is one family's copy: never indexed.
-          if (this.code) meta.updateTag({ name: 'robots', content: 'noindex' });
-          else meta.removeTag("name='robots'");
           meta.updateTag({
             name: 'description',
             content: s.message ?? this.translate.instant('wsite.defaultMessage'),

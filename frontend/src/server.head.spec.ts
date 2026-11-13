@@ -90,6 +90,19 @@ describe('finishHead', () => {
     expect(html).toContain('"url":"https://example.com/b"');
   });
 
+  it('makes a breadcrumb step\'s relative address absolute too', () => {
+    const ld = '{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"მთავარი","item":"/"},{"@type":"ListItem","position":2,"name":"x","item":"/fotografi"}]}';
+    const html = finishHead(page(`${TITLE}<script type="application/ld+json">${ld}</script>`), `${B}/fotografi`);
+    expect(html).toContain(`"item":"${B}/"`);
+    expect(html).toContain(`"item":"${B}/fotografi"`);
+  });
+
+  it('gives a couple\'s invitation (noindex) no canonical and no hreflang', () => {
+    const html = finishHead(page(`${TITLE}<meta name="robots" content="noindex">`), `${B}/w/nino-da-giorgi/ab12`);
+    expect(html).not.toContain('rel="canonical"');
+    expect(html).not.toContain('hreflang');
+  });
+
   it('escapes quotes from a title into the attribute', () => {
     expect(finishHead(page('<title>„a" b</title>'), `${B}/a`)).toContain('content="„a&quot; b"');
   });

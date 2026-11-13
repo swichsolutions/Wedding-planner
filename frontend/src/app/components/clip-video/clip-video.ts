@@ -22,7 +22,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true' },
   template: `
-    <img class="media" [src]="poster()" alt="" width="692" height="1536"
+    <img class="media" [src]="poster()" [alt]="alt()" width="692" height="1536"
       [attr.loading]="eager() ? null : 'lazy'" [attr.fetchpriority]="eager() ? 'high' : 'low'" />
     @if (useVideo()) {
       <!-- [muted] as a property: the attribute alone doesn't mute a video made by script -->
@@ -68,6 +68,9 @@ export class ClipVideo {
   readonly poster = input.required<string>();
   /** Near the top of its page: the poster shouldn't wait. */
   readonly eager = input(false);
+  /** What the poster shows, for search engines and image readers; screen readers skip the clip
+   * all the same (the host is aria-hidden: the text beside it says it). */
+  readonly alt = input('');
 
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly video = viewChild<ElementRef<HTMLVideoElement>>('video');

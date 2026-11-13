@@ -96,6 +96,17 @@
       </div>
     }
 
+    @if (relatedPages().length) {
+      <section class="cd__credits cd__col" aria-labelledby="cd-pages">
+        <h2 id="cd-pages" class="cd__h2">{{ 'guides.relatedPages.title' | translate }}</h2>
+        <ul class="cd__credit-list cd__pages" role="list">
+          @for (r of relatedPages(); track r.path) {
+            <li class="cd__credit"><a [routerLink]="r.path">{{ r.key | translate }}</a></li>
+          }
+        </ul>
+      </section>
+    }
+
     @if (p.related.length) {
       <section class="gd__sec container" aria-labelledby="cd-related">
         <h2 id="cd-related" class="gd__sec-title">{{ 'guides.relatedTitle' | translate }}</h2>

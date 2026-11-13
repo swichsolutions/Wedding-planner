@@ -1,15 +1,18 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DOCUMENT, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../core/auth.service';
 import { img } from '../../core/catalog';
+import { breadcrumbList, removeJsonLd, setJsonLd, webPage } from '../../core/structured-data';
 import { EMPTY_INVITE_EXTRAS, PublicSite, WEDDING_TEMPLATES } from '../../core/website.service';
 import { ClipVideo } from '../../components/clip-video/clip-video';
 import { LanguageService } from '../../i18n/language.service';
 import { RsvpForm } from '../../components/rsvp-form/rsvp-form';
 import { WeddingSite as WeddingSiteView } from '../../components/wedding-site/wedding-site';
+
+const JSON_LD_ID = 'invitations-jsonld';
 
 /**
  * „მოსაწვევები“ (/invitations, BUILD-PLAN B6, P11): a clip of an invitation being made beside what
@@ -102,11 +105,21 @@ export class Invitations {
 
   constructor() {
     const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('invitationsPage.title')} | ${t.instant('brand.name')}`);
-    inject(Meta).updateTag({
-      name: 'description',
-      content: t.instant('invitationsPage.meta', { n: WEDDING_TEMPLATES.length }),
-    });
+    // its own title for the search it answers (SEO round, 2026-11-13); the heading stays
+    inject(Title).setTitle(`${t.instant('invitationsPage.seoTitle')} | ${t.instant('brand.name')}`);
+    const description = t.instant('invitationsPage.meta', { n: WEDDING_TEMPLATES.length });
+    inject(Meta).updateTag({ name: 'description', content: description });
+    // what the page is and its visible trail („დაგეგმე ქორწილი“ is the home page)
+    const doc = inject(DOCUMENT);
+    const name = t.instant('invitationsPage.title');
+    setJsonLd(doc, JSON_LD_ID, [
+      webPage('WebPage', { name, description, path: '/invitations', lang: this.lang.current() }),
+      breadcrumbList([
+        { name: t.instant('nav.g.plan.title'), path: '/' },
+        { name, path: '/invitations' },
+      ]),
+    ]);
+    inject(DestroyRef).onDestroy(() => removeJsonLd(doc, JSON_LD_ID));
   }
 
   protected show(t: string): void {

@@ -1,4 +1,4 @@
-import { Component, RESPONSE_INIT, computed, effect, inject, signal } from '@angular/core';
+import { Component, DOCUMENT, DestroyRef, RESPONSE_INIT, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -28,6 +28,7 @@ import {
 } from '../../core/catalog';
 import { LanguageService } from '../../i18n/language.service';
 import { formatGel } from '../../core/money';
+import { breadcrumbList, catalogTrail, removeJsonLd, setJsonLd, webPage } from '../../core/structured-data';
 
 /** Max-price options per price unit (a venue's 80 ₾ is per guest; a photographer's 1500 per event). */
 const PRICE_BUCKETS: Record<string, number[]> = {
@@ -41,6 +42,17 @@ const PRIMARY_FEATURES: Partial<Record<GroupKey, string[]>> = {
   attire: ['sale', 'rental'],
   beauty: ['comesToYou'],
 };
+
+/**
+ * Catalog pages with a title and description of their own, for the searches they answer (the
+ * owner's approval of the SEO audit, 2026-11-13): address → i18n prefix (…Title, …Meta).
+ */
+const OWN_SEO: Record<string, string> = {
+  'sivrtseebi-da-kveba': 'vendors.seoVenues',
+  torti: 'vendors.seoCake',
+};
+
+const JSON_LD_ID = 'catalog-jsonld';
 
 const csv = (v: string | null): string[] | undefined => (v ? v.split(',').filter(Boolean) : undefined);
 
@@ -168,21 +180,35 @@ export class VendorBrowse {
 
   constructor() {
     // Title + description follow the category or group in view: each is its own search entry at
-    // its own address, so a category must not repeat its group's title.
+    // its own address, so a category must not repeat its group's title. The structured data
+    // (what the page is, where it sits in the catalog) follows with them.
+    const doc = inject(DOCUMENT);
+    inject(DestroyRef).onDestroy(() => removeJsonLd(doc, JSON_LD_ID));
     effect(() => {
+      const lang = this.lang.current();
       const g = this.group();
       const c = this.filter().category;
-      const brand = this.t.instant('brand.name');
+      const slug = this.slug();
+      const own = slug ? OWN_SEO[slug] : undefined;
+      const tr = (key: string, params?: Record<string, unknown>): string => this.t.instant(key, params);
+      let name: string;
+      let title: string;
+      let description: string;
       if (g) {
-        const name = this.t.instant(
-          c && isCategory(c) ? categoryKey(c).replace('category.', 'categoryPlural.') : `catalog.groups.${g}`,
-        );
-        this.titleService.setTitle(`${name} | ${brand}`);
-        this.meta.updateTag({ name: 'description', content: this.t.instant('vendors.metaGroup', { group: name }) });
+        name = tr(c && isCategory(c) ? categoryKey(c).replace('category.', 'categoryPlural.') : `catalog.groups.${g}`);
+        title = own ? tr(`${own}Title`) : name;
+        description = own ? tr(`${own}Meta`) : tr('vendors.metaGroup', { group: name });
       } else {
-        this.titleService.setTitle(`${this.t.instant('vendors.title')} | ${brand}`);
-        this.meta.updateTag({ name: 'description', content: this.t.instant('vendors.metaAll') });
+        name = tr('vendors.title');
+        title = tr('vendors.seoTitle');
+        description = tr('vendors.metaAll');
       }
+      this.titleService.setTitle(`${title} | ${tr('brand.name')}`);
+      this.meta.updateTag({ name: 'description', content: description });
+      setJsonLd(doc, JSON_LD_ID, [
+        webPage('CollectionPage', { name, description, path: slug ? `/${slug}` : '/vendors', lang }),
+        breadcrumbList(catalogTrail(tr, g, c)),
+      ]);
     });
     // A group, a category or a filtered view with no vendors in it is a thin page: out of the
     // index until it has some. So is a page whose list failed to load. (App clears the tag on

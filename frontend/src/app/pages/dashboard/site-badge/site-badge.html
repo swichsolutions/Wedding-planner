@@ -1,0 +1,55 @@
+<section class="sbadge" aria-labelledby="sbadge-title">
+  <h2 class="sbadge__title" id="sbadge-title">{{ 'dash.badgeTitle' | translate }}</h2>
+
+  @if (!approved()) {
+    <p class="sbadge__muted">{{ 'dash.badgePending' | translate }}</p>
+  } @else {
+    <p class="sbadge__why">{{ 'dash.badgeWhy' | translate }}</p>
+
+    <div class="sbadge__grid">
+      <div class="sbadge__pick">
+        <!-- which badge: light or dark, shown as the badges themselves -->
+        <fieldset class="sbadge__set">
+          <legend class="sbadge__label">{{ 'dash.badgeStyle' | translate }}</legend>
+          <div class="sbadge__themes">
+            @for (t of themes; track t) {
+              <label class="sbadge__theme" [class.is-on]="theme() === t">
+                <input type="radio" name="sbadge-theme" [value]="t" [checked]="theme() === t" (change)="theme.set(t)" />
+                <img [src]="src(t)" [width]="width" [height]="height" alt="" />
+                <span class="sbadge__theme-name">{{ (t === 'light' ? 'dash.badgeLight' : 'dash.badgeDark') | translate }}</span>
+              </label>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="sbadge__set">
+          <legend class="sbadge__label">{{ 'dash.badgeLang' | translate }}</legend>
+          <div class="sbadge__langs">
+            @for (l of langs; track l) {
+              <label class="sbadge__lang" [class.is-on]="lang() === l">
+                <input type="radio" name="sbadge-lang" [value]="l" [checked]="lang() === l" (change)="lang.set(l)" />
+                {{ (l === 'ka' ? 'dash.badgeLangKa' : 'dash.badgeLangEn') | translate }}
+              </label>
+            }
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="sbadge__copy">
+        <label class="sbadge__label" for="sbadge-code">{{ 'dash.badgeCode' | translate }}</label>
+        <p class="sbadge__hint" id="sbadge-code-hint">{{ 'dash.badgeCodeHint' | translate }}</p>
+        <textarea id="sbadge-code" class="sbadge__code" rows="6" readonly spellcheck="false" translate="no"
+          aria-describedby="sbadge-code-hint" [value]="snippet()" (focus)="selectAll($event)"></textarea>
+        <button type="button" class="btn btn--primary sbadge__btn" (click)="copyCode()">{{ 'dash.badgeCopyCode' | translate }}</button>
+
+        <label class="sbadge__label sbadge__label--gap" for="sbadge-link">{{ 'dash.badgeLinkTitle' | translate }}</label>
+        <p class="sbadge__hint" id="sbadge-link-hint">{{ 'dash.badgeLinkHint' | translate }}</p>
+        <div class="sbadge__link-row">
+          <input id="sbadge-link" class="sbadge__url" type="text" readonly spellcheck="false" translate="no"
+            aria-describedby="sbadge-link-hint" [value]="url()" (focus)="selectAll($event)" />
+          <button type="button" class="btn btn--ghost sbadge__btn" (click)="copyLink()">{{ 'dash.badgeCopyLink' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

@@ -140,7 +140,8 @@ export class Home {
     { key: 's3', img: '/media/plan-details-3.webp', pos: 'center 55%', to: 'day' },
   ];
   protected readonly slide = signal(0);
-  /** True from the first scroll on: the photos of steps 2 and 3 join the page (see the template). */
+  /** True from the first scroll on: the photos of steps 2 and 3 join the page, and on the stacked
+   * layout the first one loads (see the template). */
   protected readonly slidesArmed = signal(false);
   /** True while the slides turn on their own (drives the ring's fill and the live region). */
   protected readonly rotating = signal(false);

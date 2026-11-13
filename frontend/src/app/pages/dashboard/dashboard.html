@@ -170,6 +170,9 @@
                   <p class="strength__done">{{ 'dash.strengthDone' | translate }}</p>
                 }
               </div>
+
+              <!-- a badge for the vendor's own website, linking back to the public profile -->
+              <app-site-badge [vendor]="v" [approved]="v.isApproved" />
             </div>
           }
 

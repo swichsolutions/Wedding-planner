@@ -278,8 +278,10 @@ export class Planning {
 
   constructor() {
     const t = inject(TranslateService);
-    inject(Title).setTitle(`${t.instant('planning.title')} | ${t.instant('brand.name')}`);
-    inject(Meta).updateTag({ name: 'description', content: t.instant('planning.subtitle') });
+    // title and description for the search the page answers (SEO round, 2026-11-13); both keys
+    // are used here only
+    inject(Title).setTitle(`${t.instant('planning.seoTitle')} | ${t.instant('brand.name')}`);
+    inject(Meta).updateTag({ name: 'description', content: t.instant('planning.seoMeta') });
 
     // Load when isCouple() BECOMES true, not only when it already is at construction: a guest
     // who signs in via the navbar modal on this page (or a signed-in user whose auth state

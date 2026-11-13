@@ -15,6 +15,9 @@ Served as-is at `/media/...`.
 - `organizer-poster.jpg` — its poster (frame 52), shown until it plays and under reduced motion.
 - `invitation.mp4`, `invitation-poster.jpg` — the same for the invitations page: an invitation being made in
   the builder, a silent 28 s loop, 692×1536, H.264, made in `video/` at 10% slower than the organizer clip.
+- `organizer-poster.webp`, `invitation-poster.webp` — the two posters as WebP (q80, same size; 40 and
+  60 kB against 74 and 107), which is what the pages show (2026-11-13). The JPGs are the sources:
+  re-encode the WebP when a clip and its poster change.
 - `gold-ring.webm` — a gold wedding band turning slowly, 5 s loop, 1920×1080, VP9 with a
   transparent background, no sound (provided 2026-10-27, Downloads/Gold_Ring_Web.webm). Shown by
   `components/gold-ring` in the home page's final section (above „დაიწყე შენი ქორწილის დაგეგმვა“,

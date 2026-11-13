@@ -119,6 +119,8 @@
         <svg class="wordmark__knot" viewBox="1 13 62 38" aria-hidden="true"><path d="M32 32 C23.3 14.6 5.9 17.5 5.9 32 C5.9 46.5 23.3 49.4 32 32 C40.7 14.6 58.1 17.5 58.1 32 C58.1 46.5 40.7 49.4 32 32 Z"/></svg>{{ 'brand.name' | translate }}<span class="wordmark__dot" aria-hidden="true">.</span>
       </a>
       <p class="ftr__promise">{{ 'footer.promise' | translate }}</p>
+      <!-- what the site is, in plain sentences, for search engines and AI answers (SEO audit, 2026-11-13) -->
+      <p class="ftr__about">{{ 'footer.aboutText' | translate }}</p>
     </div>
 
     <!-- Sitemap footer: five links, nothing else. -->
@@ -133,7 +135,7 @@
 
   <div class="container ftr__bottom">
     <span>© {{ year }} <span translate="no">{{ 'brand.name' | translate }}</span> · {{ 'footer.rights' | translate }}
-      <span class="ftr__by">· {{ 'footer.madeByPrefix' | translate }}<a href="https://swichsolutions.ge" target="_blank" rel="noopener" translate="no" title="Swich Solutions">Swich</a>{{ 'footer.madeBySuffix' | translate }}</span></span>
+      <span class="ftr__by">· {{ 'footer.madeByPrefix' | translate }}<a href="https://swichsolutions.ge" target="_blank" rel="noopener nofollow" translate="no" title="Swich Solutions">Swich</a>{{ 'footer.madeBySuffix' | translate }}</span></span>
     <div class="lang lang--footer" role="group" [attr.aria-label]="'common.language' | translate">
       @for (l of lang.supported; track l.code) {
         <button type="button" class="lang__btn" (click)="setLang(l.code)"

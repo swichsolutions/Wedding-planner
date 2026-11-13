@@ -74,6 +74,36 @@ describe('redirectFor', () => {
     expect(sentTo('/vendors?group=photo&category=zzz')).toBe('/foto-da-video?category=zzz');
   });
 
+  it('gives every page one spelling: no trailing or doubled slashes, no index.html, lower case', () => {
+    expect(sentTo('/fotografi/')).toBe('/fotografi');
+    expect(sentTo('/rchevebi//blogi')).toBe('/rchevebi/blogi');
+    expect(sentTo('////')).toBe('/');
+    expect(sentTo('/index.html')).toBe('/');
+    expect(sentTo('/rchevebi/index.html')).toBe('/rchevebi');
+    expect(sentTo('/Fotografi/Tbilisi?Region=Kakheti')).toBe('/fotografi/tbilisi?Region=Kakheti');
+    expect(sentTo('/planning/')).toBe('/planning');
+    // all at once, and together with an old address: still one hop
+    expect(sentTo('//Guides//Blog/x/?utm_source=ig')).toBe('/rchevebi/blogi/x?utm_source=ig');
+    // a doubled slash at the start must not become a link to another site
+    expect(sentTo('//evil.com')).toBe('/evil.com');
+  });
+
+  it('combines www with the clean spelling in one hop', () => {
+    const res = redirectFor(get(`https://www.${APEX}/Fotografi/?page=2`));
+    expect(res?.headers.get('location')).toBe(`https://${APEX}/fotografi?page=2`);
+  });
+
+  it('keeps the letters of invitations, tokens, files and Georgian escapes', () => {
+    expect(sentTo('/w/Nino-Giorgi/AbC12')).toBeNull();
+    expect(sentTo('/partner/AbC-12_x')).toBeNull();
+    expect(sentTo('/media/Plan-1200.webp')).toBeNull();
+    expect(sentTo('/pdfjs/pdf.worker.MIN.mjs')).toBeNull();
+    expect(sentTo('/chunk-AB12CD.js')).toBeNull();
+    expect(sentTo('/%E1%83%90')).toBeNull();
+    // the other fixes still apply to them
+    expect(sentTo('/w/Nino-Giorgi/')).toBe('/w/Nino-Giorgi');
+  });
+
   it('does not touch the new addresses (no redirect loop)', () => {
     for (const path of ['/rchevebi', '/rchevebi/blogi', '/rchevebi/blogi/x', '/ganrigebi', '/ganrigebi/jvristsera', '/foto-da-video', '/fotografi?region=kakheti', '/fotografi/tbilisi', '/guides/blog/a/b']) {
       expect(sentTo(path)).toBeNull();
