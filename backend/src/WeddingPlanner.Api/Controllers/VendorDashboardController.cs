@@ -1,5 +1,6 @@
 using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
+using WeddingPlanner.Api.Search;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
 using WeddingPlanner.Infrastructure.Identity;
@@ -19,12 +20,14 @@ public class VendorDashboardController : ControllerBase
     private readonly AppDbContext _db;
     private readonly UserManager<AppUser> _users;
     private readonly TokenService _tokens;
+    private readonly IndexNowQueue _indexNow;
 
-    public VendorDashboardController(AppDbContext db, UserManager<AppUser> users, TokenService tokens)
+    public VendorDashboardController(AppDbContext db, UserManager<AppUser> users, TokenService tokens, IndexNowQueue indexNow)
     {
         _db = db;
         _users = users;
         _tokens = tokens;
+        _indexNow = indexNow;
     }
 
     /// <summary>The vendor's own record, or any vendor for an admin on the admin routes.</summary>
@@ -151,6 +154,7 @@ public class VendorDashboardController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
+        var oldCitySlug = v.CitySlug;
         v.Name = dto.Name.Trim();
         var city = dto.City?.Trim();
         if (!string.IsNullOrEmpty(city) && city != v.City)
@@ -173,6 +177,13 @@ public class VendorDashboardController : ControllerBase
         await ApplyCatalogFieldsAsync(v, dto);
         await _db.SaveChangesAsync();
 
+        if (v.IsApproved)
+        {
+            // a new city moves the page: the old address now answers 404
+            if (oldCitySlug != v.CitySlug && oldCitySlug != "")
+                _indexNow.Paths(IndexNowPaths.ForVendor(v.Category.Slug, v.Category.GroupKey, oldCitySlug, v.Slug).Take(2));
+            _indexNow.Vendor(v.Id);
+        }
         return Ok(ToDashboard(v));
     }
 

@@ -1,5 +1,6 @@
 using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
+using WeddingPlanner.Api.Search;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
 using WeddingPlanner.Infrastructure.Storage;
@@ -17,12 +18,14 @@ public class AdminController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IPhotoStorage _storage;
     private readonly ILogger<AdminController> _logger;
+    private readonly IndexNowQueue _indexNow;
 
-    public AdminController(AppDbContext db, IPhotoStorage storage, ILogger<AdminController> logger)
+    public AdminController(AppDbContext db, IPhotoStorage storage, ILogger<AdminController> logger, IndexNowQueue indexNow)
     {
         _db = db;
         _storage = storage;
         _logger = logger;
+        _indexNow = indexNow;
     }
 
     /// <summary>List vendors for moderation. `pending=true` returns only unapproved.</summary>
@@ -92,6 +95,7 @@ public class AdminController : ControllerBase
         if (string.IsNullOrWhiteSpace(v.City)) return Conflict(new { code = "no_city" });
         v.IsApproved = true;
         await _db.SaveChangesAsync();
+        _indexNow.Vendor(v.Id); // a new page, and new entries on its catalog pages
         return NoContent();
     }
 
@@ -104,10 +108,14 @@ public class AdminController : ControllerBase
     [HttpDelete("vendors/{id:int}")]
     public async Task<IActionResult> DeleteVendor(int id)
     {
-        var v = await _db.Vendors.Include(x => x.Photos).FirstOrDefaultAsync(x => x.Id == id);
+        var v = await _db.Vendors.Include(x => x.Photos).Include(x => x.Category).FirstOrDefaultAsync(x => x.Id == id);
         if (v is null) return NotFound();
 
         var images = v.Photos.Select(p => p.StorageId).Append(v.FloorPlanStorageId).Where(s => s is not null).ToList();
+        // worked out now: after the delete there is no row left to find the addresses from
+        var listedAt = v.IsApproved && v.City != "" && v.CitySlug != ""
+            ? IndexNowPaths.ForVendor(v.Category.Slug, v.Category.GroupKey, v.CitySlug, v.Slug).ToList()
+            : null;
 
         await _db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
@@ -118,6 +126,7 @@ public class AdminController : ControllerBase
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
         });
+        if (listedAt is not null) _indexNow.Paths(listedAt); // the page is gone: let the engines drop it
 
         foreach (var image in images)
         {
@@ -141,8 +150,11 @@ public class AdminController : ControllerBase
     [HttpDelete("reviews/{id:int}")]
     public async Task<IActionResult> DeleteReview(int id)
     {
+        var vendorId = await _db.Reviews.Where(r => r.Id == id).Select(r => (int?)r.VendorId).FirstOrDefaultAsync();
         var deleted = await _db.Reviews.Where(r => r.Id == id).ExecuteDeleteAsync();
-        return deleted == 0 ? NotFound() : NoContent();
+        if (deleted == 0) return NotFound();
+        if (vendorId is int vid) _indexNow.Vendor(vid);
+        return NoContent();
     }
 
     /// <summary>Toggle the (dormant-monetization) featured flag.</summary>

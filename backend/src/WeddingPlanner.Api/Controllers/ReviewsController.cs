@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
+using WeddingPlanner.Api.Search;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
 using WeddingPlanner.Infrastructure.Identity;
@@ -22,11 +23,13 @@ public class ReviewsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly UserManager<AppUser> _users;
+    private readonly IndexNowQueue _indexNow;
 
-    public ReviewsController(AppDbContext db, UserManager<AppUser> users)
+    public ReviewsController(AppDbContext db, UserManager<AppUser> users, IndexNowQueue indexNow)
     {
         _db = db;
         _users = users;
+        _indexNow = indexNow;
     }
 
     private string? UserId => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -104,6 +107,7 @@ public class ReviewsController : ControllerBase
             review = existing;
         }
 
+        _indexNow.Vendor(vendorId); // the review shows on the vendor's page
         return Ok(new ReviewDto(review.Id, review.AuthorName, review.Rating, review.Body, review.CreatedAt, true));
     }
 

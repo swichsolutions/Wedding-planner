@@ -229,6 +229,10 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   Worker (robots.txt points there). Deploy the frontend before the API when addresses change.
 - AI use (Beka, 2026-11-13): search and AI answers are allowed, training is not
   (`Content-Signal` line in robots.txt).
+- IndexNow (2026-11-13): the API tells Bing & co. which public pages changed (`Search/IndexNow.cs`;
+  hooks on vendor approve/edit/delete, reviews, content create/edit/delete). On only when
+  `Site:PublicOrigin` is https. `IndexNow:Key` (appsettings.json) must equal the file
+  `frontend/public/<key>.txt`; a new public page type needs its own hook there.
 - Content comes from REAL DATA, not generated filler. A vendor page's SEO substance is
   the vendor's actual bio, pricing, portfolio (with descriptive alt text), reviews, and
   areas served. Do NOT pad pages with boilerplate marketing copy.

@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using WeddingPlanner.Api.Auth;
 using WeddingPlanner.Api.Dtos;
+using WeddingPlanner.Api.Search;
 using WeddingPlanner.Domain.Entities;
 using WeddingPlanner.Infrastructure.Data;
 using WeddingPlanner.Infrastructure.Storage;
@@ -27,12 +28,15 @@ public class AdminContentController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IPhotoStorage _storage;
     private readonly ILogger<AdminContentController> _logger;
+    private readonly IndexNowQueue _indexNow;
 
-    public AdminContentController(AppDbContext db, IPhotoStorage storage, ILogger<AdminContentController> logger)
+    public AdminContentController(AppDbContext db, IPhotoStorage storage, ILogger<AdminContentController> logger,
+        IndexNowQueue indexNow)
     {
         _db = db;
         _storage = storage;
         _logger = logger;
+        _indexNow = indexNow;
     }
 
     [HttpGet]
@@ -71,6 +75,7 @@ public class AdminContentController : ControllerBase
 
         _db.ContentPages.Add(page);
         await _db.SaveChangesAsync();
+        _indexNow.Content(page.Id); // sent only if it went out published
         return CreatedAtAction(nameof(Get), new { id = page.Id }, ToDto(page));
     }
 
@@ -84,11 +89,15 @@ public class AdminContentController : ControllerBase
         if (page is null) return NotFound();
         if (page.Type != type) return Fail("type_locked"); // the URL section can't change under a published page
 
+        var (wasOut, oldSlug) = (page.PublishedAt is not null, page.Slug);
         var error = await ApplyAsync(page, dto, isNew: false);
         if (error is not null) return error;
 
         page.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
+        // a new slug moves a page that was out: its old address now answers 404
+        if (wasOut && oldSlug != page.Slug) _indexNow.Paths(new[] { ContentRules.PublicPath(page.Type, oldSlug) });
+        _indexNow.Content(page.Id);
         return Ok(ToDto(page));
     }
 
@@ -101,6 +110,7 @@ public class AdminContentController : ControllerBase
         var storageIds = page.Photos.Select(p => p.StorageId).ToList();
         _db.ContentPages.Remove(page);
         await _db.SaveChangesAsync();
+        if (page.PublishedAt is not null) _indexNow.Paths(IndexNowPaths.ForContent(page.Type, page.Slug));
 
         // Blobs go after the commit (same reasoning as vendor photos: an orphaned blob is
         // recoverable garbage, a row pointing at a deleted blob is a broken page).

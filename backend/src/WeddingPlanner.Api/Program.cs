@@ -85,6 +85,11 @@ builder.Services.AddSingleton<EmailOutbox>();
 builder.Services.AddHostedService<EmailOutboxWorker>();
 builder.Services.AddMemoryCache();
 
+// ---- IndexNow: tells Bing & co. which public pages changed (on only for an https Site:PublicOrigin) ----
+builder.Services.AddHttpClient(nameof(WeddingPlanner.Api.Search.IndexNowWorker), c => c.Timeout = TimeSpan.FromSeconds(20));
+builder.Services.AddSingleton<WeddingPlanner.Api.Search.IndexNowQueue>();
+builder.Services.AddHostedService<WeddingPlanner.Api.Search.IndexNowWorker>();
+
 // ---- JWT bearer auth ----
 var jwt = builder.Configuration.GetSection("Jwt");
 // Fail fast: a silent fallback here would mean production accepts tokens signed
