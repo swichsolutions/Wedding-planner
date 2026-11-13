@@ -105,7 +105,9 @@ npm run deploy:live         # build + deploy to weddingplanner.ge and www.weddin
 ## Deploying the API
 
 Push to `main` → Render deploys (`autoDeployTrigger: commit`, needs the GitHub connection on the
-service) or Render → `weddingplanner-api` → **Manual Deploy → Deploy latest commit**. Migrations
+service) or Render → `weddingplanner-api` → **Manual Deploy → Deploy latest commit**.
+As of 2026-11-13 the push alone does NOT deploy (every deploy in Render's list is "Manual"): after
+pushing, press Manual Deploy, then check `POST /api/...` behaviour or the API sitemap changed. Migrations
 run on startup (`Database__MigrateOnStartup`). Watch the first deploy's logs for
 `DB migrate/seed skipped`: that means the connection string is wrong.
 
@@ -132,3 +134,7 @@ run on startup (`Database__MigrateOnStartup`). Watch the first deploy's logs for
 ## Keeping the Worker up
 
 A render costs 45–120 ms of CPU (up to about 1 s from cold), and the Workers free plan allows 10 ms per request. Cloudflare tolerates some of that; when it doesn't, the request fails with error 1102 (`exceededResources` in analytics, at 10 ms). So `src/server.edge.ts` reuses a public page from the edge for 5 minutes (`x-edge-cache: HIT`; edits can take that long to show), a failed render falls back to the browser-rendered shell (`x-rendered-by-browser`), and `src/main.server.ts` clears the flag a killed render leaves behind. The real cure is the $5 Workers Paid plan (30 s of CPU per request): take it before promoting the site. Don't crawl the live site quickly while on the free plan.
+**Taken on 2026-11-13.** That morning's deploy showed why: a deploy invalidates every stored page
+(each one is stored with the Worker version that rendered it), a quick check of all sitemap pages
+used up the free plan's tolerance, and every page not yet re-stored answered 503 (error 1102,
+`exceededCpu` in `npx wrangler tail --env live`) until the plan was switched.
