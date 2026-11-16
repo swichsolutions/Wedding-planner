@@ -24,7 +24,7 @@ import { renderMarkdown } from '../../core/markdown';
 import { movedAddress } from '../../core/old-addresses';
 import { MARKABLE_TOPICS, PlanPhotosService } from '../../core/plan-photos.service';
 import { relatedPages } from '../../core/related-pages';
-import { breadcrumbList, webPage } from '../../core/structured-data';
+import { breadcrumbList, setJsonLd as writeJsonLd, webPage } from '../../core/structured-data';
 import { LanguageService } from '../../i18n/language.service';
 import { NotFound } from '../not-found/not-found';
 
@@ -196,13 +196,8 @@ export class ContentDetailPage implements OnDestroy {
   }
 
   private setJsonLd(data: unknown): void {
-    this.removeJsonLd();
-    const script = this.doc.createElement('script');
-    script.id = JSON_LD_ID;
-    script.type = 'application/ld+json';
-    // Escape "<" so content can't close the script tag in server-rendered HTML.
-    script.text = JSON.stringify(data).replace(/</g, '\\u003C');
-    this.doc.head.appendChild(script);
+    // full addresses and "<" escaped (content can't close the script tag)
+    writeJsonLd(this.doc, JSON_LD_ID, data);
   }
 
   private removeJsonLd(): void {

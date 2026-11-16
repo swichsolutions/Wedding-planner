@@ -20,7 +20,7 @@ import { Vendor } from '../../core/vendor.models';
 import { CATEGORIES, categoryKey, cityName } from '../../core/catalog';
 import { cityDisplayEn, cityLocativeKa } from '../../core/city-name';
 import { formatGel } from '../../core/money';
-import { breadcrumbList, catalogTrail, webPage } from '../../core/structured-data';
+import { breadcrumbList, catalogTrail, setJsonLd as writeJsonLd, webPage } from '../../core/structured-data';
 
 const JSON_LD_ID = 'landing-jsonld';
 
@@ -311,14 +311,8 @@ export class CategoryCity implements OnDestroy {
   }
 
   private setJsonLd(data: unknown): void {
-    this.removeJsonLd();
-    const script = this.doc.createElement('script');
-    script.id = JSON_LD_ID;
-    script.type = 'application/ld+json';
-    // Escape "<" so vendor-supplied names can't break out of the script tag in
-    // server-rendered HTML — JSON.stringify alone doesn't do this.
-    script.text = JSON.stringify(data).replace(/</g, '\\u003C');
-    this.doc.head.appendChild(script);
+    // full addresses and "<" escaped (vendor-supplied names can't break out of the script tag)
+    writeJsonLd(this.doc, JSON_LD_ID, data);
   }
 
   private removeJsonLd(): void {
