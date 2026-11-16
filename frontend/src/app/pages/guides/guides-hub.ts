@@ -51,7 +51,8 @@ export class GuidesHub {
   constructor() {
     const name = this.t.instant('guides.hubTitle');
     const description = this.t.instant('guides.hubMeta');
-    inject(Title).setTitle(`${name} | ${this.t.instant('brand.name')}`);
+    // the search title says whose advice it is („ქორწილის რჩევები", 2026-11-16); the heading stays
+    inject(Title).setTitle(`${this.t.instant('guides.hubSeoTitle')} | ${this.t.instant('brand.name')}`);
     this.meta.updateTag({ name: 'description', content: description });
     const doc = inject(DOCUMENT);
     const lang = inject(LanguageService).current();

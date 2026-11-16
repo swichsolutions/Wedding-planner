@@ -374,7 +374,8 @@ export class BudgetPlanner {
 
   constructor() {
     const brand = this.translate.instant('brand.name');
-    inject(Title).setTitle(`${this.translate.instant('budgetPage.title')} | ${brand}`);
+    // the search title names what people type („ქორწილის ხარჯები", 2026-11-16); the heading stays
+    inject(Title).setTitle(`${this.translate.instant('budgetPage.seoTitle')} | ${brand}`);
     inject(Meta).updateTag({
       name: 'description',
       content: this.translate.instant('budgetPage.subtitle'),

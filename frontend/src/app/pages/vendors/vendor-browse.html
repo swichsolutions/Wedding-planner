@@ -2,7 +2,7 @@
   <div class="container">
     <header class="cat__head">
       <h1 class="cat__title">
-        {{ (group() ? 'catalog.groups.' + group() : 'vendors.title') | translate }}
+        {{ headingKey() | translate }}
       </h1>
       <p class="cat__lead">{{ 'vendors.subtitle' | translate }}</p>
       <form class="cat__search" role="search" (submit)="search($event, q.value)">

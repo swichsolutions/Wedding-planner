@@ -241,7 +241,8 @@ export class GuestList {
   });
 
   constructor() {
-    inject(Title).setTitle(`${this.t.instant('guestListPage.title')} | ${this.t.instant('brand.name')}`);
+    // „ქორწილის სტუმრების სია" is what people search (2026-11-16); the in-app heading stays short
+    inject(Title).setTitle(`${this.t.instant('guestListPage.seoTitle')} | ${this.t.instant('brand.name')}`);
     inject(Meta).updateTag({ name: 'description', content: this.t.instant('guestListPage.subtitle') });
 
     effect(() => {

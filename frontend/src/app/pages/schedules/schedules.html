@@ -5,7 +5,12 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">{{ 'schedules.title' | translate }}</span>
     </nav>
-    <h1 class="sc__title">{{ 'schedules.title' | translate }}</h1>
+    <!-- one example's own page names its day (2026-11-16): the three no longer share one heading -->
+    @if (slug()) {
+      <h1 class="sc__title">{{ 'schedules.oneTitle' | translate: { name: active().title } }}</h1>
+    } @else {
+      <h1 class="sc__title">{{ 'schedules.title' | translate }}</h1>
+    }
     <p class="sc__lead">{{ 'schedules.leadShort' | translate }}</p>
   </header>
 

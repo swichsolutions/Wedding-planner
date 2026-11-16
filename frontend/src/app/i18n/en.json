@@ -217,7 +217,7 @@
     "facebook": "Share on Facebook"
   },
   "home": {
-    "metaTitle": "Plan your dream wedding | WeddingPlanner",
+    "metaTitle": "Wedding planning — plan your dream wedding | WeddingPlanner",
     "metaDescription": "Wedding planning in one place: a catalog of venues and services in Georgia, a personal organizer with tasks, budget, guests and seating, and online invitations.",
     "carousel": { "prev": "Previous", "next": "Next" },
     "hero": {
@@ -414,6 +414,7 @@
     "title": "Wedding-day schedules",
     "lead": "Three common ways the day runs: all in one place, a church wedding and then a restaurant, or an evening party only. Each shows the time, the activity and who’s responsible.",
     "seoTitle": "Wedding day schedule — {{n}} examples",
+    "oneTitle": "Wedding day schedule: {{name}}",
     "meta": "Wedding day schedule — {{n}} examples: {{names}}. Time, activity and who is responsible at every step.",
     "items": "{{n}} items",
     "open": "See the schedule",
@@ -1154,7 +1155,7 @@
     }
   },
   "planning": {
-    "seoTitle": "Wedding organizing — an online organizer",
+    "seoTitle": "Wedding organizer — checklist, budget and guests",
     "seoMeta": "Wedding organizing in one place: an organizer with tasks by stage, a budget, a guest list, a seating plan and your wedding day schedule.",
     "feature1": "A ready-made checklist based on Georgian wedding norms",
     "feature2": "Add your own tasks",
@@ -1473,7 +1474,18 @@
     "metaGroup": "{{group}} in Georgia: compare prices, see their work and save your favourites.",
     "seoVenuesTitle": "Wedding venues and catering",
     "seoVenuesMeta": "Wedding venues and catering in Georgia: restaurants, halls, outdoor venues and caterers. Compare the price per guest and the capacity, and see the photos.",
-    "seoCakeTitle": "Wedding cake — wedding cakes",
+    "seoCakeTitle": "Wedding cakes — prices and designs",
+    "pageTitles": {
+      "fotografi": "Wedding photographer — photographers and prices",
+      "videografi": "Wedding videography — videographers",
+      "dekori": "Wedding styling and decor",
+      "floristi": "Wedding bouquets and flowers",
+      "bechdebi": "Wedding rings",
+      "tmis-stili": "Wedding hairstyles",
+      "musika": "Wedding music — bands and DJs",
+      "tamada": "Tamada for your wedding",
+      "kaba": "Wedding dresses in Tbilisi"
+    },
     "seoCakeMeta": "Wedding cakes in Georgia: cake makers with their price per kilo, photos of their cakes and delivery terms. Compare them and contact the bakers directly."
   },
   "contact": {
@@ -1498,6 +1510,7 @@
   },
   "guestListPage": {
     "title": "Guest list",
+    "seoTitle": "Wedding guest list",
     "subtitle": "Keep track of everyone you're inviting, in one place.",
     "emptyTitle": "Start building your guest list",
     "addGuests": "Add guests",
@@ -1867,6 +1880,7 @@
   },
   "budgetPage": {
     "title": "Wedding budget planner",
+    "seoTitle": "Wedding budget and costs — planner",
     "subtitle": "Enter your total budget and see a recommended split based on Georgian wedding norms. Every amount is editable.",
     "totalLabel": "Total budget",
     "reset": "Reset to suggested",
@@ -2022,6 +2036,7 @@
   },
   "guides": {
     "hubTitle": "Tips & ideas",
+    "hubSeoTitle": "Wedding tips and ideas",
     "hubLead": "Read tips and see ideas that will help you plan your wedding.",
     "hubMeta": "Wedding planning advice for Georgia: budget, guests, choosing vendors, the day schedule, inspiration and real weddings.",
     "hubEmpty": "The first articles and ideas are coming soon.",

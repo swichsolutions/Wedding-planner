@@ -39,7 +39,7 @@ export class Schedules {
   protected readonly auth = inject(AuthService);
 
   /** The scenario the address names (/ganrigebi/<slug>); none on /ganrigebi. */
-  private readonly slug = toSignal(this.route.paramMap.pipe(map((p) => p.get('slug'))), { requireSync: true });
+  protected readonly slug = toSignal(this.route.paramMap.pipe(map((p) => p.get('slug'))), { requireSync: true });
 
   protected readonly activeKey = computed(() => {
     const k = scheduleBySlug(this.slug());

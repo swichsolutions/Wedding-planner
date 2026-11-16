@@ -178,6 +178,18 @@ export class VendorBrowse {
     { initialValue: [] as Vendor[] },
   );
 
+  /**
+   * The page's main heading: the category's own (plural) name on a category page, the group's on a
+   * group page, „სივრცეები და მომსახურებები" on /vendors. (Until 2026-11-16 a category page showed
+   * its group's name, so /fotografi was headed „ფოტო და ვიდეო".)
+   */
+  protected readonly headingKey = computed(() => {
+    const g = this.group();
+    const c = this.filter().category;
+    if (!g) return 'vendors.title';
+    return c && isCategory(c) ? categoryKey(c).replace('category.', 'categoryPlural.') : `catalog.groups.${g}`;
+  });
+
   constructor() {
     // Title + description follow the category or group in view: each is its own search entry at
     // its own address, so a category must not repeat its group's title. The structured data
@@ -195,8 +207,12 @@ export class VendorBrowse {
       let title: string;
       let description: string;
       if (g) {
-        name = tr(c && isCategory(c) ? categoryKey(c).replace('category.', 'categoryPlural.') : `catalog.groups.${g}`);
-        title = own ? tr(`${own}Title`) : name;
+        name = tr(this.headingKey());
+        // a title in the words people search, where one is set (vendors.pageTitles, 2026-11-16);
+        // instant() answers with the key itself when there is none
+        const pageTitleKey = `vendors.pageTitles.${slug}`;
+        const pageTitle = slug ? tr(pageTitleKey) : pageTitleKey;
+        title = own ? tr(`${own}Title`) : pageTitle !== pageTitleKey ? pageTitle : name;
         description = own ? tr(`${own}Meta`) : tr('vendors.metaGroup', { group: name });
       } else {
         name = tr('vendors.title');
