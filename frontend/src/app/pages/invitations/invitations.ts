@@ -105,18 +105,20 @@ export class Invitations {
 
   constructor() {
     const t = inject(TranslateService);
-    // its own title for the search it answers (SEO round, 2026-11-13); the heading stays
+    // its own title for the search it answers, „ონლაინ მოსაწვევი" (2026-11-13; word order as
+    // searched since 2026-11-16, when Search Console showed that search)
     inject(Title).setTitle(`${t.instant('invitationsPage.seoTitle')} | ${t.instant('brand.name')}`);
     const description = t.instant('invitationsPage.meta', { n: WEDDING_TEMPLATES.length });
     inject(Meta).updateTag({ name: 'description', content: description });
-    // what the page is and its visible trail („დაგეგმე ქორწილი“ is the home page)
+    // what the page is (its heading) and its visible trail, where it keeps the short name
+    // („დაგეგმე ქორწილი“ is the home page)
     const doc = inject(DOCUMENT);
-    const name = t.instant('invitationsPage.title');
+    const crumb = t.instant('invitationsPage.title');
     setJsonLd(doc, JSON_LD_ID, [
-      webPage('WebPage', { name, description, path: '/invitations', lang: this.lang.current() }),
+      webPage('WebPage', { name: t.instant('invitationsPage.heading'), description, path: '/invitations', lang: this.lang.current() }),
       breadcrumbList([
         { name: t.instant('nav.g.plan.title'), path: '/' },
-        { name, path: '/invitations' },
+        { name: crumb, path: '/invitations' },
       ]),
     ]);
     inject(DestroyRef).onDestroy(() => removeJsonLd(doc, JSON_LD_ID));

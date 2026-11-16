@@ -5,8 +5,9 @@
       <span aria-hidden="true">/</span>
       <span aria-current="page">{{ 'invitationsPage.title' | translate }}</span>
     </nav>
-    <h1 class="iv-title">{{ 'invitationsPage.title' | translate }}</h1>
-    <p class="iv-lead">{{ 'invitationsPage.lead' | translate }}</p>
+    <!-- the heading says what people search for („ონლაინ მოსაწვევი", 2026-11-16); the crumb stays short -->
+    <h1 class="iv-title">{{ 'invitationsPage.heading' | translate }}</h1>
+    <p class="iv-lead">{{ 'invitationsPage.lead' | translate: { n: templates.length } }}</p>
     <div class="iv-cta">
       <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query"
         [attr.title]="'nav.g.plan.i.invitations.d' | translate">
@@ -19,7 +20,9 @@
   <!-- An invitation being made in the real builder, beside what it does. -->
   <section class="iv-show container" aria-labelledby="iv-show-title">
     <div class="iv-clip">
-      <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.webp" [eager]="true" />
+      <!-- described, so the picture can show in Google Images for „ონლაინ მოსაწვევი" -->
+      <app-clip-video src="/media/invitation.mp4" poster="/media/invitation-poster.webp" [eager]="true"
+        [alt]="'invitationsPage.clipAlt' | translate" />
     </div>
     <div class="iv-show__text">
       <h2 id="iv-show-title" class="iv-h2">{{ 'invitationsPage.showTitle' | translate }}</h2>

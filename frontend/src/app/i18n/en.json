@@ -2328,9 +2328,11 @@
   },
   "invitationsPage": {
     "title": "Invitations",
-    "seoTitle": "Wedding invitations online — create one free",
-    "meta": "Wedding invitations online: create yours free, pick one of {{n}} designs, add the venues on a map, collect RSVPs by each family's own link, add a QR code.",
-    "lead": "One link for the whole wedding: the date, the places, the schedule and the RSVP. Guests open it on their phones, and you see their replies in your guest list.",
+    "heading": "Online wedding invitations",
+    "seoTitle": "Online wedding invitations — create one free",
+    "meta": "Online wedding invitations: create yours free, pick one of {{n}} designs, add the venues on a map, collect RSVPs by each family's own link, add a QR code.",
+    "lead": "A free online invitation: one link for the whole wedding, with the date, the places on a map, the schedule and the RSVP. Pick one of {{n}} designs; guests open it on their phones, and you see their replies in your guest list.",
+    "clipAlt": "Creating an online wedding invitation on a phone: an example in WeddingPlanner",
     "cta": "Create an invitation",
     "find": "Find a couple’s invitation",
     "exampleLabel": "Example",
@@ -2362,10 +2364,10 @@
       }
     },
     "designsTitle": "{{n}} designs",
-    "designsLead": "Pick one and the example changes. You choose the colours, typeface and photos.",
+    "designsLead": "Pick one and the example changes. You choose the colours, typeface and photos, so your wedding invitation doesn't look like a template.",
     "howTitle": "How it works",
     "finalTitle": "Your invitation in a few minutes",
-    "finalBody": "No need to finish in one go: every change is saved, and you publish when you’re ready."
+    "finalBody": "Making an invitation card online doesn't have to happen in one go: every change is saved, and you publish when you’re ready."
   },
   "overview": {
     "namesFallback": "Wedding plan",
