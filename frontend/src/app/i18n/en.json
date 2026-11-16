@@ -521,7 +521,7 @@
   "homeWebsite": {
     "overline": "Wedding website",
     "title": "Your wedding website, ready in minutes",
-    "body": "Pick a design you love, add your names, date and venue, and share one beautiful link with every guest — free, with no tech skills needed.",
+    "body": "Pick a design you love, add your names, date and venue, and share one beautiful link with every guest — no tech skills needed.",
     "cta": "Start your website",
     "sampleFirst": "Nino",
     "samplePartner": "Giorgi",
@@ -1154,38 +1154,38 @@
     }
   },
   "planning": {
-    "seoTitle": "Wedding organizing — a free organizer",
-    "seoMeta": "Wedding organizing in one place: a free organizer with tasks by stage, a budget, a guest list, a seating plan and your wedding day schedule.",
+    "seoTitle": "Wedding organizing — an online organizer",
+    "seoMeta": "Wedding organizing in one place: an organizer with tasks by stage, a budget, a guest list, a seating plan and your wedding day schedule.",
     "feature1": "A ready-made checklist based on Georgian wedding norms",
     "feature2": "Add your own tasks",
     "feature3": "Saved to your account — on any device",
-    "heroTitle": "Your free wedding checklist",
-    "heroSubtitle": "Getting married? We’ll guide you through every detail, month by month — for free.",
-    "coveredTitle": "Our free checklist has you covered",
+    "heroTitle": "Your wedding checklist",
+    "heroSubtitle": "Getting married? We’ll guide you through every detail, month by month.",
+    "coveredTitle": "Our checklist has you covered",
     "coveredText": "We’ll help you plan and get that “check, check, check” satisfaction.",
     "easyTitle": "Make wedding planning easy (and 100% you)",
     "easyText": "Personalize your checklist — add your own tasks and track your progress, your way.",
     "oneSpotTitle": "Keep everything in one place",
-    "oneSpotText": "From local vendors to staying on budget, our free tools work together to make planning easier.",
+    "oneSpotText": "From local vendors to staying on budget, our tools work together to make planning easier.",
     "vendorCardTitle": "Meet your vendor team",
     "vendorCardText": "Browse and shortlist photographers, venues, decorators and more.",
     "vendorCardCta": "Explore vendors",
     "estimateCardTitle": "Plan your budget",
     "estimateCardText": "See a recommended split across categories based on Georgian wedding norms.",
     "estimateCardCta": "Budget planner",
-    "tipsTitle": "Free wedding planning tips",
+    "tipsTitle": "Wedding planning tips",
     "tipsText": "What should you tackle first? How do you split your budget? We have answers.",
     "seeAllTips": "See all articles",
     "faqTitle": "Frequently asked questions",
     "faq1q": "What are the basics of wedding planning?",
-    "faq1a": "Wedding planning is different for every couple. Our free checklist offers detailed month-by-month suggestions and is fully customizable to your own timeline.",
+    "faq1a": "Wedding planning is different for every couple. Our checklist offers detailed month-by-month suggestions and is fully customizable to your own timeline.",
     "faq2q": "What is the first thing to do when planning a wedding?",
     "faq2a": "Start by setting your budget and a rough guest count — it makes many later decisions much easier.",
     "faq3q": "How long does it take to plan a wedding?",
     "faq3a": "Typically 10–16 months, though it can range from a few weeks to years depending on the type of wedding.",
     "finalTitle": "Learn what to do and when",
-    "finalText": "Stay on top of every little thing — our free checklist has you covered.",
-    "signupFree": "Sign up for free",
+    "finalText": "Stay on top of every little thing — our checklist has you covered.",
+    "signupFree": "Sign up",
     "signup": "Create an account",
     "login": "Log in",
     "haveAccount": "Already have an account?",
@@ -1210,7 +1210,7 @@
   "join": {
     "title": "Create your account",
     "subtitle": "Save your planning and come back anytime.",
-    "saveSubtitle": "Create a free account to save vendors and come back to your shortlist anytime.",
+    "saveSubtitle": "Create an account to save vendors and come back to your shortlist anytime.",
     "name": "Name",
     "submit": "Sign up",
     "error": "Registration failed. This email may already be in use."
@@ -1272,7 +1272,7 @@
   "auth": {
     "loginTitle": "Sign in",
     "registerTitle": "Add your business to the wedding catalog",
-    "registerSubtitle": "Introduce your services to couples who are planning a wedding. Creating a profile is free.",
+    "registerSubtitle": "Introduce your services to couples who are planning a wedding.",
     "email": "Email",
     "password": "Password",
     "passwordHint": "At least 8 characters",
@@ -1378,7 +1378,7 @@
   "forVendors": {
     "overline": "For vendors",
     "title": "Introduce your services to couples",
-    "subtitle": "Create a free profile and get messages directly from interested couples.",
+    "subtitle": "Create a profile and get messages directly from interested couples.",
     "ctaPrimary": "Add your business",
     "ctaSecondary": "Browse vendors",
     "howTitle": "How does it work?",
@@ -1387,8 +1387,7 @@
     "step2Title": "Couples find you in the catalog",
     "step2Body": "Couples can search for services by category and city and look through your profile.",
     "step3Title": "Agree with couples",
-    "step3Body": "Interested couples contact you directly. Answer their questions and agree on the terms.",
-    "freeNote": "Listing is completely free right now."
+    "step3Body": "Interested couples contact you directly. Answer their questions and agree on the terms."
   },
   "about": {
     "title": "About us",
@@ -1507,8 +1506,8 @@
     "deleteTitle": "Remove this guest?",
     "loadError": "Couldn't load your guest list.",
     "saveError": "Couldn't save that. Check your connection and try again.",
-    "guestBody": "Create a free couple account to build your guest list and keep it in one place — on any device.",
-    "signUp": "Sign up free",
+    "guestBody": "Create a couple account to build your guest list and keep it in one place — on any device.",
+    "signUp": "Sign up",
     "addTitle": "Add guests",
     "close": "Close",
     "manualOption": "Enter manually",
@@ -1567,10 +1566,10 @@
     "statsAdults": "Adults",
     "statsChildren": "Children",
     "landing": {
-      "eyebrow": "Free guest list tool",
+      "eyebrow": "Guest list tool",
       "heroTitle": "Your wedding guest list, finally in one place",
       "heroSubtitle": "Add everyone you’re inviting, keep plus-ones and children straight, and see your real headcount at a glance — on your phone or laptop.",
-      "heroNote": "Free for couples. No spreadsheet skills needed.",
+      "heroNote": "No spreadsheet skills needed.",
       "featuresTitle": "What the guest list does",
       "feature1Title": "Add by hand or upload a spreadsheet",
       "feature1Text": "Type guests in one at a time, or bring the list you already have as a CSV file. Either way, every name lands in the same table.",
@@ -1601,8 +1600,8 @@
       "faq3a": "Decide one rule and apply it to everyone — for example, plus-ones for guests in long-term relationships, and children of close family only. The tool tracks partners and children as separate guests so the headcount stays honest.",
       "faq4q": "When does the guest list need to be final?",
       "faq4a": "Venues usually ask for a final number two to three weeks before the wedding. Send invitations well before that, and keep your “maybe” list ready in case someone declines.",
-      "faq5q": "Is the guest list free?",
-      "faq5a": "Yes. Create a free couple account, and your list is saved to it — open it on any device, share it with your partner, and it stays in sync.",
+      "faq5q": "Where is the guest list kept?",
+      "faq5a": "In your couple account — open it on any device, share it with your partner, and it stays in sync.",
       "finalTitle": "Start your guest list today",
       "finalText": "It takes a minute to sign up, and your list grows with you from the first name to the final count.",
       "previewDefinitely": "Definitely",
@@ -1676,7 +1675,7 @@
     "subtitle": "Add your venue's tables, arrange them on the canvas, then drag guests onto seats.",
     "loadError": "Couldn't load your seating chart.",
     "saveError": "Couldn't save that. Check your connection and try again.",
-    "guestBody": "Create a free couple account to build a seating chart for your reception.",
+    "guestBody": "Create a couple account to build a seating chart for your reception.",
     "addItemCta": "Add to canvas",
     "addItemModalTitle": "Add to the canvas",
     "tablesSectionTitle": "Tables",
@@ -1739,10 +1738,10 @@
     "removeObjectTitle": "Remove this item?",
     "removeObject": "Remove item",
     "landing": {
-      "eyebrow": "Free seating chart tool",
+      "eyebrow": "Seating chart tool",
       "heroTitle": "A seating chart you drag, not draw",
       "heroSubtitle": "Add your venue’s tables, drop guests onto seats, and see at a glance who still needs a place — no paper, no eraser.",
-      "heroNote": "Free for couples. Works with your guest list.",
+      "heroNote": "Works with your guest list.",
       "featuresTitle": "What the seating chart does",
       "feature1Title": "Tables that match your venue",
       "feature1Text": "Round or long, 6 seats or 12 — add the tables you’ll actually have and arrange them on the canvas the way the room is laid out.",
@@ -1776,7 +1775,7 @@
       "faq5q": "Can we use the chart at the venue?",
       "faq5a": "Yes — open it on your phone at the venue walk-through or on the day. Each table lists exactly who sits there, so place cards and the caterer’s plan match what you decided.",
       "finalTitle": "Give everyone a seat",
-      "finalText": "Sign up free, build your guest list, and the seating chart is ready when you are.",
+      "finalText": "Sign up, build your guest list, and the seating chart is ready when you are.",
       "previewTable": "Table {{n}}",
       "previewHeadTable": "Head table",
       "previewSeated": "seated"
@@ -1932,8 +1931,8 @@
     "add": "Add",
     "cancel": "Cancel",
     "guestCtaTitle": "Track your real spending",
-    "guestCtaBody": "Create a free account to turn this into a live budget — track estimates, actual costs and payments, link vendors from the directory, and set payment reminders.",
-    "guestCtaBtn": "Sign up free",
+    "guestCtaBody": "Create an account to turn this into a live budget — track estimates, actual costs and payments, link vendors from the directory, and set payment reminders.",
+    "guestCtaBtn": "Sign up",
     "viewSwitchLabel": "Budget view",
     "guidedTab": "Guided plan",
     "overviewTab": "Overview",
@@ -1982,10 +1981,10 @@
       "faq3a": "Traditions vary by family and region, and many couples now split costs with both sets of parents. Agree it early and enter each contribution as part of the total, so nobody is surprised later.",
       "faq4q": "Can I change the recommended split?",
       "faq4a": "Yes — every amount is editable, and the remaining figure updates as you type. The recommendation is only a starting point.",
-      "faq5q": "Is the budget planner free?",
-      "faq5a": "Yes. The estimate above is free without an account, and the full tracker is free with a couple account. The number you enter here carries over when you sign up.",
+      "faq5q": "Does the budget planner need an account?",
+      "faq5a": "No. The estimate above works without an account, and the full tracker comes with a couple account. The number you enter here carries over when you sign up.",
       "finalTitle": "Turn the estimate into a real budget",
-      "finalText": "Sign up free and keep the number you just entered — every line becomes trackable."
+      "finalText": "Sign up and keep the number you just entered — every line becomes trackable."
     },
     "leftCol": "Left to pay",
     "nextDue": "Next payment: {{date}} — {{name}}",
@@ -2014,7 +2013,7 @@
     "misc": "Invitations & other"
   },
   "budgetTeaser": {
-    "overline": "Free tool",
+    "overline": "Budget planner",
     "title": "Plan your budget in minutes",
     "body": "Enter your total budget and get a recommended split across categories based on Georgian wedding norms — before you contact a single vendor.",
     "cta": "Start planning",
@@ -2049,7 +2048,7 @@
     "relatedTitle": "Related",
     "relatedPages": {
       "title": "Related pages",
-      "planning": "Free wedding organizer",
+      "planning": "Online wedding organizer",
       "budget": "Wedding budget planner",
       "guests": "Make your guest list",
       "seating": "Guest seating plan",
@@ -2086,7 +2085,7 @@
     "t": {
       "about": "Who we are and what WeddingPlanner offers",
       "help": "Write to us: questions and help",
-      "vendors": "List your business in the catalog for free",
+      "vendors": "List your business in the catalog",
       "terms": "The terms and conditions of using the site",
       "privacy": "Privacy policy: how personal data is handled"
     },
@@ -2095,12 +2094,12 @@
     "madeBySuffix": ""
   },
   "featureLanding": {
-    "signupFree": "Sign up free",
+    "signupFree": "Sign up",
     "login": "Log in",
     "nextKicker": "Next step",
     "signedInTitle": "This tool is for couple accounts",
-    "signedInVendor": "You’re signed in with a vendor account. Log out and create a free couple account to use the planning tools.",
-    "signedInAdmin": "You’re signed in with an admin account. Log out and create a free couple account to use the planning tools.",
+    "signedInVendor": "You’re signed in with a vendor account. Log out and create a couple account to use the planning tools.",
+    "signedInAdmin": "You’re signed in with an admin account. Log out and create a couple account to use the planning tools.",
     "logout": "Log out"
   },
   "wishlist": {
@@ -2329,9 +2328,9 @@
   "invitationsPage": {
     "title": "Invitations",
     "heading": "Online wedding invitations",
-    "seoTitle": "Online wedding invitations — create one free",
-    "meta": "Online wedding invitations: create yours free, pick one of {{n}} designs, add the venues on a map, collect RSVPs by each family's own link, add a QR code.",
-    "lead": "A free online invitation: one link for the whole wedding, with the date, the places on a map, the schedule and the RSVP. Pick one of {{n}} designs; guests open it on their phones, and you see their replies in your guest list.",
+    "seoTitle": "Online wedding invitations — ready in minutes",
+    "meta": "Online wedding invitations: create yours in minutes, pick one of {{n}} designs, add the venues on a map, collect RSVPs by each family's own link, add a QR code.",
+    "lead": "An online invitation: one link for the whole wedding, with the date, the schedule and the RSVP. Pick one of the designs; guests open it on their phones, and you see their replies in your guest list.",
     "clipAlt": "Creating an online wedding invitation on a phone: an example in WeddingPlanner",
     "cta": "Create an invitation",
     "find": "Find a couple’s invitation",
@@ -2357,10 +2356,6 @@
       "phone": {
         "title": "Made for phones",
         "body": "Most guests open the link from a chat, so the invitation is built for phones first."
-      },
-      "free": {
-        "title": "Free",
-        "body": "The invitation, personal links and QR codes are free. Changes show on the same link."
       }
     },
     "designsTitle": "{{n}} designs",

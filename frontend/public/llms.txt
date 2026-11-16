@@ -1,16 +1,16 @@
 # WeddingPlanner
 
-> WeddingPlanner (weddingplanner.ge) is a Georgian wedding planning platform: a free planning tool for couples, a catalog of wedding venues and services in Georgia, online invitations with RSVP, and planning advice in Georgian.
+> WeddingPlanner (weddingplanner.ge) is a Georgian wedding planning platform: planning tools for couples, a catalog of wedding venues and services in Georgia, online invitations with RSVP, and planning advice in Georgian.
 
-WeddingPlanner არის ქართული პლატფორმა ქორწილის დასაგეგმად: უფასო ხელსაწყო წყვილებისთვის, საქორწილო სივრცეებისა და მომსახურებების კატალოგი საქართველოში, ონლაინ მოსაწვევები დასწრების დადასტურებით და რჩევები ქართულად.
+WeddingPlanner არის ქართული პლატფორმა ქორწილის დასაგეგმად: დაგეგმვის ხელსაწყოები წყვილებისთვის, საქორწილო სივრცეებისა და მომსახურებების კატალოგი საქართველოში, ონლაინ მოსაწვევები დასწრების დადასტურებით და რჩევები ქართულად.
 
-The site is in Georgian, with an English interface on the same addresses. Page addresses are Georgian words in Latin letters. Using the service is currently free. It's run by Swich Solutions. Contact: info@weddingplanner.ge
+The site is in Georgian, with an English interface on the same addresses. Page addresses are Georgian words in Latin letters. It's run by Swich Solutions. Contact: info@weddingplanner.ge
 
 Articles, the day schedules, the terms and privacy pages and this home page can be read as Markdown: request the page's address with `Accept: text/markdown`. The full list of pages is in the [sitemap](https://weddingplanner.ge/sitemap.xml).
 
 ## For couples
 
-- [Wedding planning tool](https://weddingplanner.ge/planning): a task list by stage, budget, guest list, seating on the venue's floor plan, and the wedding day schedule (needs a free account)
+- [Wedding planning tool](https://weddingplanner.ge/planning): a task list by stage, budget, guest list, seating on the venue's floor plan, and the wedding day schedule (needs an account)
 - [Online invitations](https://weddingplanner.ge/invitations): 14 designs, a personal link and QR code per family, replies land in the guest list
 
 ## Wedding day schedules (example timelines)
@@ -50,7 +50,7 @@ A single category has its own page, e.g. [wedding venues](https://weddingplanner
 
 ## For vendors
 
-- [List your business](https://weddingplanner.ge/for-vendors): a free profile for wedding venues and services
+- [List your business](https://weddingplanner.ge/for-vendors): a profile for wedding venues and services
 
 ## About
 

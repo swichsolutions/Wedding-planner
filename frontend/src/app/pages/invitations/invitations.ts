@@ -32,7 +32,7 @@ export class Invitations {
   protected readonly templates = WEDDING_TEMPLATES;
   protected readonly shown = signal<string>('glow');
   protected readonly steps = ['design', 'info', 'places', 'details', 'rsvp', 'preview', 'share'] as const;
-  protected readonly features = ['rsvp', 'guests', 'qr', 'maps', 'phone', 'free'] as const;
+  protected readonly features = ['rsvp', 'guests', 'qr', 'maps', 'phone'] as const;
 
   /** Couples go straight to their invitation; everyone else signs up first and lands there. */
   protected readonly cta = computed(() =>
