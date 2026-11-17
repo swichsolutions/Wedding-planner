@@ -103,11 +103,15 @@ export class App {
     },
   ];
   private readonly contentSections = inject(ContentSections);
-  /** The menu as shown: no empty content sections, and no group left with nothing in it. */
+  /** The menu as shown: no empty content sections, and no group left with nothing in it.
+   * When one content section is all that is left (only the blog has articles), the group's
+   * title opens the same list, so it shows as a plain link with no dropdown (review of
+   * 2026-11-17). */
   protected readonly navGroups = computed(() =>
     this.allNavGroups
       .map((g) => ({ ...g, items: g.items.filter((it) => !it.content || this.contentSections.has(it.content)) }))
-      .filter((g) => g.items.length),
+      .filter((g) => g.items.length)
+      .map((g) => (g.items.length === 1 && g.items[0].content ? { ...g, items: [] } : g)),
   );
   protected readonly scrolled = signal(false);
   /** Hide-on-scroll (Revolut): the bar slides away as the page scrolls down and comes

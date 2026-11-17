@@ -72,22 +72,6 @@
   margin-top: var(--space-2);
 }
 
-.iv-quiet {
-  font-size: var(--fs-small);
-  line-height: 1.4;
-  color: var(--ink-700);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  // a tap area of at least 24px (WCAG 2.5.8) without moving anything: the padding makes the
-  // link taller and the negative margin gives the height back to the layout
-  padding-block: 0.25rem;
-  margin-block: -0.25rem;
-
-  &:hover {
-    color: var(--ink);
-  }
-}
-
 .iv-h2 {
   margin: 0;
   font-family: var(--font-display);

@@ -1379,7 +1379,7 @@
   "forVendors": {
     "overline": "For vendors",
     "title": "Introduce your services to couples",
-    "subtitle": "Create a profile and get messages directly from interested couples.",
+    "subtitle": "Create a profile and get messages from interested couples.",
     "ctaPrimary": "Add your business",
     "ctaSecondary": "Browse vendors",
     "howTitle": "How does it work?",
@@ -2345,39 +2345,68 @@
     "heading": "Online wedding invitations",
     "seoTitle": "Online wedding invitations — ready in minutes",
     "meta": "Online wedding invitations: create yours in minutes, pick one of {{n}} designs, add the venues on a map, collect RSVPs by each family's own link, add a QR code.",
-    "lead": "An online invitation: one link for the whole wedding, with the date, the schedule and the RSVP. Pick one of the designs; guests open it on their phones, and you see their replies in your guest list.",
+    "lead": "Pick a design and send your guests the invitation link. They see the wedding date and schedule on their phones and confirm they are coming. The replies are saved straight to your guest list.",
     "clipAlt": "Creating an online wedding invitation on a phone: an example in WeddingPlanner",
     "cta": "Create an invitation",
-    "find": "Find a couple’s invitation",
     "exampleLabel": "Example",
-    "showTitle": "What the invitation does",
+    "showTitle": "How does an online invitation work?",
     "feature": {
       "rsvp": {
-        "title": "RSVP per family",
-        "body": "Each family gets its own link and marks who is coming, their food needs and a note for you."
+        "title": "A separate link for each invited family",
+        "body": "Each family has its own link. Guests mark who is coming to the wedding and can leave you a greeting if they like."
       },
       "guests": {
         "title": "Replies in your guest list",
-        "body": "Each reply shows up in your list at once, and a “no” frees the seats on your seating plan."
+        "body": "As soon as a guest replies, the reply appears in your list. If a guest can’t come, their seat on the seating plan is freed automatically."
       },
       "qr": {
-        "title": "QR codes for paper",
-        "body": "Printing paper invitations? Each family’s QR code opens its personal link."
+        "title": "A QR code on printed invitations",
+        "body": "If you print invitations, you can add each family’s QR code to theirs. Scanning the code opens the online invitation."
       },
       "maps": {
-        "title": "Places with maps",
-        "body": "The ceremony and the reception, times and addresses. The map opens in one tap."
+        "title": "Addresses and a map",
+        "body": "Guests see in the invitation where and when the ceremony and the reception take place. Tapping an address opens the map."
       },
       "phone": {
-        "title": "Made for phones",
-        "body": "Most guests open the link from a chat, so the invitation is built for phones first."
+        "title": "A design that fits a phone screen",
+        "body": "On a phone the invitation’s photos show well and the text is easy to read."
       }
     },
     "designsTitle": "{{n}} designs",
-    "designsLead": "Pick one and the example changes. You choose the colours, typeface and photos, so your wedding invitation doesn't look like a template.",
-    "howTitle": "How it works",
-    "finalTitle": "Your invitation in a few minutes",
-    "finalBody": "Making an invitation card online doesn't have to happen in one go: every change is saved, and you publish when you’re ready."
+    "designsLead": "Try different designs and see how the invitation changes. Choose the colours, typeface and photos yourself, so the invitation matches the style of your wedding.",
+    "howTitle": "How do I create an invitation?",
+    "step": {
+      "design": {
+        "title": "Design",
+        "body": "Pick a design, the typeface you like, colours and photos."
+      },
+      "info": {
+        "title": "Main information",
+        "body": "Enter your names, the wedding date and the start time. Add a welcome text for your guests."
+      },
+      "places": {
+        "title": "Addresses",
+        "body": "Add the addresses of the ceremony and the reception. Guests open the map straight from the invitation."
+      },
+      "details": {
+        "title": "Extra details",
+        "body": "Choose what the invitation shows: a short schedule of the day, the dress code, information about transport and accommodation."
+      },
+      "rsvp": {
+        "title": "Confirming attendance",
+        "body": "Set the date you expect replies by."
+      },
+      "preview": {
+        "title": "Preview and publish",
+        "body": "See how the invitation looks on a phone and a computer. Publish it when it is ready."
+      },
+      "share": {
+        "title": "Sharing",
+        "body": "Share the general link or send each family its own link. You can also add QR codes to printed invitations."
+      }
+    },
+    "finalTitle": "Create an invitation in a few minutes",
+    "finalBody": "You can come back to the invitation later. Every change is saved, and you publish the invitation when it is ready."
   },
   "overview": {
     "namesFallback": "Wedding plan",

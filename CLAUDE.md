@@ -198,6 +198,8 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   its dropdown is დღის განრიგები · მოსაწვევები. Couples who sign in on `/` land on
   `/planning`. Anywhere else they stay on the page they were on.
 - "რჩევები და იდეები" stays, at `/rchevebi` since 2026-11-13. Its mock articles get replaced with real content.
+  While only one of its sections has articles (the blog), the header shows it as a plain link
+  with no dropdown (review of 2026-11-17; `navGroups` in `app.ts`).
 - **Addresses are transliterated Georgian (Beka, 2026-11-13)**, in the style of
   `/fotografi/tbilisi/<vendor>`, and no page links to an address with query parameters:
   a catalog category is `/<slug>` (`/fotografi`), a catalog group is its Georgian name

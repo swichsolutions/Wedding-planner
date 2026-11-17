@@ -14,32 +14,37 @@
       <ol class="hdr__links">
         @for (g of navGroups(); track g.key) {
           <li class="hdr__item" [class.is-open]="openGroup() === g.key"
-            (mouseenter)="hoverGroup(g.key)" (mouseleave)="hoverGroup(null)"
+            (mouseenter)="hoverGroup(g.items.length ? g.key : null)" (mouseleave)="hoverGroup(null)"
             (focusout)="onGroupBlur($event, g.key)">
             <div class="hdr__group-row">
               <a class="hdr__group" [routerLink]="g.link" [attr.title]="'nav.g.' + g.key + '.d' | translate"
                 [class.is-active]="activeGroup() === g.key" (click)="closeMenu()">
                 {{ 'nav.g.' + g.key + '.title' | translate }}
               </a>
-              <button type="button" class="hdr__chev-btn" [attr.aria-expanded]="openGroup() === g.key"
-                [attr.aria-controls]="'nav-' + g.key" (click)="toggleGroup(g.key)"
-                [attr.aria-label]="'nav.submenu' | translate: { name: ('nav.g.' + g.key + '.title' | translate) }">
-                <svg class="hdr__chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-              </button>
+              <!-- a group with nothing under it (see navGroups) is its title alone -->
+              @if (g.items.length) {
+                <button type="button" class="hdr__chev-btn" [attr.aria-expanded]="openGroup() === g.key"
+                  [attr.aria-controls]="'nav-' + g.key" (click)="toggleGroup(g.key)"
+                  [attr.aria-label]="'nav.submenu' | translate: { name: ('nav.g.' + g.key + '.title' | translate) }">
+                  <svg class="hdr__chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+              }
             </div>
-            <div class="hdr__panel" [class.hdr__panel--cols]="g.items.length > 6" [id]="'nav-' + g.key">
-              <ul class="hdr__panel-list">
-                @for (it of g.items; track it.key) {
-                  <li>
-                    <a class="hdr__panel-link" [routerLink]="it.link"
-                      [attr.title]="'nav.g.' + g.key + '.i.' + it.key + '.d' | translate"
-                      [fragment]="it.fragment" (click)="closeMenu()">
-                      <span class="hdr__panel-t">{{ 'nav.g.' + g.key + '.i.' + it.key + '.t' | translate }}</span>
-                    </a>
-                  </li>
-                }
-              </ul>
-            </div>
+            @if (g.items.length) {
+              <div class="hdr__panel" [class.hdr__panel--cols]="g.items.length > 6" [id]="'nav-' + g.key">
+                <ul class="hdr__panel-list">
+                  @for (it of g.items; track it.key) {
+                    <li>
+                      <a class="hdr__panel-link" [routerLink]="it.link"
+                        [attr.title]="'nav.g.' + g.key + '.i.' + it.key + '.d' | translate"
+                        [fragment]="it.fragment" (click)="closeMenu()">
+                        <span class="hdr__panel-t">{{ 'nav.g.' + g.key + '.i.' + it.key + '.t' | translate }}</span>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
           </li>
         }
         @if (auth.isAdmin()) {

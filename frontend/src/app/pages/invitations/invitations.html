@@ -7,13 +7,14 @@
     </nav>
     <!-- the heading says what people search for („ონლაინ მოსაწვევი", 2026-11-16); the crumb stays short -->
     <h1 class="iv-title">{{ 'invitationsPage.heading' | translate }}</h1>
-    <p class="iv-lead">{{ 'invitationsPage.lead' | translate: { n: templates.length } }}</p>
+    <p class="iv-lead">{{ 'invitationsPage.lead' | translate }}</p>
+    <!-- one button (the „იპოვე წყვილის მოსაწვევი" link beside it went on 2026-11-17; the page
+         it opened, /invitations/find, is still there) -->
     <div class="iv-cta">
       <a class="btn btn--primary btn--pill" [routerLink]="cta().link" [queryParams]="cta().query"
         [attr.title]="'nav.g.plan.i.invitations.d' | translate">
         {{ 'invitationsPage.cta' | translate }}
       </a>
-      <a class="iv-quiet" routerLink="/invitations/find" [attr.title]="'invitationsPage.find' | translate">{{ 'invitationsPage.find' | translate }} →</a>
     </div>
   </header>
 
@@ -74,8 +75,9 @@
         <li>
           <span class="iv-steps__n num" aria-hidden="true">{{ i + 1 }}</span>
           <div>
-            <h3>{{ 'invitation.step.' + s | translate }}</h3>
-            <p>{{ 'invitation.hint.' + s | translate }}</p>
+            <!-- the page's own wording; the builder keeps its short step names (invitation.step.*) -->
+            <h3>{{ 'invitationsPage.step.' + s + '.title' | translate }}</h3>
+            <p>{{ 'invitationsPage.step.' + s + '.body' | translate }}</p>
           </div>
         </li>
       }

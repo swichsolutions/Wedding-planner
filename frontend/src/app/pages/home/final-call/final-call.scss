@@ -138,8 +138,7 @@
   }
 }
 
-// the button with the share button beside it (one row; they stack only when the row is too
-// narrow), so the block keeps its height on a laptop screen
+// the button's row
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -178,8 +177,7 @@
   .note,
   .gets-h,
   .gets li,
-  .btn,
-  .share {
+  .btn {
     opacity: 0;
   }
 
@@ -221,10 +219,6 @@
     &::after {
       animation: glint 5s ease-in-out 2.6s infinite;
     }
-  }
-
-  .share {
-    animation: rise 0.9s $ease 1.6s both;
   }
 }
 

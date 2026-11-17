@@ -4,7 +4,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 import { Reveal } from '../../../core/reveal.directive';
 import { GoldRing } from '../../../components/gold-ring/gold-ring';
-import { ShareButton } from '../../../components/share-button/share-button';
 
 /**
  * The last screen of the home page: the call to start planning. When it scrolls into
@@ -15,7 +14,7 @@ import { ShareButton } from '../../../components/share-button/share-button';
  */
 @Component({
   selector: 'app-final-call',
-  imports: [RouterLink, TranslatePipe, Reveal, GoldRing, ShareButton],
+  imports: [RouterLink, TranslatePipe, Reveal, GoldRing],
   templateUrl: './final-call.html',
   styleUrl: './final-call.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

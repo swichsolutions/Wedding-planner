@@ -21,10 +21,10 @@
       </li>
     }
   </ul>
-  <!-- the button, and beside it a quiet way to pass the site on -->
+  <!-- the button alone (the share button beside it went on 2026-11-17: the reviewer asked
+       what it was for) -->
   <div class="actions">
     <a class="btn btn--ink btn--lg" [routerLink]="cta().link"
       [attr.title]="(cta().link === '/signup' ? 'nav.startTitle' : cta().key) | translate">{{ cta().key | translate }}</a>
-    <app-share-button class="share" />
   </div>
 </div>
