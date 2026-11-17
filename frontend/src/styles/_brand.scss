@@ -96,12 +96,15 @@
   --font-body: var(--font-brand-text);
   --font-ui: var(--font-brand-text);
   --font-statement: var(--font-brand-text);
+  // 2026-11-17: headings are Geo Bauhaus (one light weight, so the weight and width asked
+  // for below only reach the text face's letters inside a heading). Its lines get more room
+  // than the heavy Noto headings had: the reviewer found those too bulky and too tight.
   --stretch-display: 87.5%;
   --stretch-ui: normal;
-  --tracking-display: -0.01em;
+  --tracking-display: 0em;
   --tracking-tight: -0.005em;
-  --lh-display: 1.02;
-  --lh-heading: 1.12;
+  --lh-display: 1.1;
+  --lh-heading: 1.2;
 }
 
 // Links inside running text: charcoal and underlined. Evergreen is for buttons only, and colour

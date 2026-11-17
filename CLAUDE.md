@@ -148,9 +148,14 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
   (removed everywhere on 2026-11-12: reviewers took them for buttons). A pill shape is for
   things that can be clicked.
 - **Gold `#B69A68`:** decorative only (fine lines, the rings). Never text.
-- **Type:** Noto Sans Georgian for everything (Beka, 2026-11-03: GF Aisi was not readable at
-  text sizes). Headings and large text are heavy (700–800) and slightly condensed
-  (`--stretch-display: 87.5%`, the variable font's width axis); running text is the normal width.
+- **Type (2026-11-17, Beka, after a trial on the home page):** headings and large text
+  (`--font-display`) are **Geo Bauhaus**; small text stays **Noto Sans Georgian** (GF Aisi was
+  not readable at text sizes, 2026-11-03). Geo Bauhaus is a 1995 font with one light weight:
+  `public/fonts/GeoBauhausNusx-Unicode.woff2` is our copy with the Georgian letters moved to
+  their Unicode places (the original has them on Latin keys). It has no Latin letters, „ “,
+  long dashes or ₾: those come from Noto inside a heading, so keep Latin words out of headings
+  where you can. ALK Rounded and Geo Bauhaus for all text were tried and not taken. The heavy
+  (700–800), condensed heading style now only reaches Noto's letters inside a heading.
   The GF Aisi `@font-face` rules stay in `_base.scss` for the invitation designs only.
 - **Width:** pages fill wide screens (decided 2026-10-29). Use `.container` (up to
   `--container-max`, 1920px, with `--gutter` at the sides); don't cap a whole page at a narrow

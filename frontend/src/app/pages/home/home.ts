@@ -230,6 +230,8 @@ export class Home {
     // than written here, where it would go stale with Google's next version of the font.
     const georgian = georgianFontFile(doc);
     if (georgian) add({ as: 'font', type: 'font/woff2', href: georgian, crossorigin: '' });
+    // the heading face (the hero's headline is the first thing drawn in it)
+    add({ as: 'font', type: 'font/woff2', href: '/fonts/GeoBauhausNusx-Unicode.woff2', crossorigin: '' });
   }
 
   /** Where a stage card or a step pill leads (Beka, 2026-11-03): the catalog for "find the
