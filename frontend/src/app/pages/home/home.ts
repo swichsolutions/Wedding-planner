@@ -1,6 +1,5 @@
 import { DOCUMENT, isPlatformServer } from '@angular/common';
 import { Component, DestroyRef, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -15,7 +14,6 @@ import { FinalCall } from './final-call/final-call';
 import { DayPreview } from '../../components/day-preview/day-preview';
 import { CarouselArrow } from '../../components/carousel-arrow/carousel-arrow';
 import { categoryPath, groupPath, img } from '../../core/catalog';
-import { CategoryStat, VendorService } from '../../core/vendor.service';
 
 /**
  * Landing page, in seven sections (the order since the review of 2026-11-12): hero → three
@@ -30,15 +28,14 @@ import { CategoryStat, VendorService } from '../../core/vendor.service';
 /** One row of the category index: a group of catalog slugs shown as a single entry. */
 interface CategoryGroup {
   key: string; // i18n key under home.find.cat
-  slugs: string[]; // catalog slugs folded into this row (their vendor counts are summed)
+  slugs: string[]; // catalog slugs folded into this row
   link: string; // the catalog page this row opens: a group's, or one category's
   img: string; // the card visual: a full-card render (object on the peach backdrop) or, with `print`, a scene
   print?: boolean; // show the visual as a rounded print instead of a cut-out
 }
 
-/** A row with its live inventory folded in (approved vendors summed across the group's slugs). */
+/** A row as the template draws it. */
 interface CategoryRow extends CategoryGroup {
-  count: number;
   srcset: string; // the render at 720 and 1086 px wide (the template's `sizes` picks: 720 on phones)
 }
 
@@ -181,8 +178,9 @@ export class Home {
   }
 
   /** 03 — the categories: the catalog's slugs folded into nine cards (the carousel; the older
-   * editorial index went on 2026-11-13, it is in git history). Inventory comes from
-   * the API; a card with no approved vendors shows no count instead of a zero. */
+   * editorial index went on 2026-11-13, it is in git history). A card is its name and its
+   * picture; the count of vendors it used to show went on 2026-11-18, and the page no longer
+   * asks the API for it. */
   private readonly categoryGroups: CategoryGroup[] = [
     // Revolut-style cards: Beka's renders, one scene or object on a shared peach backdrop
     // with a floor reflection; each has a `-1086` twin for dense screens
@@ -199,17 +197,12 @@ export class Home {
     { key: 'transport', slugs: ['transporti'], link: categoryPath('transporti'), img: '/media/cat/transport.webp' },
   ];
 
-  private readonly vendors = inject(VendorService);
-  private readonly categoryStats = toSignal(this.vendors.categoryStats(), { initialValue: [] as CategoryStat[] });
-
-  protected readonly categoryRows = computed<CategoryRow[]>(() => {
-    const bySlug = new Map(this.categoryStats().map((s) => [s.categorySlug, s.count]));
-    return this.categoryGroups.map((g) => ({
+  protected readonly categoryRows = computed<CategoryRow[]>(() =>
+    this.categoryGroups.map((g) => ({
       ...g,
-      count: g.slugs.reduce((n, s) => n + (bySlug.get(s) ?? 0), 0),
       srcset: `${g.img} 720w, ${g.img.replace(/\.webp$/, '-1086.webp')} 1086w`,
-    }));
-  });
+    })),
+  );
 
   private preloadAssets(doc: Document): void {
     // attributes, not IDL properties: the server DOM drops `link.as`

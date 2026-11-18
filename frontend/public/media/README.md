@@ -85,3 +85,8 @@ Served as-is at `/media/...`.
   to the palette's warm charcoal `#302B2D` (the reviewer disliked the brown one). His
   1086×1448 webp files are used as they came for `name-1086.webp`; `name.webp` is the
   720×960 copy made from them (q84).
+  Later the same day he replaced them again with an ivory set (Downloads/`ivory-cards.zip`,
+  nine 1086×1448 PNGs: the objects cut out on ivory `#FAF7F2`, darker at the foot). They are
+  flattened on ivory and saved as `name-1086.webp` (q82) and `name.webp` 720×960 (q84); the
+  cards became ivory with charcoal words (`.orbit` in `home.scss`). Known flaws in the
+  cut-outs: dark floor left under the table's chair legs and under the car's wheels.

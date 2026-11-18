@@ -176,16 +176,11 @@
             <li class="orbit__item" [style.--s]="s" [class.is-off]="s === null"
               [class.is-side]="s !== null && s !== 0" [attr.aria-hidden]="s === null">
               <a class="orbit__card" [class.orbit__card--print]="g.print" [routerLink]="g.link"
-                [attr.title]="('home.find.cat.' + g.key + '.name' | translate) + (g.count > 0 ? ' — ' + g.count + ' ' + ((g.count === 1 ? 'home.find.countOne' : 'home.find.count') | translate) : '')"
+                [attr.title]="'home.find.cat.' + g.key + '.name' | translate"
                 [attr.tabindex]="s === null ? -1 : 0"
                 (click)="onOrbitClick($event)">
+                <!-- the name alone: the line counting the group's vendors went on 2026-11-18 (Beka) -->
                 <span class="orbit__card-name">{{ 'home.find.cat.' + g.key + '.name' | translate }}</span>
-                @if (g.count > 0) {
-                  <span class="orbit__card-foot">
-                    <span class="orbit__card-n">{{ g.count }}</span>
-                    <span>{{ (g.count === 1 ? 'home.find.countOne' : 'home.find.count') | translate }}</span>
-                  </span>
-                }
                 <!-- the render fills the card (its backdrop IS the card colour); prints sit at the bottom -->
                 <span class="orbit__card-visual">
                   <!-- cover-fitted by height: the image is 0.75 x the card height wide. On phones

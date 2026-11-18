@@ -939,7 +939,10 @@
 }
 
 .orbit {
-  --card: var(--charcoal); // warm charcoal, the renders' backdrop; shown while an image loads
+  // Since 2026-11-18 the card pictures are Beka's ivory set (objects cut out on ivory,
+  // #FAF7F2 at the top to about #EEE8DF at the foot). The card is ivory with charcoal words
+  // and a hairline, since it sits on a white page. The charcoal set is in git (39ab27e).
+  --card: var(--ivory); // the pictures' backdrop; shown while an image loads
   --ch: min(52vh, 32rem); // card height, from the screen height
   --cw: calc(var(--ch) * 0.71); // Revolut's 360 × 508 proportion
   --gap: 0.75rem;
@@ -1036,26 +1039,36 @@
   &__card {
     position: relative;
     display: grid;
-    grid-template-rows: auto auto 1fr; // name, count, the visual
+    grid-template-rows: auto 1fr; // name, the visual
     gap: var(--space-2);
     width: 100%;
     height: 100%;
     padding: var(--space-5);
     border-radius: 22px;
     background: var(--card);
-    color: var(--ivory);
+    color: var(--ink);
     text-decoration: none;
     overflow: hidden;
     isolation: isolate;
 
     &:hover,
     &:focus-visible {
-      color: var(--ivory);
+      color: var(--ink);
     }
 
     &:focus-visible {
       outline: 2px solid var(--ink);
       outline-offset: 3px;
+    }
+
+    // a hairline round the card, over the picture: ivory on a white page needs an edge
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgb(48 43 45 / 0.1);
+      pointer-events: none;
     }
   }
 
@@ -1116,29 +1129,8 @@
     font-weight: var(--fw-medium);
     line-height: 1.15;
     letter-spacing: var(--tracking-display);
-    color: var(--ivory);
+    color: var(--ink);
     text-wrap: balance;
-  }
-
-  // the vendor count: one plain line under the name (a 46px chip box covered the
-  // object in the render wherever it sat; a text line stays out of the way)
-  &__card-foot {
-    display: inline-flex;
-    align-items: baseline;
-    gap: var(--space-1);
-    justify-self: start;
-    margin-top: calc(-1 * var(--space-1));
-    white-space: nowrap;
-    font-family: var(--font-statement);
-    font-size: var(--fs-caption);
-    color: var(--on-spruce-muted); // ivory 72%
-  }
-
-  &__card-n {
-    font-size: 1.125rem;
-    font-weight: var(--fw-medium);
-    color: var(--ivory);
-    font-variant-numeric: tabular-nums;
   }
 
   // ---- dots ----
