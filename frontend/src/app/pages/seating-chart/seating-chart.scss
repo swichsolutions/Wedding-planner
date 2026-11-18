@@ -19,6 +19,7 @@
   h1 {
     margin: 0;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
     font-weight: var(--fw-medium);
     line-height: 1.05;
@@ -175,6 +176,7 @@
 
     .num {
       font-family: var(--font-display);
+      letter-spacing: var(--tracking-display);
       font-size: 1.125rem;
       color: var(--ink);
     }
@@ -247,6 +249,7 @@
 .seat-pool__title {
   margin: 0 0 var(--space-5);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   line-height: var(--lh-tight);
 }
@@ -382,6 +385,7 @@
 
 .seat-table__name {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-weight: var(--fw-semibold);
   font-size: var(--fs-caption);
   color: var(--color-text);
@@ -603,6 +607,7 @@
 
 .seat-object__label {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-weight: var(--fw-medium);
   font-size: var(--fs-caption);
   color: var(--color-text-secondary);
@@ -661,6 +666,7 @@
 .add-drawer__title {
   margin: 0 var(--space-8) var(--space-5) 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   line-height: var(--lh-tight);
 }
@@ -975,6 +981,7 @@
 
   &__big {
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h2);
     line-height: 1;
     color: var(--ink-500);

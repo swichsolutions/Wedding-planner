@@ -149,6 +149,7 @@
   background: var(--paper-deep);
   color: var(--ink);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-bold);
 }
@@ -156,6 +157,7 @@
 .fv-step__title {
   margin: var(--space-4) 0 var(--space-2);
   font-size: var(--fs-h4);
+  letter-spacing: var(--tracking-display);
 }
 
 .fv-step__body {

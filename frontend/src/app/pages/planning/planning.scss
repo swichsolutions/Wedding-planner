@@ -394,6 +394,7 @@
 .rmodal__title {
   margin: 0 var(--space-6) var(--space-2) 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
 }
 
@@ -416,6 +417,7 @@
 .ob__amp {
   margin: 0 0 var(--space-3);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   color: var(--ink-700);
 }

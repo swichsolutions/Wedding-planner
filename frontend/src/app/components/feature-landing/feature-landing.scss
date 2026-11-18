@@ -33,6 +33,7 @@
   h2 {
     margin: 0 0 var(--space-2);
     font-size: var(--fs-h5);
+    letter-spacing: var(--tracking-display);
   }
   p {
     margin: 0;
@@ -153,6 +154,7 @@
   &__num {
     display: block;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h3);
     line-height: 1;
     color: var(--color-brand-600);
@@ -160,6 +162,7 @@
   h3 {
     margin: var(--space-4) 0 var(--space-2);
     font-size: var(--fs-h5);
+    letter-spacing: var(--tracking-display);
   }
   p {
     margin: 0;
@@ -202,6 +205,7 @@
   h3 {
     margin: 0 0 var(--space-3);
     font-size: var(--fs-h5);
+    letter-spacing: var(--tracking-display);
   }
   p {
     margin: 0;
@@ -245,6 +249,7 @@
 
 .fl-next__title {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-semibold);
   line-height: var(--lh-heading);
@@ -321,6 +326,7 @@
   h2 {
     margin: 0 0 var(--space-2);
     color: #fff;
+    letter-spacing: var(--tracking-display);
     text-wrap: balance;
   }
   p {

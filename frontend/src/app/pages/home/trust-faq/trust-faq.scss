@@ -160,6 +160,7 @@
     right: 0.14em;
     bottom: 0.06em;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-stretch: var(--stretch-display);
     font-size: calc(var(--w) * 0.62);
     font-weight: var(--fw-black);
@@ -209,7 +210,7 @@
   overflow-wrap: break-word; // a word too long for the card breaks rather than spill out
   font-weight: var(--fw-bold);
   line-height: 1.12;
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-display);
   text-wrap: pretty;
 
   .back & {

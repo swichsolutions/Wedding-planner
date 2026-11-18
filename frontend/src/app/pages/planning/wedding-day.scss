@@ -27,6 +27,7 @@
 .wd-title {
   margin: 0 0 var(--space-2);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
   font-weight: var(--fw-medium);
   line-height: 1.05;
@@ -53,6 +54,7 @@
 .wd-h2 {
   margin: 0 0 var(--space-4);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-medium);
   line-height: 1.15;
@@ -116,6 +118,7 @@
 .wd-card__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.25rem;
   font-weight: var(--fw-medium);
   line-height: 1.15;
@@ -285,6 +288,7 @@
 .wd-time {
   padding-top: 2px;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.25rem;
   line-height: 1.2;
   text-align: right;

@@ -100,6 +100,7 @@
 
 .dash-id__initial {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-semibold);
   color: var(--ink);
@@ -318,6 +319,7 @@
 
 .stat__num {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h3);
   font-weight: var(--fw-semibold);
   line-height: 1;

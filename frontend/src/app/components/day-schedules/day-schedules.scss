@@ -36,6 +36,7 @@
 .ds-card__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
   font-weight: var(--fw-medium);
   line-height: 1.1;
@@ -152,6 +153,7 @@
 .ds-dialog__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.125rem);
   font-weight: var(--fw-medium);
   line-height: 1.1;

@@ -91,6 +91,7 @@
   &__name {
     display: inline-block;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h5);
     font-weight: var(--fw-semibold);
     color: var(--color-text);

@@ -37,7 +37,7 @@ main {
   font-stretch: var(--stretch-display);
   font-weight: var(--fw-black);
   font-size: 1.45rem;
-  letter-spacing: var(--tracking-display);
+  letter-spacing: -0.01em; // Latin letters (the text face): not the heading face's spacing
   line-height: 1;
   color: var(--ink);
   text-decoration: none;

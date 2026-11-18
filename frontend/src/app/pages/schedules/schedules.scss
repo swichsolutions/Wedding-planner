@@ -94,6 +94,7 @@
   gap: var(--space-3);
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-stretch: var(--stretch-display);
   font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem);
   font-weight: var(--fw-bold);

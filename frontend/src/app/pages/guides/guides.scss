@@ -34,6 +34,7 @@
 .cd__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(2.25rem, 6vw, 4rem);
   line-height: 1.05;
   overflow-wrap: anywhere;
@@ -107,6 +108,7 @@
 .cd__h2 {
   margin: 0 0 var(--space-2);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(1.75rem, 4vw, 2.5rem);
   line-height: 1.1;
 }

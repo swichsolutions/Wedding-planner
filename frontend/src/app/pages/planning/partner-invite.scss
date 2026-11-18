@@ -29,6 +29,7 @@
 .pi-title {
   margin: 0 0 var(--space-3);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(2rem, 1.3rem + 3.4vw, 3.25rem);
   font-weight: var(--fw-medium);
   line-height: 1.05;
@@ -78,6 +79,7 @@
 .pi-h2 {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-medium);
   line-height: 1.15;

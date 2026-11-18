@@ -19,6 +19,7 @@
   h1 {
     margin: 0;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
     font-weight: var(--fw-medium);
     line-height: 1.05;
@@ -133,6 +134,7 @@
 
 .guests__stat-num {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h3);
   font-weight: var(--fw-semibold);
   line-height: 1;
@@ -303,6 +305,7 @@
   strong {
     display: block;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-body);
     color: var(--color-text);
   }
@@ -837,6 +840,7 @@
   background: var(--paper-deep);
   color: var(--ink);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-weight: var(--fw-semibold);
 }
 
@@ -911,6 +915,7 @@
 
 .gl-tally__big {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h2);
   line-height: 1;
   color: var(--ink-500);
@@ -1086,6 +1091,7 @@
 
 .gfam__name {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.25rem;
   line-height: 1.2;
 }
@@ -1114,6 +1120,7 @@
   border: 1px solid var(--paper-line-strong);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.125rem;
   color: var(--ink);
 }

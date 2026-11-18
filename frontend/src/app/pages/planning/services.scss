@@ -39,6 +39,7 @@
 .sv-title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
   font-weight: var(--fw-medium);
   line-height: 1.05;
@@ -115,6 +116,7 @@
 .sv-empty__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
   font-weight: var(--fw-medium);
   line-height: 1.15;
@@ -306,6 +308,7 @@
 .sv-section__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.375rem;
   font-weight: var(--fw-medium);
   line-height: 1.15;
@@ -351,6 +354,7 @@
 .sv-card__editing {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.125rem;
   line-height: 1.2;
 }
@@ -381,6 +385,7 @@
     width: 100%;
     height: 100%;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: 1.75rem;
     color: var(--ink-500);
   }
@@ -396,6 +401,7 @@
 .sv-name {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.25rem;
   font-weight: var(--fw-medium);
   line-height: 1.2;
@@ -588,6 +594,7 @@
   grid-column: 1 / -1;
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.125rem;
   line-height: 1.2;
 }

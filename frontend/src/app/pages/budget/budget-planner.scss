@@ -19,6 +19,7 @@
   h1 {
     margin: 0;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
     font-weight: var(--fw-medium);
     line-height: 1.05;
@@ -122,6 +123,7 @@
     background: var(--color-surface);
     color: var(--color-text);
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h4);
     font-weight: var(--fw-semibold);
     font-variant-numeric: tabular-nums;
@@ -186,6 +188,7 @@
   dd {
     margin: 0 0 var(--space-2);
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h4);
     font-weight: var(--fw-semibold);
   }
@@ -826,12 +829,14 @@
 .btotal__label {
   grid-column: 1 / -1;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-weight: var(--fw-semibold);
   font-size: var(--fs-h5);
 }
 
 .btotal__val {
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-weight: var(--fw-semibold);
   font-size: var(--fs-lead);
 
@@ -902,6 +907,7 @@
 .bpicker__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-weight: var(--fw-semibold);
 }
 
@@ -1144,6 +1150,7 @@
   border-radius: var(--radius-sm);
   background: transparent;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-h4);
   font-weight: var(--fw-semibold);
   color: var(--color-text);
@@ -1331,6 +1338,7 @@
   h2 {
     margin: 0 0 var(--space-2);
     font-size: var(--fs-h4);
+    letter-spacing: var(--tracking-display);
   }
 
   p {
@@ -1391,6 +1399,7 @@
 
   input {
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h4);
     font-weight: var(--fw-semibold);
     height: 56px;
@@ -1422,6 +1431,7 @@
 
   &__val {
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-h4);
     font-weight: var(--fw-semibold);
   }
@@ -1619,6 +1629,7 @@
   strong {
     color: var(--color-text);
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-lead);
     font-weight: var(--fw-semibold);
   }
@@ -1677,6 +1688,7 @@
     background: var(--color-surface);
     color: var(--color-text);
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-lead);
     font-weight: var(--fw-semibold);
     font-variant-numeric: tabular-nums;
@@ -1709,6 +1721,7 @@
   dd {
     margin: 0;
     font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
     font-size: var(--fs-lead);
     font-weight: var(--fw-semibold);
   }
@@ -1753,6 +1766,7 @@
   border-radius: var(--radius-sm);
   background: transparent;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: var(--fs-lead);
   font-weight: var(--fw-semibold);
   color: var(--color-text);
@@ -1899,6 +1913,7 @@
 .bpay__title {
   margin: 0;
   font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
   font-size: 1.125rem;
   font-weight: var(--fw-medium);
   line-height: 1.2;

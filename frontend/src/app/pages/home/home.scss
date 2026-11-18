@@ -386,7 +386,7 @@
     text-wrap: balance;
     font-weight: var(--fw-black);
     line-height: 1.05;
-    letter-spacing: var(--tracking-tight);
+    letter-spacing: var(--tracking-display);
     color: var(--paper-white);
   }
 
@@ -1115,7 +1115,7 @@
     font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
     font-weight: var(--fw-medium);
     line-height: 1.15;
-    letter-spacing: 0;
+    letter-spacing: var(--tracking-display);
     color: var(--ivory);
     text-wrap: balance;
   }
