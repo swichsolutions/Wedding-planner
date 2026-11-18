@@ -81,3 +81,7 @@ Served as-is at `/media/...`.
   extra at the top (its topper met the card name). Saved twice: `name.webp`
   720×960 (q84) and `name-1086.webp` 1086×1448 (q80) for the `srcset`. Earlier
   sets (dark navy, then peach) are no longer in the repo.
+  2026-11-18: Beka replaced all nine with the same pictures on a cooler backdrop, close
+  to the palette's warm charcoal `#302B2D` (the reviewer disliked the brown one). His
+  1086×1448 webp files are used as they came for `name-1086.webp`; `name.webp` is the
+  720×960 copy made from them (q84).
