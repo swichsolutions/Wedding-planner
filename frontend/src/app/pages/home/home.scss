@@ -128,8 +128,9 @@
   --card-top: calc(100dvh - var(--card-bottom) - var(--card-h));
 
   --hold: 55vh; // how long the staged screen stays pinned after the first scroll
-  --run-dur: 1000ms;
-  --run-ease: cubic-bezier(0.35, 0, 0, 1); // starts with a push, lands softly
+  --run-dur: 1150ms;
+  --box-dur: 720ms;
+  --run-ease: cubic-bezier(0.62, 0, 0.18, 1); // gathers, travels, lands softly
 }
 
 // ---- stacked: the hero's block is one screen, the steps' block is at least another ----
@@ -498,24 +499,25 @@
       overflow: hidden;
     }
 
-    // The steps' photos lie under the hero photo, full screen, and show as it fades. They
-    // wait a little closer than they end up, and settle back as the stage runs (the motion
-    // of 2026-11-17, after how revolut.com's sections change: the photo moves as it changes,
-    // and the words arrive one after another).
+    // The motion of 2026-11-18 (the first try, a slight zoom under the old fade, could not
+    // be told from the fade): the second section comes up from below. The hero photo is
+    // lifted away from the bottom edge upwards, like a sheet, and drifts up a little as it
+    // goes; the steps' photo under it waits lower and closer than it ends up and rises into
+    // place behind the moving edge. The words follow: the hero's leave upwards, the second
+    // section's rise in one after another (as revolut.com's sections change).
     .intro__slides {
       position: absolute;
       inset: 0;
       z-index: 0;
-      transform: scale(1.1);
+      transform: translateY(9%) scale(1.12);
     }
 
-    // the hero photo: full screen over them at rest; gone once the stage has run, moving in
-    // towards its arch as it goes
+    // the hero photo: full screen over them at rest; lifted away once the stage has run
     .intro__photo {
       position: absolute;
       inset: 0;
       z-index: 1;
-      transform-origin: 50% 59%; // the arch
+      clip-path: inset(0 0 0 0);
     }
 
     .hero__copy {
@@ -637,16 +639,16 @@
     // the pieces that arrive one after another wait a little below their places
     .start__title,
     .start__lead {
-      translate: 0 34px;
+      translate: 0 48px;
     }
 
     .start__card-sub {
-      translate: 0 14px;
+      translate: 0 18px;
     }
 
     .start__dots li {
       opacity: 0;
-      translate: 0 20px;
+      translate: 0 34px;
     }
 
     // ---- the transitions. Only once ScrollStage is running (.is-ready, a frame after it
@@ -654,23 +656,24 @@
     // across the breakpoint, must simply appear, not animate into place. ----
     &.is-ready {
       .intro__photo {
-        transition: opacity var(--run-dur) var(--run-ease), transform calc(var(--run-dur) + 200ms) var(--run-ease);
+        transition: clip-path var(--run-dur) var(--run-ease), transform var(--run-dur) var(--run-ease);
       }
 
       .intro__slides {
-        transition: transform calc(var(--run-dur) + 400ms) var(--run-ease);
+        transition: transform calc(var(--run-dur) + 250ms) var(--run-ease);
       }
 
+      // the box is in the card's place before the heading arrives above it
       .start__card {
         transition:
-          top var(--run-dur) var(--run-ease),
-          bottom var(--run-dur) var(--run-ease),
-          width var(--run-dur) var(--run-ease),
-          margin-left var(--run-dur) var(--run-ease);
+          top var(--box-dur) var(--run-ease),
+          bottom var(--box-dur) var(--run-ease),
+          width var(--box-dur) var(--run-ease),
+          margin-left var(--box-dur) var(--run-ease);
       }
 
       .start__card-inner {
-        transition: border-radius var(--run-dur) var(--run-ease);
+        transition: border-radius var(--box-dur) var(--run-ease);
       }
 
       // the hero's words leave upwards, the headline first
@@ -681,7 +684,7 @@
       .hero__title,
       .hero__lead,
       .hero__copy .pill-cta {
-        transition: translate 560ms var(--run-ease);
+        transition: translate 700ms var(--run-ease);
       }
 
       .hero__down {
@@ -704,16 +707,16 @@
 
     // ---- run (the first scroll) ----
     &.is-run {
-      // the hero photo fades away over the second section's photo, moving in a little as it
-      // goes, while that photo settles back into place; nothing shrinks, and the box is
-      // see-through on the first step as on the others
+      // the hero photo is lifted away, bottom edge first, over the second section's photo,
+      // which rises into place; nothing shrinks, and the box is see-through on the first
+      // step as on the others
       .intro__photo {
-        opacity: 0;
-        transform: scale(1.08);
+        clip-path: inset(0 0 100% 0);
+        transform: translateY(-7%);
       }
 
       .intro__slides {
-        transform: scale(1);
+        transform: none;
       }
 
       .start__card {
@@ -733,17 +736,17 @@
       }
 
       .hero__title {
-        translate: 0 -64px;
+        translate: 0 -120px;
       }
 
       .hero__lead {
-        translate: 0 -44px;
-        transition-delay: 40ms;
+        translate: 0 -90px;
+        transition-delay: 50ms;
       }
 
       .hero__copy .pill-cta {
-        translate: 0 -28px;
-        transition-delay: 80ms;
+        translate: 0 -64px;
+        transition-delay: 100ms;
       }
 
       .hero__down {
@@ -759,7 +762,9 @@
       .start__arrow {
         opacity: 1;
         pointer-events: auto;
-        transition-delay: 340ms; // once the photo is well on its way
+        // once the rising edge has passed the heading's place and the box has nearly
+        // reached the card's (the words must not cross its moving frame)
+        transition-delay: 600ms;
       }
 
       .start__copy {
@@ -768,35 +773,35 @@
 
       .start__title {
         translate: 0 0;
-        transition-delay: 340ms;
+        transition-delay: 600ms;
       }
 
       .start__lead {
         translate: 0 0;
-        transition-delay: 430ms;
+        transition-delay: 690ms;
       }
 
       .start__card-sub {
         translate: 0 0;
-        transition-delay: 560ms;
+        transition-delay: 300ms; // the edge reaches the card's foot early
       }
 
       .start__dots li {
         opacity: 1;
         translate: 0 0;
-        transition-delay: 640ms;
+        transition-delay: 800ms;
 
         &:nth-child(2) {
-          transition-delay: 710ms;
+          transition-delay: 880ms;
         }
 
         &:nth-child(3) {
-          transition-delay: 780ms;
+          transition-delay: 960ms;
         }
       }
 
       .start__arrow {
-        transition-delay: 860ms;
+        transition-delay: 1040ms;
       }
     }
   }
