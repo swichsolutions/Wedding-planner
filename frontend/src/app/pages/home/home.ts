@@ -224,12 +224,10 @@ export class Home {
     add({ as: 'image', type: 'image/webp', href: '/media/hero-wide.webp', media: '(orientation: landscape)' });
     add({ as: 'image', type: 'image/webp', href: '/media/hero-tall-828.webp', media: '(orientation: portrait) and (max-width: 600px)' });
     add({ as: 'image', type: 'image/webp', href: '/media/hero-tall.webp', media: '(orientation: portrait) and (min-width: 600.01px)' });
-    // The Georgian letters of Noto Sans Georgian: every word on the first screen waits for this
-    // one file to be drawn in the site's face. The production build inlines Google's font rules
-    // into index.html (a <style> in the head), so the file's address is read from there rather
-    // than written here, where it would go stale with Google's next version of the font.
-    const georgian = georgianFontFile(doc);
-    if (georgian) add({ as: 'font', type: 'font/woff2', href: georgian, crossorigin: '' });
+    // The text face (FiraGO since 2026-11-18): the first screen's words wait for its regular
+    // and medium weights to be drawn in the site's face.
+    add({ as: 'font', type: 'font/woff2', href: '/fonts/FiraGO-Regular.woff2', crossorigin: '' });
+    add({ as: 'font', type: 'font/woff2', href: '/fonts/FiraGO-Medium.woff2', crossorigin: '' });
     // the heading face (the hero's headline is the first thing drawn in it)
     add({ as: 'font', type: 'font/woff2', href: '/fonts/GeoBauhausNusx-Unicode.woff2', crossorigin: '' });
   }
@@ -389,21 +387,4 @@ export class Home {
       this.stopOrbit();
     });
   }
-}
-
-/** The address of the font file that holds the Georgian letters (U+10D0…) of Noto Sans Georgian,
- * from the @font-face rules the build inlined into the page's head; null when they are not
- * there (the development server leaves Google's stylesheet as a link). */
-function georgianFontFile(doc: Document): string | null {
-  for (const style of Array.from(doc.head.querySelectorAll('style'))) {
-    const css = style.textContent ?? '';
-    if (!css.includes('@font-face')) continue;
-    for (const rule of css.split('@font-face').slice(1)) {
-      const face = rule.slice(0, rule.indexOf('}'));
-      if (!/font-family:\s*['"]?Noto Sans Georgian/.test(face) || !/U\+10A0-10FF/i.test(face)) continue;
-      const url = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.woff2)\)/.exec(face);
-      if (url) return url[1];
-    }
-  }
-  return null;
 }

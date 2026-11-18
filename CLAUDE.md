@@ -148,14 +148,22 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
   (removed everywhere on 2026-11-12: reviewers took them for buttons). A pill shape is for
   things that can be clicked.
 - **Gold `#B69A68`:** decorative only (fine lines, the rings). Never text.
-- **Type (2026-11-17, Beka, after a trial on the home page):** headings and large text
-  (`--font-display`) are **Geo Bauhaus**; small text stays **Noto Sans Georgian** (GF Aisi was
-  not readable at text sizes, 2026-11-03). Geo Bauhaus is a 1995 font with one light weight:
-  `public/fonts/GeoBauhausNusx-Unicode.woff2` is our copy with the Georgian letters moved to
-  their Unicode places (the original has them on Latin keys). It has no Latin letters, „ “,
-  long dashes or ₾: those come from Noto inside a heading, so keep Latin words out of headings
-  where you can. ALK Rounded and Geo Bauhaus for all text were tried and not taken. The heavy
-  (700–800), condensed heading style now only reaches Noto's letters inside a heading.
+- **Type (2026-11-17/18, Beka, after trials on the home page):** headings and large text
+  (`--font-display`) are **Geo Bauhaus**; small text is **FiraGO** (he did not like Noto Sans
+  Georgian for it; GF Aisi was not readable at text sizes, 2026-11-03). Noto stays as the
+  fallback behind both, and on a couple's invitation.
+  - Geo Bauhaus is a 1995 font with one light weight: `public/fonts/GeoBauhausNusx-Unicode.woff2`
+    is our copy with the Georgian letters moved to their Unicode places (the original has them on
+    Latin keys). It has no Latin letters, „ “, long dashes or ₾: those come from FiraGO inside a
+    heading, so keep Latin words out of headings where you can.
+  - It is hard to read small, so its letter spacing follows the size: every rule that sets
+    `--font-display` also sets `letter-spacing: var(--tracking-display)` (about 1px at 18–20px,
+    nothing from 40px up). Do the same in a new rule. The bare `h1`–`h5` rule does not, because
+    many headings switch to the text face in their component.
+  - FiraGO (OFL): four weights in `public/fonts`, cut down to Georgian, Latin, digits,
+    punctuation and ₾ (29 kB each; `firago-subset.py` was a one-off, the full files are in
+    github.com/bBoxType/FiraGO). A character outside that set falls back to Noto.
+  - Tried and not taken: ALK Rounded, Noto Serif Georgian, Geo Bauhaus for all text.
   The GF Aisi `@font-face` rules stay in `_base.scss` for the invitation designs only.
 - **Width:** pages fill wide screens (decided 2026-10-29). Use `.container` (up to
   `--container-max`, 1920px, with `--gutter` at the sides); don't cap a whole page at a narrow

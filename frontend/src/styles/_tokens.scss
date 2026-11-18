@@ -105,10 +105,11 @@
   // Georgian for everything — the variable font index.html already loads (weights 100–900 and a
   // width axis). Headings use it heavy and slightly condensed (see _brand.scss); the GF Aisi
   // @font-face rules in _base.scss stay for the invitation designs.
-  // 2026-11-17 (Beka): headings and large text are Geo Bauhaus (see _base.scss); small text
-  // stays Noto Sans Georgian, which also draws whatever Geo Bauhaus lacks in a heading.
-  --font-brand-display: 'Geo Bauhaus', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
-  --font-brand-text: 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  // 2026-11-17 (Beka): headings and large text are Geo Bauhaus (see _base.scss).
+  // 2026-11-18 (Beka): small text is FiraGO (he did not like Noto Sans Georgian for it); it
+  // also draws whatever Geo Bauhaus lacks in a heading. Noto stays behind both as the fallback.
+  --font-brand-display: 'Geo Bauhaus', 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  --font-brand-text: 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
   --stretch-display: 70%;
   --stretch-ui: 100%;
 

@@ -1,5 +1,8 @@
-// ---- FiraGO (self-hosted, OFL) — trial face for the Revolut-style statement text.
-// Full multi-script build: covers Georgian Mkhedruli + Mtavruli and Latin.
+// ---- FiraGO (bBox Type / Carrois, SIL Open Font License; github.com/bBoxType/FiraGO, v1.001)
+// — the text face since 2026-11-18 (Beka chose it over Noto Sans Georgian, ALK Rounded and
+// Noto Serif Georgian in a trial). Four weights; the files are our cut-down copies: Georgian
+// (Mkhedruli), Latin, digits, punctuation and ₾ only, 29 kB each (the full files are ~255 kB
+// with Cyrillic, Greek, Arabic…). Bold also serves 800–900, so nothing gets a synthetic bold.
 @font-face {
   font-family: 'FiraGO';
   font-style: normal;
@@ -14,6 +17,22 @@
   font-weight: 500;
   font-display: swap;
   src: url('/fonts/FiraGO-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'FiraGO';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/FiraGO-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'FiraGO';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url('/fonts/FiraGO-Bold.woff2') format('woff2');
 }
 
 // ---- GF Aisi 2025 (Merab Getsadze; self-hosted from typeface.ge, both marked "Free"
