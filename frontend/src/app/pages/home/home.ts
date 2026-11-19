@@ -87,7 +87,14 @@ export class Home {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     afterNextRender(() => {
       this.setUpOrbit(host, destroyRef);
-      destroyRef.onDestroy(() => this.stopRotation());
+      // before any link's own handler: a click that ends a swipe is swallowed (capture phase)
+      const stage = host.querySelector<HTMLElement>('.intro__stage');
+      const swallow = (e: MouseEvent) => this.onStepsClick(e);
+      stage?.addEventListener('click', swallow, true);
+      destroyRef.onDestroy(() => {
+        stage?.removeEventListener('click', swallow, true);
+        this.stopRotation();
+      });
     });
   }
 
@@ -99,7 +106,8 @@ export class Home {
     this.rotationId = window.setInterval(() => {
       // not in a background tab (don't burn cycles or skip slides), and not while the visitor
       // is using the stage: the step would change under their keyboard focus or their pointer
-      if (document.hidden || this.introPaused()) return;
+      if (document.hidden || this.introPaused() || this.stepsDrag) return;
+      this.slideFrom.set('next');
       this.slide.update((i) => (i + 1) % this.startSlides.length);
     }, 10400);
   }
@@ -112,10 +120,15 @@ export class Home {
 
   /** Jump to a step from its bottom label. Restarts the timer so the slide the
    * visitor just picked gets a full turn before auto-rotation moves on. */
-  protected goToSlide(i: number): void {
+  protected goToSlide(i: number, from?: 'next' | 'prev'): void {
+    this.slideFrom.set(from ?? (i < this.slide() ? 'prev' : 'next'));
     this.slide.set(i);
     if (this.rotating()) this.startRotation();
   }
+
+  /** Which side the step now showing came in from (null until the first change): its card
+   * arrives from that side. */
+  protected readonly slideFrom = signal<'next' | 'prev' | null>(null);
 
   /** 02 — the three planning steps, each a full-bleed photo + the step card (see-through on
    * every step). The slides rotate on their own once the stage has run (browser only, not
@@ -237,7 +250,102 @@ export class Home {
   /** One step forward or back through the planning slides (the arrow buttons). */
   protected stepSlide(dir: 1 | -1): void {
     const n = this.startSlides.length;
-    this.goToSlide((this.slide() + dir + n) % n);
+    this.goToSlide((this.slide() + dir + n) % n, dir === 1 ? 'next' : 'prev');
+  }
+
+  // ---- swiping the steps (2026-11-19) ----
+  // A sideways drag over the steps' photo changes the step, like the arrow and the pills
+  // do. While the finger moves, the card follows it with a slight tilt and thins out, and
+  // the photo of the step it is heading for shows through in step with the drag. Let go
+  // past a quarter of the card's width (or with a quick flick) and the step changes, its
+  // card arriving from the side it was pulled from; let go sooner and everything settles
+  // back. Up-and-down moves stay the page's own scrolling (touch-action: pan-y on the stage).
+  // The per-frame values go straight to the stage's style: nothing here needs a redraw by
+  // Angular until the step really changes.
+  private stepsDrag: {
+    id: number;
+    x: number;
+    y: number;
+    t: number;
+    stage: HTMLElement;
+    width: number;
+    locked: boolean;
+    dx: number;
+  } | null = null;
+  private stepsSuppressClick = false;
+  private stepsSettle = 0;
+
+  protected onStepsDown(e: PointerEvent, stage: HTMLElement): void {
+    if (e.button !== 0 || this.stepsDrag) return;
+    // only over the steps: on the stacked layout the same stage also holds the hero, and on
+    // the pinned one the steps are there only once the stage has run
+    const slides = stage.querySelector<HTMLElement>('.intro__slides');
+    const card = stage.querySelector<HTMLElement>('.start__card');
+    if (!slides || !card) return;
+    const area = slides.getBoundingClientRect();
+    if (e.clientY < area.top || e.clientY > area.bottom) return;
+    const intro = stage.closest('.intro');
+    if (intro?.classList.contains('is-staged') && !intro.classList.contains('is-run')) return;
+    this.stepsDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp, stage, width: card.offsetWidth || 280, locked: false, dx: 0 };
+  }
+
+  protected onStepsMove(e: PointerEvent): void {
+    const d = this.stepsDrag;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    if (!d.locked) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      // a move that is more up-and-down than sideways is a scroll, not a swipe
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) {
+        this.stepsDrag = null;
+        return;
+      }
+      d.locked = true;
+      window.clearTimeout(this.stepsSettle);
+      d.stage.classList.remove('is-settling', 'is-swiped');
+      d.stage.classList.add('is-swiping');
+      d.stage.setPointerCapture?.(d.id);
+    }
+    d.dx = dx;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ratio = Math.max(-1, Math.min(1, dx / (d.width * 0.9)));
+    d.stage.style.setProperty('--swipe', `${dx.toFixed(1)}px`);
+    d.stage.style.setProperty('--swipe-r', ratio.toFixed(3));
+    // the photo of the step the drag is heading for shows through
+    const n = this.startSlides.length;
+    const target = (this.slide() + (dx < 0 ? 1 : -1) + n) % n;
+    d.stage.querySelectorAll<HTMLElement>('.start__bg').forEach((img) => {
+      const i = Number(img.dataset['i']);
+      img.style.opacity = i === target ? Math.abs(ratio).toFixed(3) : '';
+    });
+  }
+
+  protected onStepsUp(e: PointerEvent): void {
+    const d = this.stepsDrag;
+    if (!d || e.pointerId !== d.id) return;
+    this.stepsDrag = null;
+    if (!d.locked) return;
+    const speed = Math.abs(d.dx) / Math.max(1, e.timeStamp - d.t); // px per ms
+    const go = e.type === 'pointerup' && (Math.abs(d.dx) > d.width * 0.25 || (speed > 0.45 && Math.abs(d.dx) > 24));
+    const stage = d.stage;
+    stage.classList.remove('is-swiping');
+    stage.classList.add(go ? 'is-swiped' : 'is-settling');
+    stage.style.removeProperty('--swipe');
+    stage.style.removeProperty('--swipe-r');
+    stage.querySelectorAll<HTMLElement>('.start__bg').forEach((img) => (img.style.opacity = ''));
+    this.stepsSettle = window.setTimeout(() => stage.classList.remove('is-swiped', 'is-settling'), 700);
+    this.stepsSuppressClick = true;
+    window.setTimeout(() => (this.stepsSuppressClick = false), 350);
+    if (go) this.stepSlide(d.dx < 0 ? 1 : -1);
+  }
+
+  /** A swipe that ends on the card's link, a pill or the ring must not also press it. */
+  protected onStepsClick(e: MouseEvent): void {
+    if (!this.stepsSuppressClick) return;
+    e.preventDefault();
+    e.stopPropagation();
+    this.stepsSuppressClick = false;
   }
 
   // ---- the category carousel around the ring ----

@@ -365,7 +365,19 @@
     border: 1px solid #fff;
     text-align: center;
     text-shadow: 0 1px 12px rgba(34, 30, 32, 0.6); // keeps the text legible on the bare photo
-    animation: card-in 700ms var(--ease-out) both;
+    // (fills backwards only: once it has played, the card's own values rule again, which
+    // is what lets a swipe move it)
+    animation: card-in 700ms var(--ease-out) backwards;
+
+    // a step that was changed to arrives from the side it came from (arrow, pills, a swipe,
+    // the automatic turn)
+    &.is-from-next {
+      animation: card-in-next 560ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
+
+    &.is-from-prev {
+      animation: card-in-prev 560ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
   }
 
   &__card-main {
@@ -896,6 +908,71 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes card-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(56px) rotate(2deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes card-in-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-56px) rotate(-2deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---- swiping the steps (Home.onStepsDown…): the stage carries the drag in --swipe (px)
+// and --swipe-r (-1…1) while a finger is down ----
+.intro__stage {
+  touch-action: pan-y; // up-and-down stays the page's scrolling; sideways is the swipe
+
+  // the card follows the finger, tilts a little the way it is pulled, and thins out
+  &.is-swiping .start__card-inner {
+    translate: calc(var(--swipe, 0px) * 0.9) 0;
+    rotate: calc(var(--swipe-r, 0) * 3deg);
+    opacity: calc(1 - max(var(--swipe-r, 0), -1 * var(--swipe-r, 0)) * 0.8);
+    transition: none;
+  }
+
+  // (their photos follow the drag too: the opacity is set per frame from the script)
+  &.is-swiping .start__bg {
+    transition: none;
+  }
+
+  &.is-swiping {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  // let go too soon: the card springs back, the photo fades back out
+  &.is-settling .start__card-inner {
+    transition:
+      translate 460ms cubic-bezier(0.2, 0.9, 0.3, 1.25),
+      rotate 460ms cubic-bezier(0.2, 0.9, 0.3, 1.25),
+      opacity 300ms var(--ease-out);
+  }
+
+  &.is-settling .start__bg {
+    transition: opacity 320ms var(--ease-out);
+  }
+
+  // the step changed by a swipe: its photo finishes arriving faster than the slow turn
+  &.is-swiped .start__bg {
+    transition: opacity 520ms var(--ease-out);
   }
 }
 

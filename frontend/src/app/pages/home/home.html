@@ -12,8 +12,11 @@
      full-screen blocks. The old "ყველაფერი ერთ სივრცეში" three-card stage is gone. -->
 <section id="promise" class="intro" appScrollStage (ran)="onStage($event)">
   <!-- keyboard focus anywhere in the stage holds the automatic rotation (see introPaused) -->
+  <!-- a sideways drag over the steps changes the step (onStepsDown… in home.ts) -->
   <div class="intro__stage" data-nav="dark" #stage (focusin)="introFocus.set(true)"
-    (focusout)="introFocus.set(stage.contains($any($event).relatedTarget))">
+    (focusout)="introFocus.set(stage.contains($any($event).relatedTarget))"
+    (pointerdown)="onStepsDown($event, stage)" (pointermove)="onStepsMove($event)"
+    (pointerup)="onStepsUp($event)" (pointercancel)="onStepsUp($event)">
     <!-- The steps' photos, one per slide, crossfading. The first is in the server HTML (the
          steps are readable without JS); it is lazy and low priority so it never competes
          with the hero photo. The other two join after the first scroll. On the stacked
@@ -31,7 +34,7 @@
               <source media="(max-width: 1023.98px), (max-height: 599.98px)"
                 srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
             }
-            <img class="start__bg" [class.is-active]="slide() === i" [src]="s.img" [attr.srcset]="s.srcset ?? null"
+            <img class="start__bg" [class.is-active]="slide() === i" [attr.data-i]="i" draggable="false" [src]="s.img" [attr.srcset]="s.srcset ?? null"
               sizes="100vw" [alt]="'home.start.' + s.key + '.photoAlt' | translate" loading="lazy" fetchpriority="low" decoding="async"
               [style.object-position]="s.pos ?? null" />
           </picture>
@@ -97,7 +100,7 @@
       (mouseenter)="cardHover.set(true)" (mouseleave)="cardHover.set(false)">
       @for (s of startSlides; track s.key; let i = $index) {
         @if (slide() === i) {
-          <div class="start__card-inner">
+          <div class="start__card-inner" [class.is-from-next]="slideFrom() === 'next'" [class.is-from-prev]="slideFrom() === 'prev'">
             <!-- the step/value block sits in the exact middle of the frame;
                  the detail pill sits on its own near the bottom edge -->
             <div class="start__card-main">
