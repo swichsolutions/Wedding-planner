@@ -140,13 +140,17 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   // hero / the steps' words / the card (takes the spare height) / the step pills.
-  // (vh first: browsers without the small-viewport unit would drop the whole declaration
-  // and the hero would lose its height)
+  // The hero's row is the LARGEST screen height (lvh), not the smallest (2026-11-19): on a
+  // phone the visible screen is taller than the smallest height whenever the browser's bars
+  // are tucked away (after a scroll, in an in-app browser), and a strip of the dark block
+  // below showed under the hero photo. With the bars out, the photo's foot is under them.
+  // (vh first: browsers without these units would drop the whole declaration and the hero
+  // would lose its height)
   grid-template-rows: minmax(100vh, auto) auto minmax(min-content, 1fr) auto;
-  grid-template-rows: minmax(100svh, auto) auto minmax(min-content, 1fr) auto;
+  grid-template-rows: minmax(100lvh, auto) auto minmax(min-content, 1fr) auto;
   justify-items: center;
   min-height: 200vh;
-  min-height: 200svh;
+  min-height: calc(100lvh + 100svh);
   background: var(--spruce);
 }
 

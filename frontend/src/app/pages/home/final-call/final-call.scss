@@ -94,31 +94,37 @@
   }
 }
 
+// On phones: one list, centred as a block, its ticks in one column and its lines starting
+// at the same place (2026-11-19: each line was centred on its own, so a line that wrapped
+// left its tick alone at the screen's edge). From tablets up: a centred row.
 .gets {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
+  display: grid;
+  justify-content: center;
+  justify-items: start;
+  gap: var(--space-1);
   margin: 0 0 clamp(2.5rem, 7vh, 5rem);
   padding: 0;
   list-style: none;
 
   li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-3);
-    padding: clamp(0.875rem, 1.6vh, 1.25rem) clamp(1.25rem, 1.6vw, 1.75rem);
+    padding: clamp(0.5rem, 1.2vh, 0.875rem) 0;
     border-radius: var(--radius-pill);
     background: #fff;
     font-family: var(--font-ui);
     font-size: clamp(1.0625rem, 0.9rem + 0.4vw, 1.3125rem);
     font-weight: var(--fw-semibold);
+    line-height: 1.35;
+    text-align: left;
   }
 
   svg {
     flex: none;
     width: 1.2em;
     height: 1.2em;
+    margin-top: 0.08em; // level with the first line of the words
   }
 
   path {
@@ -126,14 +132,20 @@
   }
 
   @include bp.respond-to(md) {
+    display: flex;
     flex-flow: row wrap;
     justify-content: center;
     gap: max(0.75rem, 16 * var(--u));
     margin-bottom: max(1.5rem, 80 * var(--u));
 
     li {
+      align-items: center;
       padding: max(0.75rem, 20 * var(--u)) max(1rem, 28 * var(--u));
       font-size: max(0.9375rem, 21 * var(--u));
+    }
+
+    svg {
+      margin-top: 0;
     }
   }
 }
