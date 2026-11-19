@@ -369,8 +369,7 @@
     // is what lets a swipe move it)
     animation: card-in 700ms var(--ease-out) backwards;
 
-    // a step that was changed to arrives from the side it came from (arrow, pills, a swipe,
-    // the automatic turn)
+    // a step brought in by a swipe arrives from the side it was pulled from
     &.is-from-next {
       animation: card-in-next 560ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
     }
@@ -954,7 +953,6 @@
   }
 
   &.is-swiping {
-    cursor: grabbing;
     user-select: none;
   }
 

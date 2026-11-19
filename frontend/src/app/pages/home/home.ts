@@ -107,7 +107,7 @@ export class Home {
       // not in a background tab (don't burn cycles or skip slides), and not while the visitor
       // is using the stage: the step would change under their keyboard focus or their pointer
       if (document.hidden || this.introPaused() || this.stepsDrag) return;
-      this.slideFrom.set('next');
+      this.slideFrom.set(null);
       this.slide.update((i) => (i + 1) % this.startSlides.length);
     }, 10400);
   }
@@ -120,14 +120,15 @@ export class Home {
 
   /** Jump to a step from its bottom label. Restarts the timer so the slide the
    * visitor just picked gets a full turn before auto-rotation moves on. */
-  protected goToSlide(i: number, from?: 'next' | 'prev'): void {
-    this.slideFrom.set(from ?? (i < this.slide() ? 'prev' : 'next'));
+  protected goToSlide(i: number, from: 'next' | 'prev' | null = null): void {
+    this.slideFrom.set(from);
     this.slide.set(i);
     if (this.rotating()) this.startRotation();
   }
 
-  /** Which side the step now showing came in from (null until the first change): its card
-   * arrives from that side. */
+  /** The side a swipe brought the step now showing in from: its card arrives from that side.
+   * Null for a step changed any other way (the arrow, a pill, the automatic turn), whose
+   * card arrives as it always did. */
   protected readonly slideFrom = signal<'next' | 'prev' | null>(null);
 
   /** 02 — the three planning steps, each a full-bleed photo + the step card (see-through on
@@ -248,12 +249,14 @@ export class Home {
   }
 
   /** One step forward or back through the planning slides (the arrow buttons). */
-  protected stepSlide(dir: 1 | -1): void {
+  protected stepSlide(dir: 1 | -1, swiped = false): void {
     const n = this.startSlides.length;
-    this.goToSlide((this.slide() + dir + n) % n, dir === 1 ? 'next' : 'prev');
+    this.goToSlide((this.slide() + dir + n) % n, swiped ? (dir === 1 ? 'next' : 'prev') : null);
   }
 
   // ---- swiping the steps (2026-11-19) ----
+  // Phones and tablets only (Beka): a finger, on the stacked layout. The desktop stage and
+  // the mouse are left as they were.
   // A sideways drag over the steps' photo changes the step, like the arrow and the pills
   // do. While the finger moves, the card follows it with a slight tilt and thins out, and
   // the photo of the step it is heading for shows through in step with the drag. Let go
@@ -276,16 +279,15 @@ export class Home {
   private stepsSettle = 0;
 
   protected onStepsDown(e: PointerEvent, stage: HTMLElement): void {
-    if (e.button !== 0 || this.stepsDrag) return;
-    // only over the steps: on the stacked layout the same stage also holds the hero, and on
-    // the pinned one the steps are there only once the stage has run
+    if (e.pointerType !== 'touch' || this.stepsDrag) return;
+    // the phone layout only, not the pinned desktop stage
+    if (stage.closest('.intro')?.classList.contains('is-staged')) return;
+    // only over the steps: on this layout the same stage also holds the hero
     const slides = stage.querySelector<HTMLElement>('.intro__slides');
     const card = stage.querySelector<HTMLElement>('.start__card');
     if (!slides || !card) return;
     const area = slides.getBoundingClientRect();
     if (e.clientY < area.top || e.clientY > area.bottom) return;
-    const intro = stage.closest('.intro');
-    if (intro?.classList.contains('is-staged') && !intro.classList.contains('is-run')) return;
     this.stepsDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp, stage, width: card.offsetWidth || 280, locked: false, dx: 0 };
   }
 
@@ -337,7 +339,7 @@ export class Home {
     this.stepsSettle = window.setTimeout(() => stage.classList.remove('is-swiped', 'is-settling'), 700);
     this.stepsSuppressClick = true;
     window.setTimeout(() => (this.stepsSuppressClick = false), 350);
-    if (go) this.stepSlide(d.dx < 0 ? 1 : -1);
+    if (go) this.stepSlide(d.dx < 0 ? 1 : -1, true);
   }
 
   /** A swipe that ends on the card's link, a pill or the ring must not also press it. */
