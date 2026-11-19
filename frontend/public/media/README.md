@@ -90,3 +90,8 @@ Served as-is at `/media/...`.
   flattened on ivory and saved as `name-1086.webp` (q82) and `name.webp` 720×960 (q84); the
   cards became ivory with charcoal words (`.orbit` in `home.scss`). Known flaws in the
   cut-outs: dark floor left under the table's chair legs and under the car's wheels.
+  2026-11-19: second ivory set (Downloads/`ivory-cards-v2.zip`). Seven cards are its
+  re-cut PNGs. `venues` and `rings` are the two generated pictures in the same zip (whole
+  scenes on their own backdrop, 896×1200 JPG, enlarged to the cards' size): cropped to 3:4,
+  the rounded dark frame at the foot of the rings picture painted out, and each backdrop
+  brought to the other cards' ivory with a gain that changes from top to foot.
