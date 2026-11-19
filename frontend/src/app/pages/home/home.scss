@@ -207,6 +207,10 @@
 .start__scrim {
   position: absolute;
   inset: 0;
+  // always over the photos: a swipe lifts the arriving photo above the others (z-index 1),
+  // and without this it rose above the scrim too, showing undimmed until the swipe's
+  // clean-up put it back (2026-11-19)
+  z-index: 2;
   background:
     linear-gradient(to bottom, rgba(34, 30, 32, 0.6) 0%, rgba(34, 30, 32, 0.2) 40%, rgba(34, 30, 32, 0.55) 100%);
 }
