@@ -274,7 +274,7 @@ export class CategoryCity implements OnDestroy {
     const price = this.fromPrice();
     const priceStr =
       price !== null ? `, ${this.translate.instant('landing.titleFrom', { price: this.formatPrice(price) })}` : '';
-    const pageTitle = `${this.h1()} — ${countStr}${priceStr} | ${brand}`;
+    const pageTitle = `${this.h1()} – ${countStr}${priceStr} | ${brand}`;
     const standfirst = this.standfirst();
     const description = standfirst.length > 158 ? standfirst.slice(0, 155) + '…' : standfirst;
     const image = vendors[0].photos[0]?.url ?? '';

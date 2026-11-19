@@ -82,7 +82,7 @@ export function finishHead(html: string, requestUrl: string): string {
       `<meta property="og:image" content="${DEFAULT_IMAGE}">`,
       '<meta property="og:image:width" content="1200">',
       '<meta property="og:image:height" content="630">',
-      '<meta property="og:image:alt" content="WeddingPlanner — დაგეგმე შენი ოცნების ქორწილი">',
+      '<meta property="og:image:alt" content="WeddingPlanner – დაგეგმე შენი ოცნების ქორწილი">',
     );
   }
   if (metaContent(head, 'name', 'twitter:card') === null) add.push('<meta name="twitter:card" content="summary_large_image">');

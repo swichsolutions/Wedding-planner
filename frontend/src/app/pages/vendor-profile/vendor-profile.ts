@@ -546,7 +546,7 @@ export class VendorProfile implements OnDestroy {
 
     const category = this.translate.instant(v.categoryKey);
     const brand = this.translate.instant('brand.name');
-    const pageTitle = `${v.name} — ${category}, ${this.cityLabel(v)} | ${brand}`;
+    const pageTitle = `${v.name} – ${category}, ${this.cityLabel(v)} | ${brand}`;
     const description = v.bio.length > 155 ? v.bio.slice(0, 152) + '…' : v.bio;
     const image = v.photos[0]?.url ?? '';
 

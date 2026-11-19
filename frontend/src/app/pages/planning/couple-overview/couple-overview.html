@@ -118,7 +118,7 @@
                   <a class="ovc__src" [routerLink]="p.sourcePath">{{ sourceName(p) }}</a>
                 }
                 <button type="button" class="ovc__remove" (click)="planPhotos.unmark(p.id)" [disabled]="planPhotos.busy()"
-                  [attr.aria-label]="('overview.photoRemove' | translate) + ' — ' + sourceName(p)">✕</button>
+                  [attr.aria-label]="('overview.photoRemove' | translate) + ' – ' + sourceName(p)">✕</button>
               </li>
             }
           </ul>
@@ -347,7 +347,7 @@
         } @else {
           <ol class="ovd" role="list">
             @for (d of o.day.first; track $index) {
-              <li><span class="num">{{ d.time ?? '—' }}</span> <span>{{ d.activity }}</span></li>
+              <li><span class="num">{{ d.time ?? '–' }}</span> <span>{{ d.activity }}</span></li>
             }
           </ol>
           <p class="ov-note">

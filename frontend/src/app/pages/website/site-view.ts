@@ -62,7 +62,7 @@ export class SiteView {
           const names = [s.firstName, s.partnerFirstName].filter(Boolean).join(' & ');
           this.title.setTitle(
             names
-              ? `${names} — ${this.translate.instant('wsite.eyebrow')}`
+              ? `${names} – ${this.translate.instant('wsite.eyebrow')}`
               : this.translate.instant('wsite.eyebrow'),
           );
           meta.updateTag({

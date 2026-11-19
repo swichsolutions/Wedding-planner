@@ -35,7 +35,7 @@ export class VendorCard {
     const v = this.vendor();
     void this.lang.current();
     const where = [this.translate.instant(v.categoryKey), this.cityLabel()].filter(Boolean).join(', ');
-    return where ? `${v.name} — ${where}` : v.name;
+    return where ? `${v.name} – ${where}` : v.name;
   });
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);

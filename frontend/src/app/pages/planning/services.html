@@ -217,7 +217,7 @@
 
                   <!-- status, actions and the budget form: the full card width on phones -->
                   <div class="sv-foot">
-                    <div class="sv-status" role="group" [attr.aria-label]="('services.status' | translate) + ' — ' + s.name">
+                    <div class="sv-status" role="group" [attr.aria-label]="('services.status' | translate) + ' – ' + s.name">
                       @for (st of statuses; track st) {
                         <button type="button" [attr.aria-pressed]="s.status === st" (click)="setStatus(s, st)">
                           {{ 'services.statuses.' + st | translate }}

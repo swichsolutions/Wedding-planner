@@ -138,6 +138,6 @@ function toVendor(dto: VendorDto): Vendor {
     // The API sends alt: null when the vendor never wrote one, and a null
     // property binding renders the literal string "null" — fall back to
     // descriptive text (real alt/SEO value, and a name for the thumb buttons).
-    photos: dto.photos.map((p) => ({ ...p, alt: p.alt || `${dto.name} — ${dto.city}` })),
+    photos: dto.photos.map((p) => ({ ...p, alt: p.alt || `${dto.name} – ${dto.city}` })),
   };
 }

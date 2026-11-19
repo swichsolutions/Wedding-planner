@@ -89,7 +89,7 @@ export class Schedules {
       if (this.slug()) {
         // One scenario's own page: its name and summary, so the three don't share a title.
         const s = this.active();
-        title.setTitle(`${s.title} — ${page}`);
+        title.setTitle(`${s.title} – ${page}`);
         description = `${s.title}: ${s.summary}`;
         name = s.title;
         path = schedulePath(s.key);

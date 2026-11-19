@@ -20,7 +20,7 @@
     <div class="sf-form__field sf-form__field--narrow">
       <label for="sf-year">{{ 'siteFinder.year' | translate }}</label>
       <select id="sf-year" [value]="year()" (change)="year.set($any($event.target).value)">
-        <option value="">—</option>
+        <option value="">–</option>
         @for (y of years; track y) {
           <option [value]="y">{{ y }}</option>
         }
@@ -67,7 +67,7 @@
               <tr>
                 <td class="sf-table__couple">{{ coupleLine(r) }}</td>
                 <td>{{ formatDate(r.weddingDate) }}</td>
-                <td>{{ r.place || '—' }}</td>
+                <td>{{ r.place || '–' }}</td>
                 <td><a class="link-arrow" [routerLink]="['/w', r.slug]">{{ 'siteFinder.view' | translate }}</a></td>
               </tr>
             }

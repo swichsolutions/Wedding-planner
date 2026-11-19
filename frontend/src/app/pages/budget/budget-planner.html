@@ -137,7 +137,7 @@
             <div class="bguide__step">
               <p class="bguide__stepLabel">
                 {{ 'budgetPage.stepOf' | translate: { step: stepIndex() + 1, total: categoryTabs().length } }}
-                — <strong>{{ categoryLabel(cat) | translate }}</strong>
+                – <strong>{{ categoryLabel(cat) | translate }}</strong>
               </p>
             </div>
 
@@ -197,7 +197,7 @@
                       [attr.aria-label]="'budgetPage.itemName' | translate" />
                     <button type="button" class="bicon bicon--danger" (click)="askRemove(item)"
                       [attr.title]="'budgetPage.deleteItem' | translate"
-                      [attr.aria-label]="('budgetPage.deleteItem' | translate) + ' — ' + item.name">
+                      [attr.aria-label]="('budgetPage.deleteItem' | translate) + ' – ' + item.name">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M3 6h18" />
@@ -224,7 +224,7 @@
                       <label for="bg-est-{{ item.id }}">{{ 'budgetPage.estimateCol' | translate }}</label>
                       <div class="bmodal__amount">
                         <input id="bg-est-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
-                          autocomplete="off" placeholder="—" [value]="item.estimate ?? ''"
+                          autocomplete="off" placeholder="–" [value]="item.estimate ?? ''"
                           (change)="commitMoney(item, 'estimate', $event)" />
                         <span aria-hidden="true">₾</span>
                       </div>
@@ -233,7 +233,7 @@
                       <label for="bg-act-{{ item.id }}">{{ 'budgetPage.actualCol' | translate }}</label>
                       <div class="bmodal__amount">
                         <input id="bg-act-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
-                          autocomplete="off" placeholder="—" [value]="item.actualCost ?? ''"
+                          autocomplete="off" placeholder="–" [value]="item.actualCost ?? ''"
                           (change)="commitMoney(item, 'actualCost', $event)" />
                         <span aria-hidden="true">₾</span>
                       </div>
@@ -244,7 +244,7 @@
                         @if (isPaidUp(item)) {
                           <span aria-hidden="true">✓</span>
                         }
-                        {{ item.paid === null ? '—' : format(item.paid) }}
+                        {{ item.paid === null ? '–' : format(item.paid) }}
                       </span>
                       <button type="button" class="blink bpaid__open" (click)="togglePayments(item)"
                         [attr.aria-expanded]="isDrawerOpen(item, 'payments')" [attr.aria-controls]="'bpay-g-' + item.id">
@@ -403,7 +403,7 @@
                     <span class="brow__grip" cdkDragHandle role="button" tabindex="0"
                       (keydown)="onGripKeydown(item, $event)"
                       [attr.title]="'budgetPage.reorderHandle' | translate"
-                      [attr.aria-label]="('budgetPage.reorderHandle' | translate) + ' — ' + item.name">
+                      [attr.aria-label]="('budgetPage.reorderHandle' | translate) + ' – ' + item.name">
                       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
                         <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
@@ -422,19 +422,19 @@
 
                 <td class="brow__money" [attr.data-label]="'budgetPage.estimateCol' | translate">
                   <div class="brow__money-wrap">
-                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="—"
+                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="–"
                       [value]="item.estimate ?? ''" (change)="commitMoney(item, 'estimate', $event)"
-                      [attr.aria-label]="('budgetPage.estimateCol' | translate) + ' — ' + item.name" />
+                      [attr.aria-label]="('budgetPage.estimateCol' | translate) + ' – ' + item.name" />
                     <span class="brow__cur" aria-hidden="true">₾</span>
                   </div>
                 </td>
                 <td class="brow__money" [class.is-over]="isOverEstimate(item)"
                   [attr.data-label]="'budgetPage.actualCol' | translate">
                   <div class="brow__money-wrap">
-                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="—"
+                    <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off" placeholder="–"
                       [value]="item.actualCost ?? ''" (change)="commitMoney(item, 'actualCost', $event)"
                       [attr.title]="isOverEstimate(item) ? ('budgetPage.overEstimate' | translate) : null"
-                      [attr.aria-label]="('budgetPage.actualCol' | translate) + ' — ' + item.name" />
+                      [attr.aria-label]="('budgetPage.actualCol' | translate) + ' – ' + item.name" />
                     <span class="brow__cur" aria-hidden="true">₾</span>
                   </div>
                 </td>
@@ -446,10 +446,10 @@
                         [attr.aria-label]="'budgetPage.paidUp' | translate"
                         [attr.title]="'budgetPage.paidUp' | translate">✓</span>
                     }
-                    <span class="num">{{ item.paid === null ? '—' : format(item.paid) }}</span>
+                    <span class="num">{{ item.paid === null ? '–' : format(item.paid) }}</span>
                   </div>
                   <button type="button" class="brow__payfull" (click)="openPayments(item, $event)"
-                    [attr.aria-label]="('budgetPage.recordPayment' | translate) + ' — ' + item.name">
+                    [attr.aria-label]="('budgetPage.recordPayment' | translate) + ' – ' + item.name">
                     {{ (item.payments.length ? 'budgetPage.paymentsCount' : 'budgetPage.recordPayment') | translate: { n: item.payments.length } }}
                   </button>
                 </td>
@@ -484,7 +484,7 @@
                   </button>
                   <button type="button" class="bicon bicon--danger" (click)="askRemove(item)"
                     [attr.title]="'budgetPage.deleteItem' | translate"
-                    [attr.aria-label]="('budgetPage.deleteItem' | translate) + ' — ' + item.name">
+                    [attr.aria-label]="('budgetPage.deleteItem' | translate) + ' – ' + item.name">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="M3 6h18" />
@@ -589,7 +589,7 @@
           <div class="alloc__amount">
             <input type="number" min="0" step="100" inputmode="numeric" autocomplete="off"
               [value]="estAmounts()[i]" (input)="setEstAmount(i, $event)"
-              [attr.aria-label]="('budgetCat.' + c.key | translate) + ' — ' + ('budgetPage.amount' | translate)" />
+              [attr.aria-label]="('budgetCat.' + c.key | translate) + ' – ' + ('budgetPage.amount' | translate)" />
             <span class="alloc__cur" aria-hidden="true">₾</span>
           </div>
         </li>
@@ -643,7 +643,7 @@
           <label for="bm-est-{{ item.id }}">{{ 'budgetPage.estimateCol' | translate }}</label>
           <div class="bmodal__amount">
             <input id="bm-est-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
-              autocomplete="off" placeholder="—" [value]="item.estimate ?? ''"
+              autocomplete="off" placeholder="–" [value]="item.estimate ?? ''"
               (change)="commitMoney(item, 'estimate', $event)" />
             <span aria-hidden="true">₾</span>
           </div>
@@ -652,7 +652,7 @@
           <label for="bm-act-{{ item.id }}">{{ 'budgetPage.actualCol' | translate }}</label>
           <div class="bmodal__amount">
             <input id="bm-act-{{ item.id }}" type="number" min="0" step="100" inputmode="numeric"
-              autocomplete="off" placeholder="—" [value]="item.actualCost ?? ''"
+              autocomplete="off" placeholder="–" [value]="item.actualCost ?? ''"
               (change)="commitMoney(item, 'actualCost', $event)"
               [attr.title]="isOverEstimate(item) ? ('budgetPage.overEstimate' | translate) : null" />
             <span aria-hidden="true">₾</span>
@@ -660,7 +660,7 @@
         </div>
         <div class="bmodal__field bpaid" [class.is-paid-up]="isPaidUp(item)">
           <span class="bpaid__label">{{ 'budgetPage.paidCol' | translate }}</span>
-          <span class="bpaid__sum num">{{ item.paid === null ? '—' : format(item.paid) }}</span>
+          <span class="bpaid__sum num">{{ item.paid === null ? '–' : format(item.paid) }}</span>
           @if (isPaidUp(item)) {
             <span class="bmodal__paid-badge">✓ {{ 'budgetPage.paidUp' | translate }}</span>
           }
@@ -730,7 +730,7 @@
               <span class="bpay__note">{{ p.note }}</span>
             }
             <button type="button" class="bicon bicon--danger bpay__del" (click)="askRemovePayment(item, p)"
-              [attr.aria-label]="('budgetPage.paymentDelete' | translate) + ' — ' + format(p.amount)">
+              [attr.aria-label]="('budgetPage.paymentDelete' | translate) + ' – ' + format(p.amount)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M18 6 6 18M6 6l12 12" />

@@ -170,7 +170,7 @@
                             {{ (attendeeFor(occ)?.name ?? '')?.charAt(0) }}
                             <button type="button" class="seat-chip__remove"
                               (click)="$event.stopPropagation(); unassignSeat(table.id, seatIndex)"
-                              [attr.aria-label]="('seatingPage.unassignSeat' | translate) + ' — ' + (attendeeFor(occ)?.name ?? '')">×</button>
+                              [attr.aria-label]="('seatingPage.unassignSeat' | translate) + ' – ' + (attendeeFor(occ)?.name ?? '')">×</button>
                           </div>
                         } @else {
                           <span class="seat-dot__num">{{ seatIndex + 1 }}</span>
@@ -182,15 +182,15 @@
 
                 <div class="seat-table__toolbar">
                   <button type="button" class="seat-table__icon-btn" (click)="rotateTable(table, -15)"
-                    [attr.aria-label]="('seatingPage.rotateLeft' | translate) + ' — ' + table.name">
+                    [attr.aria-label]="('seatingPage.rotateLeft' | translate) + ' – ' + table.name">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
                   </button>
                   <button type="button" class="seat-table__icon-btn" (click)="rotateTable(table, 15)"
-                    [attr.aria-label]="('seatingPage.rotateRight' | translate) + ' — ' + table.name">
+                    [attr.aria-label]="('seatingPage.rotateRight' | translate) + ' – ' + table.name">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>
                   </button>
                   <button type="button" class="seat-table__icon-btn" (click)="openEditModal(table)"
-                    [attr.aria-label]="('seatingPage.editTable' | translate) + ' — ' + table.name">
+                    [attr.aria-label]="('seatingPage.editTable' | translate) + ' – ' + table.name">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="M12 20h9" />
@@ -198,7 +198,7 @@
                     </svg>
                   </button>
                   <button type="button" class="seat-table__icon-btn" (click)="duplicateTable(table)"
-                    [attr.aria-label]="('seatingPage.duplicateTable' | translate) + ' — ' + table.name">
+                    [attr.aria-label]="('seatingPage.duplicateTable' | translate) + ' – ' + table.name">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <rect x="9" y="9" width="11" height="11" rx="2" />
@@ -207,7 +207,7 @@
                   </button>
                   <button type="button" class="seat-table__icon-btn seat-table__icon-btn--danger"
                     (click)="askRemoveTable(table)"
-                    [attr.aria-label]="('seatingPage.removeTable' | translate) + ' — ' + table.name">×</button>
+                    [attr.aria-label]="('seatingPage.removeTable' | translate) + ' – ' + table.name">×</button>
                 </div>
               </div>
             }
@@ -229,19 +229,19 @@
                 </span>
                 <div class="seat-table__toolbar">
                   <button type="button" class="seat-table__icon-btn" (click)="rotateObject(obj, -15)"
-                    [attr.aria-label]="('seatingPage.rotateLeft' | translate) + ' — ' + objectLabel(obj)">
+                    [attr.aria-label]="('seatingPage.rotateLeft' | translate) + ' – ' + objectLabel(obj)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
                   </button>
                   <button type="button" class="seat-table__icon-btn" (click)="rotateObject(obj, 15)"
-                    [attr.aria-label]="('seatingPage.rotateRight' | translate) + ' — ' + objectLabel(obj)">
+                    [attr.aria-label]="('seatingPage.rotateRight' | translate) + ' – ' + objectLabel(obj)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>
                   </button>
                   <button type="button" class="seat-table__icon-btn" (click)="openObjectEdit(obj)"
-                    [attr.aria-label]="('seatingPage.editObject' | translate) + ' — ' + objectLabel(obj)">
+                    [attr.aria-label]="('seatingPage.editObject' | translate) + ' – ' + objectLabel(obj)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
                   </button>
                   <button type="button" class="seat-table__icon-btn seat-table__icon-btn--danger" (click)="askRemoveObject(obj)"
-                    [attr.aria-label]="('seatingPage.removeObject' | translate) + ' — ' + objectLabel(obj)">×</button>
+                    [attr.aria-label]="('seatingPage.removeObject' | translate) + ' – ' + objectLabel(obj)">×</button>
                 </div>
               </div>
             }
