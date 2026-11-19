@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformServer } from '@angular/common';
-import { Component, DestroyRef, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, NgZone, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -87,16 +87,13 @@ export class Home {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     afterNextRender(() => {
       this.setUpOrbit(host, destroyRef);
-      // before any link's own handler: a click that ends a swipe is swallowed (capture phase)
-      const stage = host.querySelector<HTMLElement>('.intro__stage');
-      const swallow = (e: MouseEvent) => this.onStepsClick(e);
-      stage?.addEventListener('click', swallow, true);
-      destroyRef.onDestroy(() => {
-        stage?.removeEventListener('click', swallow, true);
-        this.stopRotation();
-      });
+      this.setUpStepsSwipe(host, destroyRef);
+      destroyRef.onDestroy(() => this.stopRotation());
     });
   }
+
+  private readonly zone = inject(NgZone);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   private rotationId: number | undefined;
 
@@ -107,7 +104,7 @@ export class Home {
       // not in a background tab (don't burn cycles or skip slides), and not while the visitor
       // is using the stage: the step would change under their keyboard focus or their pointer
       if (document.hidden || this.introPaused() || this.stepsDrag) return;
-      this.slideFrom.set(null);
+      this.slideDir.set('next');
       this.slide.update((i) => (i + 1) % this.startSlides.length);
     }, 10400);
   }
@@ -120,16 +117,16 @@ export class Home {
 
   /** Jump to a step from its bottom label. Restarts the timer so the slide the
    * visitor just picked gets a full turn before auto-rotation moves on. */
-  protected goToSlide(i: number, from: 'next' | 'prev' | null = null): void {
-    this.slideFrom.set(from);
+  protected goToSlide(i: number): void {
+    const n = this.startSlides.length;
+    // the short way round: one step forward is "next", one step back (n - 1 forward) "prev"
+    this.slideDir.set((i - this.slide() + n) % n === n - 1 ? 'prev' : 'next');
     this.slide.set(i);
     if (this.rotating()) this.startRotation();
   }
 
-  /** The side a swipe brought the step now showing in from: its card arrives from that side.
-   * Null for a step changed any other way (the arrow, a pill, the automatic turn), whose
-   * card arrives as it always did. */
-  protected readonly slideFrom = signal<'next' | 'prev' | null>(null);
+  /** Which way the steps last turned (see parkedSlot). */
+  private readonly slideDir = signal<'next' | 'prev'>('next');
 
   /** 02 — the three planning steps, each a full-bleed photo + the step card (see-through on
    * every step). The slides rotate on their own once the stage has run (browser only, not
@@ -248,107 +245,214 @@ export class Home {
     return this.heroCta().link;
   }
 
-  /** One step forward or back through the planning slides (the arrow buttons). */
-  protected stepSlide(dir: 1 | -1, swiped = false): void {
+  /** One step forward or back through the planning slides (the arrow buttons, a swipe). */
+  protected stepSlide(dir: 1 | -1): void {
     const n = this.startSlides.length;
-    this.goToSlide((this.slide() + dir + n) % n, swiped ? (dir === 1 ? 'next' : 'prev') : null);
+    this.goToSlide((this.slide() + dir + n) % n);
   }
 
-  // ---- swiping the steps (2026-11-19) ----
-  // Phones and tablets only (Beka): a finger, on the stacked layout. The desktop stage and
-  // the mouse are left as they were.
-  // A sideways drag over the steps' photo changes the step, like the arrow and the pills
-  // do. While the finger moves, the card follows it with a slight tilt and thins out, and
-  // the photo of the step it is heading for shows through in step with the drag. Let go
-  // past a quarter of the card's width (or with a quick flick) and the step changes, its
-  // card arriving from the side it was pulled from; let go sooner and everything settles
-  // back. Up-and-down moves stay the page's own scrolling (touch-action: pan-y on the stage).
-  // The per-frame values go straight to the stage's style: nothing here needs a redraw by
-  // Angular until the step really changes.
-  private stepsDrag: {
-    id: number;
-    x: number;
-    y: number;
-    t: number;
-    stage: HTMLElement;
-    width: number;
-    locked: boolean;
-    dx: number;
-  } | null = null;
+  /** Where step `i`'s card sits relative to the one showing: 0 is showing, 1 is the next,
+   * -1 the one before (the steps go round). */
+  protected stepSlot(i: number): number {
+    const n = this.startSlides.length;
+    const k = (i - this.slide() + n) % n;
+    return k > n / 2 ? k - n : k;
+  }
+
+  /** The slot of the card that had to cross from one end of the row to the other in the last
+   * change (going forward, the one that was before is now after): it takes its new place
+   * without sliding across the screen. */
+  protected readonly parkedSlot = computed(() => (this.slideDir() === 'next' ? 1 : -1));
+
+  // ---- swiping the steps on phones (2026-11-19) ----
+  // Phones and tablets only (Beka): a finger, on the stacked layout, where the three cards
+  // stand in a row. The pinned desktop stage and the mouse are left as they were.
+  //
+  // The row follows the finger exactly; the photo of the step it is heading for shows
+  // through in step with the drag. Let go past a fifth of the way, or with a flick, and the
+  // row glides on to the next card at about the speed it was moving; let go sooner and it
+  // glides back. Up-and-down moves stay the page's own scrolling (touch-action: pan-y).
+  //
+  // Smoothness: the listeners are added outside Angular (a template listener would run
+  // change detection on every move of the finger), the drag is drawn once per frame, and it
+  // writes each card's own `translate` (drawn by the compositor) instead of a variable on
+  // the stage, which would restyle everything inside it. Angular hears of it only when the
+  // step really changes.
+  private stepsDrag = false;
   private stepsSuppressClick = false;
-  private stepsSettle = 0;
 
-  protected onStepsDown(e: PointerEvent, stage: HTMLElement): void {
-    if (e.pointerType !== 'touch' || this.stepsDrag) return;
-    // the phone layout only, not the pinned desktop stage
-    if (stage.closest('.intro')?.classList.contains('is-staged')) return;
-    // only over the steps: on this layout the same stage also holds the hero
-    const slides = stage.querySelector<HTMLElement>('.intro__slides');
-    const card = stage.querySelector<HTMLElement>('.start__card');
-    if (!slides || !card) return;
-    const area = slides.getBoundingClientRect();
-    if (e.clientY < area.top || e.clientY > area.bottom) return;
-    this.stepsDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp, stage, width: card.offsetWidth || 280, locked: false, dx: 0 };
-  }
-
-  protected onStepsMove(e: PointerEvent): void {
-    const d = this.stepsDrag;
-    if (!d || e.pointerId !== d.id) return;
-    const dx = e.clientX - d.x;
-    const dy = e.clientY - d.y;
-    if (!d.locked) {
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-      // a move that is more up-and-down than sideways is a scroll, not a swipe
-      if (Math.abs(dx) < Math.abs(dy) * 1.2) {
-        this.stepsDrag = null;
-        return;
-      }
-      d.locked = true;
-      window.clearTimeout(this.stepsSettle);
-      d.stage.classList.remove('is-settling', 'is-swiped');
-      d.stage.classList.add('is-swiping');
-      d.stage.setPointerCapture?.(d.id);
-    }
-    d.dx = dx;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const ratio = Math.max(-1, Math.min(1, dx / (d.width * 0.9)));
-    d.stage.style.setProperty('--swipe', `${dx.toFixed(1)}px`);
-    d.stage.style.setProperty('--swipe-r', ratio.toFixed(3));
-    // the photo of the step the drag is heading for shows through
+  private setUpStepsSwipe(host: HTMLElement, destroyRef: DestroyRef): void {
+    const stage = host.querySelector<HTMLElement>('.intro__stage');
+    const intro = host.querySelector<HTMLElement>('.intro');
+    const slides = stage?.querySelector<HTMLElement>('.intro__slides');
+    const box = stage?.querySelector<HTMLElement>('.start__card');
+    if (!stage || !intro || !slides || !box) return;
+    const GAP = 12; // px between the cards: --card-gap in home.scss
     const n = this.startSlides.length;
-    const target = (this.slide() + (dx < 0 ? 1 : -1) + n) % n;
-    d.stage.querySelectorAll<HTMLElement>('.start__bg').forEach((img) => {
-      const i = Number(img.dataset['i']);
-      img.style.opacity = i === target ? Math.abs(ratio).toFixed(3) : '';
+
+    interface Drag {
+      id: number;
+      x: number;
+      y: number;
+      locked: boolean;
+      dx: number;
+      span: number; // one card's travel: its width plus the gap
+      cards: { el: HTMLElement; k: number }[];
+      photos: { el: HTMLElement; i: number }[];
+      trail: { dx: number; t: number }[]; // the last moves, for the speed at release
+    }
+    let drag: Drag | null = null;
+    let frame = 0;
+    let after = 0;
+
+    const paint = () => {
+      frame = 0;
+      const d = drag;
+      if (!d?.locked) return;
+      for (const c of d.cards) c.el.style.translate = `calc(${c.k} * (100% + ${GAP}px) + ${d.dx.toFixed(1)}px) 0px`;
+      // the photo of the step the row is heading for shows through, over the others
+      const target = (this.slide() + (d.dx < 0 ? 1 : -1) + n) % n;
+      const share = Math.min(1, Math.abs(d.dx) / d.span);
+      for (const p of d.photos) {
+        p.el.style.opacity = p.i === target ? share.toFixed(3) : '';
+        p.el.style.zIndex = p.i === target ? '1' : '';
+      }
+    };
+
+    const down = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || drag) return;
+      if (intro.classList.contains('is-staged')) return; // the phone layout only
+      // only over the steps: on this layout the same stage also holds the hero
+      const area = slides.getBoundingClientRect();
+      if (e.clientY < area.top || e.clientY > area.bottom) return;
+      drag = {
+        id: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        locked: false,
+        dx: 0,
+        span: (box.offsetWidth || 280) + GAP,
+        cards: Array.from(stage.querySelectorAll<HTMLElement>('.start__card-inner'), (el) => ({ el, k: Number(el.dataset['k']) })),
+        photos: Array.from(stage.querySelectorAll<HTMLElement>('.start__bg'), (el) => ({ el, i: Number(el.dataset['i']) })),
+        trail: [{ dx: 0, t: e.timeStamp }],
+      };
+    };
+
+    const move = (e: PointerEvent) => {
+      const d = drag;
+      if (!d || e.pointerId !== d.id) return;
+      const dx = e.clientX - d.x;
+      const dy = e.clientY - d.y;
+      if (!d.locked) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        // a move that is more up-and-down than sideways is a scroll, not a swipe
+        if (Math.abs(dx) < Math.abs(dy) * 1.2) {
+          drag = null;
+          return;
+        }
+        d.locked = true;
+        this.stepsDrag = true;
+        this.stepsHinted = true;
+        window.clearTimeout(after);
+        stage.classList.remove('is-gliding', 'is-hinting');
+        for (const p of d.photos) p.el.style.zIndex = '';
+        stage.classList.add('is-swiping');
+        stage.setPointerCapture?.(d.id);
+      }
+      // a card's width at most: there is only one neighbour on each side
+      d.dx = Math.max(-d.span, Math.min(d.span, dx));
+      d.trail.push({ dx: d.dx, t: e.timeStamp });
+      if (d.trail.length > 6) d.trail.shift();
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+
+    const up = (e: PointerEvent) => {
+      const d = drag;
+      if (!d || e.pointerId !== d.id) return;
+      drag = null;
+      if (!d.locked) return;
+      this.stepsDrag = false;
+      cancelAnimationFrame(frame);
+      frame = 0;
+      // the finger's speed over its last moves (px per ms), signed
+      const first = d.trail[0];
+      const last = d.trail[d.trail.length - 1];
+      const speed = (last.dx - first.dx) / Math.max(16, last.t - first.t);
+      const along = Math.sign(speed) === Math.sign(d.dx);
+      const go = e.type === 'pointerup' && (Math.abs(d.dx) > d.span * 0.2 || (along && Math.abs(speed) > 0.35 && Math.abs(d.dx) > 16));
+      // the glide takes about as long as the finger would have: quick after a flick,
+      // unhurried after a slow drag
+      const left = go ? d.span - Math.abs(d.dx) : Math.abs(d.dx);
+      const ms = Math.round(Math.max(180, Math.min(480, left / Math.max(0.55, Math.abs(speed)))));
+      stage.style.setProperty('--snap-dur', `${ms}ms`);
+      stage.classList.remove('is-swiping');
+      stage.classList.add('is-gliding');
+      if (go) {
+        // the new places (--k) must be in the page before the dragged offsets come off, or
+        // the row would jump back for a frame
+        this.zone.run(() => {
+          this.stepSlide(d.dx < 0 ? 1 : -1);
+          this.cdr.detectChanges();
+        });
+      }
+      for (const c of d.cards) c.el.style.translate = '';
+      for (const p of d.photos) p.el.style.opacity = '';
+      after = window.setTimeout(() => {
+        stage.classList.remove('is-gliding');
+        stage.style.removeProperty('--snap-dur');
+        for (const p of d.photos) p.el.style.zIndex = '';
+      }, ms + 80);
+      this.stepsSuppressClick = true;
+      window.setTimeout(() => (this.stepsSuppressClick = false), 350);
+    };
+
+    // a click that ends a swipe (on the card's link, a pill, the ring) must not also press it:
+    // swallowed before any link's own handler (capture phase)
+    const click = (e: MouseEvent) => {
+      if (!this.stepsSuppressClick) return;
+      e.preventDefault();
+      e.stopPropagation();
+      this.stepsSuppressClick = false;
+    };
+
+    // Once, when the cards first come into view on a touch screen: the row leans a little
+    // to the side and comes back, to show that it moves.
+    let seen: IntersectionObserver | undefined;
+    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      seen = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((en) => en.isIntersecting)) return;
+          seen?.disconnect();
+          if (this.stepsHinted || intro.classList.contains('is-staged')) return;
+          this.stepsHinted = true;
+          stage.classList.add('is-hinting');
+          window.setTimeout(() => stage.classList.remove('is-hinting'), 1500);
+        },
+        { threshold: 0.75 },
+      );
+      seen.observe(box);
+    }
+
+    this.zone.runOutsideAngular(() => {
+      stage.addEventListener('pointerdown', down, { passive: true });
+      stage.addEventListener('pointermove', move, { passive: true });
+      stage.addEventListener('pointerup', up);
+      stage.addEventListener('pointercancel', up);
+      stage.addEventListener('click', click, true);
+    });
+    destroyRef.onDestroy(() => {
+      stage.removeEventListener('pointerdown', down);
+      stage.removeEventListener('pointermove', move);
+      stage.removeEventListener('pointerup', up);
+      stage.removeEventListener('pointercancel', up);
+      stage.removeEventListener('click', click, true);
+      seen?.disconnect();
+      cancelAnimationFrame(frame);
+      window.clearTimeout(after);
     });
   }
 
-  protected onStepsUp(e: PointerEvent): void {
-    const d = this.stepsDrag;
-    if (!d || e.pointerId !== d.id) return;
-    this.stepsDrag = null;
-    if (!d.locked) return;
-    const speed = Math.abs(d.dx) / Math.max(1, e.timeStamp - d.t); // px per ms
-    const go = e.type === 'pointerup' && (Math.abs(d.dx) > d.width * 0.25 || (speed > 0.45 && Math.abs(d.dx) > 24));
-    const stage = d.stage;
-    stage.classList.remove('is-swiping');
-    stage.classList.add(go ? 'is-swiped' : 'is-settling');
-    stage.style.removeProperty('--swipe');
-    stage.style.removeProperty('--swipe-r');
-    stage.querySelectorAll<HTMLElement>('.start__bg').forEach((img) => (img.style.opacity = ''));
-    this.stepsSettle = window.setTimeout(() => stage.classList.remove('is-swiped', 'is-settling'), 700);
-    this.stepsSuppressClick = true;
-    window.setTimeout(() => (this.stepsSuppressClick = false), 350);
-    if (go) this.stepSlide(d.dx < 0 ? 1 : -1, true);
-  }
-
-  /** A swipe that ends on the card's link, a pill or the ring must not also press it. */
-  protected onStepsClick(e: MouseEvent): void {
-    if (!this.stepsSuppressClick) return;
-    e.preventDefault();
-    e.stopPropagation();
-    this.stepsSuppressClick = false;
-  }
+  private stepsHinted = false;
 
   // ---- the category carousel around the ring ----
   /** Index of the centred card. */

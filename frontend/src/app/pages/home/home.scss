@@ -348,6 +348,21 @@
     width: min(max(var(--card-w), 12.5rem), calc(100% - 2 * var(--gutter)));
     // clear of the button above; more room below than above, so it sits a little high
     margin-block: clamp(1.25rem, 4vh, 3rem) clamp(1.5rem, 6vh, 9rem);
+    // the three steps' cards share this one cell; stacked, each is moved a card's width
+    // along by its place in the row (below)
+    display: grid;
+    position: relative;
+  }
+
+  // the step now showing, for screen readers (the cards themselves do not change, only
+  // which of them is in the middle)
+  &__now {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   // Revolut-style frame (their "Life, meets savings" box): a tall portrait rectangle, 4:5,
@@ -366,16 +381,28 @@
     text-align: center;
     text-shadow: 0 1px 12px rgba(34, 30, 32, 0.6); // keeps the text legible on the bare photo
     // (fills backwards only: once it has played, the card's own values rule again, which
-    // is what lets a swipe move it)
+    // is what lets the row move it)
     animation: card-in 700ms var(--ease-out) backwards;
 
-    // a step brought in by a swipe arrives from the side it was pulled from
-    &.is-from-next {
-      animation: card-in-next 560ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    // ---- stacked: the three cards stand in a row (2026-11-19). --k is a card's place: 0
+    // showing, 1 the next (its edge shows at the right of the screen), -1 the one before
+    // (at the left). The edges say "this moves sideways"; a change of step slides the row.
+    // On the pinned desktop stage only the card showing is drawn (the staged rules below).
+    --card-gap: 12px; // the swipe code (Home.setUpStepsSwipe) uses the same 12
+    grid-area: 1 / 1;
+    translate: calc(var(--k, 0) * (100% + var(--card-gap))) 0;
+    opacity: 0.62;
+    transition:
+      translate var(--snap-dur, 520ms) cubic-bezier(0.22, 0.8, 0.22, 1),
+      opacity var(--snap-dur, 520ms) var(--ease-out);
+
+    &.is-current {
+      opacity: 1;
     }
 
-    &.is-from-prev {
-      animation: card-in-prev 560ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    // the card that crossed from one end of the row to the other takes its place unseen
+    &.is-parked {
+      transition: none;
     }
   }
 
@@ -586,10 +613,19 @@
       margin: 0 0 0 calc(var(--box-w) / -2 + var(--box-shift));
     }
 
+    // one box on this layout: only the card showing is drawn, in place and at full strength
+    // (bringing it back from display: none replays its entry, as a new card always did)
     .start__card-inner {
       height: 100%;
       aspect-ratio: auto;
       border-radius: 24px;
+      translate: none;
+      opacity: 1;
+      transition: none;
+
+      &:not(.is-current) {
+        display: none;
+      }
     }
 
     // the frame at rest is larger than the card, so its text may grow further with it
@@ -910,67 +946,47 @@
   }
 }
 
-@keyframes card-in-next {
-  from {
-    opacity: 0;
-    transform: translateX(56px) rotate(2deg);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes card-in-prev {
-  from {
-    opacity: 0;
-    transform: translateX(-56px) rotate(-2deg);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-// ---- swiping the steps (Home.onStepsDown…): the stage carries the drag in --swipe (px)
-// and --swipe-r (-1…1) while a finger is down ----
+// ---- swiping the steps on phones (Home.setUpStepsSwipe) ----
 .intro__stage {
   touch-action: pan-y; // up-and-down stays the page's scrolling; sideways is the swipe
 
-  // the card follows the finger, tilts a little the way it is pulled, and thins out
-  &.is-swiping .start__card-inner {
-    translate: calc(var(--swipe, 0px) * 0.9) 0;
-    rotate: calc(var(--swipe-r, 0) * 3deg);
-    opacity: calc(1 - max(var(--swipe-r, 0), -1 * var(--swipe-r, 0)) * 0.8);
-    transition: none;
-  }
-
-  // (their photos follow the drag too: the opacity is set per frame from the script)
+  // A finger is down: the script writes each card's place and the arriving photo's
+  // strength every frame, so nothing may ease behind it.
+  &.is-swiping .start__card-inner,
   &.is-swiping .start__bg {
     transition: none;
+    will-change: translate, opacity;
   }
 
   &.is-swiping {
     user-select: none;
   }
 
-  // let go too soon: the card springs back, the photo fades back out
-  &.is-settling .start__card-inner {
-    transition:
-      translate 460ms cubic-bezier(0.2, 0.9, 0.3, 1.25),
-      rotate 460ms cubic-bezier(0.2, 0.9, 0.3, 1.25),
-      opacity 300ms var(--ease-out);
+  // Let go: the row glides to its place in --snap-dur (set from the finger's speed), and
+  // the photos finish in the same time instead of the slow automatic crossfade.
+  &.is-gliding .start__bg {
+    transition: opacity var(--snap-dur, 400ms) var(--ease-out);
   }
 
-  &.is-settling .start__bg {
-    transition: opacity 320ms var(--ease-out);
+  // Once, when the cards first come into view on a touch screen: the row leans to the
+  // side and comes back, to show that it moves.
+  &.is-hinting .start__card {
+    animation: steps-hint 1300ms cubic-bezier(0.3, 0, 0.2, 1) 200ms both;
+  }
+}
+
+@keyframes steps-hint {
+  0%,
+  100% {
+    transform: none;
   }
 
-  // the step changed by a swipe: its photo finishes arriving faster than the slow turn
-  &.is-swiped .start__bg {
-    transition: opacity 520ms var(--ease-out);
+  38% {
+    transform: translateX(-44px);
+  }
+
+  62% {
+    transform: translateX(-36px);
   }
 }
 

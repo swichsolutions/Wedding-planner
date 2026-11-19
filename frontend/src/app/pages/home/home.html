@@ -12,11 +12,9 @@
      full-screen blocks. The old "ყველაფერი ერთ სივრცეში" three-card stage is gone. -->
 <section id="promise" class="intro" appScrollStage (ran)="onStage($event)">
   <!-- keyboard focus anywhere in the stage holds the automatic rotation (see introPaused) -->
-  <!-- a sideways drag over the steps changes the step (onStepsDown… in home.ts) -->
+  <!-- (on phones a sideways swipe over the steps changes the step: setUpStepsSwipe in home.ts) -->
   <div class="intro__stage" data-nav="dark" #stage (focusin)="introFocus.set(true)"
-    (focusout)="introFocus.set(stage.contains($any($event).relatedTarget))"
-    (pointerdown)="onStepsDown($event, stage)" (pointermove)="onStepsMove($event)"
-    (pointerup)="onStepsUp($event)" (pointercancel)="onStepsUp($event)">
+    (focusout)="introFocus.set(stage.contains($any($event).relatedTarget))">
     <!-- The steps' photos, one per slide, crossfading. The first is in the server HTML (the
          steps are readable without JS); it is lazy and low priority so it never competes
          with the hero photo. The other two join after the first scroll. On the stacked
@@ -91,31 +89,37 @@
       <p class="start__lead">{{ 'home.start.lead' | translate }}</p>
     </div>
 
-    <!-- The box: the current step. At rest it is the hero's frame and shows the first step
-         without its link; when the stage runs it becomes the second section's card, and the
-         shrunken hero photo fills it on the first step. Announced when a visitor switches
-         steps, not on every turn of the automatic rotation. Resting the pointer on it
-         holds the rotation, so its link does not change under the hand. -->
-    <div class="start__card" [attr.aria-live]="rotating() && !introPaused() ? 'off' : 'polite'"
-      (mouseenter)="cardHover.set(true)" (mouseleave)="cardHover.set(false)">
+    <!-- The box: the steps' cards. All three are in the page (since 2026-11-19); `--k` says
+         where each sits relative to the one showing (-1, 0, 1). On the pinned desktop stage
+         only the one showing is drawn: at rest it is the hero's frame with the first step,
+         without its link, and when the stage runs it becomes the second section's card. On
+         phones they stand side by side, the neighbours' edges showing at the screen's sides,
+         and slide as a row (a swipe, the arrow, a pill, the automatic turn). The step now
+         showing is announced from the hidden line below when a visitor switches steps, not
+         on every automatic turn. Resting the pointer on the box holds the rotation, so its
+         link does not change under the hand. -->
+    <div class="start__card" (mouseenter)="cardHover.set(true)" (mouseleave)="cardHover.set(false)">
+      <span class="start__now" [attr.aria-live]="rotating() && !introPaused() ? 'off' : 'polite'">
+        {{ 'home.start.' + startSlides[slide()].key + '.title' | translate }}: {{ 'home.start.' + startSlides[slide()].key + '.value' | translate }}
+      </span>
       @for (s of startSlides; track s.key; let i = $index) {
-        @if (slide() === i) {
-          <div class="start__card-inner" [class.is-from-next]="slideFrom() === 'next'" [class.is-from-prev]="slideFrom() === 'prev'">
-            <!-- the step/value block sits in the exact middle of the frame;
-                 the detail pill sits on its own near the bottom edge -->
-            <div class="start__card-main">
-              <span class="start__card-label">{{ 'home.start.' + s.key + '.title' | translate }}</span>
-              <span class="start__card-value">{{ 'home.start.' + s.key + '.value' | translate }}</span>
-            </div>
-            <!-- the pill is a link (Beka, 2026-11-03): define → the organizer (sign-up first),
-                 choose → the catalog, plan the details → the day schedules -->
-            <a class="start__card-sub" data-stage="run" [routerLink]="stepLink(s.to)"
-              [attr.title]="'home.start.' + s.key + '.title' | translate">
-              {{ 'home.start.' + s.key + '.sub' | translate }}
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-            </a>
+        @let k = stepSlot(i);
+        <div class="start__card-inner" [class.is-current]="k === 0" [class.is-parked]="k === parkedSlot()"
+          [style.--k]="k" [attr.data-k]="k" [attr.inert]="k === 0 ? null : ''">
+          <!-- the step/value block sits in the exact middle of the frame;
+               the detail pill sits on its own near the bottom edge -->
+          <div class="start__card-main">
+            <span class="start__card-label">{{ 'home.start.' + s.key + '.title' | translate }}</span>
+            <span class="start__card-value">{{ 'home.start.' + s.key + '.value' | translate }}</span>
           </div>
-        }
+          <!-- the pill is a link (Beka, 2026-11-03): define → the organizer (sign-up first),
+               choose → the catalog, plan the details → the day schedules -->
+          <a class="start__card-sub" data-stage="run" [routerLink]="stepLink(s.to)"
+            [attr.title]="'home.start.' + s.key + '.title' | translate">
+            {{ 'home.start.' + s.key + '.sub' | translate }}
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </a>
+        </div>
       }
     </div>
 
