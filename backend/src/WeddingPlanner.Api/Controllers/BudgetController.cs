@@ -89,20 +89,22 @@ public class BudgetController : ControllerBase
                 var first = existing.Count > 0 ? existing.Max(e => e.SortOrder) + 1 : 0;
 
                 var now = DateTimeOffset.UtcNow;
+                var seededRows = new List<BudgetItem>(toSeed.Length);
                 for (var i = 0; i < toSeed.Length; i++)
                 {
                     var (name, slug, pct) = toSeed[i];
-                    _db.BudgetItems.Add(new BudgetItem
+                    seededRows.Add(new BudgetItem
                     {
                         CoupleId = cid,
                         Name = name,
                         CategorySlug = slug,
                         DefaultPct = pct,
-                        Estimate = EstimateFor(total, pct),
                         SortOrder = first + i,
                         CreatedAt = now,
                     });
                 }
+                SpreadEstimates(total, seededRows);
+                _db.BudgetItems.AddRange(seededRows);
                 await _db.SaveChangesAsync();
             }
 
@@ -151,21 +153,19 @@ public class BudgetController : ControllerBase
             // Explicit reset: every seeded row returns to the suggested split.
             var seeded = await _db.BudgetItems
                 .Where(i => i.CoupleId == cid && i.DefaultPct != null)
+                .OrderBy(i => i.SortOrder).ThenBy(i => i.Id)
                 .ToListAsync();
-            foreach (var item in seeded)
-            {
-                item.Estimate = EstimateFor(dto.TotalBudget, item.DefaultPct!.Value);
-                item.EstimateEdited = false;
-            }
+            SpreadEstimates(dto.TotalBudget, seeded);
+            foreach (var item in seeded) item.EstimateEdited = false;
         }
         else if (dto.ApplyEstimates)
         {
             // Live follow: only rows the couple hasn't hand-tuned track the total.
             var following = await _db.BudgetItems
                 .Where(i => i.CoupleId == cid && i.DefaultPct != null && !i.EstimateEdited)
+                .OrderBy(i => i.SortOrder).ThenBy(i => i.Id)
                 .ToListAsync();
-            foreach (var item in following)
-                item.Estimate = EstimateFor(dto.TotalBudget, item.DefaultPct!.Value);
+            SpreadEstimates(dto.TotalBudget, following);
         }
 
         await _db.SaveChangesAsync();
@@ -422,8 +422,34 @@ public class BudgetController : ControllerBase
                 .Select(p => new BudgetPaymentDto(p.Id, p.Amount, p.PaidOn, p.Note))
                 .ToList());
 
-    private static decimal? EstimateFor(decimal? total, int pct) =>
-        total is decimal t && t > 0 ? Math.Round(t * pct / 100) : null;
+    /// <summary>
+    /// The suggested estimate of each row, from its share of the total, in whole lari. The rows
+    /// are rounded together (largest remainder), so they add up to their combined share of the
+    /// total: rounding each row on its own drifted by a lari or more (a 120 ₾ budget planned
+    /// 121 ₾, 2026-11-20), and the page then showed its own suggestion as over budget. The
+    /// browser's estimator does the same (core/budget.ts, suggestedAllocation).
+    /// </summary>
+    internal static void SpreadEstimates(decimal? total, IReadOnlyList<BudgetItem> rows)
+    {
+        if (total is not decimal t || t <= 0)
+        {
+            foreach (var row in rows) row.Estimate = null;
+            return;
+        }
+
+        var exact = rows.Select(r => t * r.DefaultPct!.Value / 100).ToArray();
+        var whole = exact.Select(Math.Floor).ToArray();
+        var leftover = (int)(Math.Round(exact.Sum(), MidpointRounding.AwayFromZero) - whole.Sum());
+        // the spare lari go to the rows that lost most to rounding down; ties keep the rows' order
+        foreach (var n in Enumerable.Range(0, rows.Count).OrderByDescending(n => exact[n] - whole[n]).ThenBy(n => n))
+        {
+            if (leftover <= 0) break;
+            whole[n] += 1;
+            leftover--;
+        }
+
+        for (var n = 0; n < rows.Count; n++) rows[n].Estimate = whole[n];
+    }
 
     private static string? NormalizeOrNull(string? s)
     {
