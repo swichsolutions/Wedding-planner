@@ -1831,6 +1831,7 @@
     "close": "Close"
   },
   "profile": {
+    "noPhotos": "No photos added yet",
     "from": "Starting from",
     "areasServed": "Areas served",
     "about": "About",

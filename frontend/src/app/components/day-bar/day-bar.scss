@@ -10,10 +10,15 @@
 
 .db {
   --above: 4.25rem; // room for the labels over the axis
-  --below: 4.25rem; // ... and under the ticks
+  // ... and under the ticks. (The ticks row grew by 12–16px on 2026-11-20 and this shrank by
+  // as much, so the bar is as tall as it was: the home page's day section fits one screen.)
+  --below: 3.5rem;
   --axis: 14px;
-  --ticks: 1.5rem;
   --pin: 44px; // the icon pins (Beka, 2026-11-03: bigger)
+  // The hour labels start below the pins' lower edge (2026-11-20: at 8px under the axis they
+  // were behind the pins, which hang 15–19px below it: five of seven hidden on a phone).
+  --tick-label: calc(var(--pin) / 2 - var(--axis) / 2 + 4px);
+  --ticks: calc(var(--tick-label) + 11px + 6px); // the label's own height, and air under it
   position: relative;
   width: 100%;
   margin: 0;
@@ -21,7 +26,7 @@
 
   @include bp.respond-to(md) {
     --above: 5.25rem;
-    --below: 5.25rem;
+    --below: 4.25rem;
     --axis: 16px;
     --pin: 54px;
     padding-inline: var(--space-4);
@@ -71,7 +76,7 @@
 
   span {
     position: absolute;
-    top: 8px;
+    top: var(--tick-label);
     left: 50%;
     font-size: 11px;
     line-height: 1;
@@ -158,8 +163,9 @@
   text-align: center;
   transform: translateX(-50%);
 
+  // (measured from the axis's middle: just under the ticks row, which now clears the pins)
   .db__mark--below & {
-    top: calc(var(--pin) / 2 + var(--ticks) + 8px);
+    top: calc(var(--axis) / 2 + var(--ticks) + 4px);
     bottom: auto;
   }
 

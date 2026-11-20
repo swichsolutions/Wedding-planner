@@ -107,8 +107,12 @@
   // @font-face rules in _base.scss stay for the invitation designs.
   // 2026-11-17 (Beka): headings and large text are Geo Bauhaus (see _base.scss).
   // 2026-11-18 (Beka): small text is FiraGO (he did not like Noto Sans Georgian for it); it
-  // also draws whatever Geo Bauhaus lacks in a heading. Noto stays behind both as the fallback.
-  --font-brand-display: 'Geo Bauhaus', 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+  // Noto stays behind both as the fallback.
+  // 2026-11-20: what Geo Bauhaus lacks in a heading (Latin letters, „ “, long dashes, ₾) is
+  // drawn by 'Heading Latin', FiraGO's regular weight whatever weight the heading asks for,
+  // so a Latin name in a Georgian heading is as light as the letters around it. The English
+  // site sets its headings in it alone (the rule after this block).
+  --font-brand-display: 'Geo Bauhaus', 'Heading Latin', 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
   --font-brand-text: 'FiraGO', 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
   --stretch-display: 70%;
   --stretch-ui: 100%;
@@ -240,4 +244,12 @@
   --color-danger-100:  var(--danger-100);
   --color-info-600:    var(--info-600);
   --color-info-100:    var(--info-100);
+}
+
+// English headings (2026-11-20): Geo Bauhaus has no Latin letters, so with it first in the
+// list an English heading took its letters from the text face in heavy bold, and its spaces,
+// commas and digits from Geo Bauhaus (wide gaps between the words). English headings are
+// 'Heading Latin' throughout: one face, as light as the Georgian headings.
+:root:lang(en) {
+  --font-brand-display: 'Heading Latin', 'FiraGO', 'Noto Sans', system-ui, sans-serif;
 }

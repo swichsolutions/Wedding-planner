@@ -7,6 +7,9 @@
     @if (vendor().photos[0]; as photo) {
       <img [src]="photo.url" [alt]="photo.alt" [attr.loading]="eager() ? 'eager' : 'lazy'"
         [attr.fetchpriority]="priority() ? 'high' : null" width="700" height="875" />
+    } @else {
+      <!-- no photo yet: the name's first letter on the card's own fill, not an empty white box -->
+      <span class="vendor-card__blank">{{ initial() }}</span>
     }
   </a>
 

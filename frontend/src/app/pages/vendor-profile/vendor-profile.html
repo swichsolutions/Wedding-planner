@@ -34,6 +34,12 @@
                 <button type="button" class="gallery__nav gallery__nav--next" (click)="next()"
                   [attr.aria-label]="'gallery.next' | translate">›</button>
               }
+            } @else {
+              <!-- no photos yet: say so, on the small-fill ivory, instead of an empty white box -->
+              <div class="gallery__blank">
+                <span class="gallery__blank-letter" aria-hidden="true">{{ initial(v.name) }}</span>
+                <p>{{ 'profile.noPhotos' | translate }}</p>
+              </div>
             }
           </div>
 

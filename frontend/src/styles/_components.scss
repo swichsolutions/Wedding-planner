@@ -663,6 +663,7 @@
 // ---- Quiet text-link buttons ("back to designs", "copy link", "remove photo").
 // Global: used across budget planner, website builder, and future surfaces. ----
 .blink {
+  min-height: 24px; // a tap area of at least 24px (it was one 17–20px line of text; 2026-11-20)
   padding: 0;
   border: 0;
   background: none;

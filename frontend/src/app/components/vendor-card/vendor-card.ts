@@ -30,6 +30,8 @@ export class VendorCard {
     const v = this.vendor();
     return this.lang.current() === 'en' && v.citySlug ? cityDisplayEn(v.citySlug) : v.city;
   });
+  /** The name's first letter, shown where the photo would be while a vendor has none. */
+  protected readonly initial = computed(() => Array.from(this.vendor().name.trim())[0]?.toUpperCase() ?? '');
   /** The profile link's tooltip: what the name alone doesn't say (category and city). */
   protected readonly linkTitle = computed(() => {
     const v = this.vendor();

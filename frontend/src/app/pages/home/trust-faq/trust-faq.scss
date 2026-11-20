@@ -272,19 +272,20 @@
 .dots {
   display: flex;
   justify-content: center;
-  gap: var(--space-2);
+  gap: 14px; // with the 24px-wide tap areas below, neighbours touch but never overlap
   width: var(--w);
   margin-top: var(--space-6);
 }
 
 .dot {
-  // the dot stays 10px; its tap area is 28px tall (2026-11-12 scan)
+  // the dot stays 10px; its tap area is 28px tall (2026-11-12 scan) and 24px wide
+  // (2026-11-20: it was 16px, with the dots 18px apart)
   position: relative;
 
   &::before {
     content: '';
     position: absolute;
-    inset: -9px -3px;
+    inset: -9px -7px;
   }
 
   width: 10px;

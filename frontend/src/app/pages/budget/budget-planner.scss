@@ -696,9 +696,9 @@
 // One-click "mark as paid" under the paid amount. Styled as a pressable pill so it
 // reads as an ACTION — green text + checkmark would read as an already-paid status.
 .brow__payfull {
-  // a tap area of at least 24px without moving anything (2026-11-12 scan)
-  padding-block: 0.25rem;
-  margin-block: -0.25rem;
+  // a tap area of at least 24px (the padding set for this on 2026-11-12 was overwritten by
+  // the `padding` shorthand below, so the pill stayed 22px; 2026-11-20)
+  min-height: 24px;
   max-width: 100%;
   white-space: normal;
   display: inline-flex;

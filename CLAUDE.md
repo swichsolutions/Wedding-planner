@@ -154,8 +154,11 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
   fallback behind both, and on a couple's invitation.
   - Geo Bauhaus is a 1995 font with one light weight: `public/fonts/GeoBauhausNusx-Unicode.woff2`
     is our copy with the Georgian letters moved to their Unicode places (the original has them on
-    Latin keys). It has no Latin letters, „ “, long dashes or ₾: those come from FiraGO inside a
-    heading, so keep Latin words out of headings where you can.
+    Latin keys). It has no Latin letters, „ “, long dashes or ₾: inside a heading those come
+    from `'Heading Latin'` (FiraGO's regular weight served for every weight, 2026-11-20), so a
+    Latin vendor name is as light as the Georgian letters beside it. English headings
+    (`:root:lang(en)`) are 'Heading Latin' alone. Something that must be bold Latin (the
+    header's wordmark) uses the text face, not `--font-display`.
   - It is hard to read small, so its letter spacing follows the size: every rule that sets
     `--font-display` also sets `letter-spacing: var(--tracking-display)` (about 1px at 18–20px,
     nothing from 40px up). Do the same in a new rule. The bare `h1`–`h5` rule does not, because

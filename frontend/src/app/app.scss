@@ -33,7 +33,9 @@ main {
 // Wordmark — condensed display face, clay full stop. Placeholder brand name.
 // =============================================================================
 .wordmark {
-  font-family: var(--font-display);
+  // the text face, heavy: the logo's own letters, not a heading (the heading face draws
+  // Latin letters light since 2026-11-20)
+  font-family: var(--font-body);
   font-stretch: var(--stretch-display);
   font-weight: var(--fw-black);
   font-size: 1.45rem;

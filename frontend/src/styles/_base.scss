@@ -80,6 +80,19 @@
   unicode-range: U+10D0-10F0, U+0020-0040, U+005B-0060, U+007B-007E;
 }
 
+// ---- 'Heading Latin': what a heading draws where Geo Bauhaus has no letter (Latin
+// letters, „ “, long dashes, ₾). It is FiraGO's regular weight served for EVERY weight, like
+// Geo Bauhaus itself: headings ask for 600–800, and with plain FiraGO as the fallback a
+// Latin name in a Georgian heading came out heavy bold beside the light Georgian letters
+// ("BB დასამტკიცებელი": 2026-11-20). English headings are set in it alone (_tokens.scss).
+@font-face {
+  font-family: 'Heading Latin';
+  font-style: normal;
+  font-weight: 1 1000;
+  font-display: swap;
+  src: url('/fonts/FiraGO-Regular.woff2') format('woff2');
+}
+
 // Base layer — minimal reset + element defaults wired to design tokens.
 // Keep this lean; component styles live with their components.
 

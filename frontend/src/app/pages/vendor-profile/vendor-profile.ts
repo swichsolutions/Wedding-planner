@@ -418,6 +418,11 @@ export class VendorProfile implements OnDestroy {
     return categoryKey(slug);
   }
 
+  /** The name's first letter, shown where the photos would be while a vendor has none. */
+  protected initial(name: string): string {
+    return Array.from(name.trim())[0]?.toUpperCase() ?? '';
+  }
+
   /** "სიღნაღი, კახეთი" — but just "თბილისი" when the city and the region are the same. */
   protected cityLabel(v: Vendor): string {
     return this.lang.current() === 'en' && v.citySlug ? cityDisplayEn(v.citySlug) : v.city;
