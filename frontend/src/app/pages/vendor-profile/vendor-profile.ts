@@ -552,7 +552,7 @@ export class VendorProfile implements OnDestroy {
     const category = this.translate.instant(v.categoryKey);
     const brand = this.translate.instant('brand.name');
     const pageTitle = `${v.name} – ${category}, ${this.cityLabel(v)} | ${brand}`;
-    const description = v.bio.length > 155 ? v.bio.slice(0, 152) + '…' : v.bio;
+    const description = this.seoDescription(v, category);
     const image = v.photos[0]?.url ?? '';
 
     this.title.setTitle(pageTitle);
@@ -584,13 +584,40 @@ export class VendorProfile implements OnDestroy {
     ]);
   }
 
+  /**
+   * The search description: the vendor's own bio. A profile with no bio, or a very short one,
+   * left it empty or thin (bug sweep of 2026-11-20), so the profile's facts follow it: category
+   * and city, the starting price, the capacity, the rating. Real data only, no filler.
+   */
+  private seoDescription(v: Vendor, category: string): string {
+    const bio = v.bio.trim();
+    if (bio.length >= 70) return bio.length > 155 ? bio.slice(0, 152) + '…' : bio;
+
+    const tr = (key: string, params?: object): string => this.translate.instant(key, params);
+    const facts = [`${v.name}: ${[category, this.cityLabel(v)].filter(Boolean).join(', ')}`];
+    if (v.priceFrom > 0) {
+      const unit = v.priceUnit === 'event' ? '' : ` ${tr('catalog.units.' + v.priceUnit)}`;
+      facts.push(`${tr('profile.from')} ${this.formatPrice(v.priceFrom)}${unit}`);
+    }
+    if (v.capacityMax) {
+      facts.push(tr(v.capacityMin ? 'profile.capacityRange' : 'profile.capacityUpTo',
+        { min: v.capacityMin, max: v.capacityMax }));
+    }
+    if (v.rating && v.reviewCount) facts.push(tr('reviews.summaryAria', { rating: v.rating, count: v.reviewCount }));
+    if (v.areasServed?.trim()) facts.push(`${tr('profile.areasServed')}: ${v.areasServed.trim()}`);
+
+    const lead = bio ? (/[.!?…]$/.test(bio) ? bio : bio + '.') + ' ' : '';
+    const text = lead + facts.join('. ') + '.';
+    return text.length > 160 ? text.slice(0, 157).trimEnd() + '…' : text;
+  }
+
   /** The vendor as a schema.org LocalBusiness, from the profile's real data only. */
   private businessJsonLd(v: Vendor) {
     return {
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
       name: v.name,
-      description: v.bio,
+      ...(v.bio.trim() ? { description: v.bio } : {}),
       image: v.photos.map((p) => p.url),
       address: {
         '@type': 'PostalAddress',

@@ -164,7 +164,7 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
     nothing from 40px up). Do the same in a new rule. The bare `h1`–`h5` rule does not, because
     many headings switch to the text face in their component.
   - FiraGO (OFL): four weights in `public/fonts`, cut down to Georgian, Latin, digits,
-    punctuation and ₾ (29 kB each; `firago-subset.py` was a one-off, the full files are in
+    punctuation, arrows, ≤ ≥ and ₾ (★ ✓ ✕ are not in FiraGO at all; 29 kB each; `firago-subset.py` was a one-off, the full files are in
     github.com/bBoxType/FiraGO). A character outside that set falls back to Noto.
   - Tried and not taken: ALK Rounded, Noto Serif Georgian, Geo Bauhaus for all text.
   The GF Aisi `@font-face` rules stay in `_base.scss` for the invitation designs only.

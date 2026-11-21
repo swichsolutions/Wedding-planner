@@ -246,6 +246,14 @@ export class App {
 
   @HostListener('window:keydown.escape')
   protected onEscape(): void {
+    // The phone sheet closes whole on the first press, whichever of its sections is open
+    // (2026-11-21: with a section open, Escape only folded the section and the sheet stayed).
+    if (this.menuOpen()) {
+      const inSheet = this.doc.getElementById('site-nav')?.contains(this.doc.activeElement);
+      this.closeMenu();
+      if (inSheet) this.doc.querySelector<HTMLElement>('.menu-toggle')?.focus();
+      return;
+    }
     const open = this.openGroup();
     if (open) {
       const item = this.doc.getElementById(`nav-${open}`)?.closest('.hdr__item');
@@ -253,7 +261,6 @@ export class App {
       if (item?.contains(this.doc.activeElement)) item.querySelector<HTMLElement>('.hdr__chev-btn')?.focus();
       this.openGroup.set(null);
     }
-    else if (this.menuOpen()) this.menuOpen.set(false);
   }
 
   /** On the desktop bar, a mouse opens a dropdown on hover. Never on touch (the synthetic
