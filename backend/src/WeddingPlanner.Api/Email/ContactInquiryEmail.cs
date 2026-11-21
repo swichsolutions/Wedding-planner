@@ -22,9 +22,9 @@ public static class ContactInquiryEmail
             "საკონტაქტო ფორმიდან ახალი შეტყობინება მოვიდა.\n\n" +
             $"სახელი: {OneLine(name)}\n" +
             $"ელ. ფოსტა: {OneLine(email)}\n" +
-            $"ტელეფონი: {(string.IsNullOrWhiteSpace(phone) ? "—" : OneLine(phone))}\n\n" +
+            $"ტელეფონი: {(string.IsNullOrWhiteSpace(phone) ? "–" : OneLine(phone))}\n\n" +
             $"{message.Trim()}\n\n" +
-            "—\n" +
+            "–\n" +
             "პასუხის გასაცემად უპასუხე ამ წერილს: პასუხი გამომგზავნის ელ. ფოსტაზე წავა.\n" +
             $"{origin}/contact\n";
 

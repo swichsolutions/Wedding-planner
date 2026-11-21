@@ -27,7 +27,7 @@ public static class DbSeeder
                 Name = "სტუდია ნათელი", Slug = "studia-nateli", Category = cat["fotografi"],
                 City = "თბილისი", CitySlug = "tbilisi", Region = "tbilisi", AreasServed = "თბილისი, მცხეთა, კახეთი",
                 PriceMin = 1500, PriceRange = "1500–4000 ₾",
-                Bio = "დოკუმენტური სტილის საქორწინო ფოტოგრაფია, რომელიც ბუნებრივ ემოციას იჭერს. ვმუშაობთ წყვილებთან მთელი დღის განმავლობაში — მზადებიდან ცეკვებამდე. გვაქვს 8 წლის გამოცდილება და 200-ზე მეტი გადაღებული ქორწილი.",
+                Bio = "დოკუმენტური სტილის საქორწინო ფოტოგრაფია, რომელიც ბუნებრივ ემოციას იჭერს. ვმუშაობთ წყვილებთან მთელი დღის განმავლობაში – მზადებიდან ცეკვებამდე. გვაქვს 8 წლის გამოცდილება და 200-ზე მეტი გადაღებული ქორწილი.",
                 Instagram = "studia_nateli", Phone = "+995 599 12 34 56",
                 IsFeatured = true, IsApproved = true, CreatedAt = now,
                 Photos = new List<VendorPhoto>
@@ -70,7 +70,7 @@ public static class DbSeeder
                 Name = "ფლორა დეკორი", Slug = "flora-dekori", Category = cat["floristi"],
                 City = "ქუთაისი", CitySlug = "kutaisi", Region = "imereti", AreasServed = "ქუთაისი, იმერეთი",
                 PriceMin = 1200, PriceRange = "1200–5000 ₾",
-                Bio = "ცოცხალი ყვავილების საქორწინო დეკორი — თაიგულებიდან არქებამდე. ვქმნით სეზონურ კომპოზიციებს და ვმუშაობთ ადგილობრივ მებაღეებთან. თითოეული ქორწილი უნიკალურია.",
+                Bio = "ცოცხალი ყვავილების საქორწინო დეკორი – თაიგულებიდან არქებამდე. ვქმნით სეზონურ კომპოზიციებს და ვმუშაობთ ადგილობრივ მებაღეებთან. თითოეული ქორწილი უნიკალურია.",
                 Instagram = "flora_dekori", Phone = "+995 591 88 99 00",
                 IsFeatured = true, IsApproved = true, CreatedAt = now,
                 Photos = new List<VendorPhoto>
