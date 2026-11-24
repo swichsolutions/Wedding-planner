@@ -115,7 +115,7 @@ export class PlanStart {
       switchMap((saved) => (amounts ? this.budget.get() : of(saved))),
       switchMap((budget) => {
         const updates = (amounts ? estimatorEdits(total, amounts) : []).flatMap((edit) => {
-          const item = budget.items.find((i) => i.categorySlug === edit.slug);
+          const item = budget.items.filter((i) => (i.categorySlug ?? null) === edit.slug)[edit.nth];
           if (!item) return [];
           return [
             this.budget

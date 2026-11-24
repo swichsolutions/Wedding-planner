@@ -10,8 +10,8 @@ namespace WeddingPlanner.Infrastructure.Data;
 /// so deleting these doesn't bring them back (only a blog with no articles at all is seeded again). Georgian only for now; the page falls back to
 /// Georgian in English. The cover photos are the site's own, in /media; replace them in the editor.
 /// The texts are the second edition (Beka's Word file of 2026-11-24): they speak to the couple
-/// („თქვენ"), and only the buttons keep the site's „შენ". The budget table is his example and is
-/// not the budget tool's own split (core/budget.ts), which has no reserve row.
+/// („თქვენ"), and only the buttons keep the site's „შენ". The budget table carries the same shares
+/// as the budget tool (core/budget.ts, BudgetController.DefaultItems): change them together.
 /// </summary>
 public static class BlogArticlesSeeder
 {

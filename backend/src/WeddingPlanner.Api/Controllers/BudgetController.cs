@@ -22,20 +22,24 @@ public class BudgetController : ControllerBase
     /// <summary>Default budget rows: name (ka), vendor category slug, share of total (sums to 100).</summary>
     private static readonly (string Name, string? CategorySlug, int Pct)[] DefaultItems =
     {
+        // The shares of the budget article (2026-11-24): a tenth is a reserve inside the total.
+        // The estimator in the browser carries the same ones (core/budget.ts, ESTIMATOR_ROWS),
+        // and tells the two rows without a category apart by their order: "other", then the reserve.
         ("დარბაზი და კვება", "darbazi", 40),
-        ("ფოტოგრაფი", "fotografi", 8),
+        ("ფოტოგრაფი", "fotografi", 7),
         ("ვიდეოგრაფი", "videografi", 4),
         ("მუსიკა / DJ", "musika", 8),
-        ("დეკორი", "dekori", 6),
+        ("დეკორი", "dekori", 5),
         ("ფლორისტი", "floristi", 4),
-        ("საქორწილო კაბა", "kaba", 5),
+        ("საქორწილო კაბა", "kaba", 4),
         ("კოსტიუმი", "kostiumi", 3),
-        ("ბეჭდები", "bechdebi", 5),
+        ("ბეჭდები", "bechdebi", 4),
         ("მაკიაჟი", "makiaji", 2),
-        ("თმის ვარცხნილობა", "tmis-stili", 2),
+        ("თმის ვარცხნილობა", "tmis-stili", 1),
         ("საქორწილო ტორტი", "torti", 3),
-        ("ტრანსპორტი", "transporti", 3),
-        ("მოსაწვევები და სხვა", null, 7),
+        ("ტრანსპორტი", "transporti", 2),
+        ("მოსაწვევები და სხვა", null, 3),
+        ("რეზერვი", null, 10), // short: the table's name column cuts a longer one off
     };
 
     private readonly AppDbContext _db;

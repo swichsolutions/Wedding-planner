@@ -1976,7 +1976,7 @@
       "tip1Title": "Start from the headcount",
       "tip1Text": "Venue and catering are priced per seat and usually make up more than half the total. Fix the guest count first and the rest of the budget follows.",
       "tip2Title": "Keep a 10% reserve",
-      "tip2Text": "Something always comes up: a second dress fitting, extra transport, a bigger cake. A line you don’t allocate at the start is the cheapest insurance.",
+      "tip2Text": "Something always comes up: a second dress fitting, extra transport, a bigger cake. That’s why the split sets 10% aside from the start: leave it alone until you really need it.",
       "tip3Title": "Write down every deposit",
       "tip3Text": "Deposits are paid months apart and easy to forget. Record each one against its line the day you pay it, and the final week has no surprises.",
       "nextGuestsTitle": "Guest list",
@@ -2023,7 +2023,8 @@
     "cake": "Cake",
     "rings": "Rings",
     "transport": "Transport",
-    "misc": "Invitations & other"
+    "misc": "Invitations & other",
+    "reserve": "Reserve for unplanned costs"
   },
   "budgetTeaser": {
     "overline": "Budget planner",

@@ -1,5 +1,6 @@
 // Wedding budget allocation model — pure logic, unit-tested. Georgian wedding norms:
-// venue/catering dominates (supra culture); percentages sum to 100.
+// venue/catering dominates (supra culture); percentages sum to 100. The shares are those of
+// Beka's budget article (2026-11-24): a tenth of the budget is kept as a reserve, inside the total.
 
 export interface BudgetCategory {
   key: string; // i18n key under "budgetCat"
@@ -8,15 +9,16 @@ export interface BudgetCategory {
 
 export const BUDGET_CATEGORIES: BudgetCategory[] = [
   { key: 'venue', pct: 40 },
-  { key: 'photoVideo', pct: 12 },
-  { key: 'decor', pct: 10 },
+  { key: 'photoVideo', pct: 11 },
+  { key: 'decor', pct: 9 },
   { key: 'music', pct: 8 },
-  { key: 'attire', pct: 8 },
-  { key: 'misc', pct: 7 },
-  { key: 'rings', pct: 5 },
-  { key: 'beauty', pct: 4 },
+  { key: 'attire', pct: 7 },
+  { key: 'rings', pct: 4 },
+  { key: 'beauty', pct: 3 },
   { key: 'cake', pct: 3 },
-  { key: 'transport', pct: 3 },
+  { key: 'transport', pct: 2 },
+  { key: 'misc', pct: 3 },
+  { key: 'reserve', pct: 10 },
 ];
 
 /**
@@ -43,26 +45,39 @@ export function suggestedAllocation(total: number): number[] {
 }
 
 /**
- * How each estimator row spreads over the rows of the real budget (BudgetController.DefaultItems):
- * category slug and its share within the row. Null is the "invitations and other" row.
+ * How each estimator row spreads over the rows of the real budget (BudgetController.DefaultItems,
+ * which must carry the same shares): category slug and its share within the row. Two rows have no
+ * category: "invitations and other", then the reserve. `nth` tells them apart by their order.
  */
-export const ESTIMATOR_ROWS: Record<string, { slug: string | null; weight: number }[]> = {
+export const ESTIMATOR_ROWS: Record<string, { slug: string | null; weight: number; nth?: number }[]> = {
   venue: [{ slug: 'darbazi', weight: 40 }],
-  photoVideo: [{ slug: 'fotografi', weight: 8 }, { slug: 'videografi', weight: 4 }],
-  decor: [{ slug: 'dekori', weight: 6 }, { slug: 'floristi', weight: 4 }],
+  photoVideo: [{ slug: 'fotografi', weight: 7 }, { slug: 'videografi', weight: 4 }],
+  decor: [{ slug: 'dekori', weight: 5 }, { slug: 'floristi', weight: 4 }],
   music: [{ slug: 'musika', weight: 8 }],
-  attire: [{ slug: 'kaba', weight: 5 }, { slug: 'kostiumi', weight: 3 }],
-  misc: [{ slug: null, weight: 7 }],
-  rings: [{ slug: 'bechdebi', weight: 5 }],
-  beauty: [{ slug: 'makiaji', weight: 2 }, { slug: 'tmis-stili', weight: 2 }],
+  attire: [{ slug: 'kaba', weight: 4 }, { slug: 'kostiumi', weight: 3 }],
+  rings: [{ slug: 'bechdebi', weight: 4 }],
+  beauty: [{ slug: 'makiaji', weight: 2 }, { slug: 'tmis-stili', weight: 1 }],
   cake: [{ slug: 'torti', weight: 3 }],
-  transport: [{ slug: 'transporti', weight: 3 }],
+  transport: [{ slug: 'transporti', weight: 2 }],
+  misc: [{ slug: null, weight: 3, nth: 0 }],
+  reserve: [{ slug: null, weight: 10, nth: 1 }],
 };
 
-/** The estimate each budget row should get from the estimator's amounts, only for rows the visitor changed. */
-export function estimatorEdits(total: number, amounts: readonly number[]): { slug: string | null; estimate: number }[] {
+/** One estimate to carry into the budget: the row is the `nth` one (0 = first) with this category slug. */
+export interface EstimatorEdit {
+  slug: string | null;
+  nth: number;
+  estimate: number;
+}
+
+/**
+ * The estimate each budget row should get from the estimator's amounts, only for rows the visitor
+ * changed. Amounts kept from an older list of rows (a different count) carry nothing.
+ */
+export function estimatorEdits(total: number, amounts: readonly number[]): EstimatorEdit[] {
+  if (amounts.length !== BUDGET_CATEGORIES.length) return [];
   const suggested = suggestedAllocation(total);
-  const edits: { slug: string | null; estimate: number }[] = [];
+  const edits: EstimatorEdit[] = [];
   BUDGET_CATEGORIES.forEach((c, i) => {
     if (amounts[i] === undefined || amounts[i] === suggested[i]) return;
     const parts = ESTIMATOR_ROWS[c.key] ?? [];
@@ -71,7 +86,7 @@ export function estimatorEdits(total: number, amounts: readonly number[]): { slu
     parts.forEach((p, n) => {
       const estimate = n === parts.length - 1 ? left : Math.round((amounts[i] * p.weight) / weights);
       left -= estimate;
-      edits.push({ slug: p.slug, estimate });
+      edits.push({ slug: p.slug, nth: p.nth ?? 0, estimate });
     });
   });
   return edits;
