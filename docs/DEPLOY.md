@@ -55,7 +55,7 @@ Everything here needs the account owner; nothing in the repo changes.
 5. **Cloudflare → DNS → Add record:** `CNAME` `api` → `weddingplanner-api.onrender.com`,
    proxy **DNS only** at first. When Render shows the certificate for `api.weddingplanner.ge` as
    issued, the record may be switched to **Proxied** (Render supports it with SSL mode Full).
-   Check: `https://api.weddingplanner.ge/health` → `{"status":"ok"}`.
+   Check: `https://api.weddingplanner.ge/health` → `{"status":"ok", …, "commit":"<first 7 characters of the deployed commit>"}`.
 6. **Cloudinary** (cloudinary.com, free) → Dashboard → cloud name, API key, API secret → Render
    `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret`. Without them uploads
    land on the container disk and vanish on every deploy.

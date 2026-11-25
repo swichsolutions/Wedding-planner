@@ -310,7 +310,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Simple health/liveness endpoint.
-app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "weddingplanner-api" }));
+// Simple health/liveness endpoint. `commit` is the deployed commit (Render sets
+// RENDER_GIT_COMMIT), so a deploy can be confirmed without opening the dashboard; null locally.
+var deployedCommit = Environment.GetEnvironmentVariable("RENDER_GIT_COMMIT") is { Length: >= 7 } sha ? sha[..7] : null;
+app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "weddingplanner-api", commit = deployedCommit }));
 
 app.Run();
