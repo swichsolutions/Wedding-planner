@@ -11,10 +11,11 @@ import { AuthService, ClaimableVendor, defaultRouteFor } from '../../core/auth.s
 import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 import { pageTitle } from '../../core/page-title';
+import { SignupConsent } from '../../components/signup-consent/signup-consent';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent],
   template: `
     <!-- The same layout as the couple sign-up (2026-11-12): from 1024px a photo on the left
          (the global section.auth split, here the decorated hall) and the white card on the
@@ -25,15 +26,38 @@ import { pageTitle } from '../../core/page-title';
           <h1>{{ 'auth.registerTitle' | translate }}</h1>
           <p class="auth__intro">{{ 'auth.registerSubtitle' | translate }}</p>
           <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-            <div class="auth__field">
-              <label for="r-name">{{ 'auth.vendorName' | translate }}</label>
-              <input id="r-name" type="text" formControlName="vendorName" autocomplete="organization" aria-required="true"
-                [class.is-invalid]="attempted() && form.controls.vendorName.invalid"
-                [attr.aria-invalid]="attempted() && form.controls.vendorName.invalid ? 'true' : null"
-                [attr.aria-describedby]="attempted() && form.controls.vendorName.invalid ? 'r-name-err' : null" />
-              @if (attempted() && form.controls.vendorName.invalid) {
-                <span id="r-name-err" class="auth__err">{{ 'auth.required' | translate }}</span>
-              }
+            <!-- Name and category share a row from 1024px (2026-11-26): with the news box and the
+                 terms sentence the card no longer fitted one screen. On phones they stack. -->
+            <div class="auth__pair">
+              <div class="auth__field">
+                <label for="r-name">{{ 'auth.vendorName' | translate }}</label>
+                <input id="r-name" type="text" formControlName="vendorName" autocomplete="organization" aria-required="true"
+                  [class.is-invalid]="attempted() && form.controls.vendorName.invalid"
+                  [attr.aria-invalid]="attempted() && form.controls.vendorName.invalid ? 'true' : null"
+                  [attr.aria-describedby]="attempted() && form.controls.vendorName.invalid ? 'r-name-err' : null" />
+                @if (attempted() && form.controls.vendorName.invalid) {
+                  <span id="r-name-err" class="auth__err">{{ 'auth.required' | translate }}</span>
+                }
+              </div>
+              <div class="auth__field">
+                <label for="r-cat">{{ 'auth.category' | translate }}</label>
+                <select id="r-cat" formControlName="categorySlug" aria-required="true"
+                  [class.is-invalid]="attempted() && form.controls.categorySlug.invalid"
+                  [attr.aria-invalid]="attempted() && form.controls.categorySlug.invalid ? 'true' : null"
+                  [attr.aria-describedby]="attempted() && form.controls.categorySlug.invalid ? 'r-cat-err' : null">
+                  <option value="">{{ 'auth.selectCategory' | translate }}</option>
+                  @for (g of groups; track g) {
+                    <optgroup [label]="'catalog.groups.' + g | translate">
+                      @for (c of categoriesIn(g); track c.slug) {
+                        <option [value]="c.slug">{{ c.key | translate }}</option>
+                      }
+                    </optgroup>
+                  }
+                </select>
+                @if (attempted() && form.controls.categorySlug.invalid) {
+                  <span id="r-cat-err" class="auth__err">{{ 'auth.required' | translate }}</span>
+                }
+              </div>
             </div>
             <!-- Profiles the platform added under a name like the typed one. They are taken over
                  only with the one-time code the admin sends (2026-11-13), so this is a note, not a
@@ -56,25 +80,6 @@ import { pageTitle } from '../../core/page-title';
                   <a routerLink="/kodi">{{ 'auth.haveCode' | translate }}</a></p>
               </div>
             }
-            <div class="auth__field">
-              <label for="r-cat">{{ 'auth.category' | translate }}</label>
-              <select id="r-cat" formControlName="categorySlug" aria-required="true"
-                [class.is-invalid]="attempted() && form.controls.categorySlug.invalid"
-                [attr.aria-invalid]="attempted() && form.controls.categorySlug.invalid ? 'true' : null"
-                [attr.aria-describedby]="attempted() && form.controls.categorySlug.invalid ? 'r-cat-err' : null">
-                <option value="">{{ 'auth.selectCategory' | translate }}</option>
-                @for (g of groups; track g) {
-                  <optgroup [label]="'catalog.groups.' + g | translate">
-                    @for (c of categoriesIn(g); track c.slug) {
-                      <option [value]="c.slug">{{ c.key | translate }}</option>
-                    }
-                  </optgroup>
-                }
-              </select>
-              @if (attempted() && form.controls.categorySlug.invalid) {
-                <span id="r-cat-err" class="auth__err">{{ 'auth.required' | translate }}</span>
-              }
-            </div>
             <div class="auth__field">
               <label for="r-email">{{ 'auth.email' | translate }}</label>
               <input id="r-email" type="email" formControlName="email" autocomplete="email" spellcheck="false" aria-required="true"
@@ -109,6 +114,7 @@ import { pageTitle } from '../../core/page-title';
             @if (error()) {
               <p class="auth__error" role="alert">{{ error()! | translate }}</p>
             }
+            <app-signup-consent [news]="form.controls.news" />
             <button class="btn btn--primary" type="submit" [disabled]="loading()">
               {{ 'auth.signUp' | translate }}
             </button>
@@ -147,6 +153,8 @@ export class Register {
     categorySlug: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordValidator()]],
+    /** News by e-mail: optional, never pre-ticked (components/signup-consent). */
+    news: [false],
   });
 
   constructor() {
@@ -197,6 +205,7 @@ export class Register {
         password: v.password!,
         vendorName: v.vendorName!,
         categorySlug: v.categorySlug!,
+        newsOptIn: !!v.news,
       })
       .subscribe({
         next: () => this.router.navigateByUrl('/dashboard'),

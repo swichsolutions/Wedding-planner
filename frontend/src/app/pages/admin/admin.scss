@@ -261,3 +261,27 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+// ---- e-mails for a mailing (the fourth tab) ----
+.admin__emails {
+  max-width: 46rem;
+}
+
+.admin__emails-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--paper-line);
+
+  strong {
+    display: block;
+  }
+}
+
+.admin__emails-count {
+  font-size: var(--fs-small);
+  color: var(--ink-700);
+}

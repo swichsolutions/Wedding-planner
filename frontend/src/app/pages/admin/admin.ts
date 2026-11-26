@@ -5,16 +5,16 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
-import { AdminClaim, AdminService, AdminVendor, ClaimCodeCreated } from '../../core/admin.service';
+import { AdminClaim, AdminService, AdminVendor, ClaimCodeCreated, NewsEmail } from '../../core/admin.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { LanguageService } from '../../i18n/language.service';
 import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
-import { formatDate } from '../../core/dates';
+import { formatDate, todayIso } from '../../core/dates';
 import { AdminContent } from './admin-content';
 
-type AdminTab = 'vendors' | 'content' | 'claims';
-const TABS: AdminTab[] = ['vendors', 'content', 'claims'];
+type AdminTab = 'vendors' | 'content' | 'claims' | 'emails';
+const TABS: AdminTab[] = ['vendors', 'content', 'claims', 'emails'];
 
 @Component({
   selector: 'app-admin',
@@ -94,7 +94,42 @@ export class Admin {
     }
     this.tab.set(tab);
     if (tab === 'claims' && this.isBrowser) this.loadClaims();
+    if (tab === 'emails' && this.isBrowser) this.loadEmails();
     this.router.navigate([], { queryParams: { tab: tab === 'vendors' ? null : tab }, replaceUrl: true });
+  }
+
+  // ---- e-mails of the accounts that agreed to news, for a mailing tool ----
+  protected readonly emailKinds = [
+    { role: 'Vendor', label: 'adminPage.emailsVendors' },
+    { role: 'Couple', label: 'adminPage.emailsCouples' },
+  ] as const;
+  protected readonly emailLists = signal<Partial<Record<'Vendor' | 'Couple', NewsEmail[]>>>({});
+  protected readonly emailsError = signal(false);
+
+  private loadEmails(): void {
+    this.emailsError.set(false);
+    this.emailLists.set({});
+    for (const { role } of this.emailKinds) {
+      this.admin.newsEmails(role).subscribe({
+        next: (list) => this.emailLists.update((all) => ({ ...all, [role]: list })),
+        error: () => this.emailsError.set(true),
+      });
+    }
+  }
+
+  /** The list as a .csv file (e-mail, name, date of consent), which every mailing tool takes. */
+  protected downloadEmails(role: 'Vendor' | 'Couple'): void {
+    const list = this.emailLists()[role];
+    if (!list?.length) return;
+    const cell = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = [['email', 'name', 'agreed'], ...list.map((e) => [e.email, e.name ?? '', e.agreedAt.slice(0, 10)])];
+    // The BOM makes Excel read the Georgian names as UTF-8.
+    const blob = new Blob(['\uFEFF' + rows.map((r) => r.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `weddingplanner-${role === 'Vendor' ? 'vendors' : 'couples'}-${todayIso()}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   protected readonly vendors = signal<AdminVendor[]>([]);
@@ -113,6 +148,7 @@ export class Admin {
     if (this.isBrowser) {
       this.load();
       if (this.tab() === 'claims') this.loadClaims();
+      if (this.tab() === 'emails') this.loadEmails();
     }
   }
 

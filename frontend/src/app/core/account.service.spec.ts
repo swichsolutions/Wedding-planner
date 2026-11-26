@@ -25,6 +25,7 @@ describe('AccountService', () => {
       displayName: 'A',
       roles: ['Couple'],
       hasPassword: true,
+      newsOptIn: false,
     };
     let result: AccountInfo | undefined;
     service.getAccount().subscribe((r) => (result = r));
@@ -42,6 +43,15 @@ describe('AccountService', () => {
     const req = httpMock.expectOne((r) => r.url.endsWith('/api/account/password'));
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ currentPassword: 'Old12345', newPassword: 'New12345' });
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('PUTs the news-by-e-mail choice to /api/account/news', () => {
+    service.setNews(true).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/api/account/news'));
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ optIn: true });
     req.flush(null, { status: 204, statusText: 'No Content' });
   });
 

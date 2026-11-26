@@ -28,6 +28,26 @@ public class AdminController : ControllerBase
         _indexNow = indexNow;
     }
 
+    /// <summary>
+    /// The e-mails of the accounts of one role (Vendor or Couple) that agreed to news by e-mail,
+    /// oldest consent first: the admin downloads it as a list for a mailing tool. Nothing is
+    /// sent from here. An account that switched news off is not in the next list.
+    /// </summary>
+    [HttpGet("news-emails")]
+    public async Task<ActionResult<IEnumerable<NewsEmailDto>>> NewsEmails([FromQuery] string? role)
+    {
+        if (role != Roles.Vendor && role != Roles.Couple) return BadRequest("role must be Vendor or Couple.");
+
+        var rows = await (
+            from u in _db.Users
+            join ur in _db.UserRoles on u.Id equals ur.UserId
+            join r in _db.Roles on ur.RoleId equals r.Id
+            where r.Name == role && u.NewsConsentAt != null && u.Email != null
+            orderby u.NewsConsentAt
+            select new NewsEmailDto(u.Email!, u.DisplayName, u.NewsConsentAt!.Value)).ToListAsync();
+        return Ok(rows);
+    }
+
     /// <summary>List vendors for moderation. `pending=true` returns only unapproved.</summary>
     [HttpGet("vendors")]
     public async Task<ActionResult<IEnumerable<AdminVendorDto>>> ListVendors([FromQuery] bool? pending)

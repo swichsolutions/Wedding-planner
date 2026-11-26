@@ -46,6 +46,10 @@ export class Account implements OnInit {
   protected readonly success = signal(false);
   protected readonly currentError = signal(false); // wrong current password
   protected readonly saveError = signal(false); // anything else
+  /** The news switch: while its request runs, and how the last one ended. */
+  protected readonly newsSaving = signal(false);
+  protected readonly newsState = signal<'saved' | 'error' | null>(null);
+  protected readonly isAdmin = () => this.account()?.roles.includes('Admin') ?? false;
 
   protected readonly form = this.fb.group(
     {
@@ -81,6 +85,28 @@ export class Account implements OnInit {
       error: () => {
         this.loadError.set(true);
         this.loading.set(false);
+      },
+    });
+  }
+
+  /** News by e-mail on or off, saved at once; a failed save puts the box back as it was. */
+  protected setNews(event: Event): void {
+    const box = event.target as HTMLInputElement;
+    const acc = this.account();
+    if (!acc) return;
+    const optIn = box.checked;
+    this.newsSaving.set(true);
+    this.newsState.set(null);
+    this.accountApi.setNews(optIn).subscribe({
+      next: () => {
+        this.account.set({ ...acc, newsOptIn: optIn });
+        this.newsState.set('saved');
+        this.newsSaving.set(false);
+      },
+      error: () => {
+        box.checked = acc.newsOptIn;
+        this.newsState.set('error');
+        this.newsSaving.set(false);
       },
     });
   }

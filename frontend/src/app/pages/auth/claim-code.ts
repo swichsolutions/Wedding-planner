@@ -10,6 +10,7 @@ import { AuthService, ClaimCodeInfo } from '../../core/auth.service';
 import { categoryKey } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 import { pageTitle } from '../../core/page-title';
+import { SignupConsent } from '../../components/signup-consent/signup-consent';
 
 type Stage = 'enter' | 'checking' | 'found' | 'invalid';
 
@@ -22,7 +23,7 @@ type Stage = 'enter' | 'checking' | 'found' | 'invalid';
  */
 @Component({
   selector: 'app-claim-code',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent],
   host: { class: 'theme-brand' },
   styleUrl: './register.scss',
   styles: `
@@ -111,6 +112,7 @@ type Stage = 'enter' | 'checking' | 'found' | 'invalid';
                 @if (error()) {
                   <p class="auth__error" role="alert">{{ error()! | translate }}</p>
                 }
+                <app-signup-consent [news]="form.controls.news" />
                 <button class="btn btn--primary" type="submit" [disabled]="saving()">{{ 'auth.code.submit' | translate }}</button>
               </form>
               <p class="auth__alt">
@@ -150,6 +152,8 @@ export class ClaimCode implements OnDestroy {
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordValidator()]],
+    /** News by e-mail: optional, never pre-ticked (components/signup-consent). */
+    news: [false],
   });
 
   constructor() {
@@ -204,7 +208,7 @@ export class ClaimCode implements OnDestroy {
     this.saving.set(true);
     this.error.set(null);
     const v = this.form.getRawValue();
-    this.auth.registerVendor({ email: v.email!, password: v.password!, claimCode: this.code }).subscribe({
+    this.auth.registerVendor({ email: v.email!, password: v.password!, claimCode: this.code, newsOptIn: !!v.news }).subscribe({
       next: () => this.router.navigateByUrl('/dashboard'),
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);

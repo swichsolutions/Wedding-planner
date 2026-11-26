@@ -118,3 +118,33 @@
     grid-column: 1 / -1;
   }
 }
+
+// ---- news by e-mail ----
+.account__news {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+
+  input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    accent-color: var(--color-action);
+    cursor: pointer;
+  }
+}
+
+.account__news-hint {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-caption);
+}
+
+.account__news-state {
+  margin: var(--space-2) 0 0;
+  min-height: 1.4em; // the line is there before a message is, so the card doesn't jump
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}

@@ -29,7 +29,25 @@ public class AccountController : ControllerBase
 
         var roles = await _users.GetRolesAsync(user);
         var hasPassword = await _users.HasPasswordAsync(user);
-        return Ok(new AccountDto(user.Email ?? string.Empty, user.DisplayName, roles.ToArray(), hasPassword));
+        return Ok(new AccountDto(user.Email ?? string.Empty, user.DisplayName, roles.ToArray(), hasPassword,
+            user.NewsConsentAt is not null));
+    }
+
+    /// <summary>
+    /// News and offers by e-mail, on or off. Switching it on records the moment of consent; an
+    /// account that already agreed keeps its first date. Off clears it, so the next list of
+    /// e-mails made for a mailing (AdminController.NewsEmails) no longer has this address.
+    /// </summary>
+    [HttpPut("news")]
+    public async Task<IActionResult> SetNews([FromBody] NewsOptInDto dto)
+    {
+        var user = await _users.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        if (dto.OptIn) user.NewsConsentAt ??= DateTimeOffset.UtcNow;
+        else user.NewsConsentAt = null;
+        var saved = await _users.UpdateAsync(user);
+        return saved.Succeeded ? NoContent() : Problem();
     }
 
     /// <summary>

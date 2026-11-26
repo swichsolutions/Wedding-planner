@@ -9,6 +9,8 @@ export interface AccountInfo {
   displayName: string | null;
   roles: string[];
   hasPassword: boolean;
+  /** Agreed to news and offers by e-mail. */
+  newsOptIn: boolean;
 }
 
 export interface ChangePasswordPayload {
@@ -28,5 +30,10 @@ export class AccountService {
 
   changePassword(payload: ChangePasswordPayload): Observable<void> {
     return this.http.post<void>(`${this.base}/api/account/password`, payload);
+  }
+
+  /** News and offers by e-mail, on or off. */
+  setNews(optIn: boolean): Observable<void> {
+    return this.http.put<void>(`${this.base}/api/account/news`, { optIn });
   }
 }

@@ -30,6 +30,8 @@ export interface RegisterVendorPayload {
   city?: string;
   /** The one-time code an admin sent for a profile they made: the new account owns it at once. */
   claimCode?: string;
+  /** The optional "news by e-mail" box. */
+  newsOptIn?: boolean;
 }
 
 /** The profile a one-time code is for, shown on the code's page before signing up. */
@@ -51,6 +53,8 @@ export interface ClaimableVendor {
 export interface RegisterCouplePayload {
   email: string;
   password: string;
+  /** The optional "news by e-mail" box. */
+  newsOptIn?: boolean;
   firstName?: string;
   lastName?: string;
   partnerFirstName?: string;

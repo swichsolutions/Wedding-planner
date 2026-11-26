@@ -11,11 +11,39 @@
       <button type="button" (click)="setTab('claims')" [attr.aria-current]="tab() === 'claims' ? 'page' : null">
         {{ 'adminPage.tabClaims' | translate }}
       </button>
+      <button type="button" (click)="setTab('emails')" [attr.aria-current]="tab() === 'emails' ? 'page' : null">
+        {{ 'adminPage.tabEmails' | translate }}
+      </button>
     </nav>
   </header>
 
   @if (tab() === 'content') {
     <app-admin-content />
+  } @else if (tab() === 'emails') {
+    <!-- The e-mails of the accounts that agreed to news (the box at sign-up, the switch on the
+         account page), as a file for a mailing tool. Nothing is sent from here. -->
+    <div class="admin__emails">
+      <p class="admin__hint">{{ 'adminPage.emailsHint' | translate }}</p>
+      @for (kind of emailKinds; track kind.role) {
+        <div class="admin__emails-row">
+          <div>
+            <strong>{{ kind.label | translate }}</strong>
+            <span class="admin__emails-count num">
+              @if (emailLists()[kind.role]; as list) {
+                {{ 'adminPage.emailsCount' | translate: { n: list.length } }}
+              } @else {
+                {{ (emailsError() ? 'adminPage.emailsError' : 'common.loading') | translate }}
+              }
+            </span>
+          </div>
+          <button type="button" class="btn btn--outline-ink admin__btn" (click)="downloadEmails(kind.role)"
+            [disabled]="!emailLists()[kind.role]?.length">
+            {{ 'adminPage.emailsDownload' | translate }}
+          </button>
+        </div>
+      }
+      <p class="admin__hint">{{ 'adminPage.emailsNote' | translate }}</p>
+    </div>
   } @else if (tab() === 'claims') {
     <!-- A3 takeover requests: a registered vendor says an admin-added profile is theirs -->
     <div class="admin__subhead">

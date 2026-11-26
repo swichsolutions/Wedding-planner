@@ -147,6 +147,8 @@ These terms may change; significant changes will be published on this page. Geor
 
 სერვისის მუშაობისთვის (ანგარიში, დაგეგმვის ინსტრუმენტები, შეტყობინებების მიწოდება), უსაფრთხოებისთვის და კანონის მოთხოვნების შესასრულებლად. მონაცემებს არ ვყიდით და სარეკლამოდ არ გადავცემთ.
 
+სიახლეებსა და შეთავაზებებს ელფოსტით მხოლოდ მაშინ გიგზავნით, თუ ამაზე თანხმობა მოგვეცი (რეგისტრაციისას ან ანგარიშის გვერდზე). თანხმობის გაუქმება ნებისმიერ დროს შეგიძლია: ანგარიშის გვერდზე ან წერილში მოცემული ბმულით.
+
 ## 4. ვის ვუზიარებთ
 
 - მომწოდებელს – როცა თავად უგზავნი შეტყობინებას.
@@ -189,6 +191,8 @@ These terms may change; significant changes will be published on this page. Geor
 ## 3. What we use it for
 
 To run the service (accounts, planning tools, delivering messages), to keep it secure, and to meet legal requirements. We do not sell data or pass it on for advertising.
+
+We send news and offers by email only if you agreed to it (at sign-up or on your account page). You can withdraw that at any time: on the account page or with the link in the email.
 
 ## 4. Who we share it with
 

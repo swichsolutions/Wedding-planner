@@ -16,6 +16,9 @@ public class RegisterVendorDto
     /// owns that profile at once; name, category and city then come from the profile.
     /// </summary>
     [MaxLength(20)] public string? ClaimCode { get; set; }
+
+    /// <summary>The optional "send me news by e-mail" box at sign-up (unticked by default).</summary>
+    public bool NewsOptIn { get; set; }
 }
 
 public class RegisterCoupleDto
@@ -33,6 +36,9 @@ public class RegisterCoupleDto
     [MaxLength(60)] public string? PlanningStage { get; set; }
     [MaxLength(30)] public string? GuestCountRange { get; set; }
     public List<string>? NeededCategories { get; set; }
+
+    /// <summary>The optional "send me news by e-mail" box at sign-up (unticked by default).</summary>
+    public bool NewsOptIn { get; set; }
 }
 
 /// <summary>Start the plan over (PUT /api/plan/restart) — same shape as registration minus

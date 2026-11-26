@@ -53,6 +53,13 @@ export interface AdminClaim {
   decidedAt: string | null;
 }
 
+/** One address on the list for a mailing: who agreed to news by e-mail, and when. */
+export interface NewsEmail {
+  email: string;
+  name: string | null;
+  agreedAt: string;
+}
+
 /** Authenticated admin moderation API (requires Admin role; token via interceptor). */
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -96,6 +103,11 @@ export class AdminService {
   /** Cancels the open code: its link stops working at once. */
   deleteClaimCode(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/admin/vendors/${id}/claim-code`);
+  }
+
+  /** The accounts of one kind that agreed to news by e-mail, oldest consent first. */
+  newsEmails(role: 'Vendor' | 'Couple'): Observable<NewsEmail[]> {
+    return this.http.get<NewsEmail[]>(`${this.base}/api/admin/news-emails`, { params: new HttpParams().set('role', role) });
   }
 
   /** Takes the profile away from its owner account (the account stays, without a profile). */

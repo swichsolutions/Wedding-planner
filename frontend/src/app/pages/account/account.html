@@ -103,6 +103,27 @@
         </form>
       </section>
 
+      <!-- News by e-mail: the same choice as the box at sign-up, saved as it is switched.
+           Not for the admin account, which nobody mails. -->
+      @if (!isAdmin()) {
+        <section class="account__card" aria-labelledby="acc-news-h">
+          <h2 id="acc-news-h" class="account__card-title">{{ 'account.newsTitle' | translate }}</h2>
+          <label class="account__news">
+            <input type="checkbox" [checked]="account()?.newsOptIn" [disabled]="newsSaving()"
+              (change)="setNews($event)" />
+            <span>{{ 'consent.news' | translate }}</span>
+          </label>
+          <p class="account__news-hint">{{ 'account.newsHint' | translate }}</p>
+          <p class="account__news-state" role="status">
+            @if (newsState() === 'saved') {
+              {{ (account()?.newsOptIn ? 'account.newsOn' : 'account.newsOff') | translate }}
+            } @else if (newsState() === 'error') {
+              <span class="auth__error">{{ 'account.newsError' | translate }}</span>
+            }
+          </p>
+        </section>
+      }
+
       <!-- Sign out -->
       <div class="account__signout">
         <button type="button" class="btn btn--ghost" (click)="signOut()">{{ 'auth.logout' | translate }}</button>

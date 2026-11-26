@@ -9,6 +9,7 @@ import { AuthService, afterSignUpRoute, defaultRouteFor, safeReturnUrl } from '.
 import { AuthModalService } from '../../core/auth-modal.service';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 import { pageTitle } from '../../core/page-title';
+import { SignupConsent } from '../../components/signup-consent/signup-consent';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -19,7 +20,7 @@ import { environment } from '../../../environments/environment';
  */
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
   host: { class: 'theme-brand' },
@@ -46,6 +47,8 @@ export class Signup {
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordValidator()]],
+    /** News by e-mail: optional, never pre-ticked (components/signup-consent). */
+    news: [false],
   });
 
   constructor() {
@@ -82,7 +85,7 @@ export class Signup {
     this.loading.set(true);
     this.error.set(null);
     const v = this.form.getRawValue();
-    this.auth.registerCouple({ email: v.email!.trim(), password: v.password! }).subscribe({
+    this.auth.registerCouple({ email: v.email!.trim(), password: v.password!, newsOptIn: !!v.news }).subscribe({
       next: () => {
         this.auth.consumeNewAccount();
         void this.router.navigateByUrl(afterSignUpRoute(this.returnUrl));

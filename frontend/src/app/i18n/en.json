@@ -969,6 +969,14 @@
     "backToAdmin": "Admin panel"
   },
   "adminPage": {
+    "emailsError": "Couldn’t load the list. Reload the page.",
+    "emailsNote": "Download a fresh file before every mailing: anyone who switched news off is no longer on it. Every mail needs an unsubscribe link.",
+    "emailsDownload": "Download (.csv)",
+    "emailsCount": "{{n}} addresses",
+    "emailsCouples": "Couples",
+    "emailsVendors": "Vendors",
+    "emailsHint": "The emails of people who agreed to get news (at sign-up or on their account page). Download the file and upload it to your mailing tool. Nothing is sent from here.",
+    "tabEmails": "Emails",
     "title": "Admin – moderation",
     "pendingOnly": "Pending only",
     "all": "All",
@@ -1028,7 +1036,7 @@
     "emailMatches": "Email matches",
     "reject": "Reject",
     "add": "Add vendor",
-    "addHint": "After saving, the editor opens for photos and the rest. The vendor claims the profile at sign-up with \"That's mine\".",
+    "addHint": "After saving, the editor opens for photos and the rest. Once it is approved, create a code and send it to the vendor: with its link they take the profile over into their own account.",
     "addPhone": "Phone",
     "addSave": "Save and edit",
     "addCancel": "Cancel",
@@ -1352,6 +1360,11 @@
     "close": "Close"
   },
   "account": {
+    "newsError": "Couldn’t save. Try again.",
+    "newsOff": "Saved: we won’t send you news any more.",
+    "newsOn": "Saved: we’ll send you news.",
+    "newsHint": "Optional. You get mail about your account (a password reset, a new message) without it.",
+    "newsTitle": "News by email",
     "title": "Account settings",
     "intro": "Manage your sign-in details.",
     "loadError": "We couldn’t load your account. Please try again.",
@@ -2536,5 +2549,12 @@
     "marked": "Photo marked: it’s on your banner now.",
     "full": "You can mark up to 24 photos. Unmark one first.",
     "error": "That didn’t work. Try again."
+  },
+  "consent": {
+    "news": "Send me news and offers by email",
+    "agree": "By signing up you agree to the",
+    "termsLink": "Terms",
+    "and": "and the",
+    "privacyLink": "Privacy Policy"
   }
 }
