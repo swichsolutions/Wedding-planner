@@ -91,6 +91,7 @@ public class AuthController : ControllerBase
             DisplayName = dto.VendorName!.Trim(),
             VendorId = vendor.Id,
             NewsConsentAt = dto.NewsOptIn ? DateTimeOffset.UtcNow : null,
+            TermsAcceptedAt = dto.AcceptTerms ? DateTimeOffset.UtcNow : null,
         };
         IdentityResult created;
         try
@@ -144,6 +145,7 @@ public class AuthController : ControllerBase
             DisplayName = vendor.Name,
             VendorId = vendor.Id,
             NewsConsentAt = dto.NewsOptIn ? DateTimeOffset.UtcNow : null,
+            TermsAcceptedAt = dto.AcceptTerms ? DateTimeOffset.UtcNow : null,
         };
         IdentityResult created;
         try
@@ -199,6 +201,7 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             DisplayName = dto.FirstName?.Trim(),
             NewsConsentAt = dto.NewsOptIn ? DateTimeOffset.UtcNow : null,
+            TermsAcceptedAt = dto.AcceptTerms ? DateTimeOffset.UtcNow : null,
         };
         IdentityResult created;
         try

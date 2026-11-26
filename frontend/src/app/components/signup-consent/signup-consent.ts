@@ -4,44 +4,58 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 
 /**
- * What every sign-up form shows above its button (couple, vendor, vendor with a code):
- * the optional "send me news by e-mail" box and the sentence about the terms.
+ * The two boxes every sign-up form shows above its button (couple, vendor, vendor with a code):
  *
- * The box is never pre-ticked and has nothing to do with the terms sentence: consent to
- * marketing mail has to be the person's own, separate choice (Beka, 2026-11-26). The account
- * page has the same choice as a switch. The links open in a new tab, so a half-filled form stays.
+ * 1. "I agree to the terms and the privacy policy": required, the form does not send without
+ *    it (Beka, 2026-11-26: a box people tick, not a sentence they pass by). The account keeps
+ *    the date (AppUser.TermsAcceptedAt).
+ * 2. "Send me news and offers by e-mail": optional and never pre-ticked. Consent to marketing
+ *    mail has to be the person's own, separate choice, so this box must never become required
+ *    or be joined with the first one. The account page has the same choice as a switch.
+ *
+ * The links open in a new tab, so a half-filled form stays.
  */
 @Component({
   selector: 'app-signup-consent',
   imports: [ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
-    <label class="consent__news">
+    <label class="consent__box">
+      <input type="checkbox" [formControl]="terms()" aria-required="true"
+        [attr.aria-invalid]="attempted() && terms().invalid ? 'true' : null"
+        [attr.aria-describedby]="attempted() && terms().invalid ? 'consent-terms-err' : null" />
+      <span>
+        {{ 'consent.agree' | translate }}
+        <a routerLink="/terms" target="_blank" rel="noopener">{{ 'consent.termsLink' | translate }}</a>
+        {{ 'consent.and' | translate }}
+        <a routerLink="/privacy" target="_blank" rel="noopener">{{ 'consent.privacyLink' | translate }}</a>
+      </span>
+    </label>
+    @if (attempted() && terms().invalid) {
+      <span id="consent-terms-err" class="consent__err">{{ 'consent.termsRequired' | translate }}</span>
+    }
+    <label class="consent__box">
       <input type="checkbox" [formControl]="news()" />
       <span>{{ 'consent.news' | translate }}</span>
     </label>
-    <p class="consent__terms">
-      {{ 'consent.agree' | translate }}
-      <a routerLink="/terms" target="_blank" rel="noopener">{{ 'consent.termsLink' | translate }}</a>
-      {{ 'consent.and' | translate }}
-      <a routerLink="/privacy" target="_blank" rel="noopener">{{ 'consent.privacyLink' | translate }}</a>.
-    </p>
   `,
   styles: `
     // On the sign-up pages the whole card has to fit one screen (styles/_components.scss,
-    // section.auth), so this block is small and its spacing follows the window's height too.
+    // section.auth), so the two rows are small and the gap under them follows the window's height.
     :host {
       display: block;
-      container-type: inline-size; // the terms sentence is sized from this width
+      container-type: inline-size; // the rows' text is sized from this width
       margin-bottom: clamp(0.375rem, 1.2vh, 1rem);
-      color: var(--color-text-secondary);
     }
 
-    .consent__news {
+    .consent__box {
       display: flex;
       align-items: center;
       gap: var(--space-2);
       min-height: 24px;
-      font-size: var(--fs-caption);
+      // One line each on a desktop card (Beka, 2026-11-26): at 13px the Georgian terms line is a
+      // few pixels wider than the card gives it, so the size follows the card's width (about
+      // 12.4px there). Never under 12px: on a phone's narrower card the lines wrap instead.
+      font-size: clamp(0.75rem, 3cqi, var(--fs-caption));
       line-height: 1.3;
       color: var(--color-text);
       cursor: pointer;
@@ -54,17 +68,6 @@ import { TranslatePipe } from '@ngx-translate/core';
         accent-color: var(--color-action);
         cursor: pointer;
       }
-    }
-
-    .consent__terms {
-      margin: clamp(0rem, 0.3vh, 0.375rem) 0 0;
-      // One line on a desktop card (Beka, 2026-11-26): at 12px the Georgian sentence is about
-      // 440px wide and the card gives it 400-414, so the size follows the card's width (cqi) and
-      // lands near 11px there. A phone's narrower card gets two even lines (the rule below).
-      max-width: none; // not the site's reading measure for paragraphs: it needs the card's full width
-      font-size: clamp(0.65625rem, 2.68cqi, 0.75rem);
-      line-height: 1.35;
-      text-wrap: balance;
 
       a {
         color: inherit;
@@ -77,15 +80,19 @@ import { TranslatePipe } from '@ngx-translate/core';
       }
     }
 
-    // a phone's card: one line is out of reach, so two lines at the full fine-print size
-    @container (max-width: 380px) {
-      .consent__terms {
-        font-size: 0.75rem;
-      }
+    .consent__err {
+      display: block;
+      margin: 0 0 2px calc(16px + var(--space-2)); // under the text, not under the box
+      font-size: 0.75rem;
+      color: var(--color-danger-600);
     }
   `,
 })
 export class SignupConsent {
-  /** The form's own control for the news box (false until the person ticks it). */
+  /** The form's control for the terms box: `[false, Validators.requiredTrue]`. */
+  readonly terms = input.required<FormControl<boolean | null>>();
+  /** The form's control for the news box (false until the person ticks it). */
   readonly news = input.required<FormControl<boolean | null>>();
+  /** True after a failed submit: the terms box then says why the form did not send. */
+  readonly attempted = input(false);
 }

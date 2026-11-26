@@ -46,7 +46,7 @@
         <p class="auth__error" role="alert">{{ 'signup.error' | translate }}</p>
       }
 
-      <app-signup-consent [news]="form.controls.news" />
+      <app-signup-consent [terms]="form.controls.terms" [news]="form.controls.news" [attempted]="attempted()" />
 
       <button class="btn btn--primary" type="submit" [disabled]="loading()">
         {{ 'signup.createAccount' | translate }}

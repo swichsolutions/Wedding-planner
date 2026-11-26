@@ -17,4 +17,11 @@ public class AppUser : IdentityUser
     /// Marketing mail goes only to accounts with a value here. Service mail does not look at it.
     /// </summary>
     public DateTimeOffset? NewsConsentAt { get; set; }
+
+    /// <summary>
+    /// When the user ticked "I agree to the terms and the privacy policy" at sign-up (required by
+    /// the forms since 2026-11-26). Null for accounts made before that, and for accounts made by
+    /// Google sign-in, which has no form.
+    /// </summary>
+    public DateTimeOffset? TermsAcceptedAt { get; set; }
 }

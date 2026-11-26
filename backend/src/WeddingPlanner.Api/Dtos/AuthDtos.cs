@@ -19,6 +19,9 @@ public class RegisterVendorDto
 
     /// <summary>The optional "send me news by e-mail" box at sign-up (unticked by default).</summary>
     public bool NewsOptIn { get; set; }
+
+    /// <summary>The required "I agree to the terms and the privacy policy" box: the forms don't send without it.</summary>
+    public bool AcceptTerms { get; set; }
 }
 
 public class RegisterCoupleDto
@@ -39,6 +42,9 @@ public class RegisterCoupleDto
 
     /// <summary>The optional "send me news by e-mail" box at sign-up (unticked by default).</summary>
     public bool NewsOptIn { get; set; }
+
+    /// <summary>The required "I agree to the terms and the privacy policy" box: the forms don't send without it.</summary>
+    public bool AcceptTerms { get; set; }
 }
 
 /// <summary>Start the plan over (PUT /api/plan/restart) — same shape as registration minus

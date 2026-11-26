@@ -32,6 +32,8 @@ export interface RegisterVendorPayload {
   claimCode?: string;
   /** The optional "news by e-mail" box. */
   newsOptIn?: boolean;
+  /** The required "I agree to the terms and the privacy policy" box, ticked. */
+  acceptTerms?: boolean;
 }
 
 /** The profile a one-time code is for, shown on the code's page before signing up. */
@@ -55,6 +57,8 @@ export interface RegisterCouplePayload {
   password: string;
   /** The optional "news by e-mail" box. */
   newsOptIn?: boolean;
+  /** The required "I agree to the terms and the privacy policy" box, ticked. */
+  acceptTerms?: boolean;
   firstName?: string;
   lastName?: string;
   partnerFirstName?: string;

@@ -47,6 +47,8 @@ export class Signup {
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordValidator()]],
+    /** The terms box: required, the form does not send without it (components/signup-consent). */
+    terms: [false, Validators.requiredTrue],
     /** News by e-mail: optional, never pre-ticked (components/signup-consent). */
     news: [false],
   });
@@ -85,7 +87,7 @@ export class Signup {
     this.loading.set(true);
     this.error.set(null);
     const v = this.form.getRawValue();
-    this.auth.registerCouple({ email: v.email!.trim(), password: v.password!, newsOptIn: !!v.news }).subscribe({
+    this.auth.registerCouple({ email: v.email!.trim(), password: v.password!, newsOptIn: !!v.news, acceptTerms: true }).subscribe({
       next: () => {
         this.auth.consumeNewAccount();
         void this.router.navigateByUrl(afterSignUpRoute(this.returnUrl));

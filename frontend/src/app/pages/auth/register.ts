@@ -114,7 +114,7 @@ import { SignupConsent } from '../../components/signup-consent/signup-consent';
             @if (error()) {
               <p class="auth__error" role="alert">{{ error()! | translate }}</p>
             }
-            <app-signup-consent [news]="form.controls.news" />
+            <app-signup-consent [terms]="form.controls.terms" [news]="form.controls.news" [attempted]="attempted()" />
             <button class="btn btn--primary" type="submit" [disabled]="loading()">
               {{ 'auth.signUp' | translate }}
             </button>
@@ -153,6 +153,8 @@ export class Register {
     categorySlug: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordValidator()]],
+    /** The terms box: required, the form does not send without it (components/signup-consent). */
+    terms: [false, Validators.requiredTrue],
     /** News by e-mail: optional, never pre-ticked (components/signup-consent). */
     news: [false],
   });
@@ -206,6 +208,7 @@ export class Register {
         vendorName: v.vendorName!,
         categorySlug: v.categorySlug!,
         newsOptIn: !!v.news,
+        acceptTerms: true,
       })
       .subscribe({
         next: () => this.router.navigateByUrl('/dashboard'),

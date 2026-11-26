@@ -177,14 +177,17 @@ invitation at `/w/…`, which keeps its own design. New pages follow the same ru
   and `/contact` fit one desktop screen without scrolling (Beka, 2026-11-12). Their spacing,
   title and field sizes follow the window's height (`section.auth` and `.static-page--fit` in
   `styles/_components.scss`, `inquiry-form.scss`). Keep that when adding fields or text to them.
-- **News by e-mail (2026-11-26):** every sign-up form (couple, vendor, vendor with a code) shows
-  `components/signup-consent`: an optional box, never pre-ticked, „მინდა მივიღო სიახლეები და
-  შეთავაზებები ელფოსტით", and the sentence that signing up accepts the terms and the privacy
-  policy. The choice is `AppUser.NewsConsentAt` (null = no); `/account` has the same choice as a
-  switch; the admin's „ელფოსტები" tab downloads the addresses of those who agreed as a .csv for
-  a mailing tool (the site itself sends no marketing mail). Marketing goes only to that list.
-  A new way to create an account must offer the box too. Google sign-in has no box: such an
-  account starts without consent and can switch it on in `/account`.
+- **Sign-up boxes (2026-11-26):** every sign-up form (couple, vendor, vendor with a code) shows
+  `components/signup-consent`, two boxes above the button, both unticked:
+  1. „ვეთანხმები წესებს და კონფიდენციალურობის პოლიტიკას": **required** (Beka wanted a box
+     people tick, not a sentence); the date is kept in `AppUser.TermsAcceptedAt`.
+  2. „მინდა მივიღო სიახლეები და შეთავაზებები ელფოსტით": **optional, never pre-ticked, never
+     joined with the first**; kept in `AppUser.NewsConsentAt` (null = no). `/account` has the
+     same choice as a switch.
+  The admin's „ელფოსტები" tab downloads the addresses of those who agreed to news as a .csv for
+  a mailing tool; the site itself sends no marketing mail, and marketing goes only to that list.
+  A new way to create an account must offer both boxes. Google sign-in has neither: such an
+  account has no recorded acceptance and no news consent (it can switch news on in `/account`).
 - **Putting a page on the theme:** add `host: { class: 'theme-brand' }` to the page component
   (see `pages/home/home.ts`). Style it with the v2 tokens the theme re-points: `--paper`,
   `--paper-deep`, `--ink`, `--spruce`, `--color-action`, `--font-display`, `--font-body`. The

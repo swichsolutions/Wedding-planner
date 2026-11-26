@@ -112,7 +112,7 @@ type Stage = 'enter' | 'checking' | 'found' | 'invalid';
                 @if (error()) {
                   <p class="auth__error" role="alert">{{ error()! | translate }}</p>
                 }
-                <app-signup-consent [news]="form.controls.news" />
+                <app-signup-consent [terms]="form.controls.terms" [news]="form.controls.news" [attempted]="attempted()" />
                 <button class="btn btn--primary" type="submit" [disabled]="saving()">{{ 'auth.code.submit' | translate }}</button>
               </form>
               <p class="auth__alt">
@@ -152,6 +152,8 @@ export class ClaimCode implements OnDestroy {
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, passwordValidator()]],
+    /** The terms box: required, the form does not send without it (components/signup-consent). */
+    terms: [false, Validators.requiredTrue],
     /** News by e-mail: optional, never pre-ticked (components/signup-consent). */
     news: [false],
   });
@@ -208,7 +210,7 @@ export class ClaimCode implements OnDestroy {
     this.saving.set(true);
     this.error.set(null);
     const v = this.form.getRawValue();
-    this.auth.registerVendor({ email: v.email!, password: v.password!, claimCode: this.code, newsOptIn: !!v.news }).subscribe({
+    this.auth.registerVendor({ email: v.email!, password: v.password!, claimCode: this.code, newsOptIn: !!v.news, acceptTerms: true }).subscribe({
       next: () => this.router.navigateByUrl('/dashboard'),
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);
