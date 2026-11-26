@@ -13,7 +13,7 @@ import { TrustFaq } from './trust-faq/trust-faq';
 import { FinalCall } from './final-call/final-call';
 import { DayPreview } from '../../components/day-preview/day-preview';
 import { CarouselArrow } from '../../components/carousel-arrow/carousel-arrow';
-import { categoryPath, groupPath, img } from '../../core/catalog';
+import { groupPath, img } from '../../core/catalog';
 
 /**
  * Landing page, in seven sections (the order since the review of 2026-11-12): hero → three
@@ -196,16 +196,18 @@ export class Home {
     // Revolut-style cards: Beka's renders, one scene or object on a shared peach backdrop
     // with a floor reflection; each has a `-1086` twin for dense screens
     // (public/media/README.md)
-    // Rows open the catalog's group (guide §4); rings and transport open their one category.
+    // One card per catalog group, in the header menu's order and under its names (guide §4).
+    // Until 2026-11-26 two cards were single categories (rings, transport): the accessories and
+    // "other services" groups were only in the menu, and their other categories had no card.
     { key: 'venues', slugs: ['darbazi', 'keiteringi'], link: groupPath('venues'), img: '/media/cat/venues.webp' },
     { key: 'photo', slugs: ['fotografi', 'videografi'], link: groupPath('photo'), img: '/media/cat/photo.webp' },
     { key: 'decor', slugs: ['dekori', 'floristi', 'inventari'], link: groupPath('decor'), img: '/media/cat/decor.webp' },
     { key: 'music', slugs: ['musika', 'tamada', 'tsamqvani', 'gasartobi'], link: groupPath('music'), img: '/media/cat/music.webp' },
     { key: 'cake', slugs: ['torti', 'tkbileuli'], link: groupPath('cake'), img: '/media/cat/cake.webp' },
     { key: 'attire', slugs: ['kaba', 'kostiumi', 'pekhsatsmeli'], link: groupPath('attire'), img: '/media/cat/attire.webp' },
-    { key: 'rings', slugs: ['bechdebi'], link: categoryPath('bechdebi'), img: '/media/cat/rings.webp' },
+    { key: 'accessories', slugs: ['aksesuarebi', 'bechdebi'], link: groupPath('accessories'), img: '/media/cat/rings.webp' },
     { key: 'beauty', slugs: ['makiaji', 'tmis-stili', 'manikiuri', 'saloni', 'movla'], link: groupPath('beauty'), img: '/media/cat/beauty.webp' },
-    { key: 'transport', slugs: ['transporti'], link: categoryPath('transporti'), img: '/media/cat/transport.webp' },
+    { key: 'other', slugs: ['transporti', 'bechduri-mosatsvevebi', 'koordinatori'], link: groupPath('other'), img: '/media/cat/transport.webp' },
   ];
 
   protected readonly categoryRows = computed<CategoryRow[]>(() =>

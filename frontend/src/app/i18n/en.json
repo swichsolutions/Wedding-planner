@@ -288,17 +288,17 @@
           "name": "Attire",
           "sub": "Wedding dresses, suits"
         },
-        "rings": {
-          "name": "Rings",
-          "sub": "Wedding rings, jewellery"
+        "accessories": {
+          "name": "Accessories",
+          "sub": "Rings, jewellery, accessories"
         },
         "beauty": {
           "name": "Beauty",
           "sub": "Makeup, hair stylists, nails"
         },
-        "transport": {
-          "name": "Transport",
-          "sub": "Wedding cars, convertibles, guest transfers"
+        "other": {
+          "name": "Other services",
+          "sub": "Transport, printed invitations, coordinator"
         }
       },
       "cta": "See the catalog"
