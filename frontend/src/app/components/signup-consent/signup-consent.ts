@@ -31,6 +31,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     // section.auth), so this block is small and its spacing follows the window's height too.
     :host {
       display: block;
+      container-type: inline-size; // the terms sentence is sized from this width
       margin-bottom: clamp(0.375rem, 1.2vh, 1rem);
       color: var(--color-text-secondary);
     }
@@ -57,9 +58,13 @@ import { TranslatePipe } from '@ngx-translate/core';
 
     .consent__terms {
       margin: clamp(0rem, 0.3vh, 0.375rem) 0 0;
-      font-size: 0.75rem;
+      // One line on a desktop card (Beka, 2026-11-26): at 12px the Georgian sentence is about
+      // 440px wide and the card gives it 400-414, so the size follows the card's width (cqi) and
+      // lands near 11px there. A phone's narrower card gets two even lines (the rule below).
+      max-width: none; // not the site's reading measure for paragraphs: it needs the card's full width
+      font-size: clamp(0.65625rem, 2.68cqi, 0.75rem);
       line-height: 1.35;
-      text-wrap: balance; // two even lines where it does not fit one, no lone last word
+      text-wrap: balance;
 
       a {
         color: inherit;
@@ -69,6 +74,13 @@ import { TranslatePipe } from '@ngx-translate/core';
         &:hover {
           color: var(--color-action);
         }
+      }
+    }
+
+    // a phone's card: one line is out of reach, so two lines at the full fine-print size
+    @container (max-width: 380px) {
+      .consent__terms {
+        font-size: 0.75rem;
       }
     }
   `,
