@@ -139,20 +139,40 @@
   margin-top: var(--space-2);
 }
 
-.lm-alt {
-  margin: var(--space-6) 0 0;
-  text-align: center;
-  font-size: var(--fs-caption);
-  color: var(--color-text-secondary);
-}
-
-.lm-vendor {
+// "No account yet?" and the two sign-ups, side by side
+.lm-new {
+  // no taller than the two text lines it replaced: at 640px of window height the card just fits
   margin: var(--space-3) 0 0;
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);
   text-align: center;
+}
+
+.lm-new__q {
+  margin: 0 0 var(--space-2);
   font-size: var(--fs-caption);
   color: var(--color-text-secondary);
+}
+
+.lm-new__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+
+  .btn {
+    min-height: 38px;
+    padding-inline: var(--space-3);
+    font-size: var(--fs-caption);
+    white-space: normal; // two words may take two lines on a narrow phone
+    line-height: 1.2;
+  }
+}
+
+// a finger needs more than a mouse: the two choices are 44px tall on touch screens
+@media (pointer: coarse) {
+  .lm-new__choices .btn {
+    min-height: 44px;
+  }
 }
 
 // inline text-button links (Sign up / Start here)

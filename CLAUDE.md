@@ -224,6 +224,18 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   the organizer has its own inner menu. "დაგეგმე ქორწილი" opens `/` (there is no `/plan` page);
   its dropdown is დღის განრიგები · მოსაწვევები. Couples who sign in on `/` land on
   `/planning`. Anywhere else they stay on the page they were on.
+- **Where a vendor signs up (2026-11-28).** A tester told to "register as a vendor" could not
+  find it: the header's one „რეგისტრაცია" button opens the couple's form, and the vendor's was a
+  small last line there and in the sign-in window. Now the choice is made where sign-up starts:
+  - both sign-up cards open with a switch „ქორწილს ვგეგმავ | მომწოდებელი ვარ"
+    (`components/signup-role`; `/signup` and `/register`), and the sign-in window ends with the
+    same two as buttons under „არ გაქვს ანგარიში?";
+  - every catalog list ends with „მომწოდებელი ხარ? დაამატე შენი ბიზნესი"
+    (`components/vendor-invite`), and a category without vendors says so instead of "change the
+    filters";
+  - the phone menu has a row for vendors.
+  The desktop bar has no vendor link: between 1280 and 1500px there is no room for one (107px
+  free at 1280), and the plan keeps the bar short. Don't add one without checking those widths.
 - "რჩევები და იდეები" stays, at `/rchevebi` since 2026-11-13. Its mock articles get replaced with real content.
   While only one of its sections has articles (the blog), the header shows it as a plain link
   with no dropdown (review of 2026-11-17; `navGroups` in `app.ts`).

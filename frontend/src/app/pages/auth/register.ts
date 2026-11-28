@@ -12,10 +12,11 @@ import { GROUPS, categoriesIn, categoryKey } from '../../core/catalog';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 import { pageTitle } from '../../core/page-title';
 import { SignupConsent } from '../../components/signup-consent/signup-consent';
+import { SignupRole } from '../../components/signup-role/signup-role';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent, SignupRole],
   template: `
     <!-- The same layout as the couple sign-up (2026-11-12): from 1024px a photo on the left
          (the global section.auth split, here the decorated hall) and the white card on the
@@ -23,6 +24,7 @@ import { SignupConsent } from '../../components/signup-consent/signup-consent';
          went: one of its prints sat under the title and made it unreadable. -->
     <section class="auth auth--vendor">
       <div class="auth__card">
+          <app-signup-role current="vendor" />
           <h1>{{ 'auth.registerTitle' | translate }}</h1>
           <p class="auth__intro">{{ 'auth.registerSubtitle' | translate }}</p>
           <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -119,11 +121,11 @@ import { SignupConsent } from '../../components/signup-consent/signup-consent';
               {{ 'auth.signUp' | translate }}
             </button>
           </form>
+          <!-- one line since 2026-11-28 (they were two): the switch above needed the room -->
           <p class="auth__alt">
             {{ 'auth.haveAccount' | translate }} <a routerLink="/login">{{ 'auth.login' | translate }}</a>
-          </p>
-          <p class="auth__alt">
-            {{ 'auth.haveCodeQ' | translate }} <a routerLink="/kodi">{{ 'auth.haveCode' | translate }}</a>
+            <span aria-hidden="true"> · </span>
+            <a routerLink="/kodi" [attr.title]="'auth.haveCodeQ' | translate">{{ 'auth.haveCode' | translate }}</a>
           </p>
       </div>
     </section>

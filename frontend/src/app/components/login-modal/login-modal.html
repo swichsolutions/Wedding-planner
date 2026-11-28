@@ -68,16 +68,16 @@
         </button>
       </form>
 
-      <p class="lm-alt">
-        {{ 'auth.noAccount' | translate }}
-        <button type="button" class="lm-link" (click)="goSignup()">{{ 'auth.signUp' | translate }}</button>
-      </p>
-
-      <p class="lm-vendor">
-        <!-- the same line as on /signup (one pair of keys, so the two cannot drift apart) -->
-        {{ 'signup.vendorQ' | translate }}
-        <button type="button" class="lm-link" (click)="goVendor()">{{ 'signup.vendorLink' | translate }}</button>
-      </p>
+      <!-- New here: both sign-ups as two equal buttons, under the same words as the switch on
+           the sign-up cards (components/signup-role). Until 2026-11-28 the vendor's was the
+           window's last, small line and a tester could not find it. -->
+      <div class="lm-new">
+        <p class="lm-new__q">{{ 'auth.noAccount' | translate }}</p>
+        <div class="lm-new__choices">
+          <button type="button" class="btn btn--outline-ink" (click)="goSignup()">{{ 'role.couple' | translate }}</button>
+          <button type="button" class="btn btn--outline-ink" (click)="goVendor()">{{ 'role.vendor' | translate }}</button>
+        </div>
+      </div>
     </div>
   </div>
 }

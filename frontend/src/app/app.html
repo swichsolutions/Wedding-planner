@@ -60,6 +60,8 @@
         } @else {
           <a class="btn btn--clay btn--lg" routerLink="/signup" [attr.title]="'nav.startTitle' | translate" (click)="closeMenu()">{{ 'nav.start' | translate }}</a>
           <button type="button" class="hdr__text-btn" (click)="openLogin()">{{ 'nav.login' | translate }}</button>
+          <!-- vendors: the bar has no room for a link of their own, the sheet has -->
+          <a class="hdr__sheet-vendors" routerLink="/for-vendors" (click)="closeMenu()">{{ 'nav.vendorsRow' | translate }}</a>
         }
         <div class="lang" role="group" [attr.aria-label]="'common.language' | translate">
           @for (l of lang.supported; track l.code) {

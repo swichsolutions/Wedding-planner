@@ -1,5 +1,9 @@
 <section class="auth su">
   <div class="auth__card">
+    <!-- not for a partner joining a plan: that is no choice between couple and vendor -->
+    @if (!joining) {
+      <app-signup-role current="couple" />
+    }
     <h1>{{ (joining ? 'signup.joinTitle' : 'signup.title') | translate }}</h1>
     <p class="auth__intro">{{ (joining ? 'signup.joinIntro' : 'signup.intro') | translate }}</p>
 
@@ -64,10 +68,5 @@
       {{ 'auth.haveAccount' | translate }}
       <button type="button" class="su-link" (click)="openSignIn()">{{ 'auth.login' | translate }}</button>
     </p>
-    @if (!joining) {
-      <p class="su-alt su-alt--vendor">
-        {{ 'signup.vendorQ' | translate }} <a class="su-link" routerLink="/register">{{ 'signup.vendorLink' | translate }}</a>
-      </p>
-    }
   </div>
 </section>

@@ -172,12 +172,22 @@
     } @else {
       <p class="cat__count" role="status"><span class="num">0</span> {{ 'vendors.countLabel' | translate }}</p>
       <div class="cat__empty">
-        <h2>{{ 'vendors.emptyTitle' | translate }}</h2>
-        <p>{{ 'vendors.emptyBody' | translate }}</p>
-        @if (hasFilters()) {
+        @if (hasNarrowing()) {
+          <h2>{{ 'vendors.emptyTitle' | translate }}</h2>
+          <p>{{ 'vendors.emptyBody' | translate }}</p>
           <button type="button" class="btn btn--ghost" (click)="clearFilters()">{{ 'vendors.clear' | translate }}</button>
+        } @else {
+          <!-- nothing was narrowed: the category (or the whole catalog) has no vendors yet -->
+          <h2>{{ 'vendors.noneYetTitle' | translate }}</h2>
+          <p>{{ 'vendors.noneYetBody' | translate }}</p>
+          @if (hasFilters()) {
+            <a class="btn btn--ghost" routerLink="/vendors">{{ 'vendors.allCategories' | translate }}</a>
+          }
         }
       </div>
+    }
+    @if (!loading() && !loadError()) {
+      <app-vendor-invite />
     }
   </div>
 </section>

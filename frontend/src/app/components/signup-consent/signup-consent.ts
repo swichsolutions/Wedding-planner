@@ -80,6 +80,15 @@ import { TranslatePipe } from '@ngx-translate/core';
       }
     }
 
+    // phones: the rows take two lines each there, so they need air between them (and the page
+    // scrolls anyway, nothing has to fit one screen)
+    @media (max-width: 1023.98px) {
+      .consent__box + .consent__box,
+      .consent__err + .consent__box {
+        margin-top: var(--space-2);
+      }
+    }
+
     .consent__err {
       display: block;
       margin: 0 0 2px calc(16px + var(--space-2)); // under the text, not under the box

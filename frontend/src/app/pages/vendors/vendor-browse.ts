@@ -28,6 +28,7 @@ import {
 } from '../../core/catalog';
 import { LanguageService } from '../../i18n/language.service';
 import { formatGel } from '../../core/money';
+import { VendorInvite } from '../../components/vendor-invite/vendor-invite';
 import { breadcrumbList, catalogTrail, removeJsonLd, setJsonLd, webPage } from '../../core/structured-data';
 
 /** Max-price options per price unit (a venue's 80 ₾ is per guest; a photographer's 1500 per event). */
@@ -65,7 +66,7 @@ const csv = (v: string | null): string[] | undefined => (v ? v.split(',').filter
  */
 @Component({
   selector: 'app-vendor-browse',
-  imports: [TranslatePipe, VendorCard, RouterLink],
+  imports: [TranslatePipe, VendorCard, RouterLink, VendorInvite],
   host: { class: 'theme-brand' },
   templateUrl: './vendor-browse.html',
   styleUrl: './vendor-browse.scss',
@@ -148,6 +149,14 @@ export class VendorBrowse {
     const f = this.filter();
     return !!(f.category || f.city || f.region || f.maxPrice || f.styles || f.guests || f.setting ||
       f.venueType || f.features || f.q || f.vip);
+  });
+
+  /** The visitor narrowed the list themselves (a city, a price, a search…), beyond the page's own
+   * category or group. An empty list then means "change the filters"; without it, the category
+   * simply has no vendors yet, and the empty state says that instead (2026-11-28). */
+  protected readonly hasNarrowing = computed(() => {
+    const f = this.filter();
+    return !!(f.city || f.region || f.maxPrice || f.styles || f.guests || f.setting || f.venueType || f.features || f.q || f.vip);
   });
 
   protected readonly loadError = signal(false);

@@ -3,6 +3,7 @@
     "name": "WeddingPlanner"
   },
   "nav": {
+    "vendorsRow": "Are you a vendor? Add your business",
     "plan": "Plan your wedding",
     "vendors": "Venues & services",
     "guides": "Tips & ideas",
@@ -1448,6 +1449,9 @@
     "realWedding": "Real wedding"
   },
   "vendors": {
+    "allCategories": "All categories",
+    "noneYetBody": "The catalog is being filled right now. Have a look at the other categories, or come back later.",
+    "noneYetTitle": "No vendors here yet",
     "title": "Venues & services",
     "subtitle": "Find the right venue and services for your wedding, compare offers and save your favourites.",
     "countLabel": "vendors",
@@ -2557,5 +2561,16 @@
     "termsLink": "Terms",
     "and": "and the",
     "privacyLink": "Privacy Policy"
+  },
+  "role": {
+    "label": "Who is signing up",
+    "couple": "I’m planning a wedding",
+    "vendor": "I’m a vendor"
+  },
+  "vendorInvite": {
+    "title": "Are you a vendor?",
+    "body": "Add your business to the catalog and show your work to couples who are planning a wedding.",
+    "cta": "Add your business",
+    "how": "How does it work?"
   }
 }

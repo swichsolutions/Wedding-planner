@@ -532,6 +532,22 @@ main {
       margin-top: var(--space-2);
     }
   }
+
+  // "Are you a vendor? Add your business": the sheet's row for vendors (2026-11-28). A text
+  // link, so the couple's button above stays the one strong action; 44px for a thumb.
+  &__sheet-vendors {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding-inline: var(--space-3);
+    font-weight: var(--fw-medium);
+    color: var(--ink);
+    text-align: center;
+    text-wrap: balance; // if it ever takes two lines, two even ones
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
 
 // Desktop: links in the bar, sheet machinery off.

@@ -10,6 +10,7 @@ import { AuthModalService } from '../../core/auth-modal.service';
 import { focusFirstInvalid, passwordChecks, passwordValidator } from '../../core/forms';
 import { pageTitle } from '../../core/page-title';
 import { SignupConsent } from '../../components/signup-consent/signup-consent';
+import { SignupRole } from '../../components/signup-role/signup-role';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -20,7 +21,7 @@ import { environment } from '../../../environments/environment';
  */
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent],
+  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent, SignupRole],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
   host: { class: 'theme-brand' },

@@ -52,15 +52,11 @@
 // the gaps around "or" and above the closing lines follow the window's height too.
 @media (min-width: 1024px) {
   .su-or {
-    margin: clamp(0.5rem, 1.8vh, 1.25rem) 0 clamp(0.125rem, 0.6vh, 0.5rem);
+    margin: clamp(0.375rem, 1.3vh, 1.25rem) 0 clamp(0.125rem, 0.4vh, 0.5rem);
   }
 
   .su-alt {
-    margin-top: clamp(0.625rem, 2vh, 1.5rem);
-
-    &--vendor {
-      margin-top: clamp(0.125rem, 0.6vh, 0.5rem);
-    }
+    margin-top: clamp(0.5rem, 1.4vh, 1.5rem);
   }
 }
 
