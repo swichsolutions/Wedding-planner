@@ -1273,9 +1273,7 @@
     "joinTitle": "Create an account and join the plan",
     "joinIntro": "Once your account is made, you go straight back to the shared plan.",
     "emailTaken": "There is already an account with this email.",
-    "withGoogle": "Continue with Google",
-    "vendorQ": "Are you a vendor?",
-    "vendorLink": "Sign up here"
+    "withGoogle": "Continue with Google"
   },
   "auth": {
     "loginTitle": "Sign in",

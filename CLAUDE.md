@@ -227,10 +227,10 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
 - **Where a vendor signs up (2026-11-28).** A tester told to "register as a vendor" could not
   find it: the header's one „რეგისტრაცია" button opens the couple's form, and the vendor's was a
   small last line there and in the sign-in window. Now the choice is made where sign-up starts:
-  - both sign-up cards open with a switch „ქორწილს ვგეგმავ | მომწოდებელი ვარ"
+  - both sign-up cards open with a switch „ქორწილს ვგეგმავ | ბიზნესი მაქვს"
     (`components/signup-role`; `/signup` and `/register`), and the sign-in window ends with the
     same two as buttons under „არ გაქვს ანგარიში?";
-  - every catalog list ends with „მომწოდებელი ხარ? დაამატე შენი ბიზნესი"
+  - every catalog list ends with „საქორწილო ბიზნესი გაქვს?" and the button „დაამატე შენი ბიზნესი"
     (`components/vendor-invite`), and a category without vendors says so instead of "change the
     filters";
   - the phone menu has a row for vendors.
@@ -250,6 +250,19 @@ condensation — where it disagrees, BUILD-PLAN wins. Check new pages and nav ch
   Every old address answers 301 (`core/old-addresses.ts`, used by the Worker, Express and the
   router). New pages follow this: a Georgian path, never a parameter, for anything that should
   be found in search.
+- **The Georgian word for a vendor (Beka, 2026-11-28): never „მომწოდებელი".** Georgians rarely
+  say it for a wedding business (it means a supplier of goods) and he expected it to confuse.
+  Two everyday words do its work, and the whole site was reworded by hand that day:
+  - to couples the catalog offers **„მომსახურებები"** („შენახული მომსახურებები", „დაამატე
+    მომსახურება"), as the menu („სივრცეები და მომსახურებები") and his own articles already said;
+  - whoever offers them is a **„ბიზნესი"** („ბიზნესი მაქვს", „ბიზნესისთვის", „ბიზნესის ანგარიში";
+    the admin panel's tab is „ბიზნესები");
+  - a business's page is its **„პროფილი"**; a count is „შედეგი" (the list) or „ვარიანტი" (running
+    text); where a person is meant, the sentence does without a noun („მისწერე", „მათთან").
+  Not „პარტნიორი": that is the couple's other half on this site. Not „ვენდორი", „პროფესიონალი" or
+  „კომპანია" either (he was offered them). English keeps "vendor". The API's Georgian texts
+  follow the same rule (the starter tasks in `StarterTasks.cs`, where a reworded title keeps its
+  old one in `Former`; the terms and privacy seed texts).
 - Site copy: the texts of the public pages follow `Homepage texts.docx` (2026-11-12, not in the
   repo): header, the seven home sections, sign-up, vendor sign-up, about, contact, for-vendors,
   the catalog and guides intros. The three example days (`core/day-schedules.ts`) carry that

@@ -27,12 +27,26 @@ public static class StarterTasks
             map[t.Ka] = t;
             map[t.En] = t;
         }
+        // A plan made before a title was reworded still stores the old one: it is the same task,
+        // and is shown under today's wording (the checklist shows KaOf / EnOf, not the stored text).
+        foreach (var (former, current) in Former) map[former] = map[current];
         return map;
     });
 
     /// <summary>A starter task's wording in each language; null for a custom or edited title.</summary>
     public static string? KaOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.Ka : null;
     public static string? EnOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.En : null;
+
+    /// <summary>
+    /// Georgian titles that were reworded, old -> today's. 2026-11-28: „მომწოდებელი" left the site's
+    /// vocabulary (couples read „მომსახურებები"), so three tasks changed their words.
+    /// </summary>
+    private static readonly (string Former, string Current)[] Former =
+    {
+        ("დაუდასტურეთ დეტალები ყველა მომწოდებელს", "დაუდასტურეთ დეტალები ყველას, ვინც ქორწილზე იმუშავებს"),
+        ("გაუზიარეთ დღის განრიგი მომწოდებლებს", "გაუზიარეთ დღის განრიგი ყველას, ვინც ქორწილზე იმუშავებს"),
+        ("შეაფასეთ მომწოდებლები", "შეაფასეთ მომსახურებები"),
+    };
 
     public static readonly Task[] All =
     {
@@ -71,12 +85,12 @@ public static class StarterTasks
         new("m1", "შეაგროვეთ სტუმრების პასუხები", "Collect the guests' replies", "guests"),
         new("m1", "შეადგინეთ დასხდომის გეგმა", "Make the seating plan", "seating"),
         new("m1", "დაგეგმეთ დარჩენილი გადახდები", "Plan the remaining payments", "budget"),
-        new("m1", "დაუდასტურეთ დეტალები ყველა მომწოდებელს", "Confirm the details with every vendor", "services"),
+        new("m1", "დაუდასტურეთ დეტალები ყველას, ვინც ქორწილზე იმუშავებს", "Confirm the details with every vendor", "services"),
 
         new("w1", "შეატყობინეთ სივრცეს სტუმრების საბოლოო რაოდენობა", "Tell the venue the final guest count", null),
-        new("w1", "გაუზიარეთ დღის განრიგი მომწოდებლებს", "Share the day schedule with your vendors", "day"),
+        new("w1", "გაუზიარეთ დღის განრიგი ყველას, ვინც ქორწილზე იმუშავებს", "Share the day schedule with your vendors", "day"),
 
-        new("after", "შეაფასეთ მომწოდებლები", "Review your vendors", "services"),
+        new("after", "შეაფასეთ მომსახურებები", "Review your vendors", "services"),
         new("after", "მადლობა გადაუხადეთ სტუმრებს", "Thank your guests", null),
     };
 }
