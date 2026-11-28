@@ -57,7 +57,7 @@ import { TranslatePipe } from '@ngx-translate/core';
       }
 
       &[aria-current='page'] {
-        background: #fff;
+        background: var(--paper-white, #fff);
         color: var(--ink);
         font-weight: var(--fw-semibold);
         box-shadow: var(--shadow-xs);
@@ -68,7 +68,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     @media (max-width: 1023.98px) {
       a {
         min-height: 40px;
-        padding-inline: var(--space-1); // each half is about 140px on a phone: the words need it all
+        padding-inline: var(--space-1); // a half is 125-140px on a phone; on the narrowest the longer one takes two lines
       }
     }
   `,

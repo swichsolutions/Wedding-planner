@@ -132,7 +132,9 @@ export class Tasks {
   }
 
   protected startEdit(item: ChecklistItem): void {
-    this.form.reset({ title: item.title, stage: item.stage ?? '', dueDate: item.dueDate ?? '', who: item.who ?? '' });
+    // the title as it is shown: a starter task reworded since the plan was made (the API's
+    // StarterTasks.Former) must not come back in its old words when it is edited
+    this.form.reset({ title: this.title(item), stage: item.stage ?? '', dueDate: item.dueDate ?? '', who: item.who ?? '' });
     this.editing.set(item.id);
     this.focusForm();
   }

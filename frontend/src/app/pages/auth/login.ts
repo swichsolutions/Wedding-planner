@@ -59,7 +59,10 @@ import { environment } from '../../../environments/environment';
           </button>
         }
         <p class="auth__alt">
-          {{ 'auth.noAccount' | translate }} <a routerLink="/signup">{{ 'auth.signUp' | translate }}</a>
+          <!-- both sign-ups, under the words of the switch on the sign-up cards -->
+          {{ 'auth.noAccount' | translate }} <a routerLink="/signup">{{ 'role.couple' | translate }}</a>
+          <span aria-hidden="true"> · </span>
+          <a routerLink="/register">{{ 'role.vendor' | translate }}</a>
         </p>
       </div>
     </section>

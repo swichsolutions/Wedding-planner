@@ -180,7 +180,7 @@
           <!-- nothing was narrowed: the category (or the whole catalog) has no vendors yet -->
           <h2>{{ 'vendors.noneYetTitle' | translate }}</h2>
           <p>{{ 'vendors.noneYetBody' | translate }}</p>
-          @if (hasFilters()) {
+          @if (hasFilters() || group()) {
             <a class="btn btn--ghost" routerLink="/vendors">{{ 'vendors.allCategories' | translate }}</a>
           }
         }

@@ -38,6 +38,7 @@ import { ToastService } from '../../core/toast.service';
 import { WishlistService } from '../../core/wishlist.service';
 import { MARKABLE_CATEGORIES, PlanPhotosService } from '../../core/plan-photos.service';
 import { formatGel } from '../../core/money';
+import { nameInitial } from '../../core/name-initial';
 import { formatDate } from '../../core/dates';
 
 const JSON_LD_ID = 'vendor-jsonld';
@@ -420,7 +421,7 @@ export class VendorProfile implements OnDestroy {
 
   /** The name's first letter, shown where the photos would be while a vendor has none. */
   protected initial(name: string): string {
-    return Array.from(name.trim())[0]?.toUpperCase() ?? '';
+    return nameInitial(name);
   }
 
   /** "სიღნაღი, კახეთი" — but just "თბილისი" when the city and the region are the same. */

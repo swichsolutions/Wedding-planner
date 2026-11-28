@@ -9,6 +9,7 @@ import { WishlistService } from '../../core/wishlist.service';
 import { BudgetVendorsService } from '../../core/budget-vendors.service';
 import { AuthService } from '../../core/auth.service';
 import { formatGel } from '../../core/money';
+import { nameInitial } from '../../core/name-initial';
 
 /** Photo-forward vendor card — the workhorse pattern reused on home + browse. */
 @Component({
@@ -31,7 +32,7 @@ export class VendorCard {
     return this.lang.current() === 'en' && v.citySlug ? cityDisplayEn(v.citySlug) : v.city;
   });
   /** The name's first letter, shown where the photo would be while a vendor has none. */
-  protected readonly initial = computed(() => Array.from(this.vendor().name.trim())[0]?.toUpperCase() ?? '');
+  protected readonly initial = computed(() => nameInitial(this.vendor().name));
   /** The profile link's tooltip: what the name alone doesn't say (category and city). */
   protected readonly linkTitle = computed(() => {
     const v = this.vendor();

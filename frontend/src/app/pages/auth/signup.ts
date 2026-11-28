@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Meta } from '@angular/platform-browser';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -21,7 +21,7 @@ import { environment } from '../../../environments/environment';
  */
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SignupConsent, SignupRole],
+  imports: [ReactiveFormsModule, TranslatePipe, SignupConsent, SignupRole],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
   host: { class: 'theme-brand' },

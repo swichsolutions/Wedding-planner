@@ -19,24 +19,6 @@ public static class StarterTasks
     public const string SetBudget = "განსაზღვრეთ საერთო ბიუჯეტი";
     public const string ChooseDate = "აირჩიეთ თარიღი ან თარიღების ვარიანტები";
 
-    private static readonly Lazy<Dictionary<string, Task>> ByTitle = new(() =>
-    {
-        var map = new Dictionary<string, Task>();
-        foreach (var t in All)
-        {
-            map[t.Ka] = t;
-            map[t.En] = t;
-        }
-        // A plan made before a title was reworded still stores the old one: it is the same task,
-        // and is shown under today's wording (the checklist shows KaOf / EnOf, not the stored text).
-        foreach (var (former, current) in Former) map[former] = map[current];
-        return map;
-    });
-
-    /// <summary>A starter task's wording in each language; null for a custom or edited title.</summary>
-    public static string? KaOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.Ka : null;
-    public static string? EnOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.En : null;
-
     /// <summary>
     /// Georgian titles that were reworded, old -> today's. 2026-11-28: „მომწოდებელი" left the site's
     /// vocabulary (couples read „მომსახურებები"), so three tasks changed their words.
@@ -47,6 +29,27 @@ public static class StarterTasks
         ("გაუზიარეთ დღის განრიგი მომწოდებლებს", "გაუზიარეთ დღის განრიგი ყველას, ვინც ქორწილზე იმუშავებს"),
         ("შეაფასეთ მომწოდებლები", "შეაფასეთ მომსახურებები"),
     };
+
+    private static readonly Lazy<Dictionary<string, Task>> ByTitle = new(() =>
+    {
+        var map = new Dictionary<string, Task>();
+        foreach (var t in All)
+        {
+            map[t.Ka] = t;
+            map[t.En] = t;
+        }
+        // A plan made before a title was reworded still stores the old one: it is the same task,
+        // and is shown under today's wording (the checklist shows KaOf / EnOf, not the stored text).
+        // TryGetValue: a pair whose "current" side no longer matches a title in All is skipped, not
+        // thrown on (a Lazy keeps its exception, and every checklist request would fail with it).
+        foreach (var (former, current) in Former)
+            if (map.TryGetValue(current, out var task)) map[former] = task;
+        return map;
+    });
+
+    /// <summary>A starter task's wording in each language; null for a custom or edited title.</summary>
+    public static string? KaOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.Ka : null;
+    public static string? EnOf(string title) => ByTitle.Value.TryGetValue(title, out var t) ? t.En : null;
 
     public static readonly Task[] All =
     {

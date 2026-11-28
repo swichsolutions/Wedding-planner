@@ -33,7 +33,8 @@ declare const google: {
 
 /**
  * Global sign-in popup (Zola/Knot-style). One login for everyone (couple or vendor).
- * "Sign up" → couple onboarding (/signup); "Are you a vendor? Start here" → /register.
+ * It ends with "No account yet?" and both sign-ups as two buttons: the couple's (/signup) and
+ * the business's (/register), under the same words as the switch on the sign-up cards.
  * Google sign-in uses Google Identity Services: the browser gets an ID token which we exchange
  * at POST /api/auth/google for our own JWT (creating a couple account on first sign-in).
  */

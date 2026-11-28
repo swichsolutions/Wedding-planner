@@ -72,8 +72,8 @@
            the sign-up cards (components/signup-role). Until 2026-11-28 the vendor's was the
            window's last, small line and a tester could not find it. -->
       <div class="lm-new">
-        <p class="lm-new__q">{{ 'auth.noAccount' | translate }}</p>
-        <div class="lm-new__choices">
+        <p id="lm-new-q" class="lm-new__q">{{ 'auth.noAccount' | translate }}</p>
+        <div class="lm-new__choices" role="group" aria-labelledby="lm-new-q">
           <button type="button" class="btn btn--outline-ink" (click)="goSignup()">{{ 'role.couple' | translate }}</button>
           <button type="button" class="btn btn--outline-ink" (click)="goVendor()">{{ 'role.vendor' | translate }}</button>
         </div>

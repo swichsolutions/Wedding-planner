@@ -41,11 +41,6 @@
   line-height: 1.5;
   text-align: center;
   color: var(--color-text-secondary);
-
-  &--vendor {
-    margin-top: var(--space-2);
-    font-size: var(--fs-caption);
-  }
 }
 
 // Wide screens: the page fits one screen (see section.auth in styles/_components.scss), so
